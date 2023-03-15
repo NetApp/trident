@@ -66,13 +66,13 @@ type ApplicationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Application UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ApplicationGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the application get params
-func (o *ApplicationGetParams) WithFieldsQueryParameter(fields []string) *ApplicationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application get params
+func (o *ApplicationGetParams) WithFields(fields []string) *ApplicationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application get params
-func (o *ApplicationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application get params
+func (o *ApplicationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the application get params
-func (o *ApplicationGetParams) WithUUIDPathParameter(uuid string) *ApplicationGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application get params
+func (o *ApplicationGetParams) WithUUID(uuid string) *ApplicationGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application get params
-func (o *ApplicationGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application get params
+func (o *ApplicationGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ApplicationGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ApplicationGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ApplicationGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamApplicationGet binds the parameter fields
 func (o *ApplicationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

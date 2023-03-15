@@ -52,6 +52,11 @@ SnaplockLegalHoldCreateCreated describes a response with status code 201, with d
 Created
 */
 type SnaplockLegalHoldCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.SnaplockLegalHoldOperation
 }
 
@@ -93,6 +98,13 @@ func (o *SnaplockLegalHoldCreateCreated) GetPayload() *models.SnaplockLegalHoldO
 }
 
 func (o *SnaplockLegalHoldCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.SnaplockLegalHoldOperation)
 

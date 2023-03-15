@@ -22,11 +22,12 @@ type FileMoveResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// file move response inline records
+	FileMoveResponseInlineRecords []*FileMove `json:"records,omitempty"`
 
-	// records
-	Records []*FileMove `json:"records,omitempty"`
+	// Number of Records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this file move response
@@ -37,7 +38,7 @@ func (m *FileMoveResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFileMoveResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *FileMoveResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FileMoveResponse) validateFileMoveResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileMoveResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FileMoveResponseInlineRecords); i++ {
+		if swag.IsZero(m.FileMoveResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FileMoveResponseInlineRecords[i] != nil {
+			if err := m.FileMoveResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *FileMoveResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFileMoveResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *FileMoveResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FileMoveResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveResponse) contextValidateFileMoveResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FileMoveResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FileMoveResponseInlineRecords[i] != nil {
+			if err := m.FileMoveResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

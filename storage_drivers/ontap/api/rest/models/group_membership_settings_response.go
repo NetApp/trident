@@ -20,13 +20,14 @@ import (
 type GroupMembershipSettingsResponse struct {
 
 	// links
-	Links *GroupMembershipSettingsResponseLinks `json:"_links,omitempty"`
+	Links *GroupMembershipSettingsResponseInlineLinks `json:"_links,omitempty"`
+
+	// group membership settings response inline records
+	GroupMembershipSettingsResponseInlineRecords []*GroupMembershipSettings `json:"records,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*GroupMembershipSettings `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this group membership settings response
@@ -37,7 +38,7 @@ func (m *GroupMembershipSettingsResponse) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateGroupMembershipSettingsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *GroupMembershipSettingsResponse) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *GroupMembershipSettingsResponse) validateGroupMembershipSettingsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupMembershipSettingsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.GroupMembershipSettingsResponseInlineRecords); i++ {
+		if swag.IsZero(m.GroupMembershipSettingsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.GroupMembershipSettingsResponseInlineRecords[i] != nil {
+			if err := m.GroupMembershipSettingsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *GroupMembershipSettingsResponse) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateGroupMembershipSettingsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *GroupMembershipSettingsResponse) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsResponse) contextValidateGroupMembershipSettingsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.GroupMembershipSettingsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.GroupMembershipSettingsResponseInlineRecords[i] != nil {
+			if err := m.GroupMembershipSettingsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *GroupMembershipSettingsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GroupMembershipSettingsResponseLinks group membership settings response links
+// GroupMembershipSettingsResponseInlineLinks group membership settings response inline links
 //
-// swagger:model GroupMembershipSettingsResponseLinks
-type GroupMembershipSettingsResponseLinks struct {
+// swagger:model group_membership_settings_response_inline__links
+type GroupMembershipSettingsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type GroupMembershipSettingsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this group membership settings response links
-func (m *GroupMembershipSettingsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this group membership settings response inline links
+func (m *GroupMembershipSettingsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *GroupMembershipSettingsResponseLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *GroupMembershipSettingsResponseLinks) validateNext(formats strfmt.Regis
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *GroupMembershipSettingsResponseLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this group membership settings response links based on the context it is used
-func (m *GroupMembershipSettingsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this group membership settings response inline links based on the context it is used
+func (m *GroupMembershipSettingsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *GroupMembershipSettingsResponseLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *GroupMembershipSettingsResponseLinks) contextValidateNext(ctx context.C
 	return nil
 }
 
-func (m *GroupMembershipSettingsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *GroupMembershipSettingsResponseLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *GroupMembershipSettingsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *GroupMembershipSettingsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *GroupMembershipSettingsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GroupMembershipSettingsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res GroupMembershipSettingsResponseLinks
+func (m *GroupMembershipSettingsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GroupMembershipSettingsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

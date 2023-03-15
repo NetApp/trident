@@ -22,13 +22,14 @@ import (
 type ClusterMetricsResponse struct {
 
 	// links
-	Links *ClusterMetricsResponseLinks `json:"_links,omitempty"`
+	Links *ClusterMetricsResponseInlineLinks `json:"_links,omitempty"`
+
+	// cluster metrics response inline records
+	ClusterMetricsResponseInlineRecords []*ClusterMetricsResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ClusterMetricsResponseRecordsItems0 `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cluster metrics response
@@ -39,7 +40,7 @@ func (m *ClusterMetricsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateClusterMetricsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *ClusterMetricsResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterMetricsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ClusterMetricsResponse) validateClusterMetricsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterMetricsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ClusterMetricsResponseInlineRecords); i++ {
+		if swag.IsZero(m.ClusterMetricsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ClusterMetricsResponseInlineRecords[i] != nil {
+			if err := m.ClusterMetricsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *ClusterMetricsResponse) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateClusterMetricsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *ClusterMetricsResponse) contextValidateLinks(ctx context.Context, forma
 	return nil
 }
 
-func (m *ClusterMetricsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponse) contextValidateClusterMetricsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ClusterMetricsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ClusterMetricsResponseInlineRecords[i] != nil {
+			if err := m.ClusterMetricsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *ClusterMetricsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterMetricsResponseLinks cluster metrics response links
+// ClusterMetricsResponseInlineLinks cluster metrics response inline links
 //
-// swagger:model ClusterMetricsResponseLinks
-type ClusterMetricsResponseLinks struct {
+// swagger:model cluster_metrics_response_inline__links
+type ClusterMetricsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type ClusterMetricsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster metrics response links
-func (m *ClusterMetricsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline links
+func (m *ClusterMetricsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *ClusterMetricsResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterMetricsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *ClusterMetricsResponseLinks) validateNext(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ClusterMetricsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *ClusterMetricsResponseLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response links based on the context it is used
-func (m *ClusterMetricsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline links based on the context it is used
+func (m *ClusterMetricsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *ClusterMetricsResponseLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *ClusterMetricsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *ClusterMetricsResponseLinks) contextValidateNext(ctx context.Context, f
 	return nil
 }
 
-func (m *ClusterMetricsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *ClusterMetricsResponseLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *ClusterMetricsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseLinks
+func (m *ClusterMetricsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *ClusterMetricsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterMetricsResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// ClusterMetricsResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput.
 //
-// swagger:model ClusterMetricsResponseRecordsItems0
-type ClusterMetricsResponseRecordsItems0 struct {
+// swagger:model cluster_metrics_response_inline_records_inline_array_item
+type ClusterMetricsResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *ClusterMetricsResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *ClusterMetricsResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *ClusterMetricsResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *ClusterMetricsResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -323,8 +324,8 @@ type ClusterMetricsResponseRecordsItems0 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this cluster metrics response records items0
-func (m *ClusterMetricsResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline records inline array item
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -361,7 +362,7 @@ func (m *ClusterMetricsResponseRecordsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -378,7 +379,7 @@ func (m *ClusterMetricsResponseRecordsItems0) validateLinks(formats strfmt.Regis
 	return nil
 }
 
-var clusterMetricsResponseRecordsItems0TypeDurationPropEnum []interface{}
+var clusterMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -386,95 +387,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterMetricsResponseRecordsItems0TypeDurationPropEnum = append(clusterMetricsResponseRecordsItems0TypeDurationPropEnum, v)
+		clusterMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(clusterMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	ClusterMetricsResponseRecordsItems0DurationPT15S string = "PT15S"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	ClusterMetricsResponseRecordsItems0DurationPT4M string = "PT4M"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	ClusterMetricsResponseRecordsItems0DurationPT30M string = "PT30M"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	ClusterMetricsResponseRecordsItems0DurationPT2H string = "PT2H"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationP1D captures enum value "P1D"
-	ClusterMetricsResponseRecordsItems0DurationP1D string = "P1D"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	ClusterMetricsResponseRecordsItems0DurationPT5M string = "PT5M"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *ClusterMetricsResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterMetricsResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -491,7 +492,7 @@ func (m *ClusterMetricsResponseRecordsItems0) validateIops(formats strfmt.Regist
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -508,7 +509,7 @@ func (m *ClusterMetricsResponseRecordsItems0) validateLatency(formats strfmt.Reg
 	return nil
 }
 
-var clusterMetricsResponseRecordsItems0TypeStatusPropEnum []interface{}
+var clusterMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -516,145 +517,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterMetricsResponseRecordsItems0TypeStatusPropEnum = append(clusterMetricsResponseRecordsItems0TypeStatusPropEnum, v)
+		clusterMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(clusterMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusOk captures enum value "ok"
-	ClusterMetricsResponseRecordsItems0StatusOk string = "ok"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusError captures enum value "error"
-	ClusterMetricsResponseRecordsItems0StatusError string = "error"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	ClusterMetricsResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	ClusterMetricsResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	ClusterMetricsResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	ClusterMetricsResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	ClusterMetricsResponseRecordsItems0StatusNotFound string = "not_found"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	ClusterMetricsResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	ClusterMetricsResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	ClusterMetricsResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// ClusterMetricsResponseRecordsItems0
-	// ClusterMetricsResponseRecordsItems0
+	// cluster_metrics_response_inline_records_inline_array_item
+	// ClusterMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// ClusterMetricsResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	ClusterMetricsResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *ClusterMetricsResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterMetricsResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -671,7 +672,7 @@ func (m *ClusterMetricsResponseRecordsItems0) validateThroughput(formats strfmt.
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -683,8 +684,8 @@ func (m *ClusterMetricsResponseRecordsItems0) validateTimestamp(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response records items0 based on the context it is used
-func (m *ClusterMetricsResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline records inline array item based on the context it is used
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -721,7 +722,7 @@ func (m *ClusterMetricsResponseRecordsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -735,16 +736,16 @@ func (m *ClusterMetricsResponseRecordsItems0) contextValidateLinks(ctx context.C
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +759,7 @@ func (m *ClusterMetricsResponseRecordsItems0) contextValidateIops(ctx context.Co
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -772,16 +773,16 @@ func (m *ClusterMetricsResponseRecordsItems0) contextValidateLatency(ctx context
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -795,7 +796,7 @@ func (m *ClusterMetricsResponseRecordsItems0) contextValidateThroughput(ctx cont
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -805,7 +806,7 @@ func (m *ClusterMetricsResponseRecordsItems0) contextValidateTimestamp(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -813,8 +814,8 @@ func (m *ClusterMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseRecordsItems0
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -822,34 +823,34 @@ func (m *ClusterMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterMetricsResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model ClusterMetricsResponseRecordsItems0Iops
-type ClusterMetricsResponseRecordsItems0Iops struct {
+// swagger:model cluster_metrics_response_inline_records_inline_array_item_inline_iops
+type ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cluster metrics response records items0 iops
-func (m *ClusterMetricsResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline records inline array item inline iops
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response records items0 iops based on the context it is used
-func (m *ClusterMetricsResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline records inline array item inline iops based on the context it is used
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -859,7 +860,7 @@ func (m *ClusterMetricsResponseRecordsItems0Iops) ContextValidate(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -867,8 +868,8 @@ func (m *ClusterMetricsResponseRecordsItems0Iops) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseRecordsItems0Iops
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -876,34 +877,34 @@ func (m *ClusterMetricsResponseRecordsItems0Iops) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// ClusterMetricsResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model ClusterMetricsResponseRecordsItems0Latency
-type ClusterMetricsResponseRecordsItems0Latency struct {
+// swagger:model cluster_metrics_response_inline_records_inline_array_item_inline_latency
+type ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cluster metrics response records items0 latency
-func (m *ClusterMetricsResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline records inline array item inline latency
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response records items0 latency based on the context it is used
-func (m *ClusterMetricsResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline records inline array item inline latency based on the context it is used
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -913,7 +914,7 @@ func (m *ClusterMetricsResponseRecordsItems0Latency) ContextValidate(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -921,8 +922,8 @@ func (m *ClusterMetricsResponseRecordsItems0Latency) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseRecordsItems0Latency
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -930,17 +931,17 @@ func (m *ClusterMetricsResponseRecordsItems0Latency) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ClusterMetricsResponseRecordsItems0Links cluster metrics response records items0 links
+// ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks cluster metrics response inline records inline array item inline links
 //
-// swagger:model ClusterMetricsResponseRecordsItems0Links
-type ClusterMetricsResponseRecordsItems0Links struct {
+// swagger:model cluster_metrics_response_inline_records_inline_array_item_inline__links
+type ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster metrics response records items0 links
-func (m *ClusterMetricsResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline records inline array item inline links
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -953,7 +954,7 @@ func (m *ClusterMetricsResponseRecordsItems0Links) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -970,8 +971,8 @@ func (m *ClusterMetricsResponseRecordsItems0Links) validateSelf(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response records items0 links based on the context it is used
-func (m *ClusterMetricsResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline records inline array item inline links based on the context it is used
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -984,7 +985,7 @@ func (m *ClusterMetricsResponseRecordsItems0Links) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *ClusterMetricsResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -999,7 +1000,7 @@ func (m *ClusterMetricsResponseRecordsItems0Links) contextValidateSelf(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1007,8 +1008,8 @@ func (m *ClusterMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseRecordsItems0Links
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1016,34 +1017,34 @@ func (m *ClusterMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// ClusterMetricsResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model ClusterMetricsResponseRecordsItems0Throughput
-type ClusterMetricsResponseRecordsItems0Throughput struct {
+// swagger:model cluster_metrics_response_inline_records_inline_array_item_inline_throughput
+type ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cluster metrics response records items0 throughput
-func (m *ClusterMetricsResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster metrics response inline records inline array item inline throughput
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster metrics response records items0 throughput based on the context it is used
-func (m *ClusterMetricsResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster metrics response inline records inline array item inline throughput based on the context it is used
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1053,7 +1054,7 @@ func (m *ClusterMetricsResponseRecordsItems0Throughput) ContextValidate(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1061,8 +1062,8 @@ func (m *ClusterMetricsResponseRecordsItems0Throughput) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterMetricsResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res ClusterMetricsResponseRecordsItems0Throughput
+func (m *ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res ClusterMetricsResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

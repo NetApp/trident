@@ -20,13 +20,14 @@ import (
 type NetworkHTTPProxyResponse struct {
 
 	// links
-	Links *NetworkHTTPProxyResponseLinks `json:"_links,omitempty"`
+	Links *NetworkHTTPProxyResponseInlineLinks `json:"_links,omitempty"`
+
+	// network http proxy response inline records
+	NetworkHTTPProxyResponseInlineRecords []*NetworkHTTPProxy `json:"records,omitempty"`
 
 	// Number of HTTP proxy records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NetworkHTTPProxy `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this network http proxy response
@@ -37,7 +38,7 @@ func (m *NetworkHTTPProxyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNetworkHTTPProxyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NetworkHTTPProxyResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NetworkHTTPProxyResponse) validateNetworkHTTPProxyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetworkHTTPProxyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NetworkHTTPProxyResponseInlineRecords); i++ {
+		if swag.IsZero(m.NetworkHTTPProxyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NetworkHTTPProxyResponseInlineRecords[i] != nil {
+			if err := m.NetworkHTTPProxyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NetworkHTTPProxyResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNetworkHTTPProxyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NetworkHTTPProxyResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyResponse) contextValidateNetworkHTTPProxyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NetworkHTTPProxyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NetworkHTTPProxyResponseInlineRecords[i] != nil {
+			if err := m.NetworkHTTPProxyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NetworkHTTPProxyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyResponseLinks network HTTP proxy response links
+// NetworkHTTPProxyResponseInlineLinks network http proxy response inline links
 //
-// swagger:model NetworkHTTPProxyResponseLinks
-type NetworkHTTPProxyResponseLinks struct {
+// swagger:model network_http_proxy_response_inline__links
+type NetworkHTTPProxyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NetworkHTTPProxyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network HTTP proxy response links
-func (m *NetworkHTTPProxyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy response inline links
+func (m *NetworkHTTPProxyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NetworkHTTPProxyResponseLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NetworkHTTPProxyResponseLinks) validateNext(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NetworkHTTPProxyResponseLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy response links based on the context it is used
-func (m *NetworkHTTPProxyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy response inline links based on the context it is used
+func (m *NetworkHTTPProxyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NetworkHTTPProxyResponseLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NetworkHTTPProxyResponseLinks) contextValidateNext(ctx context.Context,
 	return nil
 }
 
-func (m *NetworkHTTPProxyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NetworkHTTPProxyResponseLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NetworkHTTPProxyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxyResponseLinks
+func (m *NetworkHTTPProxyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

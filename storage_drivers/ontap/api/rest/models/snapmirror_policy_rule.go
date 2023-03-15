@@ -20,17 +20,21 @@ type SnapmirrorPolicyRule struct {
 
 	// Number of Snapshot copies to be kept for retention.
 	// Example: 7
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// creation schedule
-	CreationSchedule *SnapmirrorPolicyRuleCreationSchedule `json:"creation_schedule,omitempty"`
+	CreationSchedule *SnapmirrorPolicyRuleInlineCreationSchedule `json:"creation_schedule,omitempty"`
 
 	// Snapshot copy label
 	// Example: hourly
-	Label string `json:"label,omitempty"`
+	Label *string `json:"label,omitempty"`
+
+	// Specifies the duration for which the Snapshot copies are locked. The retention period value represents a duration and must be in the ISO-8601 duration format. Years, months, days, hours, minutes, and seconds are represented as "P<num>Y","P<num>M","P<num>D","PT<num>H","PT<num>M" and "PT<num>S". Value "infinite" is also a valid input for Flexvol volumes and FlexGroup volumes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported. The range of supported retention period values is between 1 second to infinite.
+	// Example: P30D
+	Period *string `json:"period,omitempty"`
 
 	// Specifies the prefix for the Snapshot copy name to be created as per the schedule. If no value is specified, then the label is used as the prefix.
-	Prefix string `json:"prefix,omitempty"`
+	Prefix *string `json:"prefix,omitempty"`
 }
 
 // Validate validates this snapmirror policy rule
@@ -110,25 +114,25 @@ func (m *SnapmirrorPolicyRule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyRuleCreationSchedule Schedule used to create Snapshot copies on the destination for long term retention. Only cron schedules are supported for SnapMirror.
+// SnapmirrorPolicyRuleInlineCreationSchedule Schedule used to create Snapshot copies on the destination for long term retention. Only cron schedules are supported for SnapMirror.
 //
-// swagger:model SnapmirrorPolicyRuleCreationSchedule
-type SnapmirrorPolicyRuleCreationSchedule struct {
+// swagger:model snapmirror_policy_rule_inline_creation_schedule
+type SnapmirrorPolicyRuleInlineCreationSchedule struct {
 
 	// links
-	Links *SnapmirrorPolicyRuleCreationScheduleLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror policy rule creation schedule
-func (m *SnapmirrorPolicyRuleCreationSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy rule inline creation schedule
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -141,7 +145,7 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SnapmirrorPolicyRuleCreationSchedule) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -158,8 +162,8 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy rule creation schedule based on the context it is used
-func (m *SnapmirrorPolicyRuleCreationSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy rule inline creation schedule based on the context it is used
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -172,7 +176,7 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SnapmirrorPolicyRuleCreationSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -187,7 +191,7 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) contextValidateLinks(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyRuleCreationSchedule) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -195,8 +199,8 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyRuleCreationSchedule) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyRuleCreationSchedule
+func (m *SnapmirrorPolicyRuleInlineCreationSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyRuleInlineCreationSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -204,17 +208,17 @@ func (m *SnapmirrorPolicyRuleCreationSchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyRuleCreationScheduleLinks snapmirror policy rule creation schedule links
+// SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks snapmirror policy rule inline creation schedule inline links
 //
-// swagger:model SnapmirrorPolicyRuleCreationScheduleLinks
-type SnapmirrorPolicyRuleCreationScheduleLinks struct {
+// swagger:model snapmirror_policy_rule_inline_creation_schedule_inline__links
+type SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy rule creation schedule links
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy rule inline creation schedule inline links
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -227,7 +231,7 @@ func (m *SnapmirrorPolicyRuleCreationScheduleLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -244,8 +248,8 @@ func (m *SnapmirrorPolicyRuleCreationScheduleLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy rule creation schedule links based on the context it is used
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy rule inline creation schedule inline links based on the context it is used
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -258,7 +262,7 @@ func (m *SnapmirrorPolicyRuleCreationScheduleLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -273,7 +277,7 @@ func (m *SnapmirrorPolicyRuleCreationScheduleLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -281,8 +285,8 @@ func (m *SnapmirrorPolicyRuleCreationScheduleLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyRuleCreationScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyRuleCreationScheduleLinks
+func (m *SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyRuleInlineCreationScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,55 +66,55 @@ type NetbiosCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interfaces.
 
 	   Filter by interfaces
 	*/
-	InterfacesQueryParameter *string
+	Interfaces *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Mode.
 
 	   Filter by mode
 	*/
-	ModeQueryParameter *string
+	Mode *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NameRegistrationType.
 
 	   Filter by name_registration_type
 	*/
-	NameRegistrationTypeQueryParameter *string
+	NameRegistrationType *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type NetbiosCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,55 +130,55 @@ type NetbiosCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Suffix.
 
 	   Filter by suffix
 	*/
-	SuffixQueryParameter *string
+	Suffix *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TimeLeft.
 
 	   Filter by time_left
 	*/
-	TimeLeftQueryParameter *int64
+	TimeLeft *int64
 
 	/* WinsServersIP.
 
 	   Filter by wins_servers.ip
 	*/
-	WinsServersIPQueryParameter *string
+	WinsServersIP *string
 
 	/* WinsServersState.
 
 	   Filter by wins_servers.state
 	*/
-	WinsServersStateQueryParameter *string
+	WinsServersState *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *NetbiosCollectionGetParams) WithDefaults() *NetbiosCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *NetbiosCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetbiosCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *NetbiosCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithFieldsQueryParameter(fields []string) *NetbiosCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithFields(fields []string) *NetbiosCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfacesQueryParameter adds the interfaces to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithInterfacesQueryParameter(interfaces *string) *NetbiosCollectionGetParams {
-	o.SetInterfacesQueryParameter(interfaces)
+// WithInterfaces adds the interfaces to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithInterfaces(interfaces *string) *NetbiosCollectionGetParams {
+	o.SetInterfaces(interfaces)
 	return o
 }
 
-// SetInterfacesQueryParameter adds the interfaces to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetInterfacesQueryParameter(interfaces *string) {
-	o.InterfacesQueryParameter = interfaces
+// SetInterfaces adds the interfaces to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetInterfaces(interfaces *string) {
+	o.Interfaces = interfaces
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetbiosCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithMaxRecords(maxRecords *int64) *NetbiosCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithModeQueryParameter adds the mode to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithModeQueryParameter(mode *string) *NetbiosCollectionGetParams {
-	o.SetModeQueryParameter(mode)
+// WithMode adds the mode to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithMode(mode *string) *NetbiosCollectionGetParams {
+	o.SetMode(mode)
 	return o
 }
 
-// SetModeQueryParameter adds the mode to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetModeQueryParameter(mode *string) {
-	o.ModeQueryParameter = mode
+// SetMode adds the mode to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetMode(mode *string) {
+	o.Mode = mode
 }
 
-// WithNameQueryParameter adds the name to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithNameQueryParameter(name *string) *NetbiosCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithName(name *string) *NetbiosCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNameRegistrationTypeQueryParameter adds the nameRegistrationType to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithNameRegistrationTypeQueryParameter(nameRegistrationType *string) *NetbiosCollectionGetParams {
-	o.SetNameRegistrationTypeQueryParameter(nameRegistrationType)
+// WithNameRegistrationType adds the nameRegistrationType to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithNameRegistrationType(nameRegistrationType *string) *NetbiosCollectionGetParams {
+	o.SetNameRegistrationType(nameRegistrationType)
 	return o
 }
 
-// SetNameRegistrationTypeQueryParameter adds the nameRegistrationType to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetNameRegistrationTypeQueryParameter(nameRegistrationType *string) {
-	o.NameRegistrationTypeQueryParameter = nameRegistrationType
+// SetNameRegistrationType adds the nameRegistrationType to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetNameRegistrationType(nameRegistrationType *string) {
+	o.NameRegistrationType = nameRegistrationType
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *NetbiosCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithNodeName(nodeName *string) *NetbiosCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NetbiosCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithNodeUUID(nodeUUID *string) *NetbiosCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NetbiosCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithOrderBy(orderBy []string) *NetbiosCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetbiosCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithReturnRecords(returnRecords *bool) *NetbiosCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetbiosCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NetbiosCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithScopeQueryParameter(scope *string) *NetbiosCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithScope(scope *string) *NetbiosCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithStateQueryParameter adds the state to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithStateQueryParameter(state *string) *NetbiosCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithState(state *string) *NetbiosCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSuffixQueryParameter adds the suffix to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithSuffixQueryParameter(suffix *string) *NetbiosCollectionGetParams {
-	o.SetSuffixQueryParameter(suffix)
+// WithSuffix adds the suffix to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithSuffix(suffix *string) *NetbiosCollectionGetParams {
+	o.SetSuffix(suffix)
 	return o
 }
 
-// SetSuffixQueryParameter adds the suffix to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetSuffixQueryParameter(suffix *string) {
-	o.SuffixQueryParameter = suffix
+// SetSuffix adds the suffix to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetSuffix(suffix *string) {
+	o.Suffix = suffix
 }
 
-// WithSVMNameQueryParameter adds the svmName to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NetbiosCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithSvmName(svmName *string) *NetbiosCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NetbiosCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithSvmUUID(svmUUID *string) *NetbiosCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTimeLeftQueryParameter adds the timeLeft to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithTimeLeftQueryParameter(timeLeft *int64) *NetbiosCollectionGetParams {
-	o.SetTimeLeftQueryParameter(timeLeft)
+// WithTimeLeft adds the timeLeft to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithTimeLeft(timeLeft *int64) *NetbiosCollectionGetParams {
+	o.SetTimeLeft(timeLeft)
 	return o
 }
 
-// SetTimeLeftQueryParameter adds the timeLeft to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetTimeLeftQueryParameter(timeLeft *int64) {
-	o.TimeLeftQueryParameter = timeLeft
+// SetTimeLeft adds the timeLeft to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetTimeLeft(timeLeft *int64) {
+	o.TimeLeft = timeLeft
 }
 
-// WithWinsServersIPQueryParameter adds the winsServersIP to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithWinsServersIPQueryParameter(winsServersIP *string) *NetbiosCollectionGetParams {
-	o.SetWinsServersIPQueryParameter(winsServersIP)
+// WithWinsServersIP adds the winsServersIP to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithWinsServersIP(winsServersIP *string) *NetbiosCollectionGetParams {
+	o.SetWinsServersIP(winsServersIP)
 	return o
 }
 
-// SetWinsServersIPQueryParameter adds the winsServersIp to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetWinsServersIPQueryParameter(winsServersIP *string) {
-	o.WinsServersIPQueryParameter = winsServersIP
+// SetWinsServersIP adds the winsServersIp to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetWinsServersIP(winsServersIP *string) {
+	o.WinsServersIP = winsServersIP
 }
 
-// WithWinsServersStateQueryParameter adds the winsServersState to the netbios collection get params
-func (o *NetbiosCollectionGetParams) WithWinsServersStateQueryParameter(winsServersState *string) *NetbiosCollectionGetParams {
-	o.SetWinsServersStateQueryParameter(winsServersState)
+// WithWinsServersState adds the winsServersState to the netbios collection get params
+func (o *NetbiosCollectionGetParams) WithWinsServersState(winsServersState *string) *NetbiosCollectionGetParams {
+	o.SetWinsServersState(winsServersState)
 	return o
 }
 
-// SetWinsServersStateQueryParameter adds the winsServersState to the netbios collection get params
-func (o *NetbiosCollectionGetParams) SetWinsServersStateQueryParameter(winsServersState *string) {
-	o.WinsServersStateQueryParameter = winsServersState
+// SetWinsServersState adds the winsServersState to the netbios collection get params
+func (o *NetbiosCollectionGetParams) SetWinsServersState(winsServersState *string) {
+	o.WinsServersState = winsServersState
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,7 +464,7 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesQueryParameter != nil {
+	if o.Interfaces != nil {
 
 		// query param interfaces
 		var qrInterfaces string
 
-		if o.InterfacesQueryParameter != nil {
-			qrInterfaces = *o.InterfacesQueryParameter
+		if o.Interfaces != nil {
+			qrInterfaces = *o.Interfaces
 		}
 		qInterfaces := qrInterfaces
 		if qInterfaces != "" {
@@ -492,13 +492,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -509,13 +509,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ModeQueryParameter != nil {
+	if o.Mode != nil {
 
 		// query param mode
 		var qrMode string
 
-		if o.ModeQueryParameter != nil {
-			qrMode = *o.ModeQueryParameter
+		if o.Mode != nil {
+			qrMode = *o.Mode
 		}
 		qMode := qrMode
 		if qMode != "" {
@@ -526,13 +526,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -543,13 +543,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameRegistrationTypeQueryParameter != nil {
+	if o.NameRegistrationType != nil {
 
 		// query param name_registration_type
 		var qrNameRegistrationType string
 
-		if o.NameRegistrationTypeQueryParameter != nil {
-			qrNameRegistrationType = *o.NameRegistrationTypeQueryParameter
+		if o.NameRegistrationType != nil {
+			qrNameRegistrationType = *o.NameRegistrationType
 		}
 		qNameRegistrationType := qrNameRegistrationType
 		if qNameRegistrationType != "" {
@@ -560,13 +560,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -577,13 +577,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -594,7 +594,7 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -605,13 +605,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -622,13 +622,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -639,13 +639,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -656,13 +656,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -673,13 +673,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SuffixQueryParameter != nil {
+	if o.Suffix != nil {
 
 		// query param suffix
 		var qrSuffix string
 
-		if o.SuffixQueryParameter != nil {
-			qrSuffix = *o.SuffixQueryParameter
+		if o.Suffix != nil {
+			qrSuffix = *o.Suffix
 		}
 		qSuffix := qrSuffix
 		if qSuffix != "" {
@@ -690,13 +690,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -707,13 +707,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -724,13 +724,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.TimeLeftQueryParameter != nil {
+	if o.TimeLeft != nil {
 
 		// query param time_left
 		var qrTimeLeft int64
 
-		if o.TimeLeftQueryParameter != nil {
-			qrTimeLeft = *o.TimeLeftQueryParameter
+		if o.TimeLeft != nil {
+			qrTimeLeft = *o.TimeLeft
 		}
 		qTimeLeft := swag.FormatInt64(qrTimeLeft)
 		if qTimeLeft != "" {
@@ -741,13 +741,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.WinsServersIPQueryParameter != nil {
+	if o.WinsServersIP != nil {
 
 		// query param wins_servers.ip
 		var qrWinsServersIP string
 
-		if o.WinsServersIPQueryParameter != nil {
-			qrWinsServersIP = *o.WinsServersIPQueryParameter
+		if o.WinsServersIP != nil {
+			qrWinsServersIP = *o.WinsServersIP
 		}
 		qWinsServersIP := qrWinsServersIP
 		if qWinsServersIP != "" {
@@ -758,13 +758,13 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.WinsServersStateQueryParameter != nil {
+	if o.WinsServersState != nil {
 
 		// query param wins_servers.state
 		var qrWinsServersState string
 
-		if o.WinsServersStateQueryParameter != nil {
-			qrWinsServersState = *o.WinsServersStateQueryParameter
+		if o.WinsServersState != nil {
+			qrWinsServersState = *o.WinsServersState
 		}
 		qWinsServersState := qrWinsServersState
 		if qWinsServersState != "" {
@@ -783,7 +783,7 @@ func (o *NetbiosCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamNetbiosCollectionGet binds the parameter fields
 func (o *NetbiosCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *NetbiosCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamNetbiosCollectionGet binds the parameter order_by
 func (o *NetbiosCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

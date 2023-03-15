@@ -73,13 +73,13 @@ type CifsShareModifyParams struct {
 
 	   Share Name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *CifsShareModifyParams) SetInfo(info *models.CifsShare) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the cifs share modify params
-func (o *CifsShareModifyParams) WithNamePathParameter(name string) *CifsShareModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the cifs share modify params
+func (o *CifsShareModifyParams) WithName(name string) *CifsShareModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the cifs share modify params
-func (o *CifsShareModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the cifs share modify params
+func (o *CifsShareModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs share modify params
-func (o *CifsShareModifyParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs share modify params
+func (o *CifsShareModifyParams) WithSvmUUID(svmUUID string) *CifsShareModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs share modify params
-func (o *CifsShareModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs share modify params
+func (o *CifsShareModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *CifsShareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

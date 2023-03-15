@@ -52,6 +52,10 @@ AccountCreateCreated describes a response with status code 201, with default hea
 Created
 */
 type AccountCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this account create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *AccountCreateCreated) String() string {
 }
 
 func (o *AccountCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

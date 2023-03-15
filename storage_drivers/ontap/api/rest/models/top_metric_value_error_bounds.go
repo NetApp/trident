@@ -22,12 +22,12 @@ type TopMetricValueErrorBounds struct {
 	// Lower bound of the nominal value of a metric.
 	// Example: 34
 	// Read Only: true
-	LowerBound int64 `json:"lower_bound,omitempty"`
+	LowerBound *int64 `json:"lower_bound,omitempty"`
 
 	// Upper bound of the nominal value of a metric.
 	// Example: 54
 	// Read Only: true
-	UpperBound int64 `json:"upper_bound,omitempty"`
+	UpperBound *int64 `json:"upper_bound,omitempty"`
 }
 
 // Validate validates this top metric value error bounds
@@ -55,7 +55,7 @@ func (m *TopMetricValueErrorBounds) ContextValidate(ctx context.Context, formats
 
 func (m *TopMetricValueErrorBounds) contextValidateLowerBound(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lower_bound", "body", int64(m.LowerBound)); err != nil {
+	if err := validate.ReadOnly(ctx, "lower_bound", "body", m.LowerBound); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (m *TopMetricValueErrorBounds) contextValidateLowerBound(ctx context.Contex
 
 func (m *TopMetricValueErrorBounds) contextValidateUpperBound(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "upper_bound", "body", int64(m.UpperBound)); err != nil {
+	if err := validate.ReadOnly(ctx, "upper_bound", "body", m.UpperBound); err != nil {
 		return err
 	}
 

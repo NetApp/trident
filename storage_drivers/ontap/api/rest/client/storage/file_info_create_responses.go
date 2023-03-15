@@ -52,6 +52,10 @@ FileInfoCreateCreated describes a response with status code 201, with default he
 Created
 */
 type FileInfoCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this file info create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *FileInfoCreateCreated) String() string {
 }
 
 func (o *FileInfoCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

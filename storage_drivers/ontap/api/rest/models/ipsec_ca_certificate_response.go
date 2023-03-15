@@ -20,13 +20,14 @@ import (
 type IpsecCaCertificateResponse struct {
 
 	// links
-	Links *IpsecCaCertificateResponseLinks `json:"_links,omitempty"`
+	Links *IpsecCaCertificateResponseInlineLinks `json:"_links,omitempty"`
+
+	// ipsec ca certificate response inline records
+	IpsecCaCertificateResponseInlineRecords []*IpsecCaCertificate `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*IpsecCaCertificate `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ipsec ca certificate response
@@ -37,7 +38,7 @@ func (m *IpsecCaCertificateResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateIpsecCaCertificateResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *IpsecCaCertificateResponse) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *IpsecCaCertificateResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *IpsecCaCertificateResponse) validateIpsecCaCertificateResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.IpsecCaCertificateResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.IpsecCaCertificateResponseInlineRecords); i++ {
+		if swag.IsZero(m.IpsecCaCertificateResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.IpsecCaCertificateResponseInlineRecords[i] != nil {
+			if err := m.IpsecCaCertificateResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *IpsecCaCertificateResponse) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateIpsecCaCertificateResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *IpsecCaCertificateResponse) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *IpsecCaCertificateResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecCaCertificateResponse) contextValidateIpsecCaCertificateResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.IpsecCaCertificateResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.IpsecCaCertificateResponseInlineRecords[i] != nil {
+			if err := m.IpsecCaCertificateResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *IpsecCaCertificateResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecCaCertificateResponseLinks ipsec ca certificate response links
+// IpsecCaCertificateResponseInlineLinks ipsec ca certificate response inline links
 //
-// swagger:model IpsecCaCertificateResponseLinks
-type IpsecCaCertificateResponseLinks struct {
+// swagger:model ipsec_ca_certificate_response_inline__links
+type IpsecCaCertificateResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type IpsecCaCertificateResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipsec ca certificate response links
-func (m *IpsecCaCertificateResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec ca certificate response inline links
+func (m *IpsecCaCertificateResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *IpsecCaCertificateResponseLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *IpsecCaCertificateResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *IpsecCaCertificateResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *IpsecCaCertificateResponseLinks) validateNext(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *IpsecCaCertificateResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpsecCaCertificateResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *IpsecCaCertificateResponseLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this ipsec ca certificate response links based on the context it is used
-func (m *IpsecCaCertificateResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec ca certificate response inline links based on the context it is used
+func (m *IpsecCaCertificateResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *IpsecCaCertificateResponseLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *IpsecCaCertificateResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecCaCertificateResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *IpsecCaCertificateResponseLinks) contextValidateNext(ctx context.Contex
 	return nil
 }
 
-func (m *IpsecCaCertificateResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecCaCertificateResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *IpsecCaCertificateResponseLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecCaCertificateResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *IpsecCaCertificateResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *IpsecCaCertificateResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecCaCertificateResponseLinks) UnmarshalBinary(b []byte) error {
-	var res IpsecCaCertificateResponseLinks
+func (m *IpsecCaCertificateResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecCaCertificateResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

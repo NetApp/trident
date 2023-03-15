@@ -70,7 +70,7 @@ type IPSubnetModifyParams struct {
 
 	   IP subnet UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *IPSubnetModifyParams) SetInfo(info *models.IPSubnet) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the ip subnet modify params
-func (o *IPSubnetModifyParams) WithUUIDPathParameter(uuid string) *IPSubnetModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ip subnet modify params
+func (o *IPSubnetModifyParams) WithUUID(uuid string) *IPSubnetModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ip subnet modify params
-func (o *IPSubnetModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ip subnet modify params
+func (o *IPSubnetModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *IPSubnetModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

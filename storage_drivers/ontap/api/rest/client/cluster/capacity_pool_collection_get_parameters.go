@@ -66,43 +66,43 @@ type CapacityPoolCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LicenseManagerUUID.
 
 	   Filter by license_manager.uuid
 	*/
-	LicenseManagerUUIDQueryParameter *string
+	LicenseManagerUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodesNodeName.
 
 	   Filter by nodes.node.name
 	*/
-	NodesNodeNameQueryParameter *string
+	NodesNodeName *string
 
 	/* NodesNodeUUID.
 
 	   Filter by nodes.node.uuid
 	*/
-	NodesNodeUUIDQueryParameter *string
+	NodesNodeUUID *string
 
 	/* NodesUsedSize.
 
 	   Filter by nodes.used_size
 	*/
-	NodesUsedSizeQueryParameter *int64
+	NodesUsedSize *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type CapacityPoolCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,13 +118,13 @@ type CapacityPoolCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *CapacityPoolCollectionGetParams) WithDefaults() *CapacityPoolCollection
 // All values with no default are reset to their zero value.
 func (o *CapacityPoolCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CapacityPoolCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *CapacityPoolCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithFieldsQueryParameter(fields []string) *CapacityPoolCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithFields(fields []string) *CapacityPoolCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLicenseManagerUUIDQueryParameter adds the licenseManagerUUID to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithLicenseManagerUUIDQueryParameter(licenseManagerUUID *string) *CapacityPoolCollectionGetParams {
-	o.SetLicenseManagerUUIDQueryParameter(licenseManagerUUID)
+// WithLicenseManagerUUID adds the licenseManagerUUID to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithLicenseManagerUUID(licenseManagerUUID *string) *CapacityPoolCollectionGetParams {
+	o.SetLicenseManagerUUID(licenseManagerUUID)
 	return o
 }
 
-// SetLicenseManagerUUIDQueryParameter adds the licenseManagerUuid to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetLicenseManagerUUIDQueryParameter(licenseManagerUUID *string) {
-	o.LicenseManagerUUIDQueryParameter = licenseManagerUUID
+// SetLicenseManagerUUID adds the licenseManagerUuid to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetLicenseManagerUUID(licenseManagerUUID *string) {
+	o.LicenseManagerUUID = licenseManagerUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CapacityPoolCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithMaxRecords(maxRecords *int64) *CapacityPoolCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodesNodeNameQueryParameter adds the nodesNodeName to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithNodesNodeNameQueryParameter(nodesNodeName *string) *CapacityPoolCollectionGetParams {
-	o.SetNodesNodeNameQueryParameter(nodesNodeName)
+// WithNodesNodeName adds the nodesNodeName to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithNodesNodeName(nodesNodeName *string) *CapacityPoolCollectionGetParams {
+	o.SetNodesNodeName(nodesNodeName)
 	return o
 }
 
-// SetNodesNodeNameQueryParameter adds the nodesNodeName to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetNodesNodeNameQueryParameter(nodesNodeName *string) {
-	o.NodesNodeNameQueryParameter = nodesNodeName
+// SetNodesNodeName adds the nodesNodeName to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetNodesNodeName(nodesNodeName *string) {
+	o.NodesNodeName = nodesNodeName
 }
 
-// WithNodesNodeUUIDQueryParameter adds the nodesNodeUUID to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithNodesNodeUUIDQueryParameter(nodesNodeUUID *string) *CapacityPoolCollectionGetParams {
-	o.SetNodesNodeUUIDQueryParameter(nodesNodeUUID)
+// WithNodesNodeUUID adds the nodesNodeUUID to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithNodesNodeUUID(nodesNodeUUID *string) *CapacityPoolCollectionGetParams {
+	o.SetNodesNodeUUID(nodesNodeUUID)
 	return o
 }
 
-// SetNodesNodeUUIDQueryParameter adds the nodesNodeUuid to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetNodesNodeUUIDQueryParameter(nodesNodeUUID *string) {
-	o.NodesNodeUUIDQueryParameter = nodesNodeUUID
+// SetNodesNodeUUID adds the nodesNodeUuid to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetNodesNodeUUID(nodesNodeUUID *string) {
+	o.NodesNodeUUID = nodesNodeUUID
 }
 
-// WithNodesUsedSizeQueryParameter adds the nodesUsedSize to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithNodesUsedSizeQueryParameter(nodesUsedSize *int64) *CapacityPoolCollectionGetParams {
-	o.SetNodesUsedSizeQueryParameter(nodesUsedSize)
+// WithNodesUsedSize adds the nodesUsedSize to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithNodesUsedSize(nodesUsedSize *int64) *CapacityPoolCollectionGetParams {
+	o.SetNodesUsedSize(nodesUsedSize)
 	return o
 }
 
-// SetNodesUsedSizeQueryParameter adds the nodesUsedSize to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetNodesUsedSizeQueryParameter(nodesUsedSize *int64) {
-	o.NodesUsedSizeQueryParameter = nodesUsedSize
+// SetNodesUsedSize adds the nodesUsedSize to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetNodesUsedSize(nodesUsedSize *int64) {
+	o.NodesUsedSize = nodesUsedSize
 }
 
-// WithOrderByQueryParameter adds the orderBy to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CapacityPoolCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithOrderBy(orderBy []string) *CapacityPoolCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CapacityPoolCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithReturnRecords(returnRecords *bool) *CapacityPoolCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CapacityPoolCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CapacityPoolCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *CapacityPoolCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) WithSerialNumber(serialNumber *string) *CapacityPoolCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the capacity pool collection get params
-func (o *CapacityPoolCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the capacity pool collection get params
+func (o *CapacityPoolCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,7 +311,7 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -322,13 +322,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LicenseManagerUUIDQueryParameter != nil {
+	if o.LicenseManagerUUID != nil {
 
 		// query param license_manager.uuid
 		var qrLicenseManagerUUID string
 
-		if o.LicenseManagerUUIDQueryParameter != nil {
-			qrLicenseManagerUUID = *o.LicenseManagerUUIDQueryParameter
+		if o.LicenseManagerUUID != nil {
+			qrLicenseManagerUUID = *o.LicenseManagerUUID
 		}
 		qLicenseManagerUUID := qrLicenseManagerUUID
 		if qLicenseManagerUUID != "" {
@@ -339,13 +339,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -356,13 +356,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NodesNodeNameQueryParameter != nil {
+	if o.NodesNodeName != nil {
 
 		// query param nodes.node.name
 		var qrNodesNodeName string
 
-		if o.NodesNodeNameQueryParameter != nil {
-			qrNodesNodeName = *o.NodesNodeNameQueryParameter
+		if o.NodesNodeName != nil {
+			qrNodesNodeName = *o.NodesNodeName
 		}
 		qNodesNodeName := qrNodesNodeName
 		if qNodesNodeName != "" {
@@ -373,13 +373,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NodesNodeUUIDQueryParameter != nil {
+	if o.NodesNodeUUID != nil {
 
 		// query param nodes.node.uuid
 		var qrNodesNodeUUID string
 
-		if o.NodesNodeUUIDQueryParameter != nil {
-			qrNodesNodeUUID = *o.NodesNodeUUIDQueryParameter
+		if o.NodesNodeUUID != nil {
+			qrNodesNodeUUID = *o.NodesNodeUUID
 		}
 		qNodesNodeUUID := qrNodesNodeUUID
 		if qNodesNodeUUID != "" {
@@ -390,13 +390,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NodesUsedSizeQueryParameter != nil {
+	if o.NodesUsedSize != nil {
 
 		// query param nodes.used_size
 		var qrNodesUsedSize int64
 
-		if o.NodesUsedSizeQueryParameter != nil {
-			qrNodesUsedSize = *o.NodesUsedSizeQueryParameter
+		if o.NodesUsedSize != nil {
+			qrNodesUsedSize = *o.NodesUsedSize
 		}
 		qNodesUsedSize := swag.FormatInt64(qrNodesUsedSize)
 		if qNodesUsedSize != "" {
@@ -407,7 +407,7 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +435,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +452,13 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -477,7 +477,7 @@ func (o *CapacityPoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamCapacityPoolCollectionGet binds the parameter fields
 func (o *CapacityPoolCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *CapacityPoolCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamCapacityPoolCollectionGet binds the parameter order_by
 func (o *CapacityPoolCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

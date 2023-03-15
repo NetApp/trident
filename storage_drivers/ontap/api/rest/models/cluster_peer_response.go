@@ -20,13 +20,14 @@ import (
 type ClusterPeerResponse struct {
 
 	// links
-	Links *ClusterPeerResponseLinks `json:"_links,omitempty"`
+	Links *ClusterPeerResponseInlineLinks `json:"_links,omitempty"`
+
+	// cluster peer response inline records
+	ClusterPeerResponseInlineRecords []*ClusterPeer `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ClusterPeer `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cluster peer response
@@ -37,7 +38,7 @@ func (m *ClusterPeerResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateClusterPeerResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ClusterPeerResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ClusterPeerResponse) validateClusterPeerResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterPeerResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ClusterPeerResponseInlineRecords); i++ {
+		if swag.IsZero(m.ClusterPeerResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ClusterPeerResponseInlineRecords[i] != nil {
+			if err := m.ClusterPeerResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ClusterPeerResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateClusterPeerResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ClusterPeerResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClusterPeerResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerResponse) contextValidateClusterPeerResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ClusterPeerResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ClusterPeerResponseInlineRecords[i] != nil {
+			if err := m.ClusterPeerResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ClusterPeerResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerResponseLinks cluster peer response links
+// ClusterPeerResponseInlineLinks cluster peer response inline links
 //
-// swagger:model ClusterPeerResponseLinks
-type ClusterPeerResponseLinks struct {
+// swagger:model cluster_peer_response_inline__links
+type ClusterPeerResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ClusterPeerResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster peer response links
-func (m *ClusterPeerResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer response inline links
+func (m *ClusterPeerResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ClusterPeerResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ClusterPeerResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ClusterPeerResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterPeerResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ClusterPeerResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer response links based on the context it is used
-func (m *ClusterPeerResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer response inline links based on the context it is used
+func (m *ClusterPeerResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ClusterPeerResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClusterPeerResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ClusterPeerResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *ClusterPeerResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ClusterPeerResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ClusterPeerResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerResponseLinks
+func (m *ClusterPeerResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,43 +66,43 @@ type NdmpNodeCollectionGetParams struct {
 
 	   Filter by authentication_types
 	*/
-	AuthenticationTypesQueryParameter *string
+	AuthenticationTypes *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type NdmpNodeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,13 +118,13 @@ type NdmpNodeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* User.
 
 	   Filter by user
 	*/
-	UserQueryParameter *string
+	User *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *NdmpNodeCollectionGetParams) WithDefaults() *NdmpNodeCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *NdmpNodeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NdmpNodeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *NdmpNodeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationTypesQueryParameter adds the authenticationTypes to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithAuthenticationTypesQueryParameter(authenticationTypes *string) *NdmpNodeCollectionGetParams {
-	o.SetAuthenticationTypesQueryParameter(authenticationTypes)
+// WithAuthenticationTypes adds the authenticationTypes to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithAuthenticationTypes(authenticationTypes *string) *NdmpNodeCollectionGetParams {
+	o.SetAuthenticationTypes(authenticationTypes)
 	return o
 }
 
-// SetAuthenticationTypesQueryParameter adds the authenticationTypes to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetAuthenticationTypesQueryParameter(authenticationTypes *string) {
-	o.AuthenticationTypesQueryParameter = authenticationTypes
+// SetAuthenticationTypes adds the authenticationTypes to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetAuthenticationTypes(authenticationTypes *string) {
+	o.AuthenticationTypes = authenticationTypes
 }
 
-// WithEnabledQueryParameter adds the enabled to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NdmpNodeCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithEnabled(enabled *bool) *NdmpNodeCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithFieldsQueryParameter(fields []string) *NdmpNodeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithFields(fields []string) *NdmpNodeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NdmpNodeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithMaxRecords(maxRecords *int64) *NdmpNodeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *NdmpNodeCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithNodeName(nodeName *string) *NdmpNodeCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NdmpNodeCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithNodeUUID(nodeUUID *string) *NdmpNodeCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NdmpNodeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithOrderBy(orderBy []string) *NdmpNodeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NdmpNodeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithReturnRecords(returnRecords *bool) *NdmpNodeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NdmpNodeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NdmpNodeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUserQueryParameter adds the user to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) WithUserQueryParameter(user *string) *NdmpNodeCollectionGetParams {
-	o.SetUserQueryParameter(user)
+// WithUser adds the user to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) WithUser(user *string) *NdmpNodeCollectionGetParams {
+	o.SetUser(user)
 	return o
 }
 
-// SetUserQueryParameter adds the user to the ndmp node collection get params
-func (o *NdmpNodeCollectionGetParams) SetUserQueryParameter(user *string) {
-	o.UserQueryParameter = user
+// SetUser adds the user to the ndmp node collection get params
+func (o *NdmpNodeCollectionGetParams) SetUser(user *string) {
+	o.User = user
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,13 +311,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.AuthenticationTypesQueryParameter != nil {
+	if o.AuthenticationTypes != nil {
 
 		// query param authentication_types
 		var qrAuthenticationTypes string
 
-		if o.AuthenticationTypesQueryParameter != nil {
-			qrAuthenticationTypes = *o.AuthenticationTypesQueryParameter
+		if o.AuthenticationTypes != nil {
+			qrAuthenticationTypes = *o.AuthenticationTypes
 		}
 		qAuthenticationTypes := qrAuthenticationTypes
 		if qAuthenticationTypes != "" {
@@ -328,13 +328,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -345,7 +345,7 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -373,13 +373,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -390,13 +390,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -407,7 +407,7 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +435,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +452,13 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UserQueryParameter != nil {
+	if o.User != nil {
 
 		// query param user
 		var qrUser string
 
-		if o.UserQueryParameter != nil {
-			qrUser = *o.UserQueryParameter
+		if o.User != nil {
+			qrUser = *o.User
 		}
 		qUser := qrUser
 		if qUser != "" {
@@ -477,7 +477,7 @@ func (o *NdmpNodeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamNdmpNodeCollectionGet binds the parameter fields
 func (o *NdmpNodeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *NdmpNodeCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamNdmpNodeCollectionGet binds the parameter order_by
 func (o *NdmpNodeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

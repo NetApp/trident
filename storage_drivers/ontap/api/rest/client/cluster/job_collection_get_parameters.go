@@ -66,79 +66,79 @@ type JobCollectionGetParams struct {
 
 	   Filter by code
 	*/
-	CodeQueryParameter *int64
+	Code *int64
 
 	/* Description.
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* EndTime.
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* ErrorArgumentsCode.
 
 	   Filter by error.arguments.code
 	*/
-	ErrorArgumentsCodeQueryParameter *string
+	ErrorArgumentsCode *string
 
 	/* ErrorArgumentsMessage.
 
 	   Filter by error.arguments.message
 	*/
-	ErrorArgumentsMessageQueryParameter *string
+	ErrorArgumentsMessage *string
 
 	/* ErrorCode.
 
 	   Filter by error.code
 	*/
-	ErrorCodeQueryParameter *string
+	ErrorCode *string
 
 	/* ErrorMessage.
 
 	   Filter by error.message
 	*/
-	ErrorMessageQueryParameter *string
+	ErrorMessage *string
 
 	/* ErrorTarget.
 
 	   Filter by error.target
 	*/
-	ErrorTargetQueryParameter *string
+	ErrorTarget *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Message.
 
 	   Filter by message
 	*/
-	MessageQueryParameter *string
+	Message *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type JobCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,37 +154,37 @@ type JobCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StartTime.
 
 	   Filter by start_time
 	*/
-	StartTimeQueryParameter *string
+	StartTime *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -204,14 +204,14 @@ func (o *JobCollectionGetParams) WithDefaults() *JobCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *JobCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := JobCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -253,224 +253,224 @@ func (o *JobCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCodeQueryParameter adds the code to the job collection get params
-func (o *JobCollectionGetParams) WithCodeQueryParameter(code *int64) *JobCollectionGetParams {
-	o.SetCodeQueryParameter(code)
+// WithCode adds the code to the job collection get params
+func (o *JobCollectionGetParams) WithCode(code *int64) *JobCollectionGetParams {
+	o.SetCode(code)
 	return o
 }
 
-// SetCodeQueryParameter adds the code to the job collection get params
-func (o *JobCollectionGetParams) SetCodeQueryParameter(code *int64) {
-	o.CodeQueryParameter = code
+// SetCode adds the code to the job collection get params
+func (o *JobCollectionGetParams) SetCode(code *int64) {
+	o.Code = code
 }
 
-// WithDescriptionQueryParameter adds the description to the job collection get params
-func (o *JobCollectionGetParams) WithDescriptionQueryParameter(description *string) *JobCollectionGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the job collection get params
+func (o *JobCollectionGetParams) WithDescription(description *string) *JobCollectionGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the job collection get params
-func (o *JobCollectionGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the job collection get params
+func (o *JobCollectionGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithEndTimeQueryParameter adds the endTime to the job collection get params
-func (o *JobCollectionGetParams) WithEndTimeQueryParameter(endTime *string) *JobCollectionGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithEndTime adds the endTime to the job collection get params
+func (o *JobCollectionGetParams) WithEndTime(endTime *string) *JobCollectionGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the job collection get params
-func (o *JobCollectionGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetEndTime adds the endTime to the job collection get params
+func (o *JobCollectionGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithErrorArgumentsCodeQueryParameter adds the errorArgumentsCode to the job collection get params
-func (o *JobCollectionGetParams) WithErrorArgumentsCodeQueryParameter(errorArgumentsCode *string) *JobCollectionGetParams {
-	o.SetErrorArgumentsCodeQueryParameter(errorArgumentsCode)
+// WithErrorArgumentsCode adds the errorArgumentsCode to the job collection get params
+func (o *JobCollectionGetParams) WithErrorArgumentsCode(errorArgumentsCode *string) *JobCollectionGetParams {
+	o.SetErrorArgumentsCode(errorArgumentsCode)
 	return o
 }
 
-// SetErrorArgumentsCodeQueryParameter adds the errorArgumentsCode to the job collection get params
-func (o *JobCollectionGetParams) SetErrorArgumentsCodeQueryParameter(errorArgumentsCode *string) {
-	o.ErrorArgumentsCodeQueryParameter = errorArgumentsCode
+// SetErrorArgumentsCode adds the errorArgumentsCode to the job collection get params
+func (o *JobCollectionGetParams) SetErrorArgumentsCode(errorArgumentsCode *string) {
+	o.ErrorArgumentsCode = errorArgumentsCode
 }
 
-// WithErrorArgumentsMessageQueryParameter adds the errorArgumentsMessage to the job collection get params
-func (o *JobCollectionGetParams) WithErrorArgumentsMessageQueryParameter(errorArgumentsMessage *string) *JobCollectionGetParams {
-	o.SetErrorArgumentsMessageQueryParameter(errorArgumentsMessage)
+// WithErrorArgumentsMessage adds the errorArgumentsMessage to the job collection get params
+func (o *JobCollectionGetParams) WithErrorArgumentsMessage(errorArgumentsMessage *string) *JobCollectionGetParams {
+	o.SetErrorArgumentsMessage(errorArgumentsMessage)
 	return o
 }
 
-// SetErrorArgumentsMessageQueryParameter adds the errorArgumentsMessage to the job collection get params
-func (o *JobCollectionGetParams) SetErrorArgumentsMessageQueryParameter(errorArgumentsMessage *string) {
-	o.ErrorArgumentsMessageQueryParameter = errorArgumentsMessage
+// SetErrorArgumentsMessage adds the errorArgumentsMessage to the job collection get params
+func (o *JobCollectionGetParams) SetErrorArgumentsMessage(errorArgumentsMessage *string) {
+	o.ErrorArgumentsMessage = errorArgumentsMessage
 }
 
-// WithErrorCodeQueryParameter adds the errorCode to the job collection get params
-func (o *JobCollectionGetParams) WithErrorCodeQueryParameter(errorCode *string) *JobCollectionGetParams {
-	o.SetErrorCodeQueryParameter(errorCode)
+// WithErrorCode adds the errorCode to the job collection get params
+func (o *JobCollectionGetParams) WithErrorCode(errorCode *string) *JobCollectionGetParams {
+	o.SetErrorCode(errorCode)
 	return o
 }
 
-// SetErrorCodeQueryParameter adds the errorCode to the job collection get params
-func (o *JobCollectionGetParams) SetErrorCodeQueryParameter(errorCode *string) {
-	o.ErrorCodeQueryParameter = errorCode
+// SetErrorCode adds the errorCode to the job collection get params
+func (o *JobCollectionGetParams) SetErrorCode(errorCode *string) {
+	o.ErrorCode = errorCode
 }
 
-// WithErrorMessageQueryParameter adds the errorMessage to the job collection get params
-func (o *JobCollectionGetParams) WithErrorMessageQueryParameter(errorMessage *string) *JobCollectionGetParams {
-	o.SetErrorMessageQueryParameter(errorMessage)
+// WithErrorMessage adds the errorMessage to the job collection get params
+func (o *JobCollectionGetParams) WithErrorMessage(errorMessage *string) *JobCollectionGetParams {
+	o.SetErrorMessage(errorMessage)
 	return o
 }
 
-// SetErrorMessageQueryParameter adds the errorMessage to the job collection get params
-func (o *JobCollectionGetParams) SetErrorMessageQueryParameter(errorMessage *string) {
-	o.ErrorMessageQueryParameter = errorMessage
+// SetErrorMessage adds the errorMessage to the job collection get params
+func (o *JobCollectionGetParams) SetErrorMessage(errorMessage *string) {
+	o.ErrorMessage = errorMessage
 }
 
-// WithErrorTargetQueryParameter adds the errorTarget to the job collection get params
-func (o *JobCollectionGetParams) WithErrorTargetQueryParameter(errorTarget *string) *JobCollectionGetParams {
-	o.SetErrorTargetQueryParameter(errorTarget)
+// WithErrorTarget adds the errorTarget to the job collection get params
+func (o *JobCollectionGetParams) WithErrorTarget(errorTarget *string) *JobCollectionGetParams {
+	o.SetErrorTarget(errorTarget)
 	return o
 }
 
-// SetErrorTargetQueryParameter adds the errorTarget to the job collection get params
-func (o *JobCollectionGetParams) SetErrorTargetQueryParameter(errorTarget *string) {
-	o.ErrorTargetQueryParameter = errorTarget
+// SetErrorTarget adds the errorTarget to the job collection get params
+func (o *JobCollectionGetParams) SetErrorTarget(errorTarget *string) {
+	o.ErrorTarget = errorTarget
 }
 
-// WithFieldsQueryParameter adds the fields to the job collection get params
-func (o *JobCollectionGetParams) WithFieldsQueryParameter(fields []string) *JobCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the job collection get params
+func (o *JobCollectionGetParams) WithFields(fields []string) *JobCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the job collection get params
-func (o *JobCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the job collection get params
+func (o *JobCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the job collection get params
-func (o *JobCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *JobCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the job collection get params
+func (o *JobCollectionGetParams) WithMaxRecords(maxRecords *int64) *JobCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the job collection get params
-func (o *JobCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the job collection get params
+func (o *JobCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMessageQueryParameter adds the message to the job collection get params
-func (o *JobCollectionGetParams) WithMessageQueryParameter(message *string) *JobCollectionGetParams {
-	o.SetMessageQueryParameter(message)
+// WithMessage adds the message to the job collection get params
+func (o *JobCollectionGetParams) WithMessage(message *string) *JobCollectionGetParams {
+	o.SetMessage(message)
 	return o
 }
 
-// SetMessageQueryParameter adds the message to the job collection get params
-func (o *JobCollectionGetParams) SetMessageQueryParameter(message *string) {
-	o.MessageQueryParameter = message
+// SetMessage adds the message to the job collection get params
+func (o *JobCollectionGetParams) SetMessage(message *string) {
+	o.Message = message
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the job collection get params
-func (o *JobCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *JobCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the job collection get params
+func (o *JobCollectionGetParams) WithNodeName(nodeName *string) *JobCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the job collection get params
-func (o *JobCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the job collection get params
+func (o *JobCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithOrderByQueryParameter adds the orderBy to the job collection get params
-func (o *JobCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *JobCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the job collection get params
+func (o *JobCollectionGetParams) WithOrderBy(orderBy []string) *JobCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the job collection get params
-func (o *JobCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the job collection get params
+func (o *JobCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the job collection get params
-func (o *JobCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *JobCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the job collection get params
+func (o *JobCollectionGetParams) WithReturnRecords(returnRecords *bool) *JobCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the job collection get params
-func (o *JobCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the job collection get params
+func (o *JobCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the job collection get params
-func (o *JobCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *JobCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the job collection get params
+func (o *JobCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *JobCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the job collection get params
-func (o *JobCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the job collection get params
+func (o *JobCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStartTimeQueryParameter adds the startTime to the job collection get params
-func (o *JobCollectionGetParams) WithStartTimeQueryParameter(startTime *string) *JobCollectionGetParams {
-	o.SetStartTimeQueryParameter(startTime)
+// WithStartTime adds the startTime to the job collection get params
+func (o *JobCollectionGetParams) WithStartTime(startTime *string) *JobCollectionGetParams {
+	o.SetStartTime(startTime)
 	return o
 }
 
-// SetStartTimeQueryParameter adds the startTime to the job collection get params
-func (o *JobCollectionGetParams) SetStartTimeQueryParameter(startTime *string) {
-	o.StartTimeQueryParameter = startTime
+// SetStartTime adds the startTime to the job collection get params
+func (o *JobCollectionGetParams) SetStartTime(startTime *string) {
+	o.StartTime = startTime
 }
 
-// WithStateQueryParameter adds the state to the job collection get params
-func (o *JobCollectionGetParams) WithStateQueryParameter(state *string) *JobCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the job collection get params
+func (o *JobCollectionGetParams) WithState(state *string) *JobCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the job collection get params
-func (o *JobCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the job collection get params
+func (o *JobCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSVMNameQueryParameter adds the svmName to the job collection get params
-func (o *JobCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *JobCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the job collection get params
+func (o *JobCollectionGetParams) WithSvmName(svmName *string) *JobCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the job collection get params
-func (o *JobCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the job collection get params
+func (o *JobCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the job collection get params
-func (o *JobCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *JobCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the job collection get params
+func (o *JobCollectionGetParams) WithSvmUUID(svmUUID *string) *JobCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the job collection get params
-func (o *JobCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the job collection get params
+func (o *JobCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the job collection get params
-func (o *JobCollectionGetParams) WithUUIDQueryParameter(uuid *string) *JobCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the job collection get params
+func (o *JobCollectionGetParams) WithUUID(uuid *string) *JobCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the job collection get params
-func (o *JobCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the job collection get params
+func (o *JobCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -481,13 +481,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.CodeQueryParameter != nil {
+	if o.Code != nil {
 
 		// query param code
 		var qrCode int64
 
-		if o.CodeQueryParameter != nil {
-			qrCode = *o.CodeQueryParameter
+		if o.Code != nil {
+			qrCode = *o.Code
 		}
 		qCode := swag.FormatInt64(qrCode)
 		if qCode != "" {
@@ -498,13 +498,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -515,13 +515,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -532,13 +532,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ErrorArgumentsCodeQueryParameter != nil {
+	if o.ErrorArgumentsCode != nil {
 
 		// query param error.arguments.code
 		var qrErrorArgumentsCode string
 
-		if o.ErrorArgumentsCodeQueryParameter != nil {
-			qrErrorArgumentsCode = *o.ErrorArgumentsCodeQueryParameter
+		if o.ErrorArgumentsCode != nil {
+			qrErrorArgumentsCode = *o.ErrorArgumentsCode
 		}
 		qErrorArgumentsCode := qrErrorArgumentsCode
 		if qErrorArgumentsCode != "" {
@@ -549,13 +549,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ErrorArgumentsMessageQueryParameter != nil {
+	if o.ErrorArgumentsMessage != nil {
 
 		// query param error.arguments.message
 		var qrErrorArgumentsMessage string
 
-		if o.ErrorArgumentsMessageQueryParameter != nil {
-			qrErrorArgumentsMessage = *o.ErrorArgumentsMessageQueryParameter
+		if o.ErrorArgumentsMessage != nil {
+			qrErrorArgumentsMessage = *o.ErrorArgumentsMessage
 		}
 		qErrorArgumentsMessage := qrErrorArgumentsMessage
 		if qErrorArgumentsMessage != "" {
@@ -566,13 +566,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ErrorCodeQueryParameter != nil {
+	if o.ErrorCode != nil {
 
 		// query param error.code
 		var qrErrorCode string
 
-		if o.ErrorCodeQueryParameter != nil {
-			qrErrorCode = *o.ErrorCodeQueryParameter
+		if o.ErrorCode != nil {
+			qrErrorCode = *o.ErrorCode
 		}
 		qErrorCode := qrErrorCode
 		if qErrorCode != "" {
@@ -583,13 +583,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ErrorMessageQueryParameter != nil {
+	if o.ErrorMessage != nil {
 
 		// query param error.message
 		var qrErrorMessage string
 
-		if o.ErrorMessageQueryParameter != nil {
-			qrErrorMessage = *o.ErrorMessageQueryParameter
+		if o.ErrorMessage != nil {
+			qrErrorMessage = *o.ErrorMessage
 		}
 		qErrorMessage := qrErrorMessage
 		if qErrorMessage != "" {
@@ -600,13 +600,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ErrorTargetQueryParameter != nil {
+	if o.ErrorTarget != nil {
 
 		// query param error.target
 		var qrErrorTarget string
 
-		if o.ErrorTargetQueryParameter != nil {
-			qrErrorTarget = *o.ErrorTargetQueryParameter
+		if o.ErrorTarget != nil {
+			qrErrorTarget = *o.ErrorTarget
 		}
 		qErrorTarget := qrErrorTarget
 		if qErrorTarget != "" {
@@ -617,7 +617,7 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -628,13 +628,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -645,13 +645,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MessageQueryParameter != nil {
+	if o.Message != nil {
 
 		// query param message
 		var qrMessage string
 
-		if o.MessageQueryParameter != nil {
-			qrMessage = *o.MessageQueryParameter
+		if o.Message != nil {
+			qrMessage = *o.Message
 		}
 		qMessage := qrMessage
 		if qMessage != "" {
@@ -662,13 +662,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -679,7 +679,7 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -690,13 +690,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -707,13 +707,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -724,13 +724,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StartTimeQueryParameter != nil {
+	if o.StartTime != nil {
 
 		// query param start_time
 		var qrStartTime string
 
-		if o.StartTimeQueryParameter != nil {
-			qrStartTime = *o.StartTimeQueryParameter
+		if o.StartTime != nil {
+			qrStartTime = *o.StartTime
 		}
 		qStartTime := qrStartTime
 		if qStartTime != "" {
@@ -741,13 +741,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -758,13 +758,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -775,13 +775,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -792,13 +792,13 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -817,7 +817,7 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamJobCollectionGet binds the parameter fields
 func (o *JobCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -834,7 +834,7 @@ func (o *JobCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamJobCollectionGet binds the parameter order_by
 func (o *JobCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

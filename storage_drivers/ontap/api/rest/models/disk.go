@@ -21,61 +21,65 @@ import (
 // swagger:model disk
 type Disk struct {
 
-	// List of aggregates sharing this disk
-	// Read Only: true
-	Aggregates []*DiskAggregatesItems0 `json:"aggregates,omitempty"`
-
 	// Disk shelf bay
 	// Example: 1
 	// Read Only: true
-	Bay int64 `json:"bay,omitempty"`
+	Bay *int64 `json:"bay,omitempty"`
 
 	// Bytes per sector.
 	// Example: 520
 	// Read Only: true
-	BytesPerSector int64 `json:"bytes_per_sector,omitempty"`
+	BytesPerSector *int64 `json:"bytes_per_sector,omitempty"`
 
 	// Disk class
 	// Example: solid_state
 	// Read Only: true
 	// Enum: [unknown capacity performance archive solid_state array virtual]
-	Class string `json:"class,omitempty"`
+	Class *string `json:"class,omitempty"`
 
 	// Security standard that the device is certified to.
 	// Example: FIPS 140-2
 	// Read Only: true
-	ComplianceStandard string `json:"compliance_standard,omitempty"`
+	ComplianceStandard *string `json:"compliance_standard,omitempty"`
 
 	// Type of overlying disk container
 	// Example: spare
 	// Read Only: true
 	// Enum: [aggregate broken foreign labelmaint maintenance shared spare unassigned unknown unsupported remote mediator]
-	ContainerType string `json:"container_type,omitempty"`
+	ContainerType *string `json:"container_type,omitempty"`
 
 	// Standard that the device supports for encryption control.
 	// Example: TCG Enterprise
 	// Read Only: true
-	ControlStandard string `json:"control_standard,omitempty"`
+	ControlStandard *string `json:"control_standard,omitempty"`
+
+	// List of aggregates sharing this disk
+	// Read Only: true
+	DiskInlineAggregates []*DiskInlineAggregatesInlineArrayItem `json:"aggregates,omitempty"`
+
+	// List of disk errors information.
+	// Read Only: true
+	DiskInlineError []*DiskErrorInfo `json:"error,omitempty"`
+
+	// List of paths to a disk
+	// Read Only: true
+	DiskInlinePaths []*DiskPathInfo `json:"paths,omitempty"`
 
 	// dr node
-	DrNode *DiskDrNode `json:"dr_node,omitempty"`
+	DrNode *DiskInlineDrNode `json:"dr_node,omitempty"`
 
 	// drawer
-	Drawer *DiskDrawer `json:"drawer,omitempty"`
+	Drawer *DiskInlineDrawer `json:"drawer,omitempty"`
 
 	// Effective Disk type
 	// Example: vmdisk
 	// Read Only: true
 	// Enum: [ata fcal lun msata sas bsas ssd ssd_nvm ssd_zns ssd_cap fsas vmdisk unknown]
-	EffectiveType string `json:"effective_type,omitempty"`
+	EffectiveType *string `json:"effective_type,omitempty"`
 
 	// This field should only be set as a query parameter in a PATCH operation. It is input only and won't be returned by a subsequent GET.
 	//
-	EncryptionOperation string `json:"encryption_operation,omitempty"`
-
-	// List of disk errors information.
-	// Read Only: true
-	Error []*DiskErrorInfo `json:"error,omitempty"`
+	EncryptionOperation *string `json:"encryption_operation,omitempty"`
 
 	// fips certified
 	// Read Only: true
@@ -84,13 +88,13 @@ type Disk struct {
 	// firmware version
 	// Example: NA51
 	// Read Only: true
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// home node
-	HomeNode *DiskHomeNode `json:"home_node,omitempty"`
+	HomeNode *DiskInlineHomeNode `json:"home_node,omitempty"`
 
 	// key id
-	KeyID *DiskKeyID `json:"key_id,omitempty"`
+	KeyID *DiskInlineKeyID `json:"key_id,omitempty"`
 
 	// Indicates if a disk is locally attached versus being remotely attached.
 	// A locally attached disk resides in the same proximity as the host
@@ -102,37 +106,33 @@ type Disk struct {
 	// model
 	// Example: X421_HCOBE450A10
 	// Read Only: true
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// Cluster-wide disk name
 	// Example: 1.0.1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *DiskNode `json:"node,omitempty"`
+	Node *DiskInlineNode `json:"node,omitempty"`
 
 	// outage
-	Outage *DiskOutage `json:"outage,omitempty"`
+	Outage *DiskInlineOutage `json:"outage,omitempty"`
 
 	// Overall Security rating, for FIPS-certified devices.
 	// Example: Level 2
 	// Read Only: true
-	OverallSecurity string `json:"overall_security,omitempty"`
-
-	// List of paths to a disk
-	// Read Only: true
-	Paths []*DiskPathInfo `json:"paths,omitempty"`
+	OverallSecurity *string `json:"overall_security,omitempty"`
 
 	// Physical size, in units of bytes
 	// Example: 228930
 	// Read Only: true
-	PhysicalSize int64 `json:"physical_size,omitempty"`
+	PhysicalSize *int64 `json:"physical_size,omitempty"`
 
 	// Pool to which disk is assigned
 	// Example: pool0
 	// Enum: [pool0 pool1 failed none]
-	Pool string `json:"pool,omitempty"`
+	Pool *string `json:"pool,omitempty"`
 
 	// Mode of drive data protection and FIPS compliance. Possible values are:
 	// - _open_ - Data is unprotected
@@ -144,27 +144,27 @@ type Disk struct {
 	// Example: data
 	// Read Only: true
 	// Enum: [open data part full miss]
-	ProtectionMode string `json:"protection_mode,omitempty"`
+	ProtectionMode *string `json:"protection_mode,omitempty"`
 
 	// Percentage of rated life used
 	// Example: 10
 	// Read Only: true
-	RatedLifeUsedPercent int64 `json:"rated_life_used_percent,omitempty"`
+	RatedLifeUsedPercent *int64 `json:"rated_life_used_percent,omitempty"`
 
 	// Number of usable disk sectors that remain after subtracting the right-size adjustment for this disk.
 	// Example: 1172123568
 	// Read Only: true
-	RightSizeSectorCount int64 `json:"right_size_sector_count,omitempty"`
+	RightSizeSectorCount *int64 `json:"right_size_sector_count,omitempty"`
 
 	// Revolutions per minute
 	// Example: 15000
 	// Read Only: true
-	Rpm int64 `json:"rpm,omitempty"`
+	Rpm *int64 `json:"rpm,omitempty"`
 
 	// Number of sectors on the disk.
 	// Example: 1172123568
 	// Read Only: true
-	SectorCount int64 `json:"sector_count,omitempty"`
+	SectorCount *int64 `json:"sector_count,omitempty"`
 
 	// self encrypting
 	// Read Only: true
@@ -173,60 +173,68 @@ type Disk struct {
 	// serial number
 	// Example: KHG2VX8R
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// shelf
-	Shelf *DiskShelf `json:"shelf,omitempty"`
+	Shelf *DiskInlineShelf `json:"shelf,omitempty"`
 
 	// State
 	// Example: present
 	// Enum: [broken copy maintenance partner pending present reconstructing removed spare unfail zeroing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// stats
-	Stats *DiskStats `json:"stats,omitempty"`
+	Stats *DiskInlineStats `json:"stats,omitempty"`
 
 	// storage pool
-	StoragePool *DiskStoragePool `json:"storage_pool,omitempty"`
+	StoragePool *DiskInlineStoragePool `json:"storage_pool,omitempty"`
 
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
 	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// The unique identifier for a disk
 	// Example: 002538E5:71B00B2F:00000000:00000000:00000000:00000000:00000000:00000000:00000000:00000000
 	// Read Only: true
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 
 	// usable size
 	// Example: 959934889984
 	// Read Only: true
-	UsableSize int64 `json:"usable_size,omitempty"`
+	UsableSize *int64 `json:"usable_size,omitempty"`
 
 	// vendor
 	// Example: NETAPP
 	// Read Only: true
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 
 	// virtual
-	Virtual *DiskVirtual `json:"virtual,omitempty"`
+	Virtual *DiskInlineVirtual `json:"virtual,omitempty"`
 }
 
 // Validate validates this disk
 func (m *Disk) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAggregates(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateClass(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateContainerType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDiskInlineAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDiskInlineError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDiskInlinePaths(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -239,10 +247,6 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateEffectiveType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateError(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -259,10 +263,6 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOutage(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePaths(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -301,30 +301,6 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Disk) validateAggregates(formats strfmt.Registry) error {
-	if swag.IsZero(m.Aggregates) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Aggregates); i++ {
-		if swag.IsZero(m.Aggregates[i]) { // not required
-			continue
-		}
-
-		if m.Aggregates[i] != nil {
-			if err := m.Aggregates[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -427,7 +403,7 @@ func (m *Disk) validateClass(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateClassEnum("class", "body", m.Class); err != nil {
+	if err := m.validateClassEnum("class", "body", *m.Class); err != nil {
 		return err
 	}
 
@@ -583,8 +559,80 @@ func (m *Disk) validateContainerType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateContainerTypeEnum("container_type", "body", m.ContainerType); err != nil {
+	if err := m.validateContainerTypeEnum("container_type", "body", *m.ContainerType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) validateDiskInlineAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskInlineAggregates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DiskInlineAggregates); i++ {
+		if swag.IsZero(m.DiskInlineAggregates[i]) { // not required
+			continue
+		}
+
+		if m.DiskInlineAggregates[i] != nil {
+			if err := m.DiskInlineAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Disk) validateDiskInlineError(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskInlineError) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DiskInlineError); i++ {
+		if swag.IsZero(m.DiskInlineError[i]) { // not required
+			continue
+		}
+
+		if m.DiskInlineError[i] != nil {
+			if err := m.DiskInlineError[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Disk) validateDiskInlinePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskInlinePaths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DiskInlinePaths); i++ {
+		if swag.IsZero(m.DiskInlinePaths[i]) { // not required
+			continue
+		}
+
+		if m.DiskInlinePaths[i] != nil {
+			if err := m.DiskInlinePaths[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -783,32 +831,8 @@ func (m *Disk) validateEffectiveType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateEffectiveTypeEnum("effective_type", "body", m.EffectiveType); err != nil {
+	if err := m.validateEffectiveTypeEnum("effective_type", "body", *m.EffectiveType); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) validateError(formats strfmt.Registry) error {
-	if swag.IsZero(m.Error) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Error); i++ {
-		if swag.IsZero(m.Error[i]) { // not required
-			continue
-		}
-
-		if m.Error[i] != nil {
-			if err := m.Error[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("error" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -877,30 +901,6 @@ func (m *Disk) validateOutage(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Disk) validatePaths(formats strfmt.Registry) error {
-	if swag.IsZero(m.Paths) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Paths); i++ {
-		if swag.IsZero(m.Paths[i]) { // not required
-			continue
-		}
-
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -975,7 +975,7 @@ func (m *Disk) validatePool(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePoolEnum("pool", "body", m.Pool); err != nil {
+	if err := m.validatePoolEnum("pool", "body", *m.Pool); err != nil {
 		return err
 	}
 
@@ -1061,7 +1061,7 @@ func (m *Disk) validateProtectionMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtectionModeEnum("protection_mode", "body", m.ProtectionMode); err != nil {
+	if err := m.validateProtectionModeEnum("protection_mode", "body", *m.ProtectionMode); err != nil {
 		return err
 	}
 
@@ -1224,7 +1224,7 @@ func (m *Disk) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -1424,7 +1424,7 @@ func (m *Disk) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -1452,10 +1452,6 @@ func (m *Disk) validateVirtual(formats strfmt.Registry) error {
 func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateAggregates(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateBay(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1480,6 +1476,18 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDiskInlineAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDiskInlineError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDiskInlinePaths(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDrNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1489,10 +1497,6 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateEffectiveType(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateError(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1533,10 +1537,6 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateOverallSecurity(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePaths(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1610,16 +1610,70 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	return nil
 }
 
-func (m *Disk) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
+func (m *Disk) contextValidateBay(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "aggregates", "body", []*DiskAggregatesItems0(m.Aggregates)); err != nil {
+	if err := validate.ReadOnly(ctx, "bay", "body", m.Bay); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Aggregates); i++ {
+	return nil
+}
 
-		if m.Aggregates[i] != nil {
-			if err := m.Aggregates[i].ContextValidate(ctx, formats); err != nil {
+func (m *Disk) contextValidateBytesPerSector(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "bytes_per_sector", "body", m.BytesPerSector); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateClass(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "class", "body", m.Class); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateComplianceStandard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "compliance_standard", "body", m.ComplianceStandard); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateContainerType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "container_type", "body", m.ContainerType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateControlStandard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "control_standard", "body", m.ControlStandard); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateDiskInlineAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "aggregates", "body", []*DiskInlineAggregatesInlineArrayItem(m.DiskInlineAggregates)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.DiskInlineAggregates); i++ {
+
+		if m.DiskInlineAggregates[i] != nil {
+			if err := m.DiskInlineAggregates[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
 				}
@@ -1632,55 +1686,45 @@ func (m *Disk) contextValidateAggregates(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *Disk) contextValidateBay(ctx context.Context, formats strfmt.Registry) error {
+func (m *Disk) contextValidateDiskInlineError(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "bay", "body", int64(m.Bay)); err != nil {
+	if err := validate.ReadOnly(ctx, "error", "body", []*DiskErrorInfo(m.DiskInlineError)); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(m.DiskInlineError); i++ {
+
+		if m.DiskInlineError[i] != nil {
+			if err := m.DiskInlineError[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func (m *Disk) contextValidateBytesPerSector(ctx context.Context, formats strfmt.Registry) error {
+func (m *Disk) contextValidateDiskInlinePaths(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "bytes_per_sector", "body", int64(m.BytesPerSector)); err != nil {
+	if err := validate.ReadOnly(ctx, "paths", "body", []*DiskPathInfo(m.DiskInlinePaths)); err != nil {
 		return err
 	}
 
-	return nil
-}
+	for i := 0; i < len(m.DiskInlinePaths); i++ {
 
-func (m *Disk) contextValidateClass(ctx context.Context, formats strfmt.Registry) error {
+		if m.DiskInlinePaths[i] != nil {
+			if err := m.DiskInlinePaths[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
 
-	if err := validate.ReadOnly(ctx, "class", "body", string(m.Class)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) contextValidateComplianceStandard(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "compliance_standard", "body", string(m.ComplianceStandard)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) contextValidateContainerType(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "container_type", "body", string(m.ContainerType)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) contextValidateControlStandard(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "control_standard", "body", string(m.ControlStandard)); err != nil {
-		return err
 	}
 
 	return nil
@@ -1716,30 +1760,8 @@ func (m *Disk) contextValidateDrawer(ctx context.Context, formats strfmt.Registr
 
 func (m *Disk) contextValidateEffectiveType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "effective_type", "body", string(m.EffectiveType)); err != nil {
+	if err := validate.ReadOnly(ctx, "effective_type", "body", m.EffectiveType); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "error", "body", []*DiskErrorInfo(m.Error)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Error); i++ {
-
-		if m.Error[i] != nil {
-			if err := m.Error[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("error" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1756,7 +1778,7 @@ func (m *Disk) contextValidateFipsCertified(ctx context.Context, formats strfmt.
 
 func (m *Disk) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "firmware_version", "body", m.FirmwareVersion); err != nil {
 		return err
 	}
 
@@ -1802,7 +1824,7 @@ func (m *Disk) contextValidateLocal(ctx context.Context, formats strfmt.Registry
 
 func (m *Disk) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
 		return err
 	}
 
@@ -1811,7 +1833,7 @@ func (m *Disk) contextValidateModel(ctx context.Context, formats strfmt.Registry
 
 func (m *Disk) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1848,30 +1870,8 @@ func (m *Disk) contextValidateOutage(ctx context.Context, formats strfmt.Registr
 
 func (m *Disk) contextValidateOverallSecurity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "overall_security", "body", string(m.OverallSecurity)); err != nil {
+	if err := validate.ReadOnly(ctx, "overall_security", "body", m.OverallSecurity); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Disk) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "paths", "body", []*DiskPathInfo(m.Paths)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Paths); i++ {
-
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1879,7 +1879,7 @@ func (m *Disk) contextValidatePaths(ctx context.Context, formats strfmt.Registry
 
 func (m *Disk) contextValidatePhysicalSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "physical_size", "body", int64(m.PhysicalSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "physical_size", "body", m.PhysicalSize); err != nil {
 		return err
 	}
 
@@ -1888,7 +1888,7 @@ func (m *Disk) contextValidatePhysicalSize(ctx context.Context, formats strfmt.R
 
 func (m *Disk) contextValidateProtectionMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protection_mode", "body", string(m.ProtectionMode)); err != nil {
+	if err := validate.ReadOnly(ctx, "protection_mode", "body", m.ProtectionMode); err != nil {
 		return err
 	}
 
@@ -1897,7 +1897,7 @@ func (m *Disk) contextValidateProtectionMode(ctx context.Context, formats strfmt
 
 func (m *Disk) contextValidateRatedLifeUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rated_life_used_percent", "body", int64(m.RatedLifeUsedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "rated_life_used_percent", "body", m.RatedLifeUsedPercent); err != nil {
 		return err
 	}
 
@@ -1906,7 +1906,7 @@ func (m *Disk) contextValidateRatedLifeUsedPercent(ctx context.Context, formats 
 
 func (m *Disk) contextValidateRightSizeSectorCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "right_size_sector_count", "body", int64(m.RightSizeSectorCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "right_size_sector_count", "body", m.RightSizeSectorCount); err != nil {
 		return err
 	}
 
@@ -1915,7 +1915,7 @@ func (m *Disk) contextValidateRightSizeSectorCount(ctx context.Context, formats 
 
 func (m *Disk) contextValidateRpm(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpm", "body", int64(m.Rpm)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpm", "body", m.Rpm); err != nil {
 		return err
 	}
 
@@ -1924,7 +1924,7 @@ func (m *Disk) contextValidateRpm(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Disk) contextValidateSectorCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "sector_count", "body", int64(m.SectorCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "sector_count", "body", m.SectorCount); err != nil {
 		return err
 	}
 
@@ -1942,7 +1942,7 @@ func (m *Disk) contextValidateSelfEncrypting(ctx context.Context, formats strfmt
 
 func (m *Disk) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -1993,7 +1993,7 @@ func (m *Disk) contextValidateStoragePool(ctx context.Context, formats strfmt.Re
 
 func (m *Disk) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -2002,7 +2002,7 @@ func (m *Disk) contextValidateType(ctx context.Context, formats strfmt.Registry)
 
 func (m *Disk) contextValidateUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uid", "body", string(m.UID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uid", "body", m.UID); err != nil {
 		return err
 	}
 
@@ -2011,7 +2011,7 @@ func (m *Disk) contextValidateUID(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Disk) contextValidateUsableSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "usable_size", "body", int64(m.UsableSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "usable_size", "body", m.UsableSize); err != nil {
 		return err
 	}
 
@@ -2020,7 +2020,7 @@ func (m *Disk) contextValidateUsableSize(ctx context.Context, formats strfmt.Reg
 
 func (m *Disk) contextValidateVendor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "vendor", "body", string(m.Vendor)); err != nil {
+	if err := validate.ReadOnly(ctx, "vendor", "body", m.Vendor); err != nil {
 		return err
 	}
 
@@ -2059,25 +2059,25 @@ func (m *Disk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskAggregatesItems0 disk aggregates items0
+// DiskInlineAggregatesInlineArrayItem disk inline aggregates inline array item
 //
-// swagger:model DiskAggregatesItems0
-type DiskAggregatesItems0 struct {
+// swagger:model disk_inline_aggregates_inline_array_item
+type DiskInlineAggregatesInlineArrayItem struct {
 
 	// links
-	Links *DiskAggregatesItems0Links `json:"_links,omitempty"`
+	Links *DiskInlineAggregatesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this disk aggregates items0
-func (m *DiskAggregatesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline aggregates inline array item
+func (m *DiskInlineAggregatesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2090,7 +2090,7 @@ func (m *DiskAggregatesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskAggregatesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *DiskInlineAggregatesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2107,8 +2107,8 @@ func (m *DiskAggregatesItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk aggregates items0 based on the context it is used
-func (m *DiskAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline aggregates inline array item based on the context it is used
+func (m *DiskInlineAggregatesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2121,7 +2121,7 @@ func (m *DiskAggregatesItems0) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *DiskAggregatesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineAggregatesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2136,7 +2136,7 @@ func (m *DiskAggregatesItems0) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *DiskAggregatesItems0) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineAggregatesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2144,8 +2144,8 @@ func (m *DiskAggregatesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskAggregatesItems0) UnmarshalBinary(b []byte) error {
-	var res DiskAggregatesItems0
+func (m *DiskInlineAggregatesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res DiskInlineAggregatesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2153,17 +2153,17 @@ func (m *DiskAggregatesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskAggregatesItems0Links disk aggregates items0 links
+// DiskInlineAggregatesInlineArrayItemInlineLinks disk inline aggregates inline array item inline links
 //
-// swagger:model DiskAggregatesItems0Links
-type DiskAggregatesItems0Links struct {
+// swagger:model disk_inline_aggregates_inline_array_item_inline__links
+type DiskInlineAggregatesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk aggregates items0 links
-func (m *DiskAggregatesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline aggregates inline array item inline links
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2176,7 +2176,7 @@ func (m *DiskAggregatesItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskAggregatesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2193,8 +2193,8 @@ func (m *DiskAggregatesItems0Links) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this disk aggregates items0 links based on the context it is used
-func (m *DiskAggregatesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline aggregates inline array item inline links based on the context it is used
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2207,7 +2207,7 @@ func (m *DiskAggregatesItems0Links) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *DiskAggregatesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2222,7 +2222,7 @@ func (m *DiskAggregatesItems0Links) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *DiskAggregatesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2230,8 +2230,8 @@ func (m *DiskAggregatesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskAggregatesItems0Links) UnmarshalBinary(b []byte) error {
-	var res DiskAggregatesItems0Links
+func (m *DiskInlineAggregatesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineAggregatesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2239,32 +2239,32 @@ func (m *DiskAggregatesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskDrNode disk dr node
+// DiskInlineDrNode disk inline dr node
 //
-// swagger:model DiskDrNode
-type DiskDrNode struct {
+// swagger:model disk_inline_dr_node
+type DiskInlineDrNode struct {
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this disk dr node
-func (m *DiskDrNode) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline dr node
+func (m *DiskInlineDrNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this disk dr node based on context it is used
-func (m *DiskDrNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this disk inline dr node based on context it is used
+func (m *DiskInlineDrNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DiskDrNode) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineDrNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2272,8 +2272,8 @@ func (m *DiskDrNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskDrNode) UnmarshalBinary(b []byte) error {
-	var res DiskDrNode
+func (m *DiskInlineDrNode) UnmarshalBinary(b []byte) error {
+	var res DiskInlineDrNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2281,25 +2281,25 @@ func (m *DiskDrNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskDrawer disk drawer
+// DiskInlineDrawer disk inline drawer
 //
-// swagger:model DiskDrawer
-type DiskDrawer struct {
+// swagger:model disk_inline_drawer
+type DiskInlineDrawer struct {
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// slot
-	Slot int64 `json:"slot,omitempty"`
+	Slot *int64 `json:"slot,omitempty"`
 }
 
-// Validate validates this disk drawer
-func (m *DiskDrawer) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline drawer
+func (m *DiskInlineDrawer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk drawer based on the context it is used
-func (m *DiskDrawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline drawer based on the context it is used
+func (m *DiskInlineDrawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2309,7 +2309,7 @@ func (m *DiskDrawer) ContextValidate(ctx context.Context, formats strfmt.Registr
 }
 
 // MarshalBinary interface implementation
-func (m *DiskDrawer) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineDrawer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2317,8 +2317,8 @@ func (m *DiskDrawer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskDrawer) UnmarshalBinary(b []byte) error {
-	var res DiskDrawer
+func (m *DiskInlineDrawer) UnmarshalBinary(b []byte) error {
+	var res DiskInlineDrawer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2326,25 +2326,25 @@ func (m *DiskDrawer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskHomeNode disk home node
+// DiskInlineHomeNode disk inline home node
 //
-// swagger:model DiskHomeNode
-type DiskHomeNode struct {
+// swagger:model disk_inline_home_node
+type DiskInlineHomeNode struct {
 
 	// links
-	Links *DiskHomeNodeLinks `json:"_links,omitempty"`
+	Links *DiskInlineHomeNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this disk home node
-func (m *DiskHomeNode) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline home node
+func (m *DiskInlineHomeNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2357,7 +2357,7 @@ func (m *DiskHomeNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskHomeNode) validateLinks(formats strfmt.Registry) error {
+func (m *DiskInlineHomeNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2374,8 +2374,8 @@ func (m *DiskHomeNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk home node based on the context it is used
-func (m *DiskHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline home node based on the context it is used
+func (m *DiskInlineHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2388,7 +2388,7 @@ func (m *DiskHomeNode) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *DiskHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2403,7 +2403,7 @@ func (m *DiskHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *DiskHomeNode) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineHomeNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2411,8 +2411,8 @@ func (m *DiskHomeNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskHomeNode) UnmarshalBinary(b []byte) error {
-	var res DiskHomeNode
+func (m *DiskInlineHomeNode) UnmarshalBinary(b []byte) error {
+	var res DiskInlineHomeNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2420,17 +2420,17 @@ func (m *DiskHomeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskHomeNodeLinks disk home node links
+// DiskInlineHomeNodeInlineLinks disk inline home node inline links
 //
-// swagger:model DiskHomeNodeLinks
-type DiskHomeNodeLinks struct {
+// swagger:model disk_inline_home_node_inline__links
+type DiskInlineHomeNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk home node links
-func (m *DiskHomeNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline home node inline links
+func (m *DiskInlineHomeNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2443,7 +2443,7 @@ func (m *DiskHomeNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskHomeNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskInlineHomeNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2460,8 +2460,8 @@ func (m *DiskHomeNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk home node links based on the context it is used
-func (m *DiskHomeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline home node inline links based on the context it is used
+func (m *DiskInlineHomeNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2474,7 +2474,7 @@ func (m *DiskHomeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *DiskHomeNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineHomeNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2489,7 +2489,7 @@ func (m *DiskHomeNodeLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *DiskHomeNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineHomeNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2497,8 +2497,8 @@ func (m *DiskHomeNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskHomeNodeLinks) UnmarshalBinary(b []byte) error {
-	var res DiskHomeNodeLinks
+func (m *DiskInlineHomeNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineHomeNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2506,25 +2506,25 @@ func (m *DiskHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskKeyID disk key ID
+// DiskInlineKeyID disk inline key id
 //
-// swagger:model DiskKeyID
-type DiskKeyID struct {
+// swagger:model disk_inline_key_id
+type DiskInlineKeyID struct {
 
 	// Key ID of the data authentication key
-	Data string `json:"data,omitempty"`
+	Data *string `json:"data,omitempty"`
 
 	// Key ID of the FIPS authentication key
-	Fips string `json:"fips,omitempty"`
+	Fips *string `json:"fips,omitempty"`
 }
 
-// Validate validates this disk key ID
-func (m *DiskKeyID) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline key id
+func (m *DiskInlineKeyID) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk key ID based on the context it is used
-func (m *DiskKeyID) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline key id based on the context it is used
+func (m *DiskInlineKeyID) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2534,7 +2534,7 @@ func (m *DiskKeyID) ContextValidate(ctx context.Context, formats strfmt.Registry
 }
 
 // MarshalBinary interface implementation
-func (m *DiskKeyID) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineKeyID) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2542,8 +2542,8 @@ func (m *DiskKeyID) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskKeyID) UnmarshalBinary(b []byte) error {
-	var res DiskKeyID
+func (m *DiskInlineKeyID) UnmarshalBinary(b []byte) error {
+	var res DiskInlineKeyID
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2551,25 +2551,25 @@ func (m *DiskKeyID) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskNode disk node
+// DiskInlineNode disk inline node
 //
-// swagger:model DiskNode
-type DiskNode struct {
+// swagger:model disk_inline_node
+type DiskInlineNode struct {
 
 	// links
-	Links *DiskNodeLinks `json:"_links,omitempty"`
+	Links *DiskInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this disk node
-func (m *DiskNode) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline node
+func (m *DiskInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2582,7 +2582,7 @@ func (m *DiskNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskNode) validateLinks(formats strfmt.Registry) error {
+func (m *DiskInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2599,8 +2599,8 @@ func (m *DiskNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk node based on the context it is used
-func (m *DiskNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline node based on the context it is used
+func (m *DiskInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2613,7 +2613,7 @@ func (m *DiskNode) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *DiskNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2628,7 +2628,7 @@ func (m *DiskNode) contextValidateLinks(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *DiskNode) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2636,8 +2636,8 @@ func (m *DiskNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskNode) UnmarshalBinary(b []byte) error {
-	var res DiskNode
+func (m *DiskInlineNode) UnmarshalBinary(b []byte) error {
+	var res DiskInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2645,17 +2645,17 @@ func (m *DiskNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskNodeLinks disk node links
+// DiskInlineNodeInlineLinks disk inline node inline links
 //
-// swagger:model DiskNodeLinks
-type DiskNodeLinks struct {
+// swagger:model disk_inline_node_inline__links
+type DiskInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk node links
-func (m *DiskNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline node inline links
+func (m *DiskInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2668,7 +2668,7 @@ func (m *DiskNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2685,8 +2685,8 @@ func (m *DiskNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk node links based on the context it is used
-func (m *DiskNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline node inline links based on the context it is used
+func (m *DiskInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2699,7 +2699,7 @@ func (m *DiskNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *DiskNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2714,7 +2714,7 @@ func (m *DiskNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *DiskNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2722,8 +2722,8 @@ func (m *DiskNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskNodeLinks) UnmarshalBinary(b []byte) error {
-	var res DiskNodeLinks
+func (m *DiskInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2731,10 +2731,10 @@ func (m *DiskNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskOutage Indicates if a disk has an entry in the failed disk registry, along with the reason for the failure.
+// DiskInlineOutage Indicates if a disk has an entry in the failed disk registry, along with the reason for the failure.
 //
-// swagger:model DiskOutage
-type DiskOutage struct {
+// swagger:model disk_inline_outage
+type DiskInlineOutage struct {
 
 	// Indicates whether RAID maintains the state of this disk as failed accross reboots.
 	// Read Only: true
@@ -2744,8 +2744,8 @@ type DiskOutage struct {
 	Reason *Error `json:"reason,omitempty"`
 }
 
-// Validate validates this disk outage
-func (m *DiskOutage) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline outage
+func (m *DiskInlineOutage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReason(formats); err != nil {
@@ -2758,7 +2758,7 @@ func (m *DiskOutage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskOutage) validateReason(formats strfmt.Registry) error {
+func (m *DiskInlineOutage) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -2775,8 +2775,8 @@ func (m *DiskOutage) validateReason(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk outage based on the context it is used
-func (m *DiskOutage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline outage based on the context it is used
+func (m *DiskInlineOutage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePersistentlyFailed(ctx, formats); err != nil {
@@ -2793,7 +2793,7 @@ func (m *DiskOutage) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *DiskOutage) contextValidatePersistentlyFailed(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineOutage) contextValidatePersistentlyFailed(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "outage"+"."+"persistently_failed", "body", m.PersistentlyFailed); err != nil {
 		return err
@@ -2802,7 +2802,7 @@ func (m *DiskOutage) contextValidatePersistentlyFailed(ctx context.Context, form
 	return nil
 }
 
-func (m *DiskOutage) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineOutage) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -2817,7 +2817,7 @@ func (m *DiskOutage) contextValidateReason(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *DiskOutage) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineOutage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2825,8 +2825,8 @@ func (m *DiskOutage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskOutage) UnmarshalBinary(b []byte) error {
-	var res DiskOutage
+func (m *DiskInlineOutage) UnmarshalBinary(b []byte) error {
+	var res DiskInlineOutage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2834,21 +2834,21 @@ func (m *DiskOutage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskShelf disk shelf
+// DiskInlineShelf Shelf
 //
-// swagger:model DiskShelf
-type DiskShelf struct {
+// swagger:model disk_inline_shelf
+type DiskInlineShelf struct {
 
 	// links
-	Links *DiskShelfLinks `json:"_links,omitempty"`
+	Links *DiskInlineShelfInlineLinks `json:"_links,omitempty"`
 
 	// uid
 	// Example: 7777841915827391056
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 }
 
-// Validate validates this disk shelf
-func (m *DiskShelf) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline shelf
+func (m *DiskInlineShelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2861,7 +2861,7 @@ func (m *DiskShelf) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskShelf) validateLinks(formats strfmt.Registry) error {
+func (m *DiskInlineShelf) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2878,8 +2878,8 @@ func (m *DiskShelf) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk shelf based on the context it is used
-func (m *DiskShelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline shelf based on the context it is used
+func (m *DiskInlineShelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2892,7 +2892,7 @@ func (m *DiskShelf) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *DiskShelf) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineShelf) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2907,7 +2907,7 @@ func (m *DiskShelf) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *DiskShelf) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineShelf) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2915,8 +2915,8 @@ func (m *DiskShelf) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskShelf) UnmarshalBinary(b []byte) error {
-	var res DiskShelf
+func (m *DiskInlineShelf) UnmarshalBinary(b []byte) error {
+	var res DiskInlineShelf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2924,17 +2924,17 @@ func (m *DiskShelf) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskShelfLinks disk shelf links
+// DiskInlineShelfInlineLinks disk inline shelf inline links
 //
-// swagger:model DiskShelfLinks
-type DiskShelfLinks struct {
+// swagger:model disk_inline_shelf_inline__links
+type DiskInlineShelfInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk shelf links
-func (m *DiskShelfLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline shelf inline links
+func (m *DiskInlineShelfInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2947,7 +2947,7 @@ func (m *DiskShelfLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskShelfLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskInlineShelfInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2964,8 +2964,8 @@ func (m *DiskShelfLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk shelf links based on the context it is used
-func (m *DiskShelfLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline shelf inline links based on the context it is used
+func (m *DiskInlineShelfInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2978,7 +2978,7 @@ func (m *DiskShelfLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *DiskShelfLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineShelfInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2993,7 +2993,7 @@ func (m *DiskShelfLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *DiskShelfLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineShelfInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3001,8 +3001,8 @@ func (m *DiskShelfLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskShelfLinks) UnmarshalBinary(b []byte) error {
-	var res DiskShelfLinks
+func (m *DiskInlineShelfInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineShelfInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3010,44 +3010,44 @@ func (m *DiskShelfLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskStats disk stats
+// DiskInlineStats disk inline stats
 //
-// swagger:model DiskStats
-type DiskStats struct {
+// swagger:model disk_inline_stats
+type DiskInlineStats struct {
 
 	// Average I/O latency across all active paths, in milliseconds.
 	// Example: 3
 	// Read Only: true
-	AverageLatency int64 `json:"average_latency,omitempty"`
+	AverageLatency *int64 `json:"average_latency,omitempty"`
 
 	// Total I/O operations per second read and written to this disk across all active paths.
 	// Example: 12854
 	// Read Only: true
-	IopsTotal int64 `json:"iops_total,omitempty"`
+	IopsTotal *int64 `json:"iops_total,omitempty"`
 
 	// Disk path error count; failed I/O operations.
 	// Example: 0
 	// Read Only: true
-	PathErrorCount int64 `json:"path_error_count,omitempty"`
+	PathErrorCount *int64 `json:"path_error_count,omitempty"`
 
 	// Hours powered on.
 	// Example: 21016
 	// Read Only: true
-	PowerOnHours int64 `json:"power_on_hours,omitempty"`
+	PowerOnHours *int64 `json:"power_on_hours,omitempty"`
 
 	// Total disk throughput per second across all active paths, in bytes.
 	// Example: 1957888
 	// Read Only: true
-	Throughput int64 `json:"throughput,omitempty"`
+	Throughput *int64 `json:"throughput,omitempty"`
 }
 
-// Validate validates this disk stats
-func (m *DiskStats) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline stats
+func (m *DiskInlineStats) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk stats based on the context it is used
-func (m *DiskStats) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline stats based on the context it is used
+func (m *DiskInlineStats) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAverageLatency(ctx, formats); err != nil {
@@ -3076,45 +3076,45 @@ func (m *DiskStats) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *DiskStats) contextValidateAverageLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStats) contextValidateAverageLatency(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "stats"+"."+"average_latency", "body", int64(m.AverageLatency)); err != nil {
+	if err := validate.ReadOnly(ctx, "stats"+"."+"average_latency", "body", m.AverageLatency); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskStats) contextValidateIopsTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStats) contextValidateIopsTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "stats"+"."+"iops_total", "body", int64(m.IopsTotal)); err != nil {
+	if err := validate.ReadOnly(ctx, "stats"+"."+"iops_total", "body", m.IopsTotal); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskStats) contextValidatePathErrorCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStats) contextValidatePathErrorCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "stats"+"."+"path_error_count", "body", int64(m.PathErrorCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "stats"+"."+"path_error_count", "body", m.PathErrorCount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskStats) contextValidatePowerOnHours(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStats) contextValidatePowerOnHours(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "stats"+"."+"power_on_hours", "body", int64(m.PowerOnHours)); err != nil {
+	if err := validate.ReadOnly(ctx, "stats"+"."+"power_on_hours", "body", m.PowerOnHours); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskStats) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStats) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "stats"+"."+"throughput", "body", int64(m.Throughput)); err != nil {
+	if err := validate.ReadOnly(ctx, "stats"+"."+"throughput", "body", m.Throughput); err != nil {
 		return err
 	}
 
@@ -3122,7 +3122,7 @@ func (m *DiskStats) contextValidateThroughput(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *DiskStats) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineStats) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3130,8 +3130,8 @@ func (m *DiskStats) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskStats) UnmarshalBinary(b []byte) error {
-	var res DiskStats
+func (m *DiskInlineStats) UnmarshalBinary(b []byte) error {
+	var res DiskInlineStats
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3139,25 +3139,25 @@ func (m *DiskStats) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskStoragePool Shared Storage Pool
+// DiskInlineStoragePool Shared Storage Pool
 //
-// swagger:model DiskStoragePool
-type DiskStoragePool struct {
+// swagger:model disk_inline_storage_pool
+type DiskInlineStoragePool struct {
 
 	// links
-	Links *DiskStoragePoolLinks `json:"_links,omitempty"`
+	Links *DiskInlineStoragePoolInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: storage_pool_1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this disk storage pool
-func (m *DiskStoragePool) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline storage pool
+func (m *DiskInlineStoragePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3170,7 +3170,7 @@ func (m *DiskStoragePool) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskStoragePool) validateLinks(formats strfmt.Registry) error {
+func (m *DiskInlineStoragePool) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3187,8 +3187,8 @@ func (m *DiskStoragePool) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk storage pool based on the context it is used
-func (m *DiskStoragePool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline storage pool based on the context it is used
+func (m *DiskInlineStoragePool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3201,7 +3201,7 @@ func (m *DiskStoragePool) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *DiskStoragePool) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStoragePool) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3216,7 +3216,7 @@ func (m *DiskStoragePool) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *DiskStoragePool) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineStoragePool) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3224,8 +3224,8 @@ func (m *DiskStoragePool) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskStoragePool) UnmarshalBinary(b []byte) error {
-	var res DiskStoragePool
+func (m *DiskInlineStoragePool) UnmarshalBinary(b []byte) error {
+	var res DiskInlineStoragePool
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3233,17 +3233,17 @@ func (m *DiskStoragePool) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskStoragePoolLinks disk storage pool links
+// DiskInlineStoragePoolInlineLinks disk inline storage pool inline links
 //
-// swagger:model DiskStoragePoolLinks
-type DiskStoragePoolLinks struct {
+// swagger:model disk_inline_storage_pool_inline__links
+type DiskInlineStoragePoolInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk storage pool links
-func (m *DiskStoragePoolLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline storage pool inline links
+func (m *DiskInlineStoragePoolInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3256,7 +3256,7 @@ func (m *DiskStoragePoolLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskStoragePoolLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskInlineStoragePoolInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3273,8 +3273,8 @@ func (m *DiskStoragePoolLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk storage pool links based on the context it is used
-func (m *DiskStoragePoolLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline storage pool inline links based on the context it is used
+func (m *DiskInlineStoragePoolInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3287,7 +3287,7 @@ func (m *DiskStoragePoolLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *DiskStoragePoolLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineStoragePoolInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3302,7 +3302,7 @@ func (m *DiskStoragePoolLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *DiskStoragePoolLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineStoragePoolInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3310,8 +3310,8 @@ func (m *DiskStoragePoolLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskStoragePoolLinks) UnmarshalBinary(b []byte) error {
-	var res DiskStoragePoolLinks
+func (m *DiskInlineStoragePoolInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskInlineStoragePoolInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3319,34 +3319,34 @@ func (m *DiskStoragePoolLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskVirtual Information about backing storage for disks on cloud platforms.
+// DiskInlineVirtual Information about backing storage for disks on cloud platforms.
 //
-// swagger:model DiskVirtual
-type DiskVirtual struct {
+// swagger:model disk_inline_virtual
+type DiskInlineVirtual struct {
 
 	// Container name of the virtual disk.
 	// Example: nviet12122018113936-rg
 	// Read Only: true
-	Container string `json:"container,omitempty"`
+	Container *string `json:"container,omitempty"`
 
 	// Object name of the virtual disk.
 	// Example: f1fu63se
 	// Read Only: true
-	Object string `json:"object,omitempty"`
+	Object *string `json:"object,omitempty"`
 
 	// Storage account name of the virtual disk.
 	// Example: nviet12122018113936ps
 	// Read Only: true
-	StorageAccount string `json:"storage_account,omitempty"`
+	StorageAccount *string `json:"storage_account,omitempty"`
 }
 
-// Validate validates this disk virtual
-func (m *DiskVirtual) Validate(formats strfmt.Registry) error {
+// Validate validates this disk inline virtual
+func (m *DiskInlineVirtual) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk virtual based on the context it is used
-func (m *DiskVirtual) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk inline virtual based on the context it is used
+func (m *DiskInlineVirtual) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateContainer(ctx, formats); err != nil {
@@ -3367,27 +3367,27 @@ func (m *DiskVirtual) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *DiskVirtual) contextValidateContainer(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineVirtual) contextValidateContainer(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "virtual"+"."+"container", "body", string(m.Container)); err != nil {
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"container", "body", m.Container); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskVirtual) contextValidateObject(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineVirtual) contextValidateObject(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "virtual"+"."+"object", "body", string(m.Object)); err != nil {
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"object", "body", m.Object); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DiskVirtual) contextValidateStorageAccount(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskInlineVirtual) contextValidateStorageAccount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "virtual"+"."+"storage_account", "body", string(m.StorageAccount)); err != nil {
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"storage_account", "body", m.StorageAccount); err != nil {
 		return err
 	}
 
@@ -3395,7 +3395,7 @@ func (m *DiskVirtual) contextValidateStorageAccount(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *DiskVirtual) MarshalBinary() ([]byte, error) {
+func (m *DiskInlineVirtual) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3403,8 +3403,8 @@ func (m *DiskVirtual) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskVirtual) UnmarshalBinary(b []byte) error {
-	var res DiskVirtual
+func (m *DiskInlineVirtual) UnmarshalBinary(b []byte) error {
+	var res DiskInlineVirtual
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

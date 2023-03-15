@@ -40,7 +40,7 @@ type ACL struct {
 	//
 	// Example: access_allow
 	// Enum: [access_allow access_deny access_allowed_callback access_denied_callback access_allowed_callback_object access_denied_callback_object system_audit_callback system_audit_callback_object system_resource_attribute system_scoped_policy_id audit_failure audit_success audit_success_and_failure]
-	Access string `json:"access,omitempty"`
+	Access *string `json:"access,omitempty"`
 
 	// An Access Control Level specifies the access control of the task to be applied. Valid values
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
@@ -51,7 +51,7 @@ type ACL struct {
 	// Example: file_directory
 	// Read Only: true
 	// Enum: [file_directory slag]
-	AccessControl string `json:"access_control,omitempty"`
+	AccessControl *string `json:"access_control,omitempty"`
 
 	// advanced rights
 	AdvancedRights *AdvancedRights `json:"advanced_rights,omitempty"`
@@ -72,13 +72,13 @@ type ACL struct {
 	//
 	// Example: full_control
 	// Enum: [no_access full_control modify read_and_execute read write]
-	Rights string `json:"rights,omitempty"`
+	Rights *string `json:"rights,omitempty"`
 
 	// Specifies the account to which the ACE applies.
 	// You can specify either name or SID.
 	//
 	// Example: S-1-5-21-2233347455-2266964949-1780268902-69304
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this acl
@@ -270,7 +270,7 @@ func (m *ACL) validateAccess(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateAccessEnum("access", "body", m.Access); err != nil {
+	if err := m.validateAccessEnum("access", "body", *m.Access); err != nil {
 		return err
 	}
 
@@ -326,7 +326,7 @@ func (m *ACL) validateAccessControl(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateAccessControlEnum("access_control", "body", m.AccessControl); err != nil {
+	if err := m.validateAccessControlEnum("access_control", "body", *m.AccessControl); err != nil {
 		return err
 	}
 
@@ -456,7 +456,7 @@ func (m *ACL) validateRights(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRightsEnum("rights", "body", m.Rights); err != nil {
+	if err := m.validateRightsEnum("rights", "body", *m.Rights); err != nil {
 		return err
 	}
 
@@ -491,7 +491,7 @@ func (m *ACL) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 
 func (m *ACL) contextValidateAccessControl(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access_control", "body", string(m.AccessControl)); err != nil {
+	if err := validate.ReadOnly(ctx, "access_control", "body", m.AccessControl); err != nil {
 		return err
 	}
 

@@ -24,7 +24,7 @@ type CifsOpenFile struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// connection
-	Connection *CifsOpenFileConnection `json:"connection,omitempty"`
+	Connection *CifsOpenFileInlineConnection `json:"connection,omitempty"`
 
 	// The type of continuous availability protection provided to the file.
 	// Opened files are continuously available if there are opened through a SMB3 client through a share with "continuously_avaliable" set to yes.
@@ -35,15 +35,15 @@ type CifsOpenFile struct {
 	// Example: no
 	// Read Only: true
 	// Enum: [no yes]
-	ContinuouslyAvailable string `json:"continuously_available,omitempty"`
+	ContinuouslyAvailable *string `json:"continuously_available,omitempty"`
 
 	// The unique identifier for the opened file.
 	// Example: 17
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 
 	// node
 	// Required: true
-	Node *CifsOpenFileNode `json:"node"`
+	Node *CifsOpenFileInlineNode `json:"node"`
 
 	// Open mode corresponding to the opened file
 	// - r: Opened for read
@@ -53,27 +53,27 @@ type CifsOpenFile struct {
 	// Example: r
 	// Read Only: true
 	// Enum: [r w d]
-	OpenMode string `json:"open_mode,omitempty"`
+	OpenMode *string `json:"open_mode,omitempty"`
 
 	// Path from CIFS share.
 	// Example: sub1\\sub2\\f4
 	// Read Only: true
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// The number of range locks granted on the file.
 	// Example: 4
 	// Read Only: true
-	RangeLocksCount int64 `json:"range_locks_count,omitempty"`
+	RangeLocksCount *int64 `json:"range_locks_count,omitempty"`
 
 	// session
-	Session *CifsOpenFileSession `json:"session,omitempty"`
+	Session *CifsOpenFileInlineSession `json:"session,omitempty"`
 
 	// share
-	Share *CifsOpenFileShare `json:"share,omitempty"`
+	Share *CifsOpenFileInlineShare `json:"share,omitempty"`
 
 	// svm
 	// Required: true
-	Svm *CifsOpenFileSvm `json:"svm"`
+	Svm *CifsOpenFileInlineSvm `json:"svm"`
 
 	// The type of opened file.
 	// The file can be a regular file, directory, a symbolic link to an existing file/directory, or an alternate data stream.
@@ -81,10 +81,10 @@ type CifsOpenFile struct {
 	// Example: regular
 	// Read Only: true
 	// Enum: [directory regular stream symlink]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// volume
-	Volume *CifsOpenFileVolume `json:"volume,omitempty"`
+	Volume *CifsOpenFileInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this cifs open file
@@ -220,7 +220,7 @@ func (m *CifsOpenFile) validateContinuouslyAvailable(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateContinuouslyAvailableEnum("continuously_available", "body", m.ContinuouslyAvailable); err != nil {
+	if err := m.validateContinuouslyAvailableEnum("continuously_available", "body", *m.ContinuouslyAvailable); err != nil {
 		return err
 	}
 
@@ -304,7 +304,7 @@ func (m *CifsOpenFile) validateOpenMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOpenModeEnum("open_mode", "body", m.OpenMode); err != nil {
+	if err := m.validateOpenModeEnum("open_mode", "body", *m.OpenMode); err != nil {
 		return err
 	}
 
@@ -432,7 +432,7 @@ func (m *CifsOpenFile) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -544,7 +544,7 @@ func (m *CifsOpenFile) contextValidateConnection(ctx context.Context, formats st
 
 func (m *CifsOpenFile) contextValidateContinuouslyAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "continuously_available", "body", string(m.ContinuouslyAvailable)); err != nil {
+	if err := validate.ReadOnly(ctx, "continuously_available", "body", m.ContinuouslyAvailable); err != nil {
 		return err
 	}
 
@@ -567,7 +567,7 @@ func (m *CifsOpenFile) contextValidateNode(ctx context.Context, formats strfmt.R
 
 func (m *CifsOpenFile) contextValidateOpenMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_mode", "body", string(m.OpenMode)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_mode", "body", m.OpenMode); err != nil {
 		return err
 	}
 
@@ -576,7 +576,7 @@ func (m *CifsOpenFile) contextValidateOpenMode(ctx context.Context, formats strf
 
 func (m *CifsOpenFile) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
 	}
 
@@ -585,7 +585,7 @@ func (m *CifsOpenFile) contextValidatePath(ctx context.Context, formats strfmt.R
 
 func (m *CifsOpenFile) contextValidateRangeLocksCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "range_locks_count", "body", int64(m.RangeLocksCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "range_locks_count", "body", m.RangeLocksCount); err != nil {
 		return err
 	}
 
@@ -636,7 +636,7 @@ func (m *CifsOpenFile) contextValidateSvm(ctx context.Context, formats strfmt.Re
 
 func (m *CifsOpenFile) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -675,28 +675,28 @@ func (m *CifsOpenFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileConnection cifs open file connection
+// CifsOpenFileInlineConnection cifs open file inline connection
 //
-// swagger:model CifsOpenFileConnection
-type CifsOpenFileConnection struct {
+// swagger:model cifs_open_file_inline_connection
+type CifsOpenFileInlineConnection struct {
 
 	// The number of CIFS connections associated with the CIFS session.
 	// Example: 3
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The connection that is used to open the file.
 	// Example: 356756
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 }
 
-// Validate validates this cifs open file connection
-func (m *CifsOpenFileConnection) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline connection
+func (m *CifsOpenFileInlineConnection) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file connection based on the context it is used
-func (m *CifsOpenFileConnection) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline connection based on the context it is used
+func (m *CifsOpenFileInlineConnection) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -709,9 +709,9 @@ func (m *CifsOpenFileConnection) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsOpenFileConnection) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineConnection) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connection"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "connection"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
@@ -719,7 +719,7 @@ func (m *CifsOpenFileConnection) contextValidateCount(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileConnection) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineConnection) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -727,8 +727,8 @@ func (m *CifsOpenFileConnection) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileConnection) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileConnection
+func (m *CifsOpenFileInlineConnection) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineConnection
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -736,25 +736,25 @@ func (m *CifsOpenFileConnection) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileNode cifs open file node
+// CifsOpenFileInlineNode cifs open file inline node
 //
-// swagger:model CifsOpenFileNode
-type CifsOpenFileNode struct {
+// swagger:model cifs_open_file_inline_node
+type CifsOpenFileInlineNode struct {
 
 	// links
-	Links *CifsOpenFileNodeLinks `json:"_links,omitempty"`
+	Links *CifsOpenFileInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs open file node
-func (m *CifsOpenFileNode) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline node
+func (m *CifsOpenFileInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -767,7 +767,7 @@ func (m *CifsOpenFileNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileNode) validateLinks(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -784,8 +784,8 @@ func (m *CifsOpenFileNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file node based on the context it is used
-func (m *CifsOpenFileNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline node based on the context it is used
+func (m *CifsOpenFileInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -798,7 +798,7 @@ func (m *CifsOpenFileNode) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *CifsOpenFileNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -813,7 +813,7 @@ func (m *CifsOpenFileNode) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileNode) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -821,8 +821,8 @@ func (m *CifsOpenFileNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileNode) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileNode
+func (m *CifsOpenFileInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -830,17 +830,17 @@ func (m *CifsOpenFileNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileNodeLinks cifs open file node links
+// CifsOpenFileInlineNodeInlineLinks cifs open file inline node inline links
 //
-// swagger:model CifsOpenFileNodeLinks
-type CifsOpenFileNodeLinks struct {
+// swagger:model cifs_open_file_inline_node_inline__links
+type CifsOpenFileInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs open file node links
-func (m *CifsOpenFileNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline node inline links
+func (m *CifsOpenFileInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -853,7 +853,7 @@ func (m *CifsOpenFileNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -870,8 +870,8 @@ func (m *CifsOpenFileNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file node links based on the context it is used
-func (m *CifsOpenFileNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline node inline links based on the context it is used
+func (m *CifsOpenFileInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -884,7 +884,7 @@ func (m *CifsOpenFileNodeLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CifsOpenFileNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -899,7 +899,7 @@ func (m *CifsOpenFileNodeLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -907,8 +907,8 @@ func (m *CifsOpenFileNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileNodeLinks
+func (m *CifsOpenFileInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -916,23 +916,23 @@ func (m *CifsOpenFileNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileSession cifs open file session
+// CifsOpenFileInlineSession cifs open file inline session
 //
-// swagger:model CifsOpenFileSession
-type CifsOpenFileSession struct {
+// swagger:model cifs_open_file_inline_session
+type CifsOpenFileInlineSession struct {
 
 	// Session under which file is opened.
 	// Example: 8966666858094658000
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 }
 
-// Validate validates this cifs open file session
-func (m *CifsOpenFileSession) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline session
+func (m *CifsOpenFileInlineSession) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file session based on the context it is used
-func (m *CifsOpenFileSession) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline session based on the context it is used
+func (m *CifsOpenFileInlineSession) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -942,7 +942,7 @@ func (m *CifsOpenFileSession) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileSession) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineSession) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -950,8 +950,8 @@ func (m *CifsOpenFileSession) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileSession) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileSession
+func (m *CifsOpenFileInlineSession) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineSession
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -959,10 +959,10 @@ func (m *CifsOpenFileSession) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileShare cifs open file share
+// CifsOpenFileInlineShare cifs open file inline share
 //
-// swagger:model CifsOpenFileShare
-type CifsOpenFileShare struct {
+// swagger:model cifs_open_file_inline_share
+type CifsOpenFileInlineShare struct {
 
 	// The share mode used to open the file.
 	// The share mode can be a combination of:
@@ -973,16 +973,16 @@ type CifsOpenFileShare struct {
 	// Example: r
 	// Read Only: true
 	// Enum: [r w d]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// CIFS share name where the file resides.
 	// Example: share1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this cifs open file share
-func (m *CifsOpenFileShare) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline share
+func (m *CifsOpenFileInlineShare) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMode(formats); err != nil {
@@ -995,7 +995,7 @@ func (m *CifsOpenFileShare) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var cifsOpenFileShareTypeModePropEnum []interface{}
+var cifsOpenFileInlineShareTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1003,66 +1003,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsOpenFileShareTypeModePropEnum = append(cifsOpenFileShareTypeModePropEnum, v)
+		cifsOpenFileInlineShareTypeModePropEnum = append(cifsOpenFileInlineShareTypeModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsOpenFileShare
-	// CifsOpenFileShare
+	// cifs_open_file_inline_share
+	// CifsOpenFileInlineShare
 	// mode
 	// Mode
 	// r
 	// END DEBUGGING
-	// CifsOpenFileShareModeR captures enum value "r"
-	CifsOpenFileShareModeR string = "r"
+	// CifsOpenFileInlineShareModeR captures enum value "r"
+	CifsOpenFileInlineShareModeR string = "r"
 
 	// BEGIN DEBUGGING
-	// CifsOpenFileShare
-	// CifsOpenFileShare
+	// cifs_open_file_inline_share
+	// CifsOpenFileInlineShare
 	// mode
 	// Mode
 	// w
 	// END DEBUGGING
-	// CifsOpenFileShareModeW captures enum value "w"
-	CifsOpenFileShareModeW string = "w"
+	// CifsOpenFileInlineShareModeW captures enum value "w"
+	CifsOpenFileInlineShareModeW string = "w"
 
 	// BEGIN DEBUGGING
-	// CifsOpenFileShare
-	// CifsOpenFileShare
+	// cifs_open_file_inline_share
+	// CifsOpenFileInlineShare
 	// mode
 	// Mode
 	// d
 	// END DEBUGGING
-	// CifsOpenFileShareModeD captures enum value "d"
-	CifsOpenFileShareModeD string = "d"
+	// CifsOpenFileInlineShareModeD captures enum value "d"
+	CifsOpenFileInlineShareModeD string = "d"
 )
 
 // prop value enum
-func (m *CifsOpenFileShare) validateModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsOpenFileShareTypeModePropEnum, true); err != nil {
+func (m *CifsOpenFileInlineShare) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsOpenFileInlineShareTypeModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsOpenFileShare) validateMode(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineShare) validateMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModeEnum("share"+"."+"mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("share"+"."+"mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cifs open file share based on the context it is used
-func (m *CifsOpenFileShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline share based on the context it is used
+func (m *CifsOpenFileInlineShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMode(ctx, formats); err != nil {
@@ -1079,18 +1079,18 @@ func (m *CifsOpenFileShare) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CifsOpenFileShare) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineShare) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "share"+"."+"mode", "body", string(m.Mode)); err != nil {
+	if err := validate.ReadOnly(ctx, "share"+"."+"mode", "body", m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsOpenFileShare) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineShare) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "share"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "share"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1098,7 +1098,7 @@ func (m *CifsOpenFileShare) contextValidateName(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileShare) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineShare) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1106,8 +1106,8 @@ func (m *CifsOpenFileShare) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileShare) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileShare
+func (m *CifsOpenFileInlineShare) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineShare
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1115,27 +1115,27 @@ func (m *CifsOpenFileShare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileSvm cifs open file svm
+// CifsOpenFileInlineSvm cifs open file inline svm
 //
-// swagger:model CifsOpenFileSvm
-type CifsOpenFileSvm struct {
+// swagger:model cifs_open_file_inline_svm
+type CifsOpenFileInlineSvm struct {
 
 	// links
-	Links *CifsOpenFileSvmLinks `json:"_links,omitempty"`
+	Links *CifsOpenFileInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs open file svm
-func (m *CifsOpenFileSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline svm
+func (m *CifsOpenFileInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1148,7 +1148,7 @@ func (m *CifsOpenFileSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1165,8 +1165,8 @@ func (m *CifsOpenFileSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file svm based on the context it is used
-func (m *CifsOpenFileSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline svm based on the context it is used
+func (m *CifsOpenFileInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1179,7 +1179,7 @@ func (m *CifsOpenFileSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *CifsOpenFileSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1194,7 +1194,7 @@ func (m *CifsOpenFileSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1202,8 +1202,8 @@ func (m *CifsOpenFileSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileSvm) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileSvm
+func (m *CifsOpenFileInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1211,17 +1211,17 @@ func (m *CifsOpenFileSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileSvmLinks cifs open file svm links
+// CifsOpenFileInlineSvmInlineLinks cifs open file inline svm inline links
 //
-// swagger:model CifsOpenFileSvmLinks
-type CifsOpenFileSvmLinks struct {
+// swagger:model cifs_open_file_inline_svm_inline__links
+type CifsOpenFileInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs open file svm links
-func (m *CifsOpenFileSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline svm inline links
+func (m *CifsOpenFileInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1234,7 +1234,7 @@ func (m *CifsOpenFileSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1251,8 +1251,8 @@ func (m *CifsOpenFileSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file svm links based on the context it is used
-func (m *CifsOpenFileSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline svm inline links based on the context it is used
+func (m *CifsOpenFileInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1265,7 +1265,7 @@ func (m *CifsOpenFileSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *CifsOpenFileSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1280,7 +1280,7 @@ func (m *CifsOpenFileSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1288,8 +1288,8 @@ func (m *CifsOpenFileSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileSvmLinks
+func (m *CifsOpenFileInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1297,25 +1297,25 @@ func (m *CifsOpenFileSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileVolume cifs open file volume
+// CifsOpenFileInlineVolume cifs open file inline volume
 //
-// swagger:model CifsOpenFileVolume
-type CifsOpenFileVolume struct {
+// swagger:model cifs_open_file_inline_volume
+type CifsOpenFileInlineVolume struct {
 
 	// links
-	Links *CifsOpenFileVolumeLinks `json:"_links,omitempty"`
+	Links *CifsOpenFileInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs open file volume
-func (m *CifsOpenFileVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline volume
+func (m *CifsOpenFileInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1328,7 +1328,7 @@ func (m *CifsOpenFileVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileVolume) validateLinks(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1345,8 +1345,8 @@ func (m *CifsOpenFileVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file volume based on the context it is used
-func (m *CifsOpenFileVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline volume based on the context it is used
+func (m *CifsOpenFileInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1359,7 +1359,7 @@ func (m *CifsOpenFileVolume) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *CifsOpenFileVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1374,7 +1374,7 @@ func (m *CifsOpenFileVolume) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileVolume) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1382,8 +1382,8 @@ func (m *CifsOpenFileVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileVolume) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileVolume
+func (m *CifsOpenFileInlineVolume) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1391,17 +1391,17 @@ func (m *CifsOpenFileVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsOpenFileVolumeLinks cifs open file volume links
+// CifsOpenFileInlineVolumeInlineLinks cifs open file inline volume inline links
 //
-// swagger:model CifsOpenFileVolumeLinks
-type CifsOpenFileVolumeLinks struct {
+// swagger:model cifs_open_file_inline_volume_inline__links
+type CifsOpenFileInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs open file volume links
-func (m *CifsOpenFileVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs open file inline volume inline links
+func (m *CifsOpenFileInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1414,7 +1414,7 @@ func (m *CifsOpenFileVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsOpenFileVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1431,8 +1431,8 @@ func (m *CifsOpenFileVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs open file volume links based on the context it is used
-func (m *CifsOpenFileVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs open file inline volume inline links based on the context it is used
+func (m *CifsOpenFileInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1445,7 +1445,7 @@ func (m *CifsOpenFileVolumeLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsOpenFileVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsOpenFileInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1460,7 +1460,7 @@ func (m *CifsOpenFileVolumeLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsOpenFileVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsOpenFileInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1468,8 +1468,8 @@ func (m *CifsOpenFileVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsOpenFileVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsOpenFileVolumeLinks
+func (m *CifsOpenFileInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsOpenFileInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

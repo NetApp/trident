@@ -66,13 +66,13 @@ type ShelfGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UID.
 
 	   Shelf UID
 	*/
-	UIDPathParameter string
+	UID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ShelfGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the shelf get params
-func (o *ShelfGetParams) WithFieldsQueryParameter(fields []string) *ShelfGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the shelf get params
+func (o *ShelfGetParams) WithFields(fields []string) *ShelfGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the shelf get params
-func (o *ShelfGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the shelf get params
+func (o *ShelfGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUIDPathParameter adds the uid to the shelf get params
-func (o *ShelfGetParams) WithUIDPathParameter(uid string) *ShelfGetParams {
-	o.SetUIDPathParameter(uid)
+// WithUID adds the uid to the shelf get params
+func (o *ShelfGetParams) WithUID(uid string) *ShelfGetParams {
+	o.SetUID(uid)
 	return o
 }
 
-// SetUIDPathParameter adds the uid to the shelf get params
-func (o *ShelfGetParams) SetUIDPathParameter(uid string) {
-	o.UIDPathParameter = uid
+// SetUID adds the uid to the shelf get params
+func (o *ShelfGetParams) SetUID(uid string) {
+	o.UID = uid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ShelfGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ShelfGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 
 	// path param uid
-	if err := r.SetPathParam("uid", o.UIDPathParameter); err != nil {
+	if err := r.SetPathParam("uid", o.UID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ShelfGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamShelfGet binds the parameter fields
 func (o *ShelfGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,13 +66,13 @@ type FcZoneCollectionGetParams struct {
 
 	   Filter by cache.age
 	*/
-	CacheAgeQueryParameter *string
+	CacheAge *string
 
 	/* CacheIsCurrent.
 
 	   Filter by cache.is_current
 	*/
-	CacheIsCurrentQueryParameter *bool
+	CacheIsCurrent *bool
 
 	/* CacheMaximumAge.
 
@@ -81,56 +81,56 @@ type FcZoneCollectionGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* CacheUpdateTime.
 
 	   Filter by cache.update_time
 	*/
-	CacheUpdateTimeQueryParameter *string
+	CacheUpdateTime *string
 
 	/* FabricName.
 
 	   The WWN of the primary switch of the Fibre Channel fabric.
 
 	*/
-	FabricNamePathParameter string
+	FabricName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MembersName.
 
 	   Filter by members.name
 	*/
-	MembersNameQueryParameter *string
+	MembersName *string
 
 	/* MembersType.
 
 	   Filter by members.type
 	*/
-	MembersTypeQueryParameter *string
+	MembersType *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -138,7 +138,7 @@ type FcZoneCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -146,7 +146,7 @@ type FcZoneCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -166,17 +166,17 @@ func (o *FcZoneCollectionGetParams) WithDefaults() *FcZoneCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *FcZoneCollectionGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FcZoneCollectionGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
-		ReturnRecordsQueryParameter:   &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:   &returnTimeoutQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
+		ReturnRecords:   &returnRecordsDefault,
+		ReturnTimeout:   &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -218,147 +218,147 @@ func (o *FcZoneCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheAgeQueryParameter adds the cacheAge to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithCacheAgeQueryParameter(cacheAge *string) *FcZoneCollectionGetParams {
-	o.SetCacheAgeQueryParameter(cacheAge)
+// WithCacheAge adds the cacheAge to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithCacheAge(cacheAge *string) *FcZoneCollectionGetParams {
+	o.SetCacheAge(cacheAge)
 	return o
 }
 
-// SetCacheAgeQueryParameter adds the cacheAge to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetCacheAgeQueryParameter(cacheAge *string) {
-	o.CacheAgeQueryParameter = cacheAge
+// SetCacheAge adds the cacheAge to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetCacheAge(cacheAge *string) {
+	o.CacheAge = cacheAge
 }
 
-// WithCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithCacheIsCurrentQueryParameter(cacheIsCurrent *bool) *FcZoneCollectionGetParams {
-	o.SetCacheIsCurrentQueryParameter(cacheIsCurrent)
+// WithCacheIsCurrent adds the cacheIsCurrent to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithCacheIsCurrent(cacheIsCurrent *bool) *FcZoneCollectionGetParams {
+	o.SetCacheIsCurrent(cacheIsCurrent)
 	return o
 }
 
-// SetCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetCacheIsCurrentQueryParameter(cacheIsCurrent *bool) {
-	o.CacheIsCurrentQueryParameter = cacheIsCurrent
+// SetCacheIsCurrent adds the cacheIsCurrent to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetCacheIsCurrent(cacheIsCurrent *bool) {
+	o.CacheIsCurrent = cacheIsCurrent
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FcZoneCollectionGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FcZoneCollectionGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithCacheUpdateTimeQueryParameter(cacheUpdateTime *string) *FcZoneCollectionGetParams {
-	o.SetCacheUpdateTimeQueryParameter(cacheUpdateTime)
+// WithCacheUpdateTime adds the cacheUpdateTime to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithCacheUpdateTime(cacheUpdateTime *string) *FcZoneCollectionGetParams {
+	o.SetCacheUpdateTime(cacheUpdateTime)
 	return o
 }
 
-// SetCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetCacheUpdateTimeQueryParameter(cacheUpdateTime *string) {
-	o.CacheUpdateTimeQueryParameter = cacheUpdateTime
+// SetCacheUpdateTime adds the cacheUpdateTime to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetCacheUpdateTime(cacheUpdateTime *string) {
+	o.CacheUpdateTime = cacheUpdateTime
 }
 
-// WithFabricNamePathParameter adds the fabricName to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithFabricNamePathParameter(fabricName string) *FcZoneCollectionGetParams {
-	o.SetFabricNamePathParameter(fabricName)
+// WithFabricName adds the fabricName to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithFabricName(fabricName string) *FcZoneCollectionGetParams {
+	o.SetFabricName(fabricName)
 	return o
 }
 
-// SetFabricNamePathParameter adds the fabricName to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetFabricNamePathParameter(fabricName string) {
-	o.FabricNamePathParameter = fabricName
+// SetFabricName adds the fabricName to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetFabricName(fabricName string) {
+	o.FabricName = fabricName
 }
 
-// WithFieldsQueryParameter adds the fields to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithFieldsQueryParameter(fields []string) *FcZoneCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithFields(fields []string) *FcZoneCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FcZoneCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithMaxRecords(maxRecords *int64) *FcZoneCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMembersNameQueryParameter adds the membersName to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithMembersNameQueryParameter(membersName *string) *FcZoneCollectionGetParams {
-	o.SetMembersNameQueryParameter(membersName)
+// WithMembersName adds the membersName to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithMembersName(membersName *string) *FcZoneCollectionGetParams {
+	o.SetMembersName(membersName)
 	return o
 }
 
-// SetMembersNameQueryParameter adds the membersName to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetMembersNameQueryParameter(membersName *string) {
-	o.MembersNameQueryParameter = membersName
+// SetMembersName adds the membersName to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetMembersName(membersName *string) {
+	o.MembersName = membersName
 }
 
-// WithMembersTypeQueryParameter adds the membersType to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithMembersTypeQueryParameter(membersType *string) *FcZoneCollectionGetParams {
-	o.SetMembersTypeQueryParameter(membersType)
+// WithMembersType adds the membersType to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithMembersType(membersType *string) *FcZoneCollectionGetParams {
+	o.SetMembersType(membersType)
 	return o
 }
 
-// SetMembersTypeQueryParameter adds the membersType to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetMembersTypeQueryParameter(membersType *string) {
-	o.MembersTypeQueryParameter = membersType
+// SetMembersType adds the membersType to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetMembersType(membersType *string) {
+	o.MembersType = membersType
 }
 
-// WithNameQueryParameter adds the name to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithNameQueryParameter(name *string) *FcZoneCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithName(name *string) *FcZoneCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FcZoneCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithOrderBy(orderBy []string) *FcZoneCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcZoneCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithReturnRecords(returnRecords *bool) *FcZoneCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FcZoneCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FcZoneCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fc zone collection get params
-func (o *FcZoneCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fc zone collection get params
+func (o *FcZoneCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -369,13 +369,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.CacheAgeQueryParameter != nil {
+	if o.CacheAge != nil {
 
 		// query param cache.age
 		var qrCacheAge string
 
-		if o.CacheAgeQueryParameter != nil {
-			qrCacheAge = *o.CacheAgeQueryParameter
+		if o.CacheAge != nil {
+			qrCacheAge = *o.CacheAge
 		}
 		qCacheAge := qrCacheAge
 		if qCacheAge != "" {
@@ -386,13 +386,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheIsCurrentQueryParameter != nil {
+	if o.CacheIsCurrent != nil {
 
 		// query param cache.is_current
 		var qrCacheIsCurrent bool
 
-		if o.CacheIsCurrentQueryParameter != nil {
-			qrCacheIsCurrent = *o.CacheIsCurrentQueryParameter
+		if o.CacheIsCurrent != nil {
+			qrCacheIsCurrent = *o.CacheIsCurrent
 		}
 		qCacheIsCurrent := swag.FormatBool(qrCacheIsCurrent)
 		if qCacheIsCurrent != "" {
@@ -403,13 +403,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -420,13 +420,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheUpdateTimeQueryParameter != nil {
+	if o.CacheUpdateTime != nil {
 
 		// query param cache.update_time
 		var qrCacheUpdateTime string
 
-		if o.CacheUpdateTimeQueryParameter != nil {
-			qrCacheUpdateTime = *o.CacheUpdateTimeQueryParameter
+		if o.CacheUpdateTime != nil {
+			qrCacheUpdateTime = *o.CacheUpdateTime
 		}
 		qCacheUpdateTime := qrCacheUpdateTime
 		if qCacheUpdateTime != "" {
@@ -438,11 +438,11 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param fabric.name
-	if err := r.SetPathParam("fabric.name", o.FabricNamePathParameter); err != nil {
+	if err := r.SetPathParam("fabric.name", o.FabricName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -453,13 +453,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -470,13 +470,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MembersNameQueryParameter != nil {
+	if o.MembersName != nil {
 
 		// query param members.name
 		var qrMembersName string
 
-		if o.MembersNameQueryParameter != nil {
-			qrMembersName = *o.MembersNameQueryParameter
+		if o.MembersName != nil {
+			qrMembersName = *o.MembersName
 		}
 		qMembersName := qrMembersName
 		if qMembersName != "" {
@@ -487,13 +487,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MembersTypeQueryParameter != nil {
+	if o.MembersType != nil {
 
 		// query param members.type
 		var qrMembersType string
 
-		if o.MembersTypeQueryParameter != nil {
-			qrMembersType = *o.MembersTypeQueryParameter
+		if o.MembersType != nil {
+			qrMembersType = *o.MembersType
 		}
 		qMembersType := qrMembersType
 		if qMembersType != "" {
@@ -504,13 +504,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -521,7 +521,7 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -532,13 +532,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -549,13 +549,13 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -574,7 +574,7 @@ func (o *FcZoneCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamFcZoneCollectionGet binds the parameter fields
 func (o *FcZoneCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -591,7 +591,7 @@ func (o *FcZoneCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamFcZoneCollectionGet binds the parameter order_by
 func (o *FcZoneCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

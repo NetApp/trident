@@ -65,13 +65,13 @@ type CifsSymlinkMappingDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixPath.
 
 	   UNIX symbolic link path
 	*/
-	UnixPathPathParameter string
+	UnixPath string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *CifsSymlinkMappingDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSymlinkMappingDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) WithSvmUUID(svmUUID string) *CifsSymlinkMappingDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixPathPathParameter adds the unixPath to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) WithUnixPathPathParameter(unixPath string) *CifsSymlinkMappingDeleteParams {
-	o.SetUnixPathPathParameter(unixPath)
+// WithUnixPath adds the unixPath to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) WithUnixPath(unixPath string) *CifsSymlinkMappingDeleteParams {
+	o.SetUnixPath(unixPath)
 	return o
 }
 
-// SetUnixPathPathParameter adds the unixPath to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) SetUnixPathPathParameter(unixPath string) {
-	o.UnixPathPathParameter = unixPath
+// SetUnixPath adds the unixPath to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) SetUnixPath(unixPath string) {
+	o.UnixPath = unixPath
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *CifsSymlinkMappingDeleteParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_path
-	if err := r.SetPathParam("unix_path", o.UnixPathPathParameter); err != nil {
+	if err := r.SetPathParam("unix_path", o.UnixPath); err != nil {
 		return err
 	}
 

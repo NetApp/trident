@@ -66,109 +66,109 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Filter by cloud.duration
 	*/
-	CloudDurationQueryParameter *string
+	CloudDuration *string
 
 	/* CloudIopsOther.
 
 	   Filter by cloud.iops.other
 	*/
-	CloudIopsOtherQueryParameter *int64
+	CloudIopsOther *int64
 
 	/* CloudIopsRead.
 
 	   Filter by cloud.iops.read
 	*/
-	CloudIopsReadQueryParameter *int64
+	CloudIopsRead *int64
 
 	/* CloudIopsTotal.
 
 	   Filter by cloud.iops.total
 	*/
-	CloudIopsTotalQueryParameter *int64
+	CloudIopsTotal *int64
 
 	/* CloudIopsWrite.
 
 	   Filter by cloud.iops.write
 	*/
-	CloudIopsWriteQueryParameter *int64
+	CloudIopsWrite *int64
 
 	/* CloudLatencyOther.
 
 	   Filter by cloud.latency.other
 	*/
-	CloudLatencyOtherQueryParameter *int64
+	CloudLatencyOther *int64
 
 	/* CloudLatencyRead.
 
 	   Filter by cloud.latency.read
 	*/
-	CloudLatencyReadQueryParameter *int64
+	CloudLatencyRead *int64
 
 	/* CloudLatencyTotal.
 
 	   Filter by cloud.latency.total
 	*/
-	CloudLatencyTotalQueryParameter *int64
+	CloudLatencyTotal *int64
 
 	/* CloudLatencyWrite.
 
 	   Filter by cloud.latency.write
 	*/
-	CloudLatencyWriteQueryParameter *int64
+	CloudLatencyWrite *int64
 
 	/* CloudStatus.
 
 	   Filter by cloud.status
 	*/
-	CloudStatusQueryParameter *string
+	CloudStatus *string
 
 	/* CloudTimestamp.
 
 	   Filter by cloud.timestamp
 	*/
-	CloudTimestampQueryParameter *string
+	CloudTimestamp *string
 
 	/* Duration.
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FlexcacheBandwidthSavings.
 
 	   Filter by flexcache.bandwidth_savings
 	*/
-	FlexcacheBandwidthSavingsQueryParameter *int64
+	FlexcacheBandwidthSavings *int64
 
 	/* FlexcacheCacheMissPercent.
 
 	   Filter by flexcache.cache_miss_percent
 	*/
-	FlexcacheCacheMissPercentQueryParameter *int64
+	FlexcacheCacheMissPercent *int64
 
 	/* FlexcacheDuration.
 
 	   Filter by flexcache.duration
 	*/
-	FlexcacheDurationQueryParameter *string
+	FlexcacheDuration *string
 
 	/* FlexcacheStatus.
 
 	   Filter by flexcache.status
 	*/
-	FlexcacheStatusQueryParameter *string
+	FlexcacheStatus *string
 
 	/* FlexcacheTimestamp.
 
 	   Filter by flexcache.timestamp
 	*/
-	FlexcacheTimestampQueryParameter *string
+	FlexcacheTimestamp *string
 
 	/* Interval.
 
@@ -183,67 +183,67 @@ type VolumeMetricsCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* IopsOther.
 
 	   Filter by iops.other
 	*/
-	IopsOtherQueryParameter *int64
+	IopsOther *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsTotal.
 
 	   Filter by iops.total
 	*/
-	IopsTotalQueryParameter *int64
+	IopsTotal *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* LatencyOther.
 
 	   Filter by latency.other
 	*/
-	LatencyOtherQueryParameter *int64
+	LatencyOther *int64
 
 	/* LatencyRead.
 
 	   Filter by latency.read
 	*/
-	LatencyReadQueryParameter *int64
+	LatencyRead *int64
 
 	/* LatencyTotal.
 
 	   Filter by latency.total
 	*/
-	LatencyTotalQueryParameter *int64
+	LatencyTotal *int64
 
 	/* LatencyWrite.
 
 	   Filter by latency.write
 	*/
-	LatencyWriteQueryParameter *int64
+	LatencyWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -251,7 +251,7 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -259,49 +259,49 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* ThroughputOther.
 
 	   Filter by throughput.other
 	*/
-	ThroughputOtherQueryParameter *int64
+	ThroughputOther *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* VolumeUUID.
 
 	   Unique identifier of the volume.
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -321,17 +321,17 @@ func (o *VolumeMetricsCollectionGetParams) WithDefaults() *VolumeMetricsCollecti
 // All values with no default are reset to their zero value.
 func (o *VolumeMetricsCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VolumeMetricsCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -373,422 +373,422 @@ func (o *VolumeMetricsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCloudDurationQueryParameter adds the cloudDuration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudDurationQueryParameter(cloudDuration *string) *VolumeMetricsCollectionGetParams {
-	o.SetCloudDurationQueryParameter(cloudDuration)
+// WithCloudDuration adds the cloudDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudDuration(cloudDuration *string) *VolumeMetricsCollectionGetParams {
+	o.SetCloudDuration(cloudDuration)
 	return o
 }
 
-// SetCloudDurationQueryParameter adds the cloudDuration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudDurationQueryParameter(cloudDuration *string) {
-	o.CloudDurationQueryParameter = cloudDuration
+// SetCloudDuration adds the cloudDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudDuration(cloudDuration *string) {
+	o.CloudDuration = cloudDuration
 }
 
-// WithCloudIopsOtherQueryParameter adds the cloudIopsOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudIopsOtherQueryParameter(cloudIopsOther *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudIopsOtherQueryParameter(cloudIopsOther)
+// WithCloudIopsOther adds the cloudIopsOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudIopsOther(cloudIopsOther *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudIopsOther(cloudIopsOther)
 	return o
 }
 
-// SetCloudIopsOtherQueryParameter adds the cloudIopsOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudIopsOtherQueryParameter(cloudIopsOther *int64) {
-	o.CloudIopsOtherQueryParameter = cloudIopsOther
+// SetCloudIopsOther adds the cloudIopsOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudIopsOther(cloudIopsOther *int64) {
+	o.CloudIopsOther = cloudIopsOther
 }
 
-// WithCloudIopsReadQueryParameter adds the cloudIopsRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudIopsReadQueryParameter(cloudIopsRead *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudIopsReadQueryParameter(cloudIopsRead)
+// WithCloudIopsRead adds the cloudIopsRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudIopsRead(cloudIopsRead *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudIopsRead(cloudIopsRead)
 	return o
 }
 
-// SetCloudIopsReadQueryParameter adds the cloudIopsRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudIopsReadQueryParameter(cloudIopsRead *int64) {
-	o.CloudIopsReadQueryParameter = cloudIopsRead
+// SetCloudIopsRead adds the cloudIopsRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudIopsRead(cloudIopsRead *int64) {
+	o.CloudIopsRead = cloudIopsRead
 }
 
-// WithCloudIopsTotalQueryParameter adds the cloudIopsTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudIopsTotalQueryParameter(cloudIopsTotal *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudIopsTotalQueryParameter(cloudIopsTotal)
+// WithCloudIopsTotal adds the cloudIopsTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudIopsTotal(cloudIopsTotal *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudIopsTotal(cloudIopsTotal)
 	return o
 }
 
-// SetCloudIopsTotalQueryParameter adds the cloudIopsTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudIopsTotalQueryParameter(cloudIopsTotal *int64) {
-	o.CloudIopsTotalQueryParameter = cloudIopsTotal
+// SetCloudIopsTotal adds the cloudIopsTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudIopsTotal(cloudIopsTotal *int64) {
+	o.CloudIopsTotal = cloudIopsTotal
 }
 
-// WithCloudIopsWriteQueryParameter adds the cloudIopsWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudIopsWriteQueryParameter(cloudIopsWrite *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudIopsWriteQueryParameter(cloudIopsWrite)
+// WithCloudIopsWrite adds the cloudIopsWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudIopsWrite(cloudIopsWrite *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudIopsWrite(cloudIopsWrite)
 	return o
 }
 
-// SetCloudIopsWriteQueryParameter adds the cloudIopsWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudIopsWriteQueryParameter(cloudIopsWrite *int64) {
-	o.CloudIopsWriteQueryParameter = cloudIopsWrite
+// SetCloudIopsWrite adds the cloudIopsWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudIopsWrite(cloudIopsWrite *int64) {
+	o.CloudIopsWrite = cloudIopsWrite
 }
 
-// WithCloudLatencyOtherQueryParameter adds the cloudLatencyOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyOtherQueryParameter(cloudLatencyOther *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudLatencyOtherQueryParameter(cloudLatencyOther)
+// WithCloudLatencyOther adds the cloudLatencyOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyOther(cloudLatencyOther *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudLatencyOther(cloudLatencyOther)
 	return o
 }
 
-// SetCloudLatencyOtherQueryParameter adds the cloudLatencyOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyOtherQueryParameter(cloudLatencyOther *int64) {
-	o.CloudLatencyOtherQueryParameter = cloudLatencyOther
+// SetCloudLatencyOther adds the cloudLatencyOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyOther(cloudLatencyOther *int64) {
+	o.CloudLatencyOther = cloudLatencyOther
 }
 
-// WithCloudLatencyReadQueryParameter adds the cloudLatencyRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyReadQueryParameter(cloudLatencyRead *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudLatencyReadQueryParameter(cloudLatencyRead)
+// WithCloudLatencyRead adds the cloudLatencyRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyRead(cloudLatencyRead *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudLatencyRead(cloudLatencyRead)
 	return o
 }
 
-// SetCloudLatencyReadQueryParameter adds the cloudLatencyRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyReadQueryParameter(cloudLatencyRead *int64) {
-	o.CloudLatencyReadQueryParameter = cloudLatencyRead
+// SetCloudLatencyRead adds the cloudLatencyRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyRead(cloudLatencyRead *int64) {
+	o.CloudLatencyRead = cloudLatencyRead
 }
 
-// WithCloudLatencyTotalQueryParameter adds the cloudLatencyTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyTotalQueryParameter(cloudLatencyTotal *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudLatencyTotalQueryParameter(cloudLatencyTotal)
+// WithCloudLatencyTotal adds the cloudLatencyTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyTotal(cloudLatencyTotal *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudLatencyTotal(cloudLatencyTotal)
 	return o
 }
 
-// SetCloudLatencyTotalQueryParameter adds the cloudLatencyTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyTotalQueryParameter(cloudLatencyTotal *int64) {
-	o.CloudLatencyTotalQueryParameter = cloudLatencyTotal
+// SetCloudLatencyTotal adds the cloudLatencyTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyTotal(cloudLatencyTotal *int64) {
+	o.CloudLatencyTotal = cloudLatencyTotal
 }
 
-// WithCloudLatencyWriteQueryParameter adds the cloudLatencyWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyWriteQueryParameter(cloudLatencyWrite *int64) *VolumeMetricsCollectionGetParams {
-	o.SetCloudLatencyWriteQueryParameter(cloudLatencyWrite)
+// WithCloudLatencyWrite adds the cloudLatencyWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudLatencyWrite(cloudLatencyWrite *int64) *VolumeMetricsCollectionGetParams {
+	o.SetCloudLatencyWrite(cloudLatencyWrite)
 	return o
 }
 
-// SetCloudLatencyWriteQueryParameter adds the cloudLatencyWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyWriteQueryParameter(cloudLatencyWrite *int64) {
-	o.CloudLatencyWriteQueryParameter = cloudLatencyWrite
+// SetCloudLatencyWrite adds the cloudLatencyWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudLatencyWrite(cloudLatencyWrite *int64) {
+	o.CloudLatencyWrite = cloudLatencyWrite
 }
 
-// WithCloudStatusQueryParameter adds the cloudStatus to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudStatusQueryParameter(cloudStatus *string) *VolumeMetricsCollectionGetParams {
-	o.SetCloudStatusQueryParameter(cloudStatus)
+// WithCloudStatus adds the cloudStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudStatus(cloudStatus *string) *VolumeMetricsCollectionGetParams {
+	o.SetCloudStatus(cloudStatus)
 	return o
 }
 
-// SetCloudStatusQueryParameter adds the cloudStatus to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudStatusQueryParameter(cloudStatus *string) {
-	o.CloudStatusQueryParameter = cloudStatus
+// SetCloudStatus adds the cloudStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudStatus(cloudStatus *string) {
+	o.CloudStatus = cloudStatus
 }
 
-// WithCloudTimestampQueryParameter adds the cloudTimestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithCloudTimestampQueryParameter(cloudTimestamp *string) *VolumeMetricsCollectionGetParams {
-	o.SetCloudTimestampQueryParameter(cloudTimestamp)
+// WithCloudTimestamp adds the cloudTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithCloudTimestamp(cloudTimestamp *string) *VolumeMetricsCollectionGetParams {
+	o.SetCloudTimestamp(cloudTimestamp)
 	return o
 }
 
-// SetCloudTimestampQueryParameter adds the cloudTimestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetCloudTimestampQueryParameter(cloudTimestamp *string) {
-	o.CloudTimestampQueryParameter = cloudTimestamp
+// SetCloudTimestamp adds the cloudTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetCloudTimestamp(cloudTimestamp *string) {
+	o.CloudTimestamp = cloudTimestamp
 }
 
-// WithDurationQueryParameter adds the duration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithDurationQueryParameter(duration *string) *VolumeMetricsCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithDuration(duration *string) *VolumeMetricsCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *VolumeMetricsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFields(fields []string) *VolumeMetricsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFlexcacheBandwidthSavingsQueryParameter adds the flexcacheBandwidthSavings to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings *int64) *VolumeMetricsCollectionGetParams {
-	o.SetFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings)
+// WithFlexcacheBandwidthSavings adds the flexcacheBandwidthSavings to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheBandwidthSavings(flexcacheBandwidthSavings *int64) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheBandwidthSavings(flexcacheBandwidthSavings)
 	return o
 }
 
-// SetFlexcacheBandwidthSavingsQueryParameter adds the flexcacheBandwidthSavings to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings *int64) {
-	o.FlexcacheBandwidthSavingsQueryParameter = flexcacheBandwidthSavings
+// SetFlexcacheBandwidthSavings adds the flexcacheBandwidthSavings to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheBandwidthSavings(flexcacheBandwidthSavings *int64) {
+	o.FlexcacheBandwidthSavings = flexcacheBandwidthSavings
 }
 
-// WithFlexcacheCacheMissPercentQueryParameter adds the flexcacheCacheMissPercent to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent *int64) *VolumeMetricsCollectionGetParams {
-	o.SetFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent)
+// WithFlexcacheCacheMissPercent adds the flexcacheCacheMissPercent to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheCacheMissPercent(flexcacheCacheMissPercent *int64) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheCacheMissPercent(flexcacheCacheMissPercent)
 	return o
 }
 
-// SetFlexcacheCacheMissPercentQueryParameter adds the flexcacheCacheMissPercent to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent *int64) {
-	o.FlexcacheCacheMissPercentQueryParameter = flexcacheCacheMissPercent
+// SetFlexcacheCacheMissPercent adds the flexcacheCacheMissPercent to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheCacheMissPercent(flexcacheCacheMissPercent *int64) {
+	o.FlexcacheCacheMissPercent = flexcacheCacheMissPercent
 }
 
-// WithFlexcacheDurationQueryParameter adds the flexcacheDuration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFlexcacheDurationQueryParameter(flexcacheDuration *string) *VolumeMetricsCollectionGetParams {
-	o.SetFlexcacheDurationQueryParameter(flexcacheDuration)
+// WithFlexcacheDuration adds the flexcacheDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheDuration(flexcacheDuration *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheDuration(flexcacheDuration)
 	return o
 }
 
-// SetFlexcacheDurationQueryParameter adds the flexcacheDuration to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFlexcacheDurationQueryParameter(flexcacheDuration *string) {
-	o.FlexcacheDurationQueryParameter = flexcacheDuration
+// SetFlexcacheDuration adds the flexcacheDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheDuration(flexcacheDuration *string) {
+	o.FlexcacheDuration = flexcacheDuration
 }
 
-// WithFlexcacheStatusQueryParameter adds the flexcacheStatus to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFlexcacheStatusQueryParameter(flexcacheStatus *string) *VolumeMetricsCollectionGetParams {
-	o.SetFlexcacheStatusQueryParameter(flexcacheStatus)
+// WithFlexcacheStatus adds the flexcacheStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheStatus(flexcacheStatus *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheStatus(flexcacheStatus)
 	return o
 }
 
-// SetFlexcacheStatusQueryParameter adds the flexcacheStatus to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFlexcacheStatusQueryParameter(flexcacheStatus *string) {
-	o.FlexcacheStatusQueryParameter = flexcacheStatus
+// SetFlexcacheStatus adds the flexcacheStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheStatus(flexcacheStatus *string) {
+	o.FlexcacheStatus = flexcacheStatus
 }
 
-// WithFlexcacheTimestampQueryParameter adds the flexcacheTimestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFlexcacheTimestampQueryParameter(flexcacheTimestamp *string) *VolumeMetricsCollectionGetParams {
-	o.SetFlexcacheTimestampQueryParameter(flexcacheTimestamp)
+// WithFlexcacheTimestamp adds the flexcacheTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheTimestamp(flexcacheTimestamp *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheTimestamp(flexcacheTimestamp)
 	return o
 }
 
-// SetFlexcacheTimestampQueryParameter adds the flexcacheTimestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFlexcacheTimestampQueryParameter(flexcacheTimestamp *string) {
-	o.FlexcacheTimestampQueryParameter = flexcacheTimestamp
+// SetFlexcacheTimestamp adds the flexcacheTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheTimestamp(flexcacheTimestamp *string) {
+	o.FlexcacheTimestamp = flexcacheTimestamp
 }
 
-// WithIntervalQueryParameter adds the interval to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithIntervalQueryParameter(interval *string) *VolumeMetricsCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithInterval(interval *string) *VolumeMetricsCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithIopsOtherQueryParameter adds the iopsOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithIopsOtherQueryParameter(iopsOther *int64) *VolumeMetricsCollectionGetParams {
-	o.SetIopsOtherQueryParameter(iopsOther)
+// WithIopsOther adds the iopsOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithIopsOther(iopsOther *int64) *VolumeMetricsCollectionGetParams {
+	o.SetIopsOther(iopsOther)
 	return o
 }
 
-// SetIopsOtherQueryParameter adds the iopsOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetIopsOtherQueryParameter(iopsOther *int64) {
-	o.IopsOtherQueryParameter = iopsOther
+// SetIopsOther adds the iopsOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetIopsOther(iopsOther *int64) {
+	o.IopsOther = iopsOther
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *VolumeMetricsCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithIopsRead(iopsRead *int64) *VolumeMetricsCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsTotalQueryParameter adds the iopsTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithIopsTotalQueryParameter(iopsTotal *int64) *VolumeMetricsCollectionGetParams {
-	o.SetIopsTotalQueryParameter(iopsTotal)
+// WithIopsTotal adds the iopsTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithIopsTotal(iopsTotal *int64) *VolumeMetricsCollectionGetParams {
+	o.SetIopsTotal(iopsTotal)
 	return o
 }
 
-// SetIopsTotalQueryParameter adds the iopsTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetIopsTotalQueryParameter(iopsTotal *int64) {
-	o.IopsTotalQueryParameter = iopsTotal
+// SetIopsTotal adds the iopsTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetIopsTotal(iopsTotal *int64) {
+	o.IopsTotal = iopsTotal
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *VolumeMetricsCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithIopsWrite(iopsWrite *int64) *VolumeMetricsCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithLatencyOtherQueryParameter adds the latencyOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithLatencyOtherQueryParameter(latencyOther *int64) *VolumeMetricsCollectionGetParams {
-	o.SetLatencyOtherQueryParameter(latencyOther)
+// WithLatencyOther adds the latencyOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithLatencyOther(latencyOther *int64) *VolumeMetricsCollectionGetParams {
+	o.SetLatencyOther(latencyOther)
 	return o
 }
 
-// SetLatencyOtherQueryParameter adds the latencyOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetLatencyOtherQueryParameter(latencyOther *int64) {
-	o.LatencyOtherQueryParameter = latencyOther
+// SetLatencyOther adds the latencyOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetLatencyOther(latencyOther *int64) {
+	o.LatencyOther = latencyOther
 }
 
-// WithLatencyReadQueryParameter adds the latencyRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithLatencyReadQueryParameter(latencyRead *int64) *VolumeMetricsCollectionGetParams {
-	o.SetLatencyReadQueryParameter(latencyRead)
+// WithLatencyRead adds the latencyRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithLatencyRead(latencyRead *int64) *VolumeMetricsCollectionGetParams {
+	o.SetLatencyRead(latencyRead)
 	return o
 }
 
-// SetLatencyReadQueryParameter adds the latencyRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetLatencyReadQueryParameter(latencyRead *int64) {
-	o.LatencyReadQueryParameter = latencyRead
+// SetLatencyRead adds the latencyRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetLatencyRead(latencyRead *int64) {
+	o.LatencyRead = latencyRead
 }
 
-// WithLatencyTotalQueryParameter adds the latencyTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithLatencyTotalQueryParameter(latencyTotal *int64) *VolumeMetricsCollectionGetParams {
-	o.SetLatencyTotalQueryParameter(latencyTotal)
+// WithLatencyTotal adds the latencyTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithLatencyTotal(latencyTotal *int64) *VolumeMetricsCollectionGetParams {
+	o.SetLatencyTotal(latencyTotal)
 	return o
 }
 
-// SetLatencyTotalQueryParameter adds the latencyTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetLatencyTotalQueryParameter(latencyTotal *int64) {
-	o.LatencyTotalQueryParameter = latencyTotal
+// SetLatencyTotal adds the latencyTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetLatencyTotal(latencyTotal *int64) {
+	o.LatencyTotal = latencyTotal
 }
 
-// WithLatencyWriteQueryParameter adds the latencyWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithLatencyWriteQueryParameter(latencyWrite *int64) *VolumeMetricsCollectionGetParams {
-	o.SetLatencyWriteQueryParameter(latencyWrite)
+// WithLatencyWrite adds the latencyWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithLatencyWrite(latencyWrite *int64) *VolumeMetricsCollectionGetParams {
+	o.SetLatencyWrite(latencyWrite)
 	return o
 }
 
-// SetLatencyWriteQueryParameter adds the latencyWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetLatencyWriteQueryParameter(latencyWrite *int64) {
-	o.LatencyWriteQueryParameter = latencyWrite
+// SetLatencyWrite adds the latencyWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetLatencyWrite(latencyWrite *int64) {
+	o.LatencyWrite = latencyWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VolumeMetricsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *VolumeMetricsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VolumeMetricsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithOrderBy(orderBy []string) *VolumeMetricsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VolumeMetricsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *VolumeMetricsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeMetricsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VolumeMetricsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithStatusQueryParameter(status *string) *VolumeMetricsCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithStatus(status *string) *VolumeMetricsCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithThroughputOtherQueryParameter adds the throughputOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithThroughputOtherQueryParameter(throughputOther *int64) *VolumeMetricsCollectionGetParams {
-	o.SetThroughputOtherQueryParameter(throughputOther)
+// WithThroughputOther adds the throughputOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithThroughputOther(throughputOther *int64) *VolumeMetricsCollectionGetParams {
+	o.SetThroughputOther(throughputOther)
 	return o
 }
 
-// SetThroughputOtherQueryParameter adds the throughputOther to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetThroughputOtherQueryParameter(throughputOther *int64) {
-	o.ThroughputOtherQueryParameter = throughputOther
+// SetThroughputOther adds the throughputOther to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetThroughputOther(throughputOther *int64) {
+	o.ThroughputOther = throughputOther
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *VolumeMetricsCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithThroughputRead(throughputRead *int64) *VolumeMetricsCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *VolumeMetricsCollectionGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithThroughputTotal(throughputTotal *int64) *VolumeMetricsCollectionGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *VolumeMetricsCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *VolumeMetricsCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *VolumeMetricsCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithTimestamp(timestamp *string) *VolumeMetricsCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *VolumeMetricsCollectionGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithVolumeUUID(volumeUUID string) *VolumeMetricsCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -799,13 +799,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.CloudDurationQueryParameter != nil {
+	if o.CloudDuration != nil {
 
 		// query param cloud.duration
 		var qrCloudDuration string
 
-		if o.CloudDurationQueryParameter != nil {
-			qrCloudDuration = *o.CloudDurationQueryParameter
+		if o.CloudDuration != nil {
+			qrCloudDuration = *o.CloudDuration
 		}
 		qCloudDuration := qrCloudDuration
 		if qCloudDuration != "" {
@@ -816,13 +816,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudIopsOtherQueryParameter != nil {
+	if o.CloudIopsOther != nil {
 
 		// query param cloud.iops.other
 		var qrCloudIopsOther int64
 
-		if o.CloudIopsOtherQueryParameter != nil {
-			qrCloudIopsOther = *o.CloudIopsOtherQueryParameter
+		if o.CloudIopsOther != nil {
+			qrCloudIopsOther = *o.CloudIopsOther
 		}
 		qCloudIopsOther := swag.FormatInt64(qrCloudIopsOther)
 		if qCloudIopsOther != "" {
@@ -833,13 +833,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudIopsReadQueryParameter != nil {
+	if o.CloudIopsRead != nil {
 
 		// query param cloud.iops.read
 		var qrCloudIopsRead int64
 
-		if o.CloudIopsReadQueryParameter != nil {
-			qrCloudIopsRead = *o.CloudIopsReadQueryParameter
+		if o.CloudIopsRead != nil {
+			qrCloudIopsRead = *o.CloudIopsRead
 		}
 		qCloudIopsRead := swag.FormatInt64(qrCloudIopsRead)
 		if qCloudIopsRead != "" {
@@ -850,13 +850,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudIopsTotalQueryParameter != nil {
+	if o.CloudIopsTotal != nil {
 
 		// query param cloud.iops.total
 		var qrCloudIopsTotal int64
 
-		if o.CloudIopsTotalQueryParameter != nil {
-			qrCloudIopsTotal = *o.CloudIopsTotalQueryParameter
+		if o.CloudIopsTotal != nil {
+			qrCloudIopsTotal = *o.CloudIopsTotal
 		}
 		qCloudIopsTotal := swag.FormatInt64(qrCloudIopsTotal)
 		if qCloudIopsTotal != "" {
@@ -867,13 +867,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudIopsWriteQueryParameter != nil {
+	if o.CloudIopsWrite != nil {
 
 		// query param cloud.iops.write
 		var qrCloudIopsWrite int64
 
-		if o.CloudIopsWriteQueryParameter != nil {
-			qrCloudIopsWrite = *o.CloudIopsWriteQueryParameter
+		if o.CloudIopsWrite != nil {
+			qrCloudIopsWrite = *o.CloudIopsWrite
 		}
 		qCloudIopsWrite := swag.FormatInt64(qrCloudIopsWrite)
 		if qCloudIopsWrite != "" {
@@ -884,13 +884,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudLatencyOtherQueryParameter != nil {
+	if o.CloudLatencyOther != nil {
 
 		// query param cloud.latency.other
 		var qrCloudLatencyOther int64
 
-		if o.CloudLatencyOtherQueryParameter != nil {
-			qrCloudLatencyOther = *o.CloudLatencyOtherQueryParameter
+		if o.CloudLatencyOther != nil {
+			qrCloudLatencyOther = *o.CloudLatencyOther
 		}
 		qCloudLatencyOther := swag.FormatInt64(qrCloudLatencyOther)
 		if qCloudLatencyOther != "" {
@@ -901,13 +901,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudLatencyReadQueryParameter != nil {
+	if o.CloudLatencyRead != nil {
 
 		// query param cloud.latency.read
 		var qrCloudLatencyRead int64
 
-		if o.CloudLatencyReadQueryParameter != nil {
-			qrCloudLatencyRead = *o.CloudLatencyReadQueryParameter
+		if o.CloudLatencyRead != nil {
+			qrCloudLatencyRead = *o.CloudLatencyRead
 		}
 		qCloudLatencyRead := swag.FormatInt64(qrCloudLatencyRead)
 		if qCloudLatencyRead != "" {
@@ -918,13 +918,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudLatencyTotalQueryParameter != nil {
+	if o.CloudLatencyTotal != nil {
 
 		// query param cloud.latency.total
 		var qrCloudLatencyTotal int64
 
-		if o.CloudLatencyTotalQueryParameter != nil {
-			qrCloudLatencyTotal = *o.CloudLatencyTotalQueryParameter
+		if o.CloudLatencyTotal != nil {
+			qrCloudLatencyTotal = *o.CloudLatencyTotal
 		}
 		qCloudLatencyTotal := swag.FormatInt64(qrCloudLatencyTotal)
 		if qCloudLatencyTotal != "" {
@@ -935,13 +935,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudLatencyWriteQueryParameter != nil {
+	if o.CloudLatencyWrite != nil {
 
 		// query param cloud.latency.write
 		var qrCloudLatencyWrite int64
 
-		if o.CloudLatencyWriteQueryParameter != nil {
-			qrCloudLatencyWrite = *o.CloudLatencyWriteQueryParameter
+		if o.CloudLatencyWrite != nil {
+			qrCloudLatencyWrite = *o.CloudLatencyWrite
 		}
 		qCloudLatencyWrite := swag.FormatInt64(qrCloudLatencyWrite)
 		if qCloudLatencyWrite != "" {
@@ -952,13 +952,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudStatusQueryParameter != nil {
+	if o.CloudStatus != nil {
 
 		// query param cloud.status
 		var qrCloudStatus string
 
-		if o.CloudStatusQueryParameter != nil {
-			qrCloudStatus = *o.CloudStatusQueryParameter
+		if o.CloudStatus != nil {
+			qrCloudStatus = *o.CloudStatus
 		}
 		qCloudStatus := qrCloudStatus
 		if qCloudStatus != "" {
@@ -969,13 +969,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CloudTimestampQueryParameter != nil {
+	if o.CloudTimestamp != nil {
 
 		// query param cloud.timestamp
 		var qrCloudTimestamp string
 
-		if o.CloudTimestampQueryParameter != nil {
-			qrCloudTimestamp = *o.CloudTimestampQueryParameter
+		if o.CloudTimestamp != nil {
+			qrCloudTimestamp = *o.CloudTimestamp
 		}
 		qCloudTimestamp := qrCloudTimestamp
 		if qCloudTimestamp != "" {
@@ -986,13 +986,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -1003,7 +1003,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1014,13 +1014,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FlexcacheBandwidthSavingsQueryParameter != nil {
+	if o.FlexcacheBandwidthSavings != nil {
 
 		// query param flexcache.bandwidth_savings
 		var qrFlexcacheBandwidthSavings int64
 
-		if o.FlexcacheBandwidthSavingsQueryParameter != nil {
-			qrFlexcacheBandwidthSavings = *o.FlexcacheBandwidthSavingsQueryParameter
+		if o.FlexcacheBandwidthSavings != nil {
+			qrFlexcacheBandwidthSavings = *o.FlexcacheBandwidthSavings
 		}
 		qFlexcacheBandwidthSavings := swag.FormatInt64(qrFlexcacheBandwidthSavings)
 		if qFlexcacheBandwidthSavings != "" {
@@ -1031,13 +1031,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FlexcacheCacheMissPercentQueryParameter != nil {
+	if o.FlexcacheCacheMissPercent != nil {
 
 		// query param flexcache.cache_miss_percent
 		var qrFlexcacheCacheMissPercent int64
 
-		if o.FlexcacheCacheMissPercentQueryParameter != nil {
-			qrFlexcacheCacheMissPercent = *o.FlexcacheCacheMissPercentQueryParameter
+		if o.FlexcacheCacheMissPercent != nil {
+			qrFlexcacheCacheMissPercent = *o.FlexcacheCacheMissPercent
 		}
 		qFlexcacheCacheMissPercent := swag.FormatInt64(qrFlexcacheCacheMissPercent)
 		if qFlexcacheCacheMissPercent != "" {
@@ -1048,13 +1048,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FlexcacheDurationQueryParameter != nil {
+	if o.FlexcacheDuration != nil {
 
 		// query param flexcache.duration
 		var qrFlexcacheDuration string
 
-		if o.FlexcacheDurationQueryParameter != nil {
-			qrFlexcacheDuration = *o.FlexcacheDurationQueryParameter
+		if o.FlexcacheDuration != nil {
+			qrFlexcacheDuration = *o.FlexcacheDuration
 		}
 		qFlexcacheDuration := qrFlexcacheDuration
 		if qFlexcacheDuration != "" {
@@ -1065,13 +1065,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FlexcacheStatusQueryParameter != nil {
+	if o.FlexcacheStatus != nil {
 
 		// query param flexcache.status
 		var qrFlexcacheStatus string
 
-		if o.FlexcacheStatusQueryParameter != nil {
-			qrFlexcacheStatus = *o.FlexcacheStatusQueryParameter
+		if o.FlexcacheStatus != nil {
+			qrFlexcacheStatus = *o.FlexcacheStatus
 		}
 		qFlexcacheStatus := qrFlexcacheStatus
 		if qFlexcacheStatus != "" {
@@ -1082,13 +1082,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FlexcacheTimestampQueryParameter != nil {
+	if o.FlexcacheTimestamp != nil {
 
 		// query param flexcache.timestamp
 		var qrFlexcacheTimestamp string
 
-		if o.FlexcacheTimestampQueryParameter != nil {
-			qrFlexcacheTimestamp = *o.FlexcacheTimestampQueryParameter
+		if o.FlexcacheTimestamp != nil {
+			qrFlexcacheTimestamp = *o.FlexcacheTimestamp
 		}
 		qFlexcacheTimestamp := qrFlexcacheTimestamp
 		if qFlexcacheTimestamp != "" {
@@ -1099,13 +1099,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -1116,13 +1116,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IopsOtherQueryParameter != nil {
+	if o.IopsOther != nil {
 
 		// query param iops.other
 		var qrIopsOther int64
 
-		if o.IopsOtherQueryParameter != nil {
-			qrIopsOther = *o.IopsOtherQueryParameter
+		if o.IopsOther != nil {
+			qrIopsOther = *o.IopsOther
 		}
 		qIopsOther := swag.FormatInt64(qrIopsOther)
 		if qIopsOther != "" {
@@ -1133,13 +1133,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -1150,13 +1150,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IopsTotalQueryParameter != nil {
+	if o.IopsTotal != nil {
 
 		// query param iops.total
 		var qrIopsTotal int64
 
-		if o.IopsTotalQueryParameter != nil {
-			qrIopsTotal = *o.IopsTotalQueryParameter
+		if o.IopsTotal != nil {
+			qrIopsTotal = *o.IopsTotal
 		}
 		qIopsTotal := swag.FormatInt64(qrIopsTotal)
 		if qIopsTotal != "" {
@@ -1167,13 +1167,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -1184,13 +1184,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LatencyOtherQueryParameter != nil {
+	if o.LatencyOther != nil {
 
 		// query param latency.other
 		var qrLatencyOther int64
 
-		if o.LatencyOtherQueryParameter != nil {
-			qrLatencyOther = *o.LatencyOtherQueryParameter
+		if o.LatencyOther != nil {
+			qrLatencyOther = *o.LatencyOther
 		}
 		qLatencyOther := swag.FormatInt64(qrLatencyOther)
 		if qLatencyOther != "" {
@@ -1201,13 +1201,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LatencyReadQueryParameter != nil {
+	if o.LatencyRead != nil {
 
 		// query param latency.read
 		var qrLatencyRead int64
 
-		if o.LatencyReadQueryParameter != nil {
-			qrLatencyRead = *o.LatencyReadQueryParameter
+		if o.LatencyRead != nil {
+			qrLatencyRead = *o.LatencyRead
 		}
 		qLatencyRead := swag.FormatInt64(qrLatencyRead)
 		if qLatencyRead != "" {
@@ -1218,13 +1218,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LatencyTotalQueryParameter != nil {
+	if o.LatencyTotal != nil {
 
 		// query param latency.total
 		var qrLatencyTotal int64
 
-		if o.LatencyTotalQueryParameter != nil {
-			qrLatencyTotal = *o.LatencyTotalQueryParameter
+		if o.LatencyTotal != nil {
+			qrLatencyTotal = *o.LatencyTotal
 		}
 		qLatencyTotal := swag.FormatInt64(qrLatencyTotal)
 		if qLatencyTotal != "" {
@@ -1235,13 +1235,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LatencyWriteQueryParameter != nil {
+	if o.LatencyWrite != nil {
 
 		// query param latency.write
 		var qrLatencyWrite int64
 
-		if o.LatencyWriteQueryParameter != nil {
-			qrLatencyWrite = *o.LatencyWriteQueryParameter
+		if o.LatencyWrite != nil {
+			qrLatencyWrite = *o.LatencyWrite
 		}
 		qLatencyWrite := swag.FormatInt64(qrLatencyWrite)
 		if qLatencyWrite != "" {
@@ -1252,13 +1252,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1269,7 +1269,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1280,13 +1280,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1297,13 +1297,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1314,13 +1314,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -1331,13 +1331,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ThroughputOtherQueryParameter != nil {
+	if o.ThroughputOther != nil {
 
 		// query param throughput.other
 		var qrThroughputOther int64
 
-		if o.ThroughputOtherQueryParameter != nil {
-			qrThroughputOther = *o.ThroughputOtherQueryParameter
+		if o.ThroughputOther != nil {
+			qrThroughputOther = *o.ThroughputOther
 		}
 		qThroughputOther := swag.FormatInt64(qrThroughputOther)
 		if qThroughputOther != "" {
@@ -1348,13 +1348,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -1365,13 +1365,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -1382,13 +1382,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -1399,13 +1399,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -1417,7 +1417,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -1429,7 +1429,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamVolumeMetricsCollectionGet binds the parameter fields
 func (o *VolumeMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1446,7 +1446,7 @@ func (o *VolumeMetricsCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamVolumeMetricsCollectionGet binds the parameter order_by
 func (o *VolumeMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

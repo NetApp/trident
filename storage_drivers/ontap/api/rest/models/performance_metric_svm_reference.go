@@ -21,29 +21,29 @@ import (
 type PerformanceMetricSvmReference struct {
 
 	// links
-	Links *PerformanceMetricSvmReferenceLinks `json:"_links,omitempty"`
+	Links *PerformanceMetricSvmReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceMetricSvmReferenceIops `json:"iops,omitempty"`
+	Iops *PerformanceMetricSvmReferenceInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceMetricSvmReferenceLatency `json:"latency,omitempty"`
+	Latency *PerformanceMetricSvmReferenceInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceMetricSvmReferenceThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceMetricSvmReferenceInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -196,7 +196,7 @@ func (m *PerformanceMetricSvmReference) validateDuration(formats strfmt.Registry
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -376,7 +376,7 @@ func (m *PerformanceMetricSvmReference) validateStatus(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -466,7 +466,7 @@ func (m *PerformanceMetricSvmReference) contextValidateLinks(ctx context.Context
 
 func (m *PerformanceMetricSvmReference) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -503,7 +503,7 @@ func (m *PerformanceMetricSvmReference) contextValidateLatency(ctx context.Conte
 
 func (m *PerformanceMetricSvmReference) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -551,34 +551,34 @@ func (m *PerformanceMetricSvmReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricSvmReferenceIops The rate of I/O operations observed at the storage object.
+// PerformanceMetricSvmReferenceInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceMetricSvmReferenceIops
-type PerformanceMetricSvmReferenceIops struct {
+// swagger:model performance_metric_svm_reference_inline_iops
+type PerformanceMetricSvmReferenceInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric svm reference iops
-func (m *PerformanceMetricSvmReferenceIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric svm reference inline iops
+func (m *PerformanceMetricSvmReferenceInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric svm reference iops based on the context it is used
-func (m *PerformanceMetricSvmReferenceIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric svm reference inline iops based on the context it is used
+func (m *PerformanceMetricSvmReferenceInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -588,7 +588,7 @@ func (m *PerformanceMetricSvmReferenceIops) ContextValidate(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricSvmReferenceInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -596,8 +596,8 @@ func (m *PerformanceMetricSvmReferenceIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricSvmReferenceIops
+func (m *PerformanceMetricSvmReferenceInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricSvmReferenceInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -605,34 +605,34 @@ func (m *PerformanceMetricSvmReferenceIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricSvmReferenceLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceMetricSvmReferenceInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceMetricSvmReferenceLatency
-type PerformanceMetricSvmReferenceLatency struct {
+// swagger:model performance_metric_svm_reference_inline_latency
+type PerformanceMetricSvmReferenceInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric svm reference latency
-func (m *PerformanceMetricSvmReferenceLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric svm reference inline latency
+func (m *PerformanceMetricSvmReferenceInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric svm reference latency based on the context it is used
-func (m *PerformanceMetricSvmReferenceLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric svm reference inline latency based on the context it is used
+func (m *PerformanceMetricSvmReferenceInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -642,7 +642,7 @@ func (m *PerformanceMetricSvmReferenceLatency) ContextValidate(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricSvmReferenceInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -650,8 +650,8 @@ func (m *PerformanceMetricSvmReferenceLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricSvmReferenceLatency
+func (m *PerformanceMetricSvmReferenceInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricSvmReferenceInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -659,17 +659,17 @@ func (m *PerformanceMetricSvmReferenceLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricSvmReferenceLinks performance metric svm reference links
+// PerformanceMetricSvmReferenceInlineLinks performance metric svm reference inline links
 //
-// swagger:model PerformanceMetricSvmReferenceLinks
-type PerformanceMetricSvmReferenceLinks struct {
+// swagger:model performance_metric_svm_reference_inline__links
+type PerformanceMetricSvmReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance metric svm reference links
-func (m *PerformanceMetricSvmReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric svm reference inline links
+func (m *PerformanceMetricSvmReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -682,7 +682,7 @@ func (m *PerformanceMetricSvmReferenceLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PerformanceMetricSvmReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceMetricSvmReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -699,8 +699,8 @@ func (m *PerformanceMetricSvmReferenceLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this performance metric svm reference links based on the context it is used
-func (m *PerformanceMetricSvmReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric svm reference inline links based on the context it is used
+func (m *PerformanceMetricSvmReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *PerformanceMetricSvmReferenceLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *PerformanceMetricSvmReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceMetricSvmReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -728,7 +728,7 @@ func (m *PerformanceMetricSvmReferenceLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricSvmReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -736,8 +736,8 @@ func (m *PerformanceMetricSvmReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricSvmReferenceLinks
+func (m *PerformanceMetricSvmReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricSvmReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -745,31 +745,31 @@ func (m *PerformanceMetricSvmReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricSvmReferenceThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceMetricSvmReferenceInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceMetricSvmReferenceThroughput
-type PerformanceMetricSvmReferenceThroughput struct {
+// swagger:model performance_metric_svm_reference_inline_throughput
+type PerformanceMetricSvmReferenceInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric svm reference throughput
-func (m *PerformanceMetricSvmReferenceThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric svm reference inline throughput
+func (m *PerformanceMetricSvmReferenceInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric svm reference throughput based on the context it is used
-func (m *PerformanceMetricSvmReferenceThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric svm reference inline throughput based on the context it is used
+func (m *PerformanceMetricSvmReferenceInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -779,7 +779,7 @@ func (m *PerformanceMetricSvmReferenceThroughput) ContextValidate(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricSvmReferenceInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -787,8 +787,8 @@ func (m *PerformanceMetricSvmReferenceThroughput) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricSvmReferenceThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricSvmReferenceThroughput
+func (m *PerformanceMetricSvmReferenceInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricSvmReferenceInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

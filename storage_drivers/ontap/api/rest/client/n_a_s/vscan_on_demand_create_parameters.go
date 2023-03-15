@@ -74,13 +74,13 @@ type VscanOnDemandCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *VscanOnDemandCreateParams) WithDefaults() *VscanOnDemandCreateParams {
 // All values with no default are reset to their zero value.
 func (o *VscanOnDemandCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := VscanOnDemandCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *VscanOnDemandCreateParams) SetInfo(info *models.VscanOnDemand) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vscan on demand create params
-func (o *VscanOnDemandCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanOnDemandCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vscan on demand create params
+func (o *VscanOnDemandCreateParams) WithReturnRecords(returnRecords *bool) *VscanOnDemandCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vscan on demand create params
-func (o *VscanOnDemandCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vscan on demand create params
+func (o *VscanOnDemandCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan on demand create params
-func (o *VscanOnDemandCreateParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnDemandCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan on demand create params
+func (o *VscanOnDemandCreateParams) WithSvmUUID(svmUUID string) *VscanOnDemandCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan on demand create params
-func (o *VscanOnDemandCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan on demand create params
+func (o *VscanOnDemandCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,13 +192,13 @@ func (o *VscanOnDemandCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -210,7 +210,7 @@ func (o *VscanOnDemandCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

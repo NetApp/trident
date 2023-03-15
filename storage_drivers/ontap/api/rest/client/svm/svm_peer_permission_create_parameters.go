@@ -74,7 +74,7 @@ type SvmPeerPermissionCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *SvmPeerPermissionCreateParams) WithDefaults() *SvmPeerPermissionCreateP
 // All values with no default are reset to their zero value.
 func (o *SvmPeerPermissionCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SvmPeerPermissionCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *SvmPeerPermissionCreateParams) SetInfo(info *models.SvmPeerPermission) 
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm peer permission create params
-func (o *SvmPeerPermissionCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmPeerPermissionCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm peer permission create params
+func (o *SvmPeerPermissionCreateParams) WithReturnRecords(returnRecords *bool) *SvmPeerPermissionCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm peer permission create params
-func (o *SvmPeerPermissionCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm peer permission create params
+func (o *SvmPeerPermissionCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *SvmPeerPermissionCreateParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

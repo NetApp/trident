@@ -73,14 +73,21 @@ type NodeModifyParams struct {
 	The "power_on" action restores power to the node with the assistance of the service processor.
 
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* AllowDataOutage.
 
 	   This only applies when an action of reboot or shutdown is provided. It allows storage failover to be bypassed along with any failures related to mainintaing quorum in the cluster.
 
 	*/
-	AllowDataOutageQueryParameter *bool
+	AllowDataOutage *bool
+
+	/* AllowVersionMismatch.
+
+	   Applies only when a reboot action is provided. It allows storage failover to be bypassed along with any failures related to software version mismatch.
+
+	*/
+	AllowVersionMismatch *bool
 
 	// Info.
 	Info *models.Node
@@ -89,33 +96,33 @@ type NodeModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServiceProcessorAction.
 
 	   Action used to reboot the service processor (SP).
 
 	*/
-	ServiceProcessorActionQueryParameter *string
+	ServiceProcessorAction *string
 
 	/* ServiceProcessorFirmwareImage.
 
 	   Service processor image to boot with after a reboot.
 
 	*/
-	ServiceProcessorFirmwareImageQueryParameter *string
+	ServiceProcessorFirmwareImage *string
 
 	/* ShutdownRebootReason.
 
 	   Indicates the reason for the reboot or shutdown. This only applies when an action of reboot or shutdown is provided.
 
 	*/
-	ShutdownRebootReasonQueryParameter *string
+	ShutdownRebootReason *string
 
 	// UUID.
 	//
 	// Format: uuid
-	UUIDPathParameter strfmt.UUID
+	UUID strfmt.UUID
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,14 +142,17 @@ func (o *NodeModifyParams) WithDefaults() *NodeModifyParams {
 // All values with no default are reset to their zero value.
 func (o *NodeModifyParams) SetDefaults() {
 	var (
-		allowDataOutageQueryParameterDefault = bool(false)
+		allowDataOutageDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		allowVersionMismatchDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := NodeModifyParams{
-		AllowDataOutageQueryParameter: &allowDataOutageQueryParameterDefault,
-		ReturnTimeoutQueryParameter:   &returnTimeoutQueryParameterDefault,
+		AllowDataOutage:      &allowDataOutageDefault,
+		AllowVersionMismatch: &allowVersionMismatchDefault,
+		ReturnTimeout:        &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -184,26 +194,37 @@ func (o *NodeModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the node modify params
-func (o *NodeModifyParams) WithActionQueryParameter(action *string) *NodeModifyParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the node modify params
+func (o *NodeModifyParams) WithAction(action *string) *NodeModifyParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the node modify params
-func (o *NodeModifyParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the node modify params
+func (o *NodeModifyParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithAllowDataOutageQueryParameter adds the allowDataOutage to the node modify params
-func (o *NodeModifyParams) WithAllowDataOutageQueryParameter(allowDataOutage *bool) *NodeModifyParams {
-	o.SetAllowDataOutageQueryParameter(allowDataOutage)
+// WithAllowDataOutage adds the allowDataOutage to the node modify params
+func (o *NodeModifyParams) WithAllowDataOutage(allowDataOutage *bool) *NodeModifyParams {
+	o.SetAllowDataOutage(allowDataOutage)
 	return o
 }
 
-// SetAllowDataOutageQueryParameter adds the allowDataOutage to the node modify params
-func (o *NodeModifyParams) SetAllowDataOutageQueryParameter(allowDataOutage *bool) {
-	o.AllowDataOutageQueryParameter = allowDataOutage
+// SetAllowDataOutage adds the allowDataOutage to the node modify params
+func (o *NodeModifyParams) SetAllowDataOutage(allowDataOutage *bool) {
+	o.AllowDataOutage = allowDataOutage
+}
+
+// WithAllowVersionMismatch adds the allowVersionMismatch to the node modify params
+func (o *NodeModifyParams) WithAllowVersionMismatch(allowVersionMismatch *bool) *NodeModifyParams {
+	o.SetAllowVersionMismatch(allowVersionMismatch)
+	return o
+}
+
+// SetAllowVersionMismatch adds the allowVersionMismatch to the node modify params
+func (o *NodeModifyParams) SetAllowVersionMismatch(allowVersionMismatch *bool) {
+	o.AllowVersionMismatch = allowVersionMismatch
 }
 
 // WithInfo adds the info to the node modify params
@@ -217,59 +238,59 @@ func (o *NodeModifyParams) SetInfo(info *models.Node) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the node modify params
-func (o *NodeModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodeModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the node modify params
+func (o *NodeModifyParams) WithReturnTimeout(returnTimeout *int64) *NodeModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the node modify params
-func (o *NodeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the node modify params
+func (o *NodeModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServiceProcessorActionQueryParameter adds the serviceProcessorAction to the node modify params
-func (o *NodeModifyParams) WithServiceProcessorActionQueryParameter(serviceProcessorAction *string) *NodeModifyParams {
-	o.SetServiceProcessorActionQueryParameter(serviceProcessorAction)
+// WithServiceProcessorAction adds the serviceProcessorAction to the node modify params
+func (o *NodeModifyParams) WithServiceProcessorAction(serviceProcessorAction *string) *NodeModifyParams {
+	o.SetServiceProcessorAction(serviceProcessorAction)
 	return o
 }
 
-// SetServiceProcessorActionQueryParameter adds the serviceProcessorAction to the node modify params
-func (o *NodeModifyParams) SetServiceProcessorActionQueryParameter(serviceProcessorAction *string) {
-	o.ServiceProcessorActionQueryParameter = serviceProcessorAction
+// SetServiceProcessorAction adds the serviceProcessorAction to the node modify params
+func (o *NodeModifyParams) SetServiceProcessorAction(serviceProcessorAction *string) {
+	o.ServiceProcessorAction = serviceProcessorAction
 }
 
-// WithServiceProcessorFirmwareImageQueryParameter adds the serviceProcessorFirmwareImage to the node modify params
-func (o *NodeModifyParams) WithServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage *string) *NodeModifyParams {
-	o.SetServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage)
+// WithServiceProcessorFirmwareImage adds the serviceProcessorFirmwareImage to the node modify params
+func (o *NodeModifyParams) WithServiceProcessorFirmwareImage(serviceProcessorFirmwareImage *string) *NodeModifyParams {
+	o.SetServiceProcessorFirmwareImage(serviceProcessorFirmwareImage)
 	return o
 }
 
-// SetServiceProcessorFirmwareImageQueryParameter adds the serviceProcessorFirmwareImage to the node modify params
-func (o *NodeModifyParams) SetServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage *string) {
-	o.ServiceProcessorFirmwareImageQueryParameter = serviceProcessorFirmwareImage
+// SetServiceProcessorFirmwareImage adds the serviceProcessorFirmwareImage to the node modify params
+func (o *NodeModifyParams) SetServiceProcessorFirmwareImage(serviceProcessorFirmwareImage *string) {
+	o.ServiceProcessorFirmwareImage = serviceProcessorFirmwareImage
 }
 
-// WithShutdownRebootReasonQueryParameter adds the shutdownRebootReason to the node modify params
-func (o *NodeModifyParams) WithShutdownRebootReasonQueryParameter(shutdownRebootReason *string) *NodeModifyParams {
-	o.SetShutdownRebootReasonQueryParameter(shutdownRebootReason)
+// WithShutdownRebootReason adds the shutdownRebootReason to the node modify params
+func (o *NodeModifyParams) WithShutdownRebootReason(shutdownRebootReason *string) *NodeModifyParams {
+	o.SetShutdownRebootReason(shutdownRebootReason)
 	return o
 }
 
-// SetShutdownRebootReasonQueryParameter adds the shutdownRebootReason to the node modify params
-func (o *NodeModifyParams) SetShutdownRebootReasonQueryParameter(shutdownRebootReason *string) {
-	o.ShutdownRebootReasonQueryParameter = shutdownRebootReason
+// SetShutdownRebootReason adds the shutdownRebootReason to the node modify params
+func (o *NodeModifyParams) SetShutdownRebootReason(shutdownRebootReason *string) {
+	o.ShutdownRebootReason = shutdownRebootReason
 }
 
-// WithUUIDPathParameter adds the uuid to the node modify params
-func (o *NodeModifyParams) WithUUIDPathParameter(uuid strfmt.UUID) *NodeModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the node modify params
+func (o *NodeModifyParams) WithUUID(uuid strfmt.UUID) *NodeModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the node modify params
-func (o *NodeModifyParams) SetUUIDPathParameter(uuid strfmt.UUID) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the node modify params
+func (o *NodeModifyParams) SetUUID(uuid strfmt.UUID) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -280,13 +301,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -297,18 +318,35 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.AllowDataOutageQueryParameter != nil {
+	if o.AllowDataOutage != nil {
 
 		// query param allow_data_outage
 		var qrAllowDataOutage bool
 
-		if o.AllowDataOutageQueryParameter != nil {
-			qrAllowDataOutage = *o.AllowDataOutageQueryParameter
+		if o.AllowDataOutage != nil {
+			qrAllowDataOutage = *o.AllowDataOutage
 		}
 		qAllowDataOutage := swag.FormatBool(qrAllowDataOutage)
 		if qAllowDataOutage != "" {
 
 			if err := r.SetQueryParam("allow_data_outage", qAllowDataOutage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AllowVersionMismatch != nil {
+
+		// query param allow_version_mismatch
+		var qrAllowVersionMismatch bool
+
+		if o.AllowVersionMismatch != nil {
+			qrAllowVersionMismatch = *o.AllowVersionMismatch
+		}
+		qAllowVersionMismatch := swag.FormatBool(qrAllowVersionMismatch)
+		if qAllowVersionMismatch != "" {
+
+			if err := r.SetQueryParam("allow_version_mismatch", qAllowVersionMismatch); err != nil {
 				return err
 			}
 		}
@@ -319,13 +357,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -336,13 +374,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ServiceProcessorActionQueryParameter != nil {
+	if o.ServiceProcessorAction != nil {
 
 		// query param service_processor.action
 		var qrServiceProcessorAction string
 
-		if o.ServiceProcessorActionQueryParameter != nil {
-			qrServiceProcessorAction = *o.ServiceProcessorActionQueryParameter
+		if o.ServiceProcessorAction != nil {
+			qrServiceProcessorAction = *o.ServiceProcessorAction
 		}
 		qServiceProcessorAction := qrServiceProcessorAction
 		if qServiceProcessorAction != "" {
@@ -353,13 +391,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ServiceProcessorFirmwareImageQueryParameter != nil {
+	if o.ServiceProcessorFirmwareImage != nil {
 
 		// query param service_processor.firmware_image
 		var qrServiceProcessorFirmwareImage string
 
-		if o.ServiceProcessorFirmwareImageQueryParameter != nil {
-			qrServiceProcessorFirmwareImage = *o.ServiceProcessorFirmwareImageQueryParameter
+		if o.ServiceProcessorFirmwareImage != nil {
+			qrServiceProcessorFirmwareImage = *o.ServiceProcessorFirmwareImage
 		}
 		qServiceProcessorFirmwareImage := qrServiceProcessorFirmwareImage
 		if qServiceProcessorFirmwareImage != "" {
@@ -370,13 +408,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ShutdownRebootReasonQueryParameter != nil {
+	if o.ShutdownRebootReason != nil {
 
 		// query param shutdown_reboot_reason
 		var qrShutdownRebootReason string
 
-		if o.ShutdownRebootReasonQueryParameter != nil {
-			qrShutdownRebootReason = *o.ShutdownRebootReasonQueryParameter
+		if o.ShutdownRebootReason != nil {
+			qrShutdownRebootReason = *o.ShutdownRebootReason
 		}
 		qShutdownRebootReason := qrShutdownRebootReason
 		if qShutdownRebootReason != "" {
@@ -388,7 +426,7 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter.String()); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID.String()); err != nil {
 		return err
 	}
 

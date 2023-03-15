@@ -70,10 +70,10 @@ type MultiAdminVerifyApprovalGroupModifyParams struct {
 	Info *models.MultiAdminVerifyApprovalGroup
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	// OwnerUUID.
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,26 +139,26 @@ func (o *MultiAdminVerifyApprovalGroupModifyParams) SetInfo(info *models.MultiAd
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the multi admin verify approval group modify params
-func (o *MultiAdminVerifyApprovalGroupModifyParams) WithNamePathParameter(name string) *MultiAdminVerifyApprovalGroupModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the multi admin verify approval group modify params
+func (o *MultiAdminVerifyApprovalGroupModifyParams) WithName(name string) *MultiAdminVerifyApprovalGroupModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the multi admin verify approval group modify params
-func (o *MultiAdminVerifyApprovalGroupModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the multi admin verify approval group modify params
+func (o *MultiAdminVerifyApprovalGroupModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the multi admin verify approval group modify params
-func (o *MultiAdminVerifyApprovalGroupModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *MultiAdminVerifyApprovalGroupModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify approval group modify params
+func (o *MultiAdminVerifyApprovalGroupModifyParams) WithOwnerUUID(ownerUUID string) *MultiAdminVerifyApprovalGroupModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the multi admin verify approval group modify params
-func (o *MultiAdminVerifyApprovalGroupModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify approval group modify params
+func (o *MultiAdminVerifyApprovalGroupModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,12 +175,12 @@ func (o *MultiAdminVerifyApprovalGroupModifyParams) WriteToRequest(r runtime.Cli
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

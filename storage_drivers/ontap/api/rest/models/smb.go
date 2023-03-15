@@ -23,16 +23,16 @@ type Smb struct {
 	// SMB connection state.
 	// Read Only: true
 	// Enum: [connected disconnected reconnecting timedout]
-	ConnectState string `json:"connect_state,omitempty"`
+	ConnectState *string `json:"connect_state,omitempty"`
 
 	// SMB open group ID.
 	// Read Only: true
-	OpenGroupID string `json:"open_group_id,omitempty"`
+	OpenGroupID *string `json:"open_group_id,omitempty"`
 
 	// SMB open type.
 	// Read Only: true
 	// Enum: [none durable persistent]
-	OpenType string `json:"open_type,omitempty"`
+	OpenType *string `json:"open_type,omitempty"`
 }
 
 // Validate validates this smb
@@ -122,7 +122,7 @@ func (m *Smb) validateConnectState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateConnectStateEnum("connect_state", "body", m.ConnectState); err != nil {
+	if err := m.validateConnectStateEnum("connect_state", "body", *m.ConnectState); err != nil {
 		return err
 	}
 
@@ -188,7 +188,7 @@ func (m *Smb) validateOpenType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOpenTypeEnum("open_type", "body", m.OpenType); err != nil {
+	if err := m.validateOpenTypeEnum("open_type", "body", *m.OpenType); err != nil {
 		return err
 	}
 
@@ -219,7 +219,7 @@ func (m *Smb) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 
 func (m *Smb) contextValidateConnectState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connect_state", "body", string(m.ConnectState)); err != nil {
+	if err := validate.ReadOnly(ctx, "connect_state", "body", m.ConnectState); err != nil {
 		return err
 	}
 
@@ -228,7 +228,7 @@ func (m *Smb) contextValidateConnectState(ctx context.Context, formats strfmt.Re
 
 func (m *Smb) contextValidateOpenGroupID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_group_id", "body", string(m.OpenGroupID)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_group_id", "body", m.OpenGroupID); err != nil {
 		return err
 	}
 
@@ -237,7 +237,7 @@ func (m *Smb) contextValidateOpenGroupID(ctx context.Context, formats strfmt.Reg
 
 func (m *Smb) contextValidateOpenType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_type", "body", string(m.OpenType)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_type", "body", m.OpenType); err != nil {
 		return err
 	}
 

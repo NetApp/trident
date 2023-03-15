@@ -66,19 +66,19 @@ type CloudStoreDeleteParams struct {
 
 	   Aggregate UUID
 	*/
-	AggregateUUIDPathParameter string
+	AggregateUUID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* TargetUUID.
 
 	   Cloud target UUID
 	*/
-	TargetUUIDPathParameter string
+	TargetUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *CloudStoreDeleteParams) WithDefaults() *CloudStoreDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *CloudStoreDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := CloudStoreDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *CloudStoreDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregateUUIDPathParameter adds the aggregateUUID to the cloud store delete params
-func (o *CloudStoreDeleteParams) WithAggregateUUIDPathParameter(aggregateUUID string) *CloudStoreDeleteParams {
-	o.SetAggregateUUIDPathParameter(aggregateUUID)
+// WithAggregateUUID adds the aggregateUUID to the cloud store delete params
+func (o *CloudStoreDeleteParams) WithAggregateUUID(aggregateUUID string) *CloudStoreDeleteParams {
+	o.SetAggregateUUID(aggregateUUID)
 	return o
 }
 
-// SetAggregateUUIDPathParameter adds the aggregateUuid to the cloud store delete params
-func (o *CloudStoreDeleteParams) SetAggregateUUIDPathParameter(aggregateUUID string) {
-	o.AggregateUUIDPathParameter = aggregateUUID
+// SetAggregateUUID adds the aggregateUuid to the cloud store delete params
+func (o *CloudStoreDeleteParams) SetAggregateUUID(aggregateUUID string) {
+	o.AggregateUUID = aggregateUUID
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud store delete params
-func (o *CloudStoreDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudStoreDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cloud store delete params
+func (o *CloudStoreDeleteParams) WithReturnTimeout(returnTimeout *int64) *CloudStoreDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud store delete params
-func (o *CloudStoreDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cloud store delete params
+func (o *CloudStoreDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithTargetUUIDPathParameter adds the targetUUID to the cloud store delete params
-func (o *CloudStoreDeleteParams) WithTargetUUIDPathParameter(targetUUID string) *CloudStoreDeleteParams {
-	o.SetTargetUUIDPathParameter(targetUUID)
+// WithTargetUUID adds the targetUUID to the cloud store delete params
+func (o *CloudStoreDeleteParams) WithTargetUUID(targetUUID string) *CloudStoreDeleteParams {
+	o.SetTargetUUID(targetUUID)
 	return o
 }
 
-// SetTargetUUIDPathParameter adds the targetUuid to the cloud store delete params
-func (o *CloudStoreDeleteParams) SetTargetUUIDPathParameter(targetUUID string) {
-	o.TargetUUIDPathParameter = targetUUID
+// SetTargetUUID adds the targetUuid to the cloud store delete params
+func (o *CloudStoreDeleteParams) SetTargetUUID(targetUUID string) {
+	o.TargetUUID = targetUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,17 +186,17 @@ func (o *CloudStoreDeleteParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param aggregate.uuid
-	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -208,7 +208,7 @@ func (o *CloudStoreDeleteParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param target.uuid
-	if err := r.SetPathParam("target.uuid", o.TargetUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("target.uuid", o.TargetUUID); err != nil {
 		return err
 	}
 

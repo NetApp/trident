@@ -66,127 +66,127 @@ type ClientLockCollectionGetParams struct {
 
 	   Filter by byte_lock.exclusive
 	*/
-	ByteLockExclusiveQueryParameter *bool
+	ByteLockExclusive *bool
 
 	/* ByteLockLength.
 
 	   Filter by byte_lock.length
 	*/
-	ByteLockLengthQueryParameter *int64
+	ByteLockLength *int64
 
 	/* ByteLockMandatory.
 
 	   Filter by byte_lock.mandatory
 	*/
-	ByteLockMandatoryQueryParameter *bool
+	ByteLockMandatory *bool
 
 	/* ByteLockOffset.
 
 	   Filter by byte_lock.offset
 	*/
-	ByteLockOffsetQueryParameter *int64
+	ByteLockOffset *int64
 
 	/* ByteLockSoft.
 
 	   Filter by byte_lock.soft
 	*/
-	ByteLockSoftQueryParameter *bool
+	ByteLockSoft *bool
 
 	/* ByteLockSuper.
 
 	   Filter by byte_lock.super
 	*/
-	ByteLockSuperQueryParameter *bool
+	ByteLockSuper *bool
 
 	/* ClientAddress.
 
 	   Filter by client_address
 	*/
-	ClientAddressQueryParameter *string
+	ClientAddress *string
 
 	/* Constituent.
 
 	   Filter by constituent
 	*/
-	ConstituentQueryParameter *bool
+	Constituent *bool
 
 	/* Delegation.
 
 	   Filter by delegation
 	*/
-	DelegationQueryParameter *string
+	Delegation *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceIPAddress.
 
 	   Filter by interface.ip.address
 	*/
-	InterfaceIPAddressQueryParameter *string
+	InterfaceIPAddress *string
 
 	/* InterfaceName.
 
 	   Filter by interface.name
 	*/
-	InterfaceNameQueryParameter *string
+	InterfaceName *string
 
 	/* InterfaceUUID.
 
 	   Filter by interface.uuid
 	*/
-	InterfaceUUIDQueryParameter *string
+	InterfaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OplockLevel.
 
 	   Filter by oplock_level
 	*/
-	OplockLevelQueryParameter *string
+	OplockLevel *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerID.
 
 	   Filter by owner_id
 	*/
-	OwnerIDQueryParameter *string
+	OwnerID *string
 
 	/* Path.
 
 	   Filter by path
 	*/
-	PathQueryParameter *string
+	Path *string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -194,7 +194,7 @@ type ClientLockCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -202,79 +202,79 @@ type ClientLockCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ShareLockMode.
 
 	   Filter by share_lock.mode
 	*/
-	ShareLockModeQueryParameter *string
+	ShareLockMode *string
 
 	/* ShareLockSoft.
 
 	   Filter by share_lock.soft
 	*/
-	ShareLockSoftQueryParameter *bool
+	ShareLockSoft *bool
 
 	/* SmbConnectState.
 
 	   Filter by smb.connect_state
 	*/
-	SmbConnectStateQueryParameter *string
+	SmbConnectState *string
 
 	/* SmbOpenGroupID.
 
 	   Filter by smb.open_group_id
 	*/
-	SmbOpenGroupIDQueryParameter *string
+	SmbOpenGroupID *string
 
 	/* SmbOpenType.
 
 	   Filter by smb.open_type
 	*/
-	SmbOpenTypeQueryParameter *string
+	SmbOpenType *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -294,14 +294,14 @@ func (o *ClientLockCollectionGetParams) WithDefaults() *ClientLockCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *ClientLockCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ClientLockCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -343,389 +343,389 @@ func (o *ClientLockCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithByteLockExclusiveQueryParameter adds the byteLockExclusive to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockExclusiveQueryParameter(byteLockExclusive *bool) *ClientLockCollectionGetParams {
-	o.SetByteLockExclusiveQueryParameter(byteLockExclusive)
+// WithByteLockExclusive adds the byteLockExclusive to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockExclusive(byteLockExclusive *bool) *ClientLockCollectionGetParams {
+	o.SetByteLockExclusive(byteLockExclusive)
 	return o
 }
 
-// SetByteLockExclusiveQueryParameter adds the byteLockExclusive to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockExclusiveQueryParameter(byteLockExclusive *bool) {
-	o.ByteLockExclusiveQueryParameter = byteLockExclusive
+// SetByteLockExclusive adds the byteLockExclusive to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockExclusive(byteLockExclusive *bool) {
+	o.ByteLockExclusive = byteLockExclusive
 }
 
-// WithByteLockLengthQueryParameter adds the byteLockLength to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockLengthQueryParameter(byteLockLength *int64) *ClientLockCollectionGetParams {
-	o.SetByteLockLengthQueryParameter(byteLockLength)
+// WithByteLockLength adds the byteLockLength to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockLength(byteLockLength *int64) *ClientLockCollectionGetParams {
+	o.SetByteLockLength(byteLockLength)
 	return o
 }
 
-// SetByteLockLengthQueryParameter adds the byteLockLength to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockLengthQueryParameter(byteLockLength *int64) {
-	o.ByteLockLengthQueryParameter = byteLockLength
+// SetByteLockLength adds the byteLockLength to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockLength(byteLockLength *int64) {
+	o.ByteLockLength = byteLockLength
 }
 
-// WithByteLockMandatoryQueryParameter adds the byteLockMandatory to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockMandatoryQueryParameter(byteLockMandatory *bool) *ClientLockCollectionGetParams {
-	o.SetByteLockMandatoryQueryParameter(byteLockMandatory)
+// WithByteLockMandatory adds the byteLockMandatory to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockMandatory(byteLockMandatory *bool) *ClientLockCollectionGetParams {
+	o.SetByteLockMandatory(byteLockMandatory)
 	return o
 }
 
-// SetByteLockMandatoryQueryParameter adds the byteLockMandatory to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockMandatoryQueryParameter(byteLockMandatory *bool) {
-	o.ByteLockMandatoryQueryParameter = byteLockMandatory
+// SetByteLockMandatory adds the byteLockMandatory to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockMandatory(byteLockMandatory *bool) {
+	o.ByteLockMandatory = byteLockMandatory
 }
 
-// WithByteLockOffsetQueryParameter adds the byteLockOffset to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockOffsetQueryParameter(byteLockOffset *int64) *ClientLockCollectionGetParams {
-	o.SetByteLockOffsetQueryParameter(byteLockOffset)
+// WithByteLockOffset adds the byteLockOffset to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockOffset(byteLockOffset *int64) *ClientLockCollectionGetParams {
+	o.SetByteLockOffset(byteLockOffset)
 	return o
 }
 
-// SetByteLockOffsetQueryParameter adds the byteLockOffset to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockOffsetQueryParameter(byteLockOffset *int64) {
-	o.ByteLockOffsetQueryParameter = byteLockOffset
+// SetByteLockOffset adds the byteLockOffset to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockOffset(byteLockOffset *int64) {
+	o.ByteLockOffset = byteLockOffset
 }
 
-// WithByteLockSoftQueryParameter adds the byteLockSoft to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockSoftQueryParameter(byteLockSoft *bool) *ClientLockCollectionGetParams {
-	o.SetByteLockSoftQueryParameter(byteLockSoft)
+// WithByteLockSoft adds the byteLockSoft to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockSoft(byteLockSoft *bool) *ClientLockCollectionGetParams {
+	o.SetByteLockSoft(byteLockSoft)
 	return o
 }
 
-// SetByteLockSoftQueryParameter adds the byteLockSoft to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockSoftQueryParameter(byteLockSoft *bool) {
-	o.ByteLockSoftQueryParameter = byteLockSoft
+// SetByteLockSoft adds the byteLockSoft to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockSoft(byteLockSoft *bool) {
+	o.ByteLockSoft = byteLockSoft
 }
 
-// WithByteLockSuperQueryParameter adds the byteLockSuper to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithByteLockSuperQueryParameter(byteLockSuper *bool) *ClientLockCollectionGetParams {
-	o.SetByteLockSuperQueryParameter(byteLockSuper)
+// WithByteLockSuper adds the byteLockSuper to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithByteLockSuper(byteLockSuper *bool) *ClientLockCollectionGetParams {
+	o.SetByteLockSuper(byteLockSuper)
 	return o
 }
 
-// SetByteLockSuperQueryParameter adds the byteLockSuper to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetByteLockSuperQueryParameter(byteLockSuper *bool) {
-	o.ByteLockSuperQueryParameter = byteLockSuper
+// SetByteLockSuper adds the byteLockSuper to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetByteLockSuper(byteLockSuper *bool) {
+	o.ByteLockSuper = byteLockSuper
 }
 
-// WithClientAddressQueryParameter adds the clientAddress to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithClientAddressQueryParameter(clientAddress *string) *ClientLockCollectionGetParams {
-	o.SetClientAddressQueryParameter(clientAddress)
+// WithClientAddress adds the clientAddress to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithClientAddress(clientAddress *string) *ClientLockCollectionGetParams {
+	o.SetClientAddress(clientAddress)
 	return o
 }
 
-// SetClientAddressQueryParameter adds the clientAddress to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetClientAddressQueryParameter(clientAddress *string) {
-	o.ClientAddressQueryParameter = clientAddress
+// SetClientAddress adds the clientAddress to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetClientAddress(clientAddress *string) {
+	o.ClientAddress = clientAddress
 }
 
-// WithConstituentQueryParameter adds the constituent to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithConstituentQueryParameter(constituent *bool) *ClientLockCollectionGetParams {
-	o.SetConstituentQueryParameter(constituent)
+// WithConstituent adds the constituent to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithConstituent(constituent *bool) *ClientLockCollectionGetParams {
+	o.SetConstituent(constituent)
 	return o
 }
 
-// SetConstituentQueryParameter adds the constituent to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetConstituentQueryParameter(constituent *bool) {
-	o.ConstituentQueryParameter = constituent
+// SetConstituent adds the constituent to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetConstituent(constituent *bool) {
+	o.Constituent = constituent
 }
 
-// WithDelegationQueryParameter adds the delegation to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithDelegationQueryParameter(delegation *string) *ClientLockCollectionGetParams {
-	o.SetDelegationQueryParameter(delegation)
+// WithDelegation adds the delegation to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithDelegation(delegation *string) *ClientLockCollectionGetParams {
+	o.SetDelegation(delegation)
 	return o
 }
 
-// SetDelegationQueryParameter adds the delegation to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetDelegationQueryParameter(delegation *string) {
-	o.DelegationQueryParameter = delegation
+// SetDelegation adds the delegation to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetDelegation(delegation *string) {
+	o.Delegation = delegation
 }
 
-// WithFieldsQueryParameter adds the fields to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithFieldsQueryParameter(fields []string) *ClientLockCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithFields(fields []string) *ClientLockCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceIPAddressQueryParameter adds the interfaceIPAddress to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithInterfaceIPAddressQueryParameter(interfaceIPAddress *string) *ClientLockCollectionGetParams {
-	o.SetInterfaceIPAddressQueryParameter(interfaceIPAddress)
+// WithInterfaceIPAddress adds the interfaceIPAddress to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithInterfaceIPAddress(interfaceIPAddress *string) *ClientLockCollectionGetParams {
+	o.SetInterfaceIPAddress(interfaceIPAddress)
 	return o
 }
 
-// SetInterfaceIPAddressQueryParameter adds the interfaceIpAddress to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetInterfaceIPAddressQueryParameter(interfaceIPAddress *string) {
-	o.InterfaceIPAddressQueryParameter = interfaceIPAddress
+// SetInterfaceIPAddress adds the interfaceIpAddress to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetInterfaceIPAddress(interfaceIPAddress *string) {
+	o.InterfaceIPAddress = interfaceIPAddress
 }
 
-// WithInterfaceNameQueryParameter adds the interfaceName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *ClientLockCollectionGetParams {
-	o.SetInterfaceNameQueryParameter(interfaceName)
+// WithInterfaceName adds the interfaceName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithInterfaceName(interfaceName *string) *ClientLockCollectionGetParams {
+	o.SetInterfaceName(interfaceName)
 	return o
 }
 
-// SetInterfaceNameQueryParameter adds the interfaceName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
-	o.InterfaceNameQueryParameter = interfaceName
+// SetInterfaceName adds the interfaceName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetInterfaceName(interfaceName *string) {
+	o.InterfaceName = interfaceName
 }
 
-// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *ClientLockCollectionGetParams {
-	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithInterfaceUUID(interfaceUUID *string) *ClientLockCollectionGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
-	o.InterfaceUUIDQueryParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetInterfaceUUID(interfaceUUID *string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ClientLockCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithMaxRecords(maxRecords *int64) *ClientLockCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *ClientLockCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithNodeName(nodeName *string) *ClientLockCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *ClientLockCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithNodeUUID(nodeUUID *string) *ClientLockCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOplockLevelQueryParameter adds the oplockLevel to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithOplockLevelQueryParameter(oplockLevel *string) *ClientLockCollectionGetParams {
-	o.SetOplockLevelQueryParameter(oplockLevel)
+// WithOplockLevel adds the oplockLevel to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithOplockLevel(oplockLevel *string) *ClientLockCollectionGetParams {
+	o.SetOplockLevel(oplockLevel)
 	return o
 }
 
-// SetOplockLevelQueryParameter adds the oplockLevel to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetOplockLevelQueryParameter(oplockLevel *string) {
-	o.OplockLevelQueryParameter = oplockLevel
+// SetOplockLevel adds the oplockLevel to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetOplockLevel(oplockLevel *string) {
+	o.OplockLevel = oplockLevel
 }
 
-// WithOrderByQueryParameter adds the orderBy to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ClientLockCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithOrderBy(orderBy []string) *ClientLockCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerIDQueryParameter adds the ownerID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithOwnerIDQueryParameter(ownerID *string) *ClientLockCollectionGetParams {
-	o.SetOwnerIDQueryParameter(ownerID)
+// WithOwnerID adds the ownerID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithOwnerID(ownerID *string) *ClientLockCollectionGetParams {
+	o.SetOwnerID(ownerID)
 	return o
 }
 
-// SetOwnerIDQueryParameter adds the ownerId to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetOwnerIDQueryParameter(ownerID *string) {
-	o.OwnerIDQueryParameter = ownerID
+// SetOwnerID adds the ownerId to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetOwnerID(ownerID *string) {
+	o.OwnerID = ownerID
 }
 
-// WithPathQueryParameter adds the path to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithPathQueryParameter(path *string) *ClientLockCollectionGetParams {
-	o.SetPathQueryParameter(path)
+// WithPath adds the path to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithPath(path *string) *ClientLockCollectionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathQueryParameter adds the path to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
+// SetPath adds the path to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetPath(path *string) {
+	o.Path = path
 }
 
-// WithProtocolQueryParameter adds the protocol to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithProtocolQueryParameter(protocol *string) *ClientLockCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithProtocol(protocol *string) *ClientLockCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClientLockCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithReturnRecords(returnRecords *bool) *ClientLockCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClientLockCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ClientLockCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithShareLockModeQueryParameter adds the shareLockMode to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithShareLockModeQueryParameter(shareLockMode *string) *ClientLockCollectionGetParams {
-	o.SetShareLockModeQueryParameter(shareLockMode)
+// WithShareLockMode adds the shareLockMode to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithShareLockMode(shareLockMode *string) *ClientLockCollectionGetParams {
+	o.SetShareLockMode(shareLockMode)
 	return o
 }
 
-// SetShareLockModeQueryParameter adds the shareLockMode to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetShareLockModeQueryParameter(shareLockMode *string) {
-	o.ShareLockModeQueryParameter = shareLockMode
+// SetShareLockMode adds the shareLockMode to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetShareLockMode(shareLockMode *string) {
+	o.ShareLockMode = shareLockMode
 }
 
-// WithShareLockSoftQueryParameter adds the shareLockSoft to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithShareLockSoftQueryParameter(shareLockSoft *bool) *ClientLockCollectionGetParams {
-	o.SetShareLockSoftQueryParameter(shareLockSoft)
+// WithShareLockSoft adds the shareLockSoft to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithShareLockSoft(shareLockSoft *bool) *ClientLockCollectionGetParams {
+	o.SetShareLockSoft(shareLockSoft)
 	return o
 }
 
-// SetShareLockSoftQueryParameter adds the shareLockSoft to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetShareLockSoftQueryParameter(shareLockSoft *bool) {
-	o.ShareLockSoftQueryParameter = shareLockSoft
+// SetShareLockSoft adds the shareLockSoft to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetShareLockSoft(shareLockSoft *bool) {
+	o.ShareLockSoft = shareLockSoft
 }
 
-// WithSmbConnectStateQueryParameter adds the smbConnectState to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithSmbConnectStateQueryParameter(smbConnectState *string) *ClientLockCollectionGetParams {
-	o.SetSmbConnectStateQueryParameter(smbConnectState)
+// WithSmbConnectState adds the smbConnectState to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithSmbConnectState(smbConnectState *string) *ClientLockCollectionGetParams {
+	o.SetSmbConnectState(smbConnectState)
 	return o
 }
 
-// SetSmbConnectStateQueryParameter adds the smbConnectState to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetSmbConnectStateQueryParameter(smbConnectState *string) {
-	o.SmbConnectStateQueryParameter = smbConnectState
+// SetSmbConnectState adds the smbConnectState to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetSmbConnectState(smbConnectState *string) {
+	o.SmbConnectState = smbConnectState
 }
 
-// WithSmbOpenGroupIDQueryParameter adds the smbOpenGroupID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithSmbOpenGroupIDQueryParameter(smbOpenGroupID *string) *ClientLockCollectionGetParams {
-	o.SetSmbOpenGroupIDQueryParameter(smbOpenGroupID)
+// WithSmbOpenGroupID adds the smbOpenGroupID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithSmbOpenGroupID(smbOpenGroupID *string) *ClientLockCollectionGetParams {
+	o.SetSmbOpenGroupID(smbOpenGroupID)
 	return o
 }
 
-// SetSmbOpenGroupIDQueryParameter adds the smbOpenGroupId to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetSmbOpenGroupIDQueryParameter(smbOpenGroupID *string) {
-	o.SmbOpenGroupIDQueryParameter = smbOpenGroupID
+// SetSmbOpenGroupID adds the smbOpenGroupId to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetSmbOpenGroupID(smbOpenGroupID *string) {
+	o.SmbOpenGroupID = smbOpenGroupID
 }
 
-// WithSmbOpenTypeQueryParameter adds the smbOpenType to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithSmbOpenTypeQueryParameter(smbOpenType *string) *ClientLockCollectionGetParams {
-	o.SetSmbOpenTypeQueryParameter(smbOpenType)
+// WithSmbOpenType adds the smbOpenType to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithSmbOpenType(smbOpenType *string) *ClientLockCollectionGetParams {
+	o.SetSmbOpenType(smbOpenType)
 	return o
 }
 
-// SetSmbOpenTypeQueryParameter adds the smbOpenType to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetSmbOpenTypeQueryParameter(smbOpenType *string) {
-	o.SmbOpenTypeQueryParameter = smbOpenType
+// SetSmbOpenType adds the smbOpenType to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetSmbOpenType(smbOpenType *string) {
+	o.SmbOpenType = smbOpenType
 }
 
-// WithStateQueryParameter adds the state to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithStateQueryParameter(state *string) *ClientLockCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithState(state *string) *ClientLockCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSVMNameQueryParameter adds the svmName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ClientLockCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithSvmName(svmName *string) *ClientLockCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ClientLockCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithSvmUUID(svmUUID *string) *ClientLockCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithTypeQueryParameter(typeVar *string) *ClientLockCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithType(typeVar *string) *ClientLockCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ClientLockCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithUUID(uuid *string) *ClientLockCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *ClientLockCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithVolumeName(volumeName *string) *ClientLockCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the client lock collection get params
-func (o *ClientLockCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *ClientLockCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the client lock collection get params
+func (o *ClientLockCollectionGetParams) WithVolumeUUID(volumeUUID *string) *ClientLockCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the client lock collection get params
-func (o *ClientLockCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the client lock collection get params
+func (o *ClientLockCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -736,13 +736,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.ByteLockExclusiveQueryParameter != nil {
+	if o.ByteLockExclusive != nil {
 
 		// query param byte_lock.exclusive
 		var qrByteLockExclusive bool
 
-		if o.ByteLockExclusiveQueryParameter != nil {
-			qrByteLockExclusive = *o.ByteLockExclusiveQueryParameter
+		if o.ByteLockExclusive != nil {
+			qrByteLockExclusive = *o.ByteLockExclusive
 		}
 		qByteLockExclusive := swag.FormatBool(qrByteLockExclusive)
 		if qByteLockExclusive != "" {
@@ -753,13 +753,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ByteLockLengthQueryParameter != nil {
+	if o.ByteLockLength != nil {
 
 		// query param byte_lock.length
 		var qrByteLockLength int64
 
-		if o.ByteLockLengthQueryParameter != nil {
-			qrByteLockLength = *o.ByteLockLengthQueryParameter
+		if o.ByteLockLength != nil {
+			qrByteLockLength = *o.ByteLockLength
 		}
 		qByteLockLength := swag.FormatInt64(qrByteLockLength)
 		if qByteLockLength != "" {
@@ -770,13 +770,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ByteLockMandatoryQueryParameter != nil {
+	if o.ByteLockMandatory != nil {
 
 		// query param byte_lock.mandatory
 		var qrByteLockMandatory bool
 
-		if o.ByteLockMandatoryQueryParameter != nil {
-			qrByteLockMandatory = *o.ByteLockMandatoryQueryParameter
+		if o.ByteLockMandatory != nil {
+			qrByteLockMandatory = *o.ByteLockMandatory
 		}
 		qByteLockMandatory := swag.FormatBool(qrByteLockMandatory)
 		if qByteLockMandatory != "" {
@@ -787,13 +787,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ByteLockOffsetQueryParameter != nil {
+	if o.ByteLockOffset != nil {
 
 		// query param byte_lock.offset
 		var qrByteLockOffset int64
 
-		if o.ByteLockOffsetQueryParameter != nil {
-			qrByteLockOffset = *o.ByteLockOffsetQueryParameter
+		if o.ByteLockOffset != nil {
+			qrByteLockOffset = *o.ByteLockOffset
 		}
 		qByteLockOffset := swag.FormatInt64(qrByteLockOffset)
 		if qByteLockOffset != "" {
@@ -804,13 +804,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ByteLockSoftQueryParameter != nil {
+	if o.ByteLockSoft != nil {
 
 		// query param byte_lock.soft
 		var qrByteLockSoft bool
 
-		if o.ByteLockSoftQueryParameter != nil {
-			qrByteLockSoft = *o.ByteLockSoftQueryParameter
+		if o.ByteLockSoft != nil {
+			qrByteLockSoft = *o.ByteLockSoft
 		}
 		qByteLockSoft := swag.FormatBool(qrByteLockSoft)
 		if qByteLockSoft != "" {
@@ -821,13 +821,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ByteLockSuperQueryParameter != nil {
+	if o.ByteLockSuper != nil {
 
 		// query param byte_lock.super
 		var qrByteLockSuper bool
 
-		if o.ByteLockSuperQueryParameter != nil {
-			qrByteLockSuper = *o.ByteLockSuperQueryParameter
+		if o.ByteLockSuper != nil {
+			qrByteLockSuper = *o.ByteLockSuper
 		}
 		qByteLockSuper := swag.FormatBool(qrByteLockSuper)
 		if qByteLockSuper != "" {
@@ -838,13 +838,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ClientAddressQueryParameter != nil {
+	if o.ClientAddress != nil {
 
 		// query param client_address
 		var qrClientAddress string
 
-		if o.ClientAddressQueryParameter != nil {
-			qrClientAddress = *o.ClientAddressQueryParameter
+		if o.ClientAddress != nil {
+			qrClientAddress = *o.ClientAddress
 		}
 		qClientAddress := qrClientAddress
 		if qClientAddress != "" {
@@ -855,13 +855,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ConstituentQueryParameter != nil {
+	if o.Constituent != nil {
 
 		// query param constituent
 		var qrConstituent bool
 
-		if o.ConstituentQueryParameter != nil {
-			qrConstituent = *o.ConstituentQueryParameter
+		if o.Constituent != nil {
+			qrConstituent = *o.Constituent
 		}
 		qConstituent := swag.FormatBool(qrConstituent)
 		if qConstituent != "" {
@@ -872,13 +872,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DelegationQueryParameter != nil {
+	if o.Delegation != nil {
 
 		// query param delegation
 		var qrDelegation string
 
-		if o.DelegationQueryParameter != nil {
-			qrDelegation = *o.DelegationQueryParameter
+		if o.Delegation != nil {
+			qrDelegation = *o.Delegation
 		}
 		qDelegation := qrDelegation
 		if qDelegation != "" {
@@ -889,7 +889,7 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -900,13 +900,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceIPAddressQueryParameter != nil {
+	if o.InterfaceIPAddress != nil {
 
 		// query param interface.ip.address
 		var qrInterfaceIPAddress string
 
-		if o.InterfaceIPAddressQueryParameter != nil {
-			qrInterfaceIPAddress = *o.InterfaceIPAddressQueryParameter
+		if o.InterfaceIPAddress != nil {
+			qrInterfaceIPAddress = *o.InterfaceIPAddress
 		}
 		qInterfaceIPAddress := qrInterfaceIPAddress
 		if qInterfaceIPAddress != "" {
@@ -917,13 +917,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceNameQueryParameter != nil {
+	if o.InterfaceName != nil {
 
 		// query param interface.name
 		var qrInterfaceName string
 
-		if o.InterfaceNameQueryParameter != nil {
-			qrInterfaceName = *o.InterfaceNameQueryParameter
+		if o.InterfaceName != nil {
+			qrInterfaceName = *o.InterfaceName
 		}
 		qInterfaceName := qrInterfaceName
 		if qInterfaceName != "" {
@@ -934,13 +934,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceUUIDQueryParameter != nil {
+	if o.InterfaceUUID != nil {
 
 		// query param interface.uuid
 		var qrInterfaceUUID string
 
-		if o.InterfaceUUIDQueryParameter != nil {
-			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		if o.InterfaceUUID != nil {
+			qrInterfaceUUID = *o.InterfaceUUID
 		}
 		qInterfaceUUID := qrInterfaceUUID
 		if qInterfaceUUID != "" {
@@ -951,13 +951,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -968,13 +968,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -985,13 +985,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1002,13 +1002,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OplockLevelQueryParameter != nil {
+	if o.OplockLevel != nil {
 
 		// query param oplock_level
 		var qrOplockLevel string
 
-		if o.OplockLevelQueryParameter != nil {
-			qrOplockLevel = *o.OplockLevelQueryParameter
+		if o.OplockLevel != nil {
+			qrOplockLevel = *o.OplockLevel
 		}
 		qOplockLevel := qrOplockLevel
 		if qOplockLevel != "" {
@@ -1019,7 +1019,7 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1030,13 +1030,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OwnerIDQueryParameter != nil {
+	if o.OwnerID != nil {
 
 		// query param owner_id
 		var qrOwnerID string
 
-		if o.OwnerIDQueryParameter != nil {
-			qrOwnerID = *o.OwnerIDQueryParameter
+		if o.OwnerID != nil {
+			qrOwnerID = *o.OwnerID
 		}
 		qOwnerID := qrOwnerID
 		if qOwnerID != "" {
@@ -1047,13 +1047,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PathQueryParameter != nil {
+	if o.Path != nil {
 
 		// query param path
 		var qrPath string
 
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
+		if o.Path != nil {
+			qrPath = *o.Path
 		}
 		qPath := qrPath
 		if qPath != "" {
@@ -1064,13 +1064,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -1081,13 +1081,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1098,13 +1098,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1115,13 +1115,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ShareLockModeQueryParameter != nil {
+	if o.ShareLockMode != nil {
 
 		// query param share_lock.mode
 		var qrShareLockMode string
 
-		if o.ShareLockModeQueryParameter != nil {
-			qrShareLockMode = *o.ShareLockModeQueryParameter
+		if o.ShareLockMode != nil {
+			qrShareLockMode = *o.ShareLockMode
 		}
 		qShareLockMode := qrShareLockMode
 		if qShareLockMode != "" {
@@ -1132,13 +1132,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ShareLockSoftQueryParameter != nil {
+	if o.ShareLockSoft != nil {
 
 		// query param share_lock.soft
 		var qrShareLockSoft bool
 
-		if o.ShareLockSoftQueryParameter != nil {
-			qrShareLockSoft = *o.ShareLockSoftQueryParameter
+		if o.ShareLockSoft != nil {
+			qrShareLockSoft = *o.ShareLockSoft
 		}
 		qShareLockSoft := swag.FormatBool(qrShareLockSoft)
 		if qShareLockSoft != "" {
@@ -1149,13 +1149,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SmbConnectStateQueryParameter != nil {
+	if o.SmbConnectState != nil {
 
 		// query param smb.connect_state
 		var qrSmbConnectState string
 
-		if o.SmbConnectStateQueryParameter != nil {
-			qrSmbConnectState = *o.SmbConnectStateQueryParameter
+		if o.SmbConnectState != nil {
+			qrSmbConnectState = *o.SmbConnectState
 		}
 		qSmbConnectState := qrSmbConnectState
 		if qSmbConnectState != "" {
@@ -1166,13 +1166,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SmbOpenGroupIDQueryParameter != nil {
+	if o.SmbOpenGroupID != nil {
 
 		// query param smb.open_group_id
 		var qrSmbOpenGroupID string
 
-		if o.SmbOpenGroupIDQueryParameter != nil {
-			qrSmbOpenGroupID = *o.SmbOpenGroupIDQueryParameter
+		if o.SmbOpenGroupID != nil {
+			qrSmbOpenGroupID = *o.SmbOpenGroupID
 		}
 		qSmbOpenGroupID := qrSmbOpenGroupID
 		if qSmbOpenGroupID != "" {
@@ -1183,13 +1183,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SmbOpenTypeQueryParameter != nil {
+	if o.SmbOpenType != nil {
 
 		// query param smb.open_type
 		var qrSmbOpenType string
 
-		if o.SmbOpenTypeQueryParameter != nil {
-			qrSmbOpenType = *o.SmbOpenTypeQueryParameter
+		if o.SmbOpenType != nil {
+			qrSmbOpenType = *o.SmbOpenType
 		}
 		qSmbOpenType := qrSmbOpenType
 		if qSmbOpenType != "" {
@@ -1200,13 +1200,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1217,13 +1217,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1234,13 +1234,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1251,13 +1251,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1268,13 +1268,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1285,13 +1285,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -1302,13 +1302,13 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -1327,7 +1327,7 @@ func (o *ClientLockCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamClientLockCollectionGet binds the parameter fields
 func (o *ClientLockCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1344,7 +1344,7 @@ func (o *ClientLockCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamClientLockCollectionGet binds the parameter order_by
 func (o *ClientLockCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

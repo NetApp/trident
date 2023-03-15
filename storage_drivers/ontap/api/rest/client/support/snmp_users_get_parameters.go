@@ -66,19 +66,19 @@ type SnmpUsersGetParams struct {
 
 	   Engine ID of owning SVM or remote switch.
 	*/
-	EngineIDPathParameter string
+	EngineID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   SNMP user name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* ReturnTimeout.
 
@@ -86,7 +86,7 @@ type SnmpUsersGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *SnmpUsersGetParams) WithDefaults() *SnmpUsersGetParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpUsersGetParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnmpUsersGetParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,48 +152,48 @@ func (o *SnmpUsersGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEngineIDPathParameter adds the engineID to the snmp users get params
-func (o *SnmpUsersGetParams) WithEngineIDPathParameter(engineID string) *SnmpUsersGetParams {
-	o.SetEngineIDPathParameter(engineID)
+// WithEngineID adds the engineID to the snmp users get params
+func (o *SnmpUsersGetParams) WithEngineID(engineID string) *SnmpUsersGetParams {
+	o.SetEngineID(engineID)
 	return o
 }
 
-// SetEngineIDPathParameter adds the engineId to the snmp users get params
-func (o *SnmpUsersGetParams) SetEngineIDPathParameter(engineID string) {
-	o.EngineIDPathParameter = engineID
+// SetEngineID adds the engineId to the snmp users get params
+func (o *SnmpUsersGetParams) SetEngineID(engineID string) {
+	o.EngineID = engineID
 }
 
-// WithFieldsQueryParameter adds the fields to the snmp users get params
-func (o *SnmpUsersGetParams) WithFieldsQueryParameter(fields []string) *SnmpUsersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snmp users get params
+func (o *SnmpUsersGetParams) WithFields(fields []string) *SnmpUsersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snmp users get params
-func (o *SnmpUsersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snmp users get params
+func (o *SnmpUsersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the snmp users get params
-func (o *SnmpUsersGetParams) WithNamePathParameter(name string) *SnmpUsersGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the snmp users get params
+func (o *SnmpUsersGetParams) WithName(name string) *SnmpUsersGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the snmp users get params
-func (o *SnmpUsersGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the snmp users get params
+func (o *SnmpUsersGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp users get params
-func (o *SnmpUsersGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpUsersGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp users get params
+func (o *SnmpUsersGetParams) WithReturnTimeout(returnTimeout *int64) *SnmpUsersGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp users get params
-func (o *SnmpUsersGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp users get params
+func (o *SnmpUsersGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,11 +205,11 @@ func (o *SnmpUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param engine_id
-	if err := r.SetPathParam("engine_id", o.EngineIDPathParameter); err != nil {
+	if err := r.SetPathParam("engine_id", o.EngineID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -221,17 +221,17 @@ func (o *SnmpUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -250,7 +250,7 @@ func (o *SnmpUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamSnmpUsersGet binds the parameter fields
 func (o *SnmpUsersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

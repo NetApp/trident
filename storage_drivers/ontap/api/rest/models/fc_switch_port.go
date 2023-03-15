@@ -21,32 +21,32 @@ import (
 type FcSwitchPort struct {
 
 	// attached device
-	AttachedDevice *FcSwitchPortAttachedDevice `json:"attached_device,omitempty"`
+	AttachedDevice *FcSwitchPortInlineAttachedDevice `json:"attached_device,omitempty"`
 
 	// The slot of the Fibre Channel switch port.
 	//
 	// Example: 1
 	// Read Only: true
-	Slot string `json:"slot,omitempty"`
+	Slot *string `json:"slot,omitempty"`
 
 	// The state of the Fibre Channel switch port.
 	//
 	// Example: online
 	// Read Only: true
 	// Enum: [unknown online offline testing fault]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// The type of the Fibre Channel switch port.
 	//
 	// Read Only: true
 	// Enum: [b_port e_port f_port fl_port fnl_port fv_port n_port nl_port nv_port nx_port sd_port te_port tf_port tl_port tnp_port none]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// The world wide port name (WWPN) of the Fibre Channel switch port.
 	//
 	// Example: 50:0a:31:32:33:34:35:36
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this fc switch port
@@ -167,7 +167,7 @@ func (m *FcSwitchPort) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -363,7 +363,7 @@ func (m *FcSwitchPort) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -416,7 +416,7 @@ func (m *FcSwitchPort) contextValidateAttachedDevice(ctx context.Context, format
 
 func (m *FcSwitchPort) contextValidateSlot(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "slot", "body", string(m.Slot)); err != nil {
+	if err := validate.ReadOnly(ctx, "slot", "body", m.Slot); err != nil {
 		return err
 	}
 
@@ -425,7 +425,7 @@ func (m *FcSwitchPort) contextValidateSlot(ctx context.Context, formats strfmt.R
 
 func (m *FcSwitchPort) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -434,7 +434,7 @@ func (m *FcSwitchPort) contextValidateState(ctx context.Context, formats strfmt.
 
 func (m *FcSwitchPort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -443,7 +443,7 @@ func (m *FcSwitchPort) contextValidateType(ctx context.Context, formats strfmt.R
 
 func (m *FcSwitchPort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -468,31 +468,31 @@ func (m *FcSwitchPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcSwitchPortAttachedDevice The Fibre Channel (FC) device attached to the FC switch port.
+// FcSwitchPortInlineAttachedDevice The Fibre Channel (FC) device attached to the FC switch port.
 //
-// swagger:model FcSwitchPortAttachedDevice
-type FcSwitchPortAttachedDevice struct {
+// swagger:model fc_switch_port_inline_attached_device
+type FcSwitchPortInlineAttachedDevice struct {
 
 	// The Fibre Channel port identifier of the attach device.
 	//
 	// Example: 0x011300
 	// Read Only: true
-	PortID string `json:"port_id,omitempty"`
+	PortID *string `json:"port_id,omitempty"`
 
 	// The world-wide port name (WWPN) of the attached device.
 	//
 	// Example: 50:0a:21:22:23:24:25:26
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this fc switch port attached device
-func (m *FcSwitchPortAttachedDevice) Validate(formats strfmt.Registry) error {
+// Validate validates this fc switch port inline attached device
+func (m *FcSwitchPortInlineAttachedDevice) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc switch port attached device based on the context it is used
-func (m *FcSwitchPortAttachedDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc switch port inline attached device based on the context it is used
+func (m *FcSwitchPortInlineAttachedDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePortID(ctx, formats); err != nil {
@@ -509,18 +509,18 @@ func (m *FcSwitchPortAttachedDevice) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *FcSwitchPortAttachedDevice) contextValidatePortID(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcSwitchPortInlineAttachedDevice) contextValidatePortID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "attached_device"+"."+"port_id", "body", string(m.PortID)); err != nil {
+	if err := validate.ReadOnly(ctx, "attached_device"+"."+"port_id", "body", m.PortID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcSwitchPortAttachedDevice) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcSwitchPortInlineAttachedDevice) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "attached_device"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "attached_device"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -528,7 +528,7 @@ func (m *FcSwitchPortAttachedDevice) contextValidateWwpn(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *FcSwitchPortAttachedDevice) MarshalBinary() ([]byte, error) {
+func (m *FcSwitchPortInlineAttachedDevice) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -536,8 +536,8 @@ func (m *FcSwitchPortAttachedDevice) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcSwitchPortAttachedDevice) UnmarshalBinary(b []byte) error {
-	var res FcSwitchPortAttachedDevice
+func (m *FcSwitchPortInlineAttachedDevice) UnmarshalBinary(b []byte) error {
+	var res FcSwitchPortInlineAttachedDevice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

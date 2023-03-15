@@ -6,9 +6,10 @@ package api
 // REST error codes
 // ///////////////////////////////////////////////////////////////////////////
 const (
-	DP_VOLUME_NOT_INITIALIZED       = "917536"
-	SNAPMIRROR_TRANSFER_IN_PROGRESS = "13303812"
-	LUN_MAP_EXIST_ERROR             = "5374922"
+	DP_VOLUME_NOT_INITIALIZED                  = "917536"
+	SNAPMIRROR_TRANSFER_IN_PROGRESS            = "13303812"
+	SNAPMIRROR_TRANSFER_IN_PROGRESS_BROKEN_OFF = "13303808" // Transition to broken_off state failed. Reason:Another transfer is in progress
+	LUN_MAP_EXIST_ERROR                        = "5374922"
 )
 
 // ///////////////////////////////////////////////////////////////////////////

@@ -66,205 +66,205 @@ type IgroupCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* ConnectivityTrackingAlertsSummaryArgumentsCode.
 
 	   Filter by connectivity_tracking.alerts.summary.arguments.code
 	*/
-	ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter *string
+	ConnectivityTrackingAlertsSummaryArgumentsCode *string
 
 	/* ConnectivityTrackingAlertsSummaryArgumentsMessage.
 
 	   Filter by connectivity_tracking.alerts.summary.arguments.message
 	*/
-	ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter *string
+	ConnectivityTrackingAlertsSummaryArgumentsMessage *string
 
 	/* ConnectivityTrackingAlertsSummaryCode.
 
 	   Filter by connectivity_tracking.alerts.summary.code
 	*/
-	ConnectivityTrackingAlertsSummaryCodeQueryParameter *string
+	ConnectivityTrackingAlertsSummaryCode *string
 
 	/* ConnectivityTrackingAlertsSummaryMessage.
 
 	   Filter by connectivity_tracking.alerts.summary.message
 	*/
-	ConnectivityTrackingAlertsSummaryMessageQueryParameter *string
+	ConnectivityTrackingAlertsSummaryMessage *string
 
 	/* ConnectivityTrackingAlertsSummaryTarget.
 
 	   Filter by connectivity_tracking.alerts.summary.target
 	*/
-	ConnectivityTrackingAlertsSummaryTargetQueryParameter *string
+	ConnectivityTrackingAlertsSummaryTarget *string
 
 	/* ConnectivityTrackingConnectionState.
 
 	   Filter by connectivity_tracking.connection_state
 	*/
-	ConnectivityTrackingConnectionStateQueryParameter *string
+	ConnectivityTrackingConnectionState *string
 
 	/* ConnectivityTrackingRequiredNodesName.
 
 	   Filter by connectivity_tracking.required_nodes.name
 	*/
-	ConnectivityTrackingRequiredNodesNameQueryParameter *string
+	ConnectivityTrackingRequiredNodesName *string
 
 	/* ConnectivityTrackingRequiredNodesUUID.
 
 	   Filter by connectivity_tracking.required_nodes.uuid
 	*/
-	ConnectivityTrackingRequiredNodesUUIDQueryParameter *string
+	ConnectivityTrackingRequiredNodesUUID *string
 
 	/* DeleteOnUnmap.
 
 	   Filter by delete_on_unmap
 	*/
-	DeleteOnUnmapQueryParameter *bool
+	DeleteOnUnmap *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupsComment.
 
 	   Filter by igroups.comment
 	*/
-	IgroupsCommentQueryParameter *string
+	IgroupsComment *string
 
 	/* IgroupsName.
 
 	   Filter by igroups.name
 	*/
-	IgroupsNameQueryParameter *string
+	IgroupsName *string
 
 	/* IgroupsUUID.
 
 	   Filter by igroups.uuid
 	*/
-	IgroupsUUIDQueryParameter *string
+	IgroupsUUID *string
 
 	/* InitiatorsComment.
 
 	   Filter by initiators.comment
 	*/
-	InitiatorsCommentQueryParameter *string
+	InitiatorsComment *string
 
 	/* InitiatorsConnectivityTrackingConnectionState.
 
 	   Filter by initiators.connectivity_tracking.connection_state
 	*/
-	InitiatorsConnectivityTrackingConnectionStateQueryParameter *string
+	InitiatorsConnectivityTrackingConnectionState *string
 
 	/* InitiatorsIgroupName.
 
 	   Filter by initiators.igroup.name
 	*/
-	InitiatorsIgroupNameQueryParameter *string
+	InitiatorsIgroupName *string
 
 	/* InitiatorsIgroupUUID.
 
 	   Filter by initiators.igroup.uuid
 	*/
-	InitiatorsIgroupUUIDQueryParameter *string
+	InitiatorsIgroupUUID *string
 
 	/* InitiatorsName.
 
 	   Filter by initiators.name
 	*/
-	InitiatorsNameQueryParameter *string
+	InitiatorsName *string
 
 	/* LunMapsLogicalUnitNumber.
 
 	   Filter by lun_maps.logical_unit_number
 	*/
-	LunMapsLogicalUnitNumberQueryParameter *int64
+	LunMapsLogicalUnitNumber *int64
 
 	/* LunMapsLunName.
 
 	   Filter by lun_maps.lun.name
 	*/
-	LunMapsLunNameQueryParameter *string
+	LunMapsLunName *string
 
 	/* LunMapsLunNodeName.
 
 	   Filter by lun_maps.lun.node.name
 	*/
-	LunMapsLunNodeNameQueryParameter *string
+	LunMapsLunNodeName *string
 
 	/* LunMapsLunNodeUUID.
 
 	   Filter by lun_maps.lun.node.uuid
 	*/
-	LunMapsLunNodeUUIDQueryParameter *string
+	LunMapsLunNodeUUID *string
 
 	/* LunMapsLunUUID.
 
 	   Filter by lun_maps.lun.uuid
 	*/
-	LunMapsLunUUIDQueryParameter *string
+	LunMapsLunUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OsType.
 
 	   Filter by os_type
 	*/
-	OsTypeQueryParameter *string
+	OsType *string
 
 	/* ParentIgroupsComment.
 
 	   Filter by parent_igroups.comment
 	*/
-	ParentIgroupsCommentQueryParameter *string
+	ParentIgroupsComment *string
 
 	/* ParentIgroupsName.
 
 	   Filter by parent_igroups.name
 	*/
-	ParentIgroupsNameQueryParameter *string
+	ParentIgroupsName *string
 
 	/* ParentIgroupsUUID.
 
 	   Filter by parent_igroups.uuid
 	*/
-	ParentIgroupsUUIDQueryParameter *string
+	ParentIgroupsUUID *string
 
 	/* PortsetName.
 
 	   Filter by portset.name
 	*/
-	PortsetNameQueryParameter *string
+	PortsetName *string
 
 	/* PortsetUUID.
 
 	   Filter by portset.uuid
 	*/
-	PortsetUUIDQueryParameter *string
+	PortsetUUID *string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -272,7 +272,7 @@ type IgroupCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -280,49 +280,49 @@ type IgroupCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SupportsIgroups.
 
 	   Filter by supports_igroups
 	*/
-	SupportsIgroupsQueryParameter *bool
+	SupportsIgroups *bool
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TargetFirmwareRevision.
 
 	   Filter by target.firmware_revision
 	*/
-	TargetFirmwareRevisionQueryParameter *string
+	TargetFirmwareRevision *string
 
 	/* TargetProductID.
 
 	   Filter by target.product_id
 	*/
-	TargetProductIDQueryParameter *string
+	TargetProductID *string
 
 	/* TargetVendorID.
 
 	   Filter by target.vendor_id
 	*/
-	TargetVendorIDQueryParameter *string
+	TargetVendorID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -342,14 +342,14 @@ func (o *IgroupCollectionGetParams) WithDefaults() *IgroupCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *IgroupCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IgroupCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -391,477 +391,477 @@ func (o *IgroupCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithCommentQueryParameter(comment *string) *IgroupCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithComment(comment *string) *IgroupCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode)
+// WithConnectivityTrackingAlertsSummaryArgumentsCode adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsCode(connectivityTrackingAlertsSummaryArgumentsCode *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryArgumentsCode(connectivityTrackingAlertsSummaryArgumentsCode)
 	return o
 }
 
-// SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode *string) {
-	o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter = connectivityTrackingAlertsSummaryArgumentsCode
+// SetConnectivityTrackingAlertsSummaryArgumentsCode adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsCode(connectivityTrackingAlertsSummaryArgumentsCode *string) {
+	o.ConnectivityTrackingAlertsSummaryArgumentsCode = connectivityTrackingAlertsSummaryArgumentsCode
 }
 
-// WithConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage)
+// WithConnectivityTrackingAlertsSummaryArgumentsMessage adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsMessage(connectivityTrackingAlertsSummaryArgumentsMessage *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryArgumentsMessage(connectivityTrackingAlertsSummaryArgumentsMessage)
 	return o
 }
 
-// SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage *string) {
-	o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter = connectivityTrackingAlertsSummaryArgumentsMessage
+// SetConnectivityTrackingAlertsSummaryArgumentsMessage adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsMessage(connectivityTrackingAlertsSummaryArgumentsMessage *string) {
+	o.ConnectivityTrackingAlertsSummaryArgumentsMessage = connectivityTrackingAlertsSummaryArgumentsMessage
 }
 
-// WithConnectivityTrackingAlertsSummaryCodeQueryParameter adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode)
+// WithConnectivityTrackingAlertsSummaryCode adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryCode(connectivityTrackingAlertsSummaryCode *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryCode(connectivityTrackingAlertsSummaryCode)
 	return o
 }
 
-// SetConnectivityTrackingAlertsSummaryCodeQueryParameter adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode *string) {
-	o.ConnectivityTrackingAlertsSummaryCodeQueryParameter = connectivityTrackingAlertsSummaryCode
+// SetConnectivityTrackingAlertsSummaryCode adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryCode(connectivityTrackingAlertsSummaryCode *string) {
+	o.ConnectivityTrackingAlertsSummaryCode = connectivityTrackingAlertsSummaryCode
 }
 
-// WithConnectivityTrackingAlertsSummaryMessageQueryParameter adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage)
+// WithConnectivityTrackingAlertsSummaryMessage adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryMessage(connectivityTrackingAlertsSummaryMessage *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryMessage(connectivityTrackingAlertsSummaryMessage)
 	return o
 }
 
-// SetConnectivityTrackingAlertsSummaryMessageQueryParameter adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage *string) {
-	o.ConnectivityTrackingAlertsSummaryMessageQueryParameter = connectivityTrackingAlertsSummaryMessage
+// SetConnectivityTrackingAlertsSummaryMessage adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryMessage(connectivityTrackingAlertsSummaryMessage *string) {
+	o.ConnectivityTrackingAlertsSummaryMessage = connectivityTrackingAlertsSummaryMessage
 }
 
-// WithConnectivityTrackingAlertsSummaryTargetQueryParameter adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget)
+// WithConnectivityTrackingAlertsSummaryTarget adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget)
 	return o
 }
 
-// SetConnectivityTrackingAlertsSummaryTargetQueryParameter adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget *string) {
-	o.ConnectivityTrackingAlertsSummaryTargetQueryParameter = connectivityTrackingAlertsSummaryTarget
+// SetConnectivityTrackingAlertsSummaryTarget adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryTarget(connectivityTrackingAlertsSummaryTarget *string) {
+	o.ConnectivityTrackingAlertsSummaryTarget = connectivityTrackingAlertsSummaryTarget
 }
 
-// WithConnectivityTrackingConnectionStateQueryParameter adds the connectivityTrackingConnectionState to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState)
+// WithConnectivityTrackingConnectionState adds the connectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingConnectionState(connectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingConnectionState(connectivityTrackingConnectionState)
 	return o
 }
 
-// SetConnectivityTrackingConnectionStateQueryParameter adds the connectivityTrackingConnectionState to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState *string) {
-	o.ConnectivityTrackingConnectionStateQueryParameter = connectivityTrackingConnectionState
+// SetConnectivityTrackingConnectionState adds the connectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingConnectionState(connectivityTrackingConnectionState *string) {
+	o.ConnectivityTrackingConnectionState = connectivityTrackingConnectionState
 }
 
-// WithConnectivityTrackingRequiredNodesNameQueryParameter adds the connectivityTrackingRequiredNodesName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName)
+// WithConnectivityTrackingRequiredNodesName adds the connectivityTrackingRequiredNodesName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesName(connectivityTrackingRequiredNodesName *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingRequiredNodesName(connectivityTrackingRequiredNodesName)
 	return o
 }
 
-// SetConnectivityTrackingRequiredNodesNameQueryParameter adds the connectivityTrackingRequiredNodesName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName *string) {
-	o.ConnectivityTrackingRequiredNodesNameQueryParameter = connectivityTrackingRequiredNodesName
+// SetConnectivityTrackingRequiredNodesName adds the connectivityTrackingRequiredNodesName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesName(connectivityTrackingRequiredNodesName *string) {
+	o.ConnectivityTrackingRequiredNodesName = connectivityTrackingRequiredNodesName
 }
 
-// WithConnectivityTrackingRequiredNodesUUIDQueryParameter adds the connectivityTrackingRequiredNodesUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID *string) *IgroupCollectionGetParams {
-	o.SetConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID)
+// WithConnectivityTrackingRequiredNodesUUID adds the connectivityTrackingRequiredNodesUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesUUID(connectivityTrackingRequiredNodesUUID *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingRequiredNodesUUID(connectivityTrackingRequiredNodesUUID)
 	return o
 }
 
-// SetConnectivityTrackingRequiredNodesUUIDQueryParameter adds the connectivityTrackingRequiredNodesUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID *string) {
-	o.ConnectivityTrackingRequiredNodesUUIDQueryParameter = connectivityTrackingRequiredNodesUUID
+// SetConnectivityTrackingRequiredNodesUUID adds the connectivityTrackingRequiredNodesUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesUUID(connectivityTrackingRequiredNodesUUID *string) {
+	o.ConnectivityTrackingRequiredNodesUUID = connectivityTrackingRequiredNodesUUID
 }
 
-// WithDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) *IgroupCollectionGetParams {
-	o.SetDeleteOnUnmapQueryParameter(deleteOnUnmap)
+// WithDeleteOnUnmap adds the deleteOnUnmap to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithDeleteOnUnmap(deleteOnUnmap *bool) *IgroupCollectionGetParams {
+	o.SetDeleteOnUnmap(deleteOnUnmap)
 	return o
 }
 
-// SetDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) {
-	o.DeleteOnUnmapQueryParameter = deleteOnUnmap
+// SetDeleteOnUnmap adds the deleteOnUnmap to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetDeleteOnUnmap(deleteOnUnmap *bool) {
+	o.DeleteOnUnmap = deleteOnUnmap
 }
 
-// WithFieldsQueryParameter adds the fields to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithFieldsQueryParameter(fields []string) *IgroupCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithFields(fields []string) *IgroupCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupsCommentQueryParameter adds the igroupsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithIgroupsCommentQueryParameter(igroupsComment *string) *IgroupCollectionGetParams {
-	o.SetIgroupsCommentQueryParameter(igroupsComment)
+// WithIgroupsComment adds the igroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsComment(igroupsComment *string) *IgroupCollectionGetParams {
+	o.SetIgroupsComment(igroupsComment)
 	return o
 }
 
-// SetIgroupsCommentQueryParameter adds the igroupsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetIgroupsCommentQueryParameter(igroupsComment *string) {
-	o.IgroupsCommentQueryParameter = igroupsComment
+// SetIgroupsComment adds the igroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsComment(igroupsComment *string) {
+	o.IgroupsComment = igroupsComment
 }
 
-// WithIgroupsNameQueryParameter adds the igroupsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithIgroupsNameQueryParameter(igroupsName *string) *IgroupCollectionGetParams {
-	o.SetIgroupsNameQueryParameter(igroupsName)
+// WithIgroupsName adds the igroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsName(igroupsName *string) *IgroupCollectionGetParams {
+	o.SetIgroupsName(igroupsName)
 	return o
 }
 
-// SetIgroupsNameQueryParameter adds the igroupsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetIgroupsNameQueryParameter(igroupsName *string) {
-	o.IgroupsNameQueryParameter = igroupsName
+// SetIgroupsName adds the igroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsName(igroupsName *string) {
+	o.IgroupsName = igroupsName
 }
 
-// WithIgroupsUUIDQueryParameter adds the igroupsUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithIgroupsUUIDQueryParameter(igroupsUUID *string) *IgroupCollectionGetParams {
-	o.SetIgroupsUUIDQueryParameter(igroupsUUID)
+// WithIgroupsUUID adds the igroupsUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsUUID(igroupsUUID *string) *IgroupCollectionGetParams {
+	o.SetIgroupsUUID(igroupsUUID)
 	return o
 }
 
-// SetIgroupsUUIDQueryParameter adds the igroupsUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetIgroupsUUIDQueryParameter(igroupsUUID *string) {
-	o.IgroupsUUIDQueryParameter = igroupsUUID
+// SetIgroupsUUID adds the igroupsUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsUUID(igroupsUUID *string) {
+	o.IgroupsUUID = igroupsUUID
 }
 
-// WithInitiatorsCommentQueryParameter adds the initiatorsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithInitiatorsCommentQueryParameter(initiatorsComment *string) *IgroupCollectionGetParams {
-	o.SetInitiatorsCommentQueryParameter(initiatorsComment)
+// WithInitiatorsComment adds the initiatorsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsComment(initiatorsComment *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsComment(initiatorsComment)
 	return o
 }
 
-// SetInitiatorsCommentQueryParameter adds the initiatorsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetInitiatorsCommentQueryParameter(initiatorsComment *string) {
-	o.InitiatorsCommentQueryParameter = initiatorsComment
+// SetInitiatorsComment adds the initiatorsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsComment(initiatorsComment *string) {
+	o.InitiatorsComment = initiatorsComment
 }
 
-// WithInitiatorsConnectivityTrackingConnectionStateQueryParameter adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
-	o.SetInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState)
+// WithInitiatorsConnectivityTrackingConnectionState adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsConnectivityTrackingConnectionState(initiatorsConnectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsConnectivityTrackingConnectionState(initiatorsConnectivityTrackingConnectionState)
 	return o
 }
 
-// SetInitiatorsConnectivityTrackingConnectionStateQueryParameter adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState *string) {
-	o.InitiatorsConnectivityTrackingConnectionStateQueryParameter = initiatorsConnectivityTrackingConnectionState
+// SetInitiatorsConnectivityTrackingConnectionState adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsConnectivityTrackingConnectionState(initiatorsConnectivityTrackingConnectionState *string) {
+	o.InitiatorsConnectivityTrackingConnectionState = initiatorsConnectivityTrackingConnectionState
 }
 
-// WithInitiatorsIgroupNameQueryParameter adds the initiatorsIgroupName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithInitiatorsIgroupNameQueryParameter(initiatorsIgroupName *string) *IgroupCollectionGetParams {
-	o.SetInitiatorsIgroupNameQueryParameter(initiatorsIgroupName)
+// WithInitiatorsIgroupName adds the initiatorsIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsIgroupName(initiatorsIgroupName *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsIgroupName(initiatorsIgroupName)
 	return o
 }
 
-// SetInitiatorsIgroupNameQueryParameter adds the initiatorsIgroupName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetInitiatorsIgroupNameQueryParameter(initiatorsIgroupName *string) {
-	o.InitiatorsIgroupNameQueryParameter = initiatorsIgroupName
+// SetInitiatorsIgroupName adds the initiatorsIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsIgroupName(initiatorsIgroupName *string) {
+	o.InitiatorsIgroupName = initiatorsIgroupName
 }
 
-// WithInitiatorsIgroupUUIDQueryParameter adds the initiatorsIgroupUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithInitiatorsIgroupUUIDQueryParameter(initiatorsIgroupUUID *string) *IgroupCollectionGetParams {
-	o.SetInitiatorsIgroupUUIDQueryParameter(initiatorsIgroupUUID)
+// WithInitiatorsIgroupUUID adds the initiatorsIgroupUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsIgroupUUID(initiatorsIgroupUUID *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsIgroupUUID(initiatorsIgroupUUID)
 	return o
 }
 
-// SetInitiatorsIgroupUUIDQueryParameter adds the initiatorsIgroupUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetInitiatorsIgroupUUIDQueryParameter(initiatorsIgroupUUID *string) {
-	o.InitiatorsIgroupUUIDQueryParameter = initiatorsIgroupUUID
+// SetInitiatorsIgroupUUID adds the initiatorsIgroupUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsIgroupUUID(initiatorsIgroupUUID *string) {
+	o.InitiatorsIgroupUUID = initiatorsIgroupUUID
 }
 
-// WithInitiatorsNameQueryParameter adds the initiatorsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithInitiatorsNameQueryParameter(initiatorsName *string) *IgroupCollectionGetParams {
-	o.SetInitiatorsNameQueryParameter(initiatorsName)
+// WithInitiatorsName adds the initiatorsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsName(initiatorsName *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsName(initiatorsName)
 	return o
 }
 
-// SetInitiatorsNameQueryParameter adds the initiatorsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetInitiatorsNameQueryParameter(initiatorsName *string) {
-	o.InitiatorsNameQueryParameter = initiatorsName
+// SetInitiatorsName adds the initiatorsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsName(initiatorsName *string) {
+	o.InitiatorsName = initiatorsName
 }
 
-// WithLunMapsLogicalUnitNumberQueryParameter adds the lunMapsLogicalUnitNumber to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber *int64) *IgroupCollectionGetParams {
-	o.SetLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber)
+// WithLunMapsLogicalUnitNumber adds the lunMapsLogicalUnitNumber to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber *int64) *IgroupCollectionGetParams {
+	o.SetLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber)
 	return o
 }
 
-// SetLunMapsLogicalUnitNumberQueryParameter adds the lunMapsLogicalUnitNumber to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber *int64) {
-	o.LunMapsLogicalUnitNumberQueryParameter = lunMapsLogicalUnitNumber
+// SetLunMapsLogicalUnitNumber adds the lunMapsLogicalUnitNumber to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber *int64) {
+	o.LunMapsLogicalUnitNumber = lunMapsLogicalUnitNumber
 }
 
-// WithLunMapsLunNameQueryParameter adds the lunMapsLunName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithLunMapsLunNameQueryParameter(lunMapsLunName *string) *IgroupCollectionGetParams {
-	o.SetLunMapsLunNameQueryParameter(lunMapsLunName)
+// WithLunMapsLunName adds the lunMapsLunName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithLunMapsLunName(lunMapsLunName *string) *IgroupCollectionGetParams {
+	o.SetLunMapsLunName(lunMapsLunName)
 	return o
 }
 
-// SetLunMapsLunNameQueryParameter adds the lunMapsLunName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetLunMapsLunNameQueryParameter(lunMapsLunName *string) {
-	o.LunMapsLunNameQueryParameter = lunMapsLunName
+// SetLunMapsLunName adds the lunMapsLunName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetLunMapsLunName(lunMapsLunName *string) {
+	o.LunMapsLunName = lunMapsLunName
 }
 
-// WithLunMapsLunNodeNameQueryParameter adds the lunMapsLunNodeName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithLunMapsLunNodeNameQueryParameter(lunMapsLunNodeName *string) *IgroupCollectionGetParams {
-	o.SetLunMapsLunNodeNameQueryParameter(lunMapsLunNodeName)
+// WithLunMapsLunNodeName adds the lunMapsLunNodeName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithLunMapsLunNodeName(lunMapsLunNodeName *string) *IgroupCollectionGetParams {
+	o.SetLunMapsLunNodeName(lunMapsLunNodeName)
 	return o
 }
 
-// SetLunMapsLunNodeNameQueryParameter adds the lunMapsLunNodeName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetLunMapsLunNodeNameQueryParameter(lunMapsLunNodeName *string) {
-	o.LunMapsLunNodeNameQueryParameter = lunMapsLunNodeName
+// SetLunMapsLunNodeName adds the lunMapsLunNodeName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetLunMapsLunNodeName(lunMapsLunNodeName *string) {
+	o.LunMapsLunNodeName = lunMapsLunNodeName
 }
 
-// WithLunMapsLunNodeUUIDQueryParameter adds the lunMapsLunNodeUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithLunMapsLunNodeUUIDQueryParameter(lunMapsLunNodeUUID *string) *IgroupCollectionGetParams {
-	o.SetLunMapsLunNodeUUIDQueryParameter(lunMapsLunNodeUUID)
+// WithLunMapsLunNodeUUID adds the lunMapsLunNodeUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithLunMapsLunNodeUUID(lunMapsLunNodeUUID *string) *IgroupCollectionGetParams {
+	o.SetLunMapsLunNodeUUID(lunMapsLunNodeUUID)
 	return o
 }
 
-// SetLunMapsLunNodeUUIDQueryParameter adds the lunMapsLunNodeUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetLunMapsLunNodeUUIDQueryParameter(lunMapsLunNodeUUID *string) {
-	o.LunMapsLunNodeUUIDQueryParameter = lunMapsLunNodeUUID
+// SetLunMapsLunNodeUUID adds the lunMapsLunNodeUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetLunMapsLunNodeUUID(lunMapsLunNodeUUID *string) {
+	o.LunMapsLunNodeUUID = lunMapsLunNodeUUID
 }
 
-// WithLunMapsLunUUIDQueryParameter adds the lunMapsLunUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithLunMapsLunUUIDQueryParameter(lunMapsLunUUID *string) *IgroupCollectionGetParams {
-	o.SetLunMapsLunUUIDQueryParameter(lunMapsLunUUID)
+// WithLunMapsLunUUID adds the lunMapsLunUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithLunMapsLunUUID(lunMapsLunUUID *string) *IgroupCollectionGetParams {
+	o.SetLunMapsLunUUID(lunMapsLunUUID)
 	return o
 }
 
-// SetLunMapsLunUUIDQueryParameter adds the lunMapsLunUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetLunMapsLunUUIDQueryParameter(lunMapsLunUUID *string) {
-	o.LunMapsLunUUIDQueryParameter = lunMapsLunUUID
+// SetLunMapsLunUUID adds the lunMapsLunUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetLunMapsLunUUID(lunMapsLunUUID *string) {
+	o.LunMapsLunUUID = lunMapsLunUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IgroupCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithMaxRecords(maxRecords *int64) *IgroupCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithNameQueryParameter(name *string) *IgroupCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithName(name *string) *IgroupCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IgroupCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithOrderBy(orderBy []string) *IgroupCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOsTypeQueryParameter adds the osType to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithOsTypeQueryParameter(osType *string) *IgroupCollectionGetParams {
-	o.SetOsTypeQueryParameter(osType)
+// WithOsType adds the osType to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithOsType(osType *string) *IgroupCollectionGetParams {
+	o.SetOsType(osType)
 	return o
 }
 
-// SetOsTypeQueryParameter adds the osType to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetOsTypeQueryParameter(osType *string) {
-	o.OsTypeQueryParameter = osType
+// SetOsType adds the osType to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetOsType(osType *string) {
+	o.OsType = osType
 }
 
-// WithParentIgroupsCommentQueryParameter adds the parentIgroupsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithParentIgroupsCommentQueryParameter(parentIgroupsComment *string) *IgroupCollectionGetParams {
-	o.SetParentIgroupsCommentQueryParameter(parentIgroupsComment)
+// WithParentIgroupsComment adds the parentIgroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsComment(parentIgroupsComment *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsComment(parentIgroupsComment)
 	return o
 }
 
-// SetParentIgroupsCommentQueryParameter adds the parentIgroupsComment to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetParentIgroupsCommentQueryParameter(parentIgroupsComment *string) {
-	o.ParentIgroupsCommentQueryParameter = parentIgroupsComment
+// SetParentIgroupsComment adds the parentIgroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsComment(parentIgroupsComment *string) {
+	o.ParentIgroupsComment = parentIgroupsComment
 }
 
-// WithParentIgroupsNameQueryParameter adds the parentIgroupsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithParentIgroupsNameQueryParameter(parentIgroupsName *string) *IgroupCollectionGetParams {
-	o.SetParentIgroupsNameQueryParameter(parentIgroupsName)
+// WithParentIgroupsName adds the parentIgroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsName(parentIgroupsName *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsName(parentIgroupsName)
 	return o
 }
 
-// SetParentIgroupsNameQueryParameter adds the parentIgroupsName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetParentIgroupsNameQueryParameter(parentIgroupsName *string) {
-	o.ParentIgroupsNameQueryParameter = parentIgroupsName
+// SetParentIgroupsName adds the parentIgroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsName(parentIgroupsName *string) {
+	o.ParentIgroupsName = parentIgroupsName
 }
 
-// WithParentIgroupsUUIDQueryParameter adds the parentIgroupsUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithParentIgroupsUUIDQueryParameter(parentIgroupsUUID *string) *IgroupCollectionGetParams {
-	o.SetParentIgroupsUUIDQueryParameter(parentIgroupsUUID)
+// WithParentIgroupsUUID adds the parentIgroupsUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsUUID(parentIgroupsUUID *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsUUID(parentIgroupsUUID)
 	return o
 }
 
-// SetParentIgroupsUUIDQueryParameter adds the parentIgroupsUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetParentIgroupsUUIDQueryParameter(parentIgroupsUUID *string) {
-	o.ParentIgroupsUUIDQueryParameter = parentIgroupsUUID
+// SetParentIgroupsUUID adds the parentIgroupsUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsUUID(parentIgroupsUUID *string) {
+	o.ParentIgroupsUUID = parentIgroupsUUID
 }
 
-// WithPortsetNameQueryParameter adds the portsetName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithPortsetNameQueryParameter(portsetName *string) *IgroupCollectionGetParams {
-	o.SetPortsetNameQueryParameter(portsetName)
+// WithPortsetName adds the portsetName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithPortsetName(portsetName *string) *IgroupCollectionGetParams {
+	o.SetPortsetName(portsetName)
 	return o
 }
 
-// SetPortsetNameQueryParameter adds the portsetName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetPortsetNameQueryParameter(portsetName *string) {
-	o.PortsetNameQueryParameter = portsetName
+// SetPortsetName adds the portsetName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetPortsetName(portsetName *string) {
+	o.PortsetName = portsetName
 }
 
-// WithPortsetUUIDQueryParameter adds the portsetUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithPortsetUUIDQueryParameter(portsetUUID *string) *IgroupCollectionGetParams {
-	o.SetPortsetUUIDQueryParameter(portsetUUID)
+// WithPortsetUUID adds the portsetUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithPortsetUUID(portsetUUID *string) *IgroupCollectionGetParams {
+	o.SetPortsetUUID(portsetUUID)
 	return o
 }
 
-// SetPortsetUUIDQueryParameter adds the portsetUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetPortsetUUIDQueryParameter(portsetUUID *string) {
-	o.PortsetUUIDQueryParameter = portsetUUID
+// SetPortsetUUID adds the portsetUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetPortsetUUID(portsetUUID *string) {
+	o.PortsetUUID = portsetUUID
 }
 
-// WithProtocolQueryParameter adds the protocol to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithProtocolQueryParameter(protocol *string) *IgroupCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithProtocol(protocol *string) *IgroupCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IgroupCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReturnRecords(returnRecords *bool) *IgroupCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IgroupCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IgroupCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSupportsIgroupsQueryParameter adds the supportsIgroups to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithSupportsIgroupsQueryParameter(supportsIgroups *bool) *IgroupCollectionGetParams {
-	o.SetSupportsIgroupsQueryParameter(supportsIgroups)
+// WithSupportsIgroups adds the supportsIgroups to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithSupportsIgroups(supportsIgroups *bool) *IgroupCollectionGetParams {
+	o.SetSupportsIgroups(supportsIgroups)
 	return o
 }
 
-// SetSupportsIgroupsQueryParameter adds the supportsIgroups to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetSupportsIgroupsQueryParameter(supportsIgroups *bool) {
-	o.SupportsIgroupsQueryParameter = supportsIgroups
+// SetSupportsIgroups adds the supportsIgroups to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetSupportsIgroups(supportsIgroups *bool) {
+	o.SupportsIgroups = supportsIgroups
 }
 
-// WithSVMNameQueryParameter adds the svmName to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *IgroupCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithSvmName(svmName *string) *IgroupCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *IgroupCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithSvmUUID(svmUUID *string) *IgroupCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTargetFirmwareRevisionQueryParameter adds the targetFirmwareRevision to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithTargetFirmwareRevisionQueryParameter(targetFirmwareRevision *string) *IgroupCollectionGetParams {
-	o.SetTargetFirmwareRevisionQueryParameter(targetFirmwareRevision)
+// WithTargetFirmwareRevision adds the targetFirmwareRevision to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetFirmwareRevision(targetFirmwareRevision *string) *IgroupCollectionGetParams {
+	o.SetTargetFirmwareRevision(targetFirmwareRevision)
 	return o
 }
 
-// SetTargetFirmwareRevisionQueryParameter adds the targetFirmwareRevision to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetTargetFirmwareRevisionQueryParameter(targetFirmwareRevision *string) {
-	o.TargetFirmwareRevisionQueryParameter = targetFirmwareRevision
+// SetTargetFirmwareRevision adds the targetFirmwareRevision to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetFirmwareRevision(targetFirmwareRevision *string) {
+	o.TargetFirmwareRevision = targetFirmwareRevision
 }
 
-// WithTargetProductIDQueryParameter adds the targetProductID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithTargetProductIDQueryParameter(targetProductID *string) *IgroupCollectionGetParams {
-	o.SetTargetProductIDQueryParameter(targetProductID)
+// WithTargetProductID adds the targetProductID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetProductID(targetProductID *string) *IgroupCollectionGetParams {
+	o.SetTargetProductID(targetProductID)
 	return o
 }
 
-// SetTargetProductIDQueryParameter adds the targetProductId to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetTargetProductIDQueryParameter(targetProductID *string) {
-	o.TargetProductIDQueryParameter = targetProductID
+// SetTargetProductID adds the targetProductId to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetProductID(targetProductID *string) {
+	o.TargetProductID = targetProductID
 }
 
-// WithTargetVendorIDQueryParameter adds the targetVendorID to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithTargetVendorIDQueryParameter(targetVendorID *string) *IgroupCollectionGetParams {
-	o.SetTargetVendorIDQueryParameter(targetVendorID)
+// WithTargetVendorID adds the targetVendorID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetVendorID(targetVendorID *string) *IgroupCollectionGetParams {
+	o.SetTargetVendorID(targetVendorID)
 	return o
 }
 
-// SetTargetVendorIDQueryParameter adds the targetVendorId to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetTargetVendorIDQueryParameter(targetVendorID *string) {
-	o.TargetVendorIDQueryParameter = targetVendorID
+// SetTargetVendorID adds the targetVendorId to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetVendorID(targetVendorID *string) {
+	o.TargetVendorID = targetVendorID
 }
 
-// WithUUIDQueryParameter adds the uuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithUUIDQueryParameter(uuid *string) *IgroupCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithUUID(uuid *string) *IgroupCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -872,13 +872,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -889,13 +889,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter != nil {
+	if o.ConnectivityTrackingAlertsSummaryArgumentsCode != nil {
 
 		// query param connectivity_tracking.alerts.summary.arguments.code
 		var qrConnectivityTrackingAlertsSummaryArgumentsCode string
 
-		if o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter != nil {
-			qrConnectivityTrackingAlertsSummaryArgumentsCode = *o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter
+		if o.ConnectivityTrackingAlertsSummaryArgumentsCode != nil {
+			qrConnectivityTrackingAlertsSummaryArgumentsCode = *o.ConnectivityTrackingAlertsSummaryArgumentsCode
 		}
 		qConnectivityTrackingAlertsSummaryArgumentsCode := qrConnectivityTrackingAlertsSummaryArgumentsCode
 		if qConnectivityTrackingAlertsSummaryArgumentsCode != "" {
@@ -906,13 +906,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter != nil {
+	if o.ConnectivityTrackingAlertsSummaryArgumentsMessage != nil {
 
 		// query param connectivity_tracking.alerts.summary.arguments.message
 		var qrConnectivityTrackingAlertsSummaryArgumentsMessage string
 
-		if o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter != nil {
-			qrConnectivityTrackingAlertsSummaryArgumentsMessage = *o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter
+		if o.ConnectivityTrackingAlertsSummaryArgumentsMessage != nil {
+			qrConnectivityTrackingAlertsSummaryArgumentsMessage = *o.ConnectivityTrackingAlertsSummaryArgumentsMessage
 		}
 		qConnectivityTrackingAlertsSummaryArgumentsMessage := qrConnectivityTrackingAlertsSummaryArgumentsMessage
 		if qConnectivityTrackingAlertsSummaryArgumentsMessage != "" {
@@ -923,13 +923,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingAlertsSummaryCodeQueryParameter != nil {
+	if o.ConnectivityTrackingAlertsSummaryCode != nil {
 
 		// query param connectivity_tracking.alerts.summary.code
 		var qrConnectivityTrackingAlertsSummaryCode string
 
-		if o.ConnectivityTrackingAlertsSummaryCodeQueryParameter != nil {
-			qrConnectivityTrackingAlertsSummaryCode = *o.ConnectivityTrackingAlertsSummaryCodeQueryParameter
+		if o.ConnectivityTrackingAlertsSummaryCode != nil {
+			qrConnectivityTrackingAlertsSummaryCode = *o.ConnectivityTrackingAlertsSummaryCode
 		}
 		qConnectivityTrackingAlertsSummaryCode := qrConnectivityTrackingAlertsSummaryCode
 		if qConnectivityTrackingAlertsSummaryCode != "" {
@@ -940,13 +940,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingAlertsSummaryMessageQueryParameter != nil {
+	if o.ConnectivityTrackingAlertsSummaryMessage != nil {
 
 		// query param connectivity_tracking.alerts.summary.message
 		var qrConnectivityTrackingAlertsSummaryMessage string
 
-		if o.ConnectivityTrackingAlertsSummaryMessageQueryParameter != nil {
-			qrConnectivityTrackingAlertsSummaryMessage = *o.ConnectivityTrackingAlertsSummaryMessageQueryParameter
+		if o.ConnectivityTrackingAlertsSummaryMessage != nil {
+			qrConnectivityTrackingAlertsSummaryMessage = *o.ConnectivityTrackingAlertsSummaryMessage
 		}
 		qConnectivityTrackingAlertsSummaryMessage := qrConnectivityTrackingAlertsSummaryMessage
 		if qConnectivityTrackingAlertsSummaryMessage != "" {
@@ -957,13 +957,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingAlertsSummaryTargetQueryParameter != nil {
+	if o.ConnectivityTrackingAlertsSummaryTarget != nil {
 
 		// query param connectivity_tracking.alerts.summary.target
 		var qrConnectivityTrackingAlertsSummaryTarget string
 
-		if o.ConnectivityTrackingAlertsSummaryTargetQueryParameter != nil {
-			qrConnectivityTrackingAlertsSummaryTarget = *o.ConnectivityTrackingAlertsSummaryTargetQueryParameter
+		if o.ConnectivityTrackingAlertsSummaryTarget != nil {
+			qrConnectivityTrackingAlertsSummaryTarget = *o.ConnectivityTrackingAlertsSummaryTarget
 		}
 		qConnectivityTrackingAlertsSummaryTarget := qrConnectivityTrackingAlertsSummaryTarget
 		if qConnectivityTrackingAlertsSummaryTarget != "" {
@@ -974,13 +974,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingConnectionStateQueryParameter != nil {
+	if o.ConnectivityTrackingConnectionState != nil {
 
 		// query param connectivity_tracking.connection_state
 		var qrConnectivityTrackingConnectionState string
 
-		if o.ConnectivityTrackingConnectionStateQueryParameter != nil {
-			qrConnectivityTrackingConnectionState = *o.ConnectivityTrackingConnectionStateQueryParameter
+		if o.ConnectivityTrackingConnectionState != nil {
+			qrConnectivityTrackingConnectionState = *o.ConnectivityTrackingConnectionState
 		}
 		qConnectivityTrackingConnectionState := qrConnectivityTrackingConnectionState
 		if qConnectivityTrackingConnectionState != "" {
@@ -991,13 +991,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingRequiredNodesNameQueryParameter != nil {
+	if o.ConnectivityTrackingRequiredNodesName != nil {
 
 		// query param connectivity_tracking.required_nodes.name
 		var qrConnectivityTrackingRequiredNodesName string
 
-		if o.ConnectivityTrackingRequiredNodesNameQueryParameter != nil {
-			qrConnectivityTrackingRequiredNodesName = *o.ConnectivityTrackingRequiredNodesNameQueryParameter
+		if o.ConnectivityTrackingRequiredNodesName != nil {
+			qrConnectivityTrackingRequiredNodesName = *o.ConnectivityTrackingRequiredNodesName
 		}
 		qConnectivityTrackingRequiredNodesName := qrConnectivityTrackingRequiredNodesName
 		if qConnectivityTrackingRequiredNodesName != "" {
@@ -1008,13 +1008,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectivityTrackingRequiredNodesUUIDQueryParameter != nil {
+	if o.ConnectivityTrackingRequiredNodesUUID != nil {
 
 		// query param connectivity_tracking.required_nodes.uuid
 		var qrConnectivityTrackingRequiredNodesUUID string
 
-		if o.ConnectivityTrackingRequiredNodesUUIDQueryParameter != nil {
-			qrConnectivityTrackingRequiredNodesUUID = *o.ConnectivityTrackingRequiredNodesUUIDQueryParameter
+		if o.ConnectivityTrackingRequiredNodesUUID != nil {
+			qrConnectivityTrackingRequiredNodesUUID = *o.ConnectivityTrackingRequiredNodesUUID
 		}
 		qConnectivityTrackingRequiredNodesUUID := qrConnectivityTrackingRequiredNodesUUID
 		if qConnectivityTrackingRequiredNodesUUID != "" {
@@ -1025,13 +1025,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.DeleteOnUnmapQueryParameter != nil {
+	if o.DeleteOnUnmap != nil {
 
 		// query param delete_on_unmap
 		var qrDeleteOnUnmap bool
 
-		if o.DeleteOnUnmapQueryParameter != nil {
-			qrDeleteOnUnmap = *o.DeleteOnUnmapQueryParameter
+		if o.DeleteOnUnmap != nil {
+			qrDeleteOnUnmap = *o.DeleteOnUnmap
 		}
 		qDeleteOnUnmap := swag.FormatBool(qrDeleteOnUnmap)
 		if qDeleteOnUnmap != "" {
@@ -1042,7 +1042,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1053,13 +1053,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.IgroupsCommentQueryParameter != nil {
+	if o.IgroupsComment != nil {
 
 		// query param igroups.comment
 		var qrIgroupsComment string
 
-		if o.IgroupsCommentQueryParameter != nil {
-			qrIgroupsComment = *o.IgroupsCommentQueryParameter
+		if o.IgroupsComment != nil {
+			qrIgroupsComment = *o.IgroupsComment
 		}
 		qIgroupsComment := qrIgroupsComment
 		if qIgroupsComment != "" {
@@ -1070,13 +1070,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.IgroupsNameQueryParameter != nil {
+	if o.IgroupsName != nil {
 
 		// query param igroups.name
 		var qrIgroupsName string
 
-		if o.IgroupsNameQueryParameter != nil {
-			qrIgroupsName = *o.IgroupsNameQueryParameter
+		if o.IgroupsName != nil {
+			qrIgroupsName = *o.IgroupsName
 		}
 		qIgroupsName := qrIgroupsName
 		if qIgroupsName != "" {
@@ -1087,13 +1087,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.IgroupsUUIDQueryParameter != nil {
+	if o.IgroupsUUID != nil {
 
 		// query param igroups.uuid
 		var qrIgroupsUUID string
 
-		if o.IgroupsUUIDQueryParameter != nil {
-			qrIgroupsUUID = *o.IgroupsUUIDQueryParameter
+		if o.IgroupsUUID != nil {
+			qrIgroupsUUID = *o.IgroupsUUID
 		}
 		qIgroupsUUID := qrIgroupsUUID
 		if qIgroupsUUID != "" {
@@ -1104,13 +1104,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.InitiatorsCommentQueryParameter != nil {
+	if o.InitiatorsComment != nil {
 
 		// query param initiators.comment
 		var qrInitiatorsComment string
 
-		if o.InitiatorsCommentQueryParameter != nil {
-			qrInitiatorsComment = *o.InitiatorsCommentQueryParameter
+		if o.InitiatorsComment != nil {
+			qrInitiatorsComment = *o.InitiatorsComment
 		}
 		qInitiatorsComment := qrInitiatorsComment
 		if qInitiatorsComment != "" {
@@ -1121,13 +1121,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.InitiatorsConnectivityTrackingConnectionStateQueryParameter != nil {
+	if o.InitiatorsConnectivityTrackingConnectionState != nil {
 
 		// query param initiators.connectivity_tracking.connection_state
 		var qrInitiatorsConnectivityTrackingConnectionState string
 
-		if o.InitiatorsConnectivityTrackingConnectionStateQueryParameter != nil {
-			qrInitiatorsConnectivityTrackingConnectionState = *o.InitiatorsConnectivityTrackingConnectionStateQueryParameter
+		if o.InitiatorsConnectivityTrackingConnectionState != nil {
+			qrInitiatorsConnectivityTrackingConnectionState = *o.InitiatorsConnectivityTrackingConnectionState
 		}
 		qInitiatorsConnectivityTrackingConnectionState := qrInitiatorsConnectivityTrackingConnectionState
 		if qInitiatorsConnectivityTrackingConnectionState != "" {
@@ -1138,13 +1138,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.InitiatorsIgroupNameQueryParameter != nil {
+	if o.InitiatorsIgroupName != nil {
 
 		// query param initiators.igroup.name
 		var qrInitiatorsIgroupName string
 
-		if o.InitiatorsIgroupNameQueryParameter != nil {
-			qrInitiatorsIgroupName = *o.InitiatorsIgroupNameQueryParameter
+		if o.InitiatorsIgroupName != nil {
+			qrInitiatorsIgroupName = *o.InitiatorsIgroupName
 		}
 		qInitiatorsIgroupName := qrInitiatorsIgroupName
 		if qInitiatorsIgroupName != "" {
@@ -1155,13 +1155,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.InitiatorsIgroupUUIDQueryParameter != nil {
+	if o.InitiatorsIgroupUUID != nil {
 
 		// query param initiators.igroup.uuid
 		var qrInitiatorsIgroupUUID string
 
-		if o.InitiatorsIgroupUUIDQueryParameter != nil {
-			qrInitiatorsIgroupUUID = *o.InitiatorsIgroupUUIDQueryParameter
+		if o.InitiatorsIgroupUUID != nil {
+			qrInitiatorsIgroupUUID = *o.InitiatorsIgroupUUID
 		}
 		qInitiatorsIgroupUUID := qrInitiatorsIgroupUUID
 		if qInitiatorsIgroupUUID != "" {
@@ -1172,13 +1172,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.InitiatorsNameQueryParameter != nil {
+	if o.InitiatorsName != nil {
 
 		// query param initiators.name
 		var qrInitiatorsName string
 
-		if o.InitiatorsNameQueryParameter != nil {
-			qrInitiatorsName = *o.InitiatorsNameQueryParameter
+		if o.InitiatorsName != nil {
+			qrInitiatorsName = *o.InitiatorsName
 		}
 		qInitiatorsName := qrInitiatorsName
 		if qInitiatorsName != "" {
@@ -1189,13 +1189,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.LunMapsLogicalUnitNumberQueryParameter != nil {
+	if o.LunMapsLogicalUnitNumber != nil {
 
 		// query param lun_maps.logical_unit_number
 		var qrLunMapsLogicalUnitNumber int64
 
-		if o.LunMapsLogicalUnitNumberQueryParameter != nil {
-			qrLunMapsLogicalUnitNumber = *o.LunMapsLogicalUnitNumberQueryParameter
+		if o.LunMapsLogicalUnitNumber != nil {
+			qrLunMapsLogicalUnitNumber = *o.LunMapsLogicalUnitNumber
 		}
 		qLunMapsLogicalUnitNumber := swag.FormatInt64(qrLunMapsLogicalUnitNumber)
 		if qLunMapsLogicalUnitNumber != "" {
@@ -1206,13 +1206,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.LunMapsLunNameQueryParameter != nil {
+	if o.LunMapsLunName != nil {
 
 		// query param lun_maps.lun.name
 		var qrLunMapsLunName string
 
-		if o.LunMapsLunNameQueryParameter != nil {
-			qrLunMapsLunName = *o.LunMapsLunNameQueryParameter
+		if o.LunMapsLunName != nil {
+			qrLunMapsLunName = *o.LunMapsLunName
 		}
 		qLunMapsLunName := qrLunMapsLunName
 		if qLunMapsLunName != "" {
@@ -1223,13 +1223,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.LunMapsLunNodeNameQueryParameter != nil {
+	if o.LunMapsLunNodeName != nil {
 
 		// query param lun_maps.lun.node.name
 		var qrLunMapsLunNodeName string
 
-		if o.LunMapsLunNodeNameQueryParameter != nil {
-			qrLunMapsLunNodeName = *o.LunMapsLunNodeNameQueryParameter
+		if o.LunMapsLunNodeName != nil {
+			qrLunMapsLunNodeName = *o.LunMapsLunNodeName
 		}
 		qLunMapsLunNodeName := qrLunMapsLunNodeName
 		if qLunMapsLunNodeName != "" {
@@ -1240,13 +1240,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.LunMapsLunNodeUUIDQueryParameter != nil {
+	if o.LunMapsLunNodeUUID != nil {
 
 		// query param lun_maps.lun.node.uuid
 		var qrLunMapsLunNodeUUID string
 
-		if o.LunMapsLunNodeUUIDQueryParameter != nil {
-			qrLunMapsLunNodeUUID = *o.LunMapsLunNodeUUIDQueryParameter
+		if o.LunMapsLunNodeUUID != nil {
+			qrLunMapsLunNodeUUID = *o.LunMapsLunNodeUUID
 		}
 		qLunMapsLunNodeUUID := qrLunMapsLunNodeUUID
 		if qLunMapsLunNodeUUID != "" {
@@ -1257,13 +1257,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.LunMapsLunUUIDQueryParameter != nil {
+	if o.LunMapsLunUUID != nil {
 
 		// query param lun_maps.lun.uuid
 		var qrLunMapsLunUUID string
 
-		if o.LunMapsLunUUIDQueryParameter != nil {
-			qrLunMapsLunUUID = *o.LunMapsLunUUIDQueryParameter
+		if o.LunMapsLunUUID != nil {
+			qrLunMapsLunUUID = *o.LunMapsLunUUID
 		}
 		qLunMapsLunUUID := qrLunMapsLunUUID
 		if qLunMapsLunUUID != "" {
@@ -1274,13 +1274,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1291,13 +1291,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1308,7 +1308,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1319,13 +1319,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OsTypeQueryParameter != nil {
+	if o.OsType != nil {
 
 		// query param os_type
 		var qrOsType string
 
-		if o.OsTypeQueryParameter != nil {
-			qrOsType = *o.OsTypeQueryParameter
+		if o.OsType != nil {
+			qrOsType = *o.OsType
 		}
 		qOsType := qrOsType
 		if qOsType != "" {
@@ -1336,13 +1336,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ParentIgroupsCommentQueryParameter != nil {
+	if o.ParentIgroupsComment != nil {
 
 		// query param parent_igroups.comment
 		var qrParentIgroupsComment string
 
-		if o.ParentIgroupsCommentQueryParameter != nil {
-			qrParentIgroupsComment = *o.ParentIgroupsCommentQueryParameter
+		if o.ParentIgroupsComment != nil {
+			qrParentIgroupsComment = *o.ParentIgroupsComment
 		}
 		qParentIgroupsComment := qrParentIgroupsComment
 		if qParentIgroupsComment != "" {
@@ -1353,13 +1353,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ParentIgroupsNameQueryParameter != nil {
+	if o.ParentIgroupsName != nil {
 
 		// query param parent_igroups.name
 		var qrParentIgroupsName string
 
-		if o.ParentIgroupsNameQueryParameter != nil {
-			qrParentIgroupsName = *o.ParentIgroupsNameQueryParameter
+		if o.ParentIgroupsName != nil {
+			qrParentIgroupsName = *o.ParentIgroupsName
 		}
 		qParentIgroupsName := qrParentIgroupsName
 		if qParentIgroupsName != "" {
@@ -1370,13 +1370,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ParentIgroupsUUIDQueryParameter != nil {
+	if o.ParentIgroupsUUID != nil {
 
 		// query param parent_igroups.uuid
 		var qrParentIgroupsUUID string
 
-		if o.ParentIgroupsUUIDQueryParameter != nil {
-			qrParentIgroupsUUID = *o.ParentIgroupsUUIDQueryParameter
+		if o.ParentIgroupsUUID != nil {
+			qrParentIgroupsUUID = *o.ParentIgroupsUUID
 		}
 		qParentIgroupsUUID := qrParentIgroupsUUID
 		if qParentIgroupsUUID != "" {
@@ -1387,13 +1387,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.PortsetNameQueryParameter != nil {
+	if o.PortsetName != nil {
 
 		// query param portset.name
 		var qrPortsetName string
 
-		if o.PortsetNameQueryParameter != nil {
-			qrPortsetName = *o.PortsetNameQueryParameter
+		if o.PortsetName != nil {
+			qrPortsetName = *o.PortsetName
 		}
 		qPortsetName := qrPortsetName
 		if qPortsetName != "" {
@@ -1404,13 +1404,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.PortsetUUIDQueryParameter != nil {
+	if o.PortsetUUID != nil {
 
 		// query param portset.uuid
 		var qrPortsetUUID string
 
-		if o.PortsetUUIDQueryParameter != nil {
-			qrPortsetUUID = *o.PortsetUUIDQueryParameter
+		if o.PortsetUUID != nil {
+			qrPortsetUUID = *o.PortsetUUID
 		}
 		qPortsetUUID := qrPortsetUUID
 		if qPortsetUUID != "" {
@@ -1421,13 +1421,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -1438,13 +1438,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1455,13 +1455,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1472,13 +1472,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SupportsIgroupsQueryParameter != nil {
+	if o.SupportsIgroups != nil {
 
 		// query param supports_igroups
 		var qrSupportsIgroups bool
 
-		if o.SupportsIgroupsQueryParameter != nil {
-			qrSupportsIgroups = *o.SupportsIgroupsQueryParameter
+		if o.SupportsIgroups != nil {
+			qrSupportsIgroups = *o.SupportsIgroups
 		}
 		qSupportsIgroups := swag.FormatBool(qrSupportsIgroups)
 		if qSupportsIgroups != "" {
@@ -1489,13 +1489,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1506,13 +1506,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1523,13 +1523,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.TargetFirmwareRevisionQueryParameter != nil {
+	if o.TargetFirmwareRevision != nil {
 
 		// query param target.firmware_revision
 		var qrTargetFirmwareRevision string
 
-		if o.TargetFirmwareRevisionQueryParameter != nil {
-			qrTargetFirmwareRevision = *o.TargetFirmwareRevisionQueryParameter
+		if o.TargetFirmwareRevision != nil {
+			qrTargetFirmwareRevision = *o.TargetFirmwareRevision
 		}
 		qTargetFirmwareRevision := qrTargetFirmwareRevision
 		if qTargetFirmwareRevision != "" {
@@ -1540,13 +1540,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.TargetProductIDQueryParameter != nil {
+	if o.TargetProductID != nil {
 
 		// query param target.product_id
 		var qrTargetProductID string
 
-		if o.TargetProductIDQueryParameter != nil {
-			qrTargetProductID = *o.TargetProductIDQueryParameter
+		if o.TargetProductID != nil {
+			qrTargetProductID = *o.TargetProductID
 		}
 		qTargetProductID := qrTargetProductID
 		if qTargetProductID != "" {
@@ -1557,13 +1557,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.TargetVendorIDQueryParameter != nil {
+	if o.TargetVendorID != nil {
 
 		// query param target.vendor_id
 		var qrTargetVendorID string
 
-		if o.TargetVendorIDQueryParameter != nil {
-			qrTargetVendorID = *o.TargetVendorIDQueryParameter
+		if o.TargetVendorID != nil {
+			qrTargetVendorID = *o.TargetVendorID
 		}
 		qTargetVendorID := qrTargetVendorID
 		if qTargetVendorID != "" {
@@ -1574,13 +1574,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1599,7 +1599,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamIgroupCollectionGet binds the parameter fields
 func (o *IgroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1616,7 +1616,7 @@ func (o *IgroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamIgroupCollectionGet binds the parameter order_by
 func (o *IgroupCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

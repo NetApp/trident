@@ -66,97 +66,97 @@ type IPSubnetCollectionGetParams struct {
 
 	   Filter by available_count
 	*/
-	AvailableCountQueryParameter *int64
+	AvailableCount *int64
 
 	/* AvailableIPRangesEnd.
 
 	   Filter by available_ip_ranges.end
 	*/
-	AvailableIPRangesEndQueryParameter *string
+	AvailableIPRangesEnd *string
 
 	/* AvailableIPRangesFamily.
 
 	   Filter by available_ip_ranges.family
 	*/
-	AvailableIPRangesFamilyQueryParameter *string
+	AvailableIPRangesFamily *string
 
 	/* AvailableIPRangesStart.
 
 	   Filter by available_ip_ranges.start
 	*/
-	AvailableIPRangesStartQueryParameter *string
+	AvailableIPRangesStart *string
 
 	/* BroadcastDomainName.
 
 	   Filter by broadcast_domain.name
 	*/
-	BroadcastDomainNameQueryParameter *string
+	BroadcastDomainName *string
 
 	/* BroadcastDomainUUID.
 
 	   Filter by broadcast_domain.uuid
 	*/
-	BroadcastDomainUUIDQueryParameter *string
+	BroadcastDomainUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Gateway.
 
 	   Filter by gateway
 	*/
-	GatewayQueryParameter *string
+	Gateway *string
 
 	/* IPRangesEnd.
 
 	   Filter by ip_ranges.end
 	*/
-	IPRangesEndQueryParameter *string
+	IPRangesEnd *string
 
 	/* IPRangesFamily.
 
 	   Filter by ip_ranges.family
 	*/
-	IPRangesFamilyQueryParameter *string
+	IPRangesFamily *string
 
 	/* IPRangesStart.
 
 	   Filter by ip_ranges.start
 	*/
-	IPRangesStartQueryParameter *string
+	IPRangesStart *string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -164,7 +164,7 @@ type IPSubnetCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -172,43 +172,43 @@ type IPSubnetCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SubnetAddress.
 
 	   Filter by subnet.address
 	*/
-	SubnetAddressQueryParameter *string
+	SubnetAddress *string
 
 	/* SubnetFamily.
 
 	   Filter by subnet.family
 	*/
-	SubnetFamilyQueryParameter *string
+	SubnetFamily *string
 
 	/* SubnetNetmask.
 
 	   Filter by subnet.netmask
 	*/
-	SubnetNetmaskQueryParameter *string
+	SubnetNetmask *string
 
 	/* TotalCount.
 
 	   Filter by total_count
 	*/
-	TotalCountQueryParameter *int64
+	TotalCount *int64
 
 	/* UsedCount.
 
 	   Filter by used_count
 	*/
-	UsedCountQueryParameter *int64
+	UsedCount *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -228,14 +228,14 @@ func (o *IPSubnetCollectionGetParams) WithDefaults() *IPSubnetCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *IPSubnetCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IPSubnetCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,268 +277,268 @@ func (o *IPSubnetCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAvailableCountQueryParameter adds the availableCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithAvailableCountQueryParameter(availableCount *int64) *IPSubnetCollectionGetParams {
-	o.SetAvailableCountQueryParameter(availableCount)
+// WithAvailableCount adds the availableCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithAvailableCount(availableCount *int64) *IPSubnetCollectionGetParams {
+	o.SetAvailableCount(availableCount)
 	return o
 }
 
-// SetAvailableCountQueryParameter adds the availableCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetAvailableCountQueryParameter(availableCount *int64) {
-	o.AvailableCountQueryParameter = availableCount
+// SetAvailableCount adds the availableCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetAvailableCount(availableCount *int64) {
+	o.AvailableCount = availableCount
 }
 
-// WithAvailableIPRangesEndQueryParameter adds the availableIPRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesEndQueryParameter(availableIPRangesEnd *string) *IPSubnetCollectionGetParams {
-	o.SetAvailableIPRangesEndQueryParameter(availableIPRangesEnd)
+// WithAvailableIPRangesEnd adds the availableIPRangesEnd to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesEnd(availableIPRangesEnd *string) *IPSubnetCollectionGetParams {
+	o.SetAvailableIPRangesEnd(availableIPRangesEnd)
 	return o
 }
 
-// SetAvailableIPRangesEndQueryParameter adds the availableIpRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesEndQueryParameter(availableIPRangesEnd *string) {
-	o.AvailableIPRangesEndQueryParameter = availableIPRangesEnd
+// SetAvailableIPRangesEnd adds the availableIpRangesEnd to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesEnd(availableIPRangesEnd *string) {
+	o.AvailableIPRangesEnd = availableIPRangesEnd
 }
 
-// WithAvailableIPRangesFamilyQueryParameter adds the availableIPRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesFamilyQueryParameter(availableIPRangesFamily *string) *IPSubnetCollectionGetParams {
-	o.SetAvailableIPRangesFamilyQueryParameter(availableIPRangesFamily)
+// WithAvailableIPRangesFamily adds the availableIPRangesFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesFamily(availableIPRangesFamily *string) *IPSubnetCollectionGetParams {
+	o.SetAvailableIPRangesFamily(availableIPRangesFamily)
 	return o
 }
 
-// SetAvailableIPRangesFamilyQueryParameter adds the availableIpRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesFamilyQueryParameter(availableIPRangesFamily *string) {
-	o.AvailableIPRangesFamilyQueryParameter = availableIPRangesFamily
+// SetAvailableIPRangesFamily adds the availableIpRangesFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesFamily(availableIPRangesFamily *string) {
+	o.AvailableIPRangesFamily = availableIPRangesFamily
 }
 
-// WithAvailableIPRangesStartQueryParameter adds the availableIPRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesStartQueryParameter(availableIPRangesStart *string) *IPSubnetCollectionGetParams {
-	o.SetAvailableIPRangesStartQueryParameter(availableIPRangesStart)
+// WithAvailableIPRangesStart adds the availableIPRangesStart to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithAvailableIPRangesStart(availableIPRangesStart *string) *IPSubnetCollectionGetParams {
+	o.SetAvailableIPRangesStart(availableIPRangesStart)
 	return o
 }
 
-// SetAvailableIPRangesStartQueryParameter adds the availableIpRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesStartQueryParameter(availableIPRangesStart *string) {
-	o.AvailableIPRangesStartQueryParameter = availableIPRangesStart
+// SetAvailableIPRangesStart adds the availableIpRangesStart to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetAvailableIPRangesStart(availableIPRangesStart *string) {
+	o.AvailableIPRangesStart = availableIPRangesStart
 }
 
-// WithBroadcastDomainNameQueryParameter adds the broadcastDomainName to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithBroadcastDomainNameQueryParameter(broadcastDomainName *string) *IPSubnetCollectionGetParams {
-	o.SetBroadcastDomainNameQueryParameter(broadcastDomainName)
+// WithBroadcastDomainName adds the broadcastDomainName to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithBroadcastDomainName(broadcastDomainName *string) *IPSubnetCollectionGetParams {
+	o.SetBroadcastDomainName(broadcastDomainName)
 	return o
 }
 
-// SetBroadcastDomainNameQueryParameter adds the broadcastDomainName to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetBroadcastDomainNameQueryParameter(broadcastDomainName *string) {
-	o.BroadcastDomainNameQueryParameter = broadcastDomainName
+// SetBroadcastDomainName adds the broadcastDomainName to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetBroadcastDomainName(broadcastDomainName *string) {
+	o.BroadcastDomainName = broadcastDomainName
 }
 
-// WithBroadcastDomainUUIDQueryParameter adds the broadcastDomainUUID to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithBroadcastDomainUUIDQueryParameter(broadcastDomainUUID *string) *IPSubnetCollectionGetParams {
-	o.SetBroadcastDomainUUIDQueryParameter(broadcastDomainUUID)
+// WithBroadcastDomainUUID adds the broadcastDomainUUID to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithBroadcastDomainUUID(broadcastDomainUUID *string) *IPSubnetCollectionGetParams {
+	o.SetBroadcastDomainUUID(broadcastDomainUUID)
 	return o
 }
 
-// SetBroadcastDomainUUIDQueryParameter adds the broadcastDomainUuid to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetBroadcastDomainUUIDQueryParameter(broadcastDomainUUID *string) {
-	o.BroadcastDomainUUIDQueryParameter = broadcastDomainUUID
+// SetBroadcastDomainUUID adds the broadcastDomainUuid to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetBroadcastDomainUUID(broadcastDomainUUID *string) {
+	o.BroadcastDomainUUID = broadcastDomainUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithFieldsQueryParameter(fields []string) *IPSubnetCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithFields(fields []string) *IPSubnetCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGatewayQueryParameter adds the gateway to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithGatewayQueryParameter(gateway *string) *IPSubnetCollectionGetParams {
-	o.SetGatewayQueryParameter(gateway)
+// WithGateway adds the gateway to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithGateway(gateway *string) *IPSubnetCollectionGetParams {
+	o.SetGateway(gateway)
 	return o
 }
 
-// SetGatewayQueryParameter adds the gateway to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetGatewayQueryParameter(gateway *string) {
-	o.GatewayQueryParameter = gateway
+// SetGateway adds the gateway to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetGateway(gateway *string) {
+	o.Gateway = gateway
 }
 
-// WithIPRangesEndQueryParameter adds the iPRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesEndQueryParameter(iPRangesEnd *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesEndQueryParameter(iPRangesEnd)
+// WithIPRangesEnd adds the iPRangesEnd to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesEnd(iPRangesEnd *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesEnd(iPRangesEnd)
 	return o
 }
 
-// SetIPRangesEndQueryParameter adds the ipRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesEndQueryParameter(iPRangesEnd *string) {
-	o.IPRangesEndQueryParameter = iPRangesEnd
+// SetIPRangesEnd adds the ipRangesEnd to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetIPRangesEnd(iPRangesEnd *string) {
+	o.IPRangesEnd = iPRangesEnd
 }
 
-// WithIPRangesFamilyQueryParameter adds the iPRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesFamilyQueryParameter(iPRangesFamily *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesFamilyQueryParameter(iPRangesFamily)
+// WithIPRangesFamily adds the iPRangesFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesFamily(iPRangesFamily *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesFamily(iPRangesFamily)
 	return o
 }
 
-// SetIPRangesFamilyQueryParameter adds the ipRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesFamilyQueryParameter(iPRangesFamily *string) {
-	o.IPRangesFamilyQueryParameter = iPRangesFamily
+// SetIPRangesFamily adds the ipRangesFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetIPRangesFamily(iPRangesFamily *string) {
+	o.IPRangesFamily = iPRangesFamily
 }
 
-// WithIPRangesStartQueryParameter adds the iPRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesStartQueryParameter(iPRangesStart *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesStartQueryParameter(iPRangesStart)
+// WithIPRangesStart adds the iPRangesStart to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesStart(iPRangesStart *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesStart(iPRangesStart)
 	return o
 }
 
-// SetIPRangesStartQueryParameter adds the ipRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesStartQueryParameter(iPRangesStart *string) {
-	o.IPRangesStartQueryParameter = iPRangesStart
+// SetIPRangesStart adds the ipRangesStart to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetIPRangesStart(iPRangesStart *string) {
+	o.IPRangesStart = iPRangesStart
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *IPSubnetCollectionGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIpspaceName(ipspaceName *string) *IPSubnetCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *IPSubnetCollectionGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *IPSubnetCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IPSubnetCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithMaxRecords(maxRecords *int64) *IPSubnetCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithNameQueryParameter(name *string) *IPSubnetCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithName(name *string) *IPSubnetCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IPSubnetCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithOrderBy(orderBy []string) *IPSubnetCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IPSubnetCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithReturnRecords(returnRecords *bool) *IPSubnetCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IPSubnetCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IPSubnetCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSubnetAddressQueryParameter adds the subnetAddress to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithSubnetAddressQueryParameter(subnetAddress *string) *IPSubnetCollectionGetParams {
-	o.SetSubnetAddressQueryParameter(subnetAddress)
+// WithSubnetAddress adds the subnetAddress to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithSubnetAddress(subnetAddress *string) *IPSubnetCollectionGetParams {
+	o.SetSubnetAddress(subnetAddress)
 	return o
 }
 
-// SetSubnetAddressQueryParameter adds the subnetAddress to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetSubnetAddressQueryParameter(subnetAddress *string) {
-	o.SubnetAddressQueryParameter = subnetAddress
+// SetSubnetAddress adds the subnetAddress to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetSubnetAddress(subnetAddress *string) {
+	o.SubnetAddress = subnetAddress
 }
 
-// WithSubnetFamilyQueryParameter adds the subnetFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithSubnetFamilyQueryParameter(subnetFamily *string) *IPSubnetCollectionGetParams {
-	o.SetSubnetFamilyQueryParameter(subnetFamily)
+// WithSubnetFamily adds the subnetFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithSubnetFamily(subnetFamily *string) *IPSubnetCollectionGetParams {
+	o.SetSubnetFamily(subnetFamily)
 	return o
 }
 
-// SetSubnetFamilyQueryParameter adds the subnetFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetSubnetFamilyQueryParameter(subnetFamily *string) {
-	o.SubnetFamilyQueryParameter = subnetFamily
+// SetSubnetFamily adds the subnetFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetSubnetFamily(subnetFamily *string) {
+	o.SubnetFamily = subnetFamily
 }
 
-// WithSubnetNetmaskQueryParameter adds the subnetNetmask to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithSubnetNetmaskQueryParameter(subnetNetmask *string) *IPSubnetCollectionGetParams {
-	o.SetSubnetNetmaskQueryParameter(subnetNetmask)
+// WithSubnetNetmask adds the subnetNetmask to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithSubnetNetmask(subnetNetmask *string) *IPSubnetCollectionGetParams {
+	o.SetSubnetNetmask(subnetNetmask)
 	return o
 }
 
-// SetSubnetNetmaskQueryParameter adds the subnetNetmask to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetSubnetNetmaskQueryParameter(subnetNetmask *string) {
-	o.SubnetNetmaskQueryParameter = subnetNetmask
+// SetSubnetNetmask adds the subnetNetmask to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetSubnetNetmask(subnetNetmask *string) {
+	o.SubnetNetmask = subnetNetmask
 }
 
-// WithTotalCountQueryParameter adds the totalCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithTotalCountQueryParameter(totalCount *int64) *IPSubnetCollectionGetParams {
-	o.SetTotalCountQueryParameter(totalCount)
+// WithTotalCount adds the totalCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithTotalCount(totalCount *int64) *IPSubnetCollectionGetParams {
+	o.SetTotalCount(totalCount)
 	return o
 }
 
-// SetTotalCountQueryParameter adds the totalCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetTotalCountQueryParameter(totalCount *int64) {
-	o.TotalCountQueryParameter = totalCount
+// SetTotalCount adds the totalCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetTotalCount(totalCount *int64) {
+	o.TotalCount = totalCount
 }
 
-// WithUsedCountQueryParameter adds the usedCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithUsedCountQueryParameter(usedCount *int64) *IPSubnetCollectionGetParams {
-	o.SetUsedCountQueryParameter(usedCount)
+// WithUsedCount adds the usedCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithUsedCount(usedCount *int64) *IPSubnetCollectionGetParams {
+	o.SetUsedCount(usedCount)
 	return o
 }
 
-// SetUsedCountQueryParameter adds the usedCount to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetUsedCountQueryParameter(usedCount *int64) {
-	o.UsedCountQueryParameter = usedCount
+// SetUsedCount adds the usedCount to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetUsedCount(usedCount *int64) {
+	o.UsedCount = usedCount
 }
 
-// WithUUIDQueryParameter adds the uuid to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithUUIDQueryParameter(uuid *string) *IPSubnetCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithUUID(uuid *string) *IPSubnetCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -549,13 +549,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.AvailableCountQueryParameter != nil {
+	if o.AvailableCount != nil {
 
 		// query param available_count
 		var qrAvailableCount int64
 
-		if o.AvailableCountQueryParameter != nil {
-			qrAvailableCount = *o.AvailableCountQueryParameter
+		if o.AvailableCount != nil {
+			qrAvailableCount = *o.AvailableCount
 		}
 		qAvailableCount := swag.FormatInt64(qrAvailableCount)
 		if qAvailableCount != "" {
@@ -566,13 +566,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.AvailableIPRangesEndQueryParameter != nil {
+	if o.AvailableIPRangesEnd != nil {
 
 		// query param available_ip_ranges.end
 		var qrAvailableIPRangesEnd string
 
-		if o.AvailableIPRangesEndQueryParameter != nil {
-			qrAvailableIPRangesEnd = *o.AvailableIPRangesEndQueryParameter
+		if o.AvailableIPRangesEnd != nil {
+			qrAvailableIPRangesEnd = *o.AvailableIPRangesEnd
 		}
 		qAvailableIPRangesEnd := qrAvailableIPRangesEnd
 		if qAvailableIPRangesEnd != "" {
@@ -583,13 +583,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.AvailableIPRangesFamilyQueryParameter != nil {
+	if o.AvailableIPRangesFamily != nil {
 
 		// query param available_ip_ranges.family
 		var qrAvailableIPRangesFamily string
 
-		if o.AvailableIPRangesFamilyQueryParameter != nil {
-			qrAvailableIPRangesFamily = *o.AvailableIPRangesFamilyQueryParameter
+		if o.AvailableIPRangesFamily != nil {
+			qrAvailableIPRangesFamily = *o.AvailableIPRangesFamily
 		}
 		qAvailableIPRangesFamily := qrAvailableIPRangesFamily
 		if qAvailableIPRangesFamily != "" {
@@ -600,13 +600,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.AvailableIPRangesStartQueryParameter != nil {
+	if o.AvailableIPRangesStart != nil {
 
 		// query param available_ip_ranges.start
 		var qrAvailableIPRangesStart string
 
-		if o.AvailableIPRangesStartQueryParameter != nil {
-			qrAvailableIPRangesStart = *o.AvailableIPRangesStartQueryParameter
+		if o.AvailableIPRangesStart != nil {
+			qrAvailableIPRangesStart = *o.AvailableIPRangesStart
 		}
 		qAvailableIPRangesStart := qrAvailableIPRangesStart
 		if qAvailableIPRangesStart != "" {
@@ -617,13 +617,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.BroadcastDomainNameQueryParameter != nil {
+	if o.BroadcastDomainName != nil {
 
 		// query param broadcast_domain.name
 		var qrBroadcastDomainName string
 
-		if o.BroadcastDomainNameQueryParameter != nil {
-			qrBroadcastDomainName = *o.BroadcastDomainNameQueryParameter
+		if o.BroadcastDomainName != nil {
+			qrBroadcastDomainName = *o.BroadcastDomainName
 		}
 		qBroadcastDomainName := qrBroadcastDomainName
 		if qBroadcastDomainName != "" {
@@ -634,13 +634,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.BroadcastDomainUUIDQueryParameter != nil {
+	if o.BroadcastDomainUUID != nil {
 
 		// query param broadcast_domain.uuid
 		var qrBroadcastDomainUUID string
 
-		if o.BroadcastDomainUUIDQueryParameter != nil {
-			qrBroadcastDomainUUID = *o.BroadcastDomainUUIDQueryParameter
+		if o.BroadcastDomainUUID != nil {
+			qrBroadcastDomainUUID = *o.BroadcastDomainUUID
 		}
 		qBroadcastDomainUUID := qrBroadcastDomainUUID
 		if qBroadcastDomainUUID != "" {
@@ -651,7 +651,7 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -662,13 +662,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.GatewayQueryParameter != nil {
+	if o.Gateway != nil {
 
 		// query param gateway
 		var qrGateway string
 
-		if o.GatewayQueryParameter != nil {
-			qrGateway = *o.GatewayQueryParameter
+		if o.Gateway != nil {
+			qrGateway = *o.Gateway
 		}
 		qGateway := qrGateway
 		if qGateway != "" {
@@ -679,13 +679,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IPRangesEndQueryParameter != nil {
+	if o.IPRangesEnd != nil {
 
 		// query param ip_ranges.end
 		var qrIPRangesEnd string
 
-		if o.IPRangesEndQueryParameter != nil {
-			qrIPRangesEnd = *o.IPRangesEndQueryParameter
+		if o.IPRangesEnd != nil {
+			qrIPRangesEnd = *o.IPRangesEnd
 		}
 		qIPRangesEnd := qrIPRangesEnd
 		if qIPRangesEnd != "" {
@@ -696,13 +696,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IPRangesFamilyQueryParameter != nil {
+	if o.IPRangesFamily != nil {
 
 		// query param ip_ranges.family
 		var qrIPRangesFamily string
 
-		if o.IPRangesFamilyQueryParameter != nil {
-			qrIPRangesFamily = *o.IPRangesFamilyQueryParameter
+		if o.IPRangesFamily != nil {
+			qrIPRangesFamily = *o.IPRangesFamily
 		}
 		qIPRangesFamily := qrIPRangesFamily
 		if qIPRangesFamily != "" {
@@ -713,13 +713,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IPRangesStartQueryParameter != nil {
+	if o.IPRangesStart != nil {
 
 		// query param ip_ranges.start
 		var qrIPRangesStart string
 
-		if o.IPRangesStartQueryParameter != nil {
-			qrIPRangesStart = *o.IPRangesStartQueryParameter
+		if o.IPRangesStart != nil {
+			qrIPRangesStart = *o.IPRangesStart
 		}
 		qIPRangesStart := qrIPRangesStart
 		if qIPRangesStart != "" {
@@ -730,13 +730,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -747,13 +747,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -764,13 +764,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -781,13 +781,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -798,7 +798,7 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -809,13 +809,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -826,13 +826,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -843,13 +843,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SubnetAddressQueryParameter != nil {
+	if o.SubnetAddress != nil {
 
 		// query param subnet.address
 		var qrSubnetAddress string
 
-		if o.SubnetAddressQueryParameter != nil {
-			qrSubnetAddress = *o.SubnetAddressQueryParameter
+		if o.SubnetAddress != nil {
+			qrSubnetAddress = *o.SubnetAddress
 		}
 		qSubnetAddress := qrSubnetAddress
 		if qSubnetAddress != "" {
@@ -860,13 +860,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SubnetFamilyQueryParameter != nil {
+	if o.SubnetFamily != nil {
 
 		// query param subnet.family
 		var qrSubnetFamily string
 
-		if o.SubnetFamilyQueryParameter != nil {
-			qrSubnetFamily = *o.SubnetFamilyQueryParameter
+		if o.SubnetFamily != nil {
+			qrSubnetFamily = *o.SubnetFamily
 		}
 		qSubnetFamily := qrSubnetFamily
 		if qSubnetFamily != "" {
@@ -877,13 +877,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SubnetNetmaskQueryParameter != nil {
+	if o.SubnetNetmask != nil {
 
 		// query param subnet.netmask
 		var qrSubnetNetmask string
 
-		if o.SubnetNetmaskQueryParameter != nil {
-			qrSubnetNetmask = *o.SubnetNetmaskQueryParameter
+		if o.SubnetNetmask != nil {
+			qrSubnetNetmask = *o.SubnetNetmask
 		}
 		qSubnetNetmask := qrSubnetNetmask
 		if qSubnetNetmask != "" {
@@ -894,13 +894,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TotalCountQueryParameter != nil {
+	if o.TotalCount != nil {
 
 		// query param total_count
 		var qrTotalCount int64
 
-		if o.TotalCountQueryParameter != nil {
-			qrTotalCount = *o.TotalCountQueryParameter
+		if o.TotalCount != nil {
+			qrTotalCount = *o.TotalCount
 		}
 		qTotalCount := swag.FormatInt64(qrTotalCount)
 		if qTotalCount != "" {
@@ -911,13 +911,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UsedCountQueryParameter != nil {
+	if o.UsedCount != nil {
 
 		// query param used_count
 		var qrUsedCount int64
 
-		if o.UsedCountQueryParameter != nil {
-			qrUsedCount = *o.UsedCountQueryParameter
+		if o.UsedCount != nil {
+			qrUsedCount = *o.UsedCount
 		}
 		qUsedCount := swag.FormatInt64(qrUsedCount)
 		if qUsedCount != "" {
@@ -928,13 +928,13 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -953,7 +953,7 @@ func (o *IPSubnetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamIPSubnetCollectionGet binds the parameter fields
 func (o *IPSubnetCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -970,7 +970,7 @@ func (o *IPSubnetCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamIPSubnetCollectionGet binds the parameter order_by
 func (o *IPSubnetCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

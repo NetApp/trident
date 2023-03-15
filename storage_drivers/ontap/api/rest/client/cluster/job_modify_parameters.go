@@ -66,13 +66,13 @@ type JobModifyParams struct {
 	   Requests a job to pause, resume, or cancel. Note that not all jobs support these actions. A job can only be resumed if it is in a paused state. After you successfully request a job to be cancelled, the job state changes to either success or failure.
 
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* UUID.
 
 	   Job UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *JobModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the job modify params
-func (o *JobModifyParams) WithActionQueryParameter(action *string) *JobModifyParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the job modify params
+func (o *JobModifyParams) WithAction(action *string) *JobModifyParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the job modify params
-func (o *JobModifyParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the job modify params
+func (o *JobModifyParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithUUIDPathParameter adds the uuid to the job modify params
-func (o *JobModifyParams) WithUUIDPathParameter(uuid string) *JobModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the job modify params
+func (o *JobModifyParams) WithUUID(uuid string) *JobModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the job modify params
-func (o *JobModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the job modify params
+func (o *JobModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,13 +157,13 @@ func (o *JobModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -175,7 +175,7 @@ func (o *JobModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

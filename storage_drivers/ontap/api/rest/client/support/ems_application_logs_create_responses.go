@@ -52,6 +52,10 @@ EmsApplicationLogsCreateCreated describes a response with status code 201, with 
 Created
 */
 type EmsApplicationLogsCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this ems application logs create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *EmsApplicationLogsCreateCreated) String() string {
 }
 
 func (o *EmsApplicationLogsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

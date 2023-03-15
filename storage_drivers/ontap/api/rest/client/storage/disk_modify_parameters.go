@@ -72,7 +72,7 @@ type DiskModifyParams struct {
 	* sanitize_disk cryptographically erases all user data from a spare or broken drive by altering the data encryption key. Resets the data AK to the drive-unique MSID value and disables data-at-rest protection. Used when a drive is being repurposed or returned.
 
 	*/
-	EncryptionOperationQueryParameter *string
+	EncryptionOperation *string
 
 	/* Info.
 
@@ -84,25 +84,25 @@ type DiskModifyParams struct {
 
 	   Disk name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* Node.
 
 	   Node to assign disk
 	*/
-	NodeQueryParameter *string
+	Node *string
 
 	/* Pool.
 
 	   Pool to assign disk to
 	*/
-	PoolQueryParameter *string
+	Pool *string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -122,11 +122,11 @@ func (o *DiskModifyParams) WithDefaults() *DiskModifyParams {
 // All values with no default are reset to their zero value.
 func (o *DiskModifyParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := DiskModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -168,15 +168,15 @@ func (o *DiskModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEncryptionOperationQueryParameter adds the encryptionOperation to the disk modify params
-func (o *DiskModifyParams) WithEncryptionOperationQueryParameter(encryptionOperation *string) *DiskModifyParams {
-	o.SetEncryptionOperationQueryParameter(encryptionOperation)
+// WithEncryptionOperation adds the encryptionOperation to the disk modify params
+func (o *DiskModifyParams) WithEncryptionOperation(encryptionOperation *string) *DiskModifyParams {
+	o.SetEncryptionOperation(encryptionOperation)
 	return o
 }
 
-// SetEncryptionOperationQueryParameter adds the encryptionOperation to the disk modify params
-func (o *DiskModifyParams) SetEncryptionOperationQueryParameter(encryptionOperation *string) {
-	o.EncryptionOperationQueryParameter = encryptionOperation
+// SetEncryptionOperation adds the encryptionOperation to the disk modify params
+func (o *DiskModifyParams) SetEncryptionOperation(encryptionOperation *string) {
+	o.EncryptionOperation = encryptionOperation
 }
 
 // WithInfo adds the info to the disk modify params
@@ -190,48 +190,48 @@ func (o *DiskModifyParams) SetInfo(info *models.Disk) {
 	o.Info = info
 }
 
-// WithNameQueryParameter adds the name to the disk modify params
-func (o *DiskModifyParams) WithNameQueryParameter(name *string) *DiskModifyParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the disk modify params
+func (o *DiskModifyParams) WithName(name *string) *DiskModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the disk modify params
-func (o *DiskModifyParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the disk modify params
+func (o *DiskModifyParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeQueryParameter adds the node to the disk modify params
-func (o *DiskModifyParams) WithNodeQueryParameter(node *string) *DiskModifyParams {
-	o.SetNodeQueryParameter(node)
+// WithNode adds the node to the disk modify params
+func (o *DiskModifyParams) WithNode(node *string) *DiskModifyParams {
+	o.SetNode(node)
 	return o
 }
 
-// SetNodeQueryParameter adds the node to the disk modify params
-func (o *DiskModifyParams) SetNodeQueryParameter(node *string) {
-	o.NodeQueryParameter = node
+// SetNode adds the node to the disk modify params
+func (o *DiskModifyParams) SetNode(node *string) {
+	o.Node = node
 }
 
-// WithPoolQueryParameter adds the pool to the disk modify params
-func (o *DiskModifyParams) WithPoolQueryParameter(pool *string) *DiskModifyParams {
-	o.SetPoolQueryParameter(pool)
+// WithPool adds the pool to the disk modify params
+func (o *DiskModifyParams) WithPool(pool *string) *DiskModifyParams {
+	o.SetPool(pool)
 	return o
 }
 
-// SetPoolQueryParameter adds the pool to the disk modify params
-func (o *DiskModifyParams) SetPoolQueryParameter(pool *string) {
-	o.PoolQueryParameter = pool
+// SetPool adds the pool to the disk modify params
+func (o *DiskModifyParams) SetPool(pool *string) {
+	o.Pool = pool
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the disk modify params
-func (o *DiskModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *DiskModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the disk modify params
+func (o *DiskModifyParams) WithReturnRecords(returnRecords *bool) *DiskModifyParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the disk modify params
-func (o *DiskModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the disk modify params
+func (o *DiskModifyParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -242,13 +242,13 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.EncryptionOperationQueryParameter != nil {
+	if o.EncryptionOperation != nil {
 
 		// query param encryption_operation
 		var qrEncryptionOperation string
 
-		if o.EncryptionOperationQueryParameter != nil {
-			qrEncryptionOperation = *o.EncryptionOperationQueryParameter
+		if o.EncryptionOperation != nil {
+			qrEncryptionOperation = *o.EncryptionOperation
 		}
 		qEncryptionOperation := qrEncryptionOperation
 		if qEncryptionOperation != "" {
@@ -264,13 +264,13 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -281,13 +281,13 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.NodeQueryParameter != nil {
+	if o.Node != nil {
 
 		// query param node
 		var qrNode string
 
-		if o.NodeQueryParameter != nil {
-			qrNode = *o.NodeQueryParameter
+		if o.Node != nil {
+			qrNode = *o.Node
 		}
 		qNode := qrNode
 		if qNode != "" {
@@ -298,13 +298,13 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.PoolQueryParameter != nil {
+	if o.Pool != nil {
 
 		// query param pool
 		var qrPool string
 
-		if o.PoolQueryParameter != nil {
-			qrPool = *o.PoolQueryParameter
+		if o.Pool != nil {
+			qrPool = *o.Pool
 		}
 		qPool := qrPool
 		if qPool != "" {
@@ -315,13 +315,13 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

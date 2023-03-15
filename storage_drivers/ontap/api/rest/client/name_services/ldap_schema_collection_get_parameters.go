@@ -66,79 +66,79 @@ type LdapSchemaCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* GlobalSchema.
 
 	   Filter by global_schema
 	*/
-	GlobalSchemaQueryParameter *bool
+	GlobalSchema *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NameMappingAccountUnix.
 
 	   Filter by name_mapping.account.unix
 	*/
-	NameMappingAccountUnixQueryParameter *string
+	NameMappingAccountUnix *string
 
 	/* NameMappingAccountWindows.
 
 	   Filter by name_mapping.account.windows
 	*/
-	NameMappingAccountWindowsQueryParameter *string
+	NameMappingAccountWindows *string
 
 	/* NameMappingWindowsToUnixAttribute.
 
 	   Filter by name_mapping.windows_to_unix.attribute
 	*/
-	NameMappingWindowsToUnixAttributeQueryParameter *string
+	NameMappingWindowsToUnixAttribute *string
 
 	/* NameMappingWindowsToUnixNoDomainPrefix.
 
 	   Filter by name_mapping.windows_to_unix.no_domain_prefix
 	*/
-	NameMappingWindowsToUnixNoDomainPrefixQueryParameter *bool
+	NameMappingWindowsToUnixNoDomainPrefix *bool
 
 	/* NameMappingWindowsToUnixObjectClass.
 
 	   Filter by name_mapping.windows_to_unix.object_class
 	*/
-	NameMappingWindowsToUnixObjectClassQueryParameter *string
+	NameMappingWindowsToUnixObjectClass *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type LdapSchemaCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,145 +154,145 @@ type LdapSchemaCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Rfc2307AttributeGecos.
 
 	   Filter by rfc2307.attribute.gecos
 	*/
-	Rfc2307AttributeGecosQueryParameter *string
+	Rfc2307AttributeGecos *string
 
 	/* Rfc2307AttributeGidNumber.
 
 	   Filter by rfc2307.attribute.gid_number
 	*/
-	Rfc2307AttributeGIDNumberQueryParameter *string
+	Rfc2307AttributeGidNumber *string
 
 	/* Rfc2307AttributeHomeDirectory.
 
 	   Filter by rfc2307.attribute.home_directory
 	*/
-	Rfc2307AttributeHomeDirectoryQueryParameter *string
+	Rfc2307AttributeHomeDirectory *string
 
 	/* Rfc2307AttributeLoginShell.
 
 	   Filter by rfc2307.attribute.login_shell
 	*/
-	Rfc2307AttributeLoginShellQueryParameter *string
+	Rfc2307AttributeLoginShell *string
 
 	/* Rfc2307AttributeUID.
 
 	   Filter by rfc2307.attribute.uid
 	*/
-	Rfc2307AttributeUIDQueryParameter *string
+	Rfc2307AttributeUID *string
 
 	/* Rfc2307AttributeUIDNumber.
 
 	   Filter by rfc2307.attribute.uid_number
 	*/
-	Rfc2307AttributeUIDNumberQueryParameter *string
+	Rfc2307AttributeUIDNumber *string
 
 	/* Rfc2307AttributeUserPassword.
 
 	   Filter by rfc2307.attribute.user_password
 	*/
-	Rfc2307AttributeUserPasswordQueryParameter *string
+	Rfc2307AttributeUserPassword *string
 
 	/* Rfc2307CnGroup.
 
 	   Filter by rfc2307.cn.group
 	*/
-	Rfc2307CnGroupQueryParameter *string
+	Rfc2307CnGroup *string
 
 	/* Rfc2307CnNetgroup.
 
 	   Filter by rfc2307.cn.netgroup
 	*/
-	Rfc2307CnNetgroupQueryParameter *string
+	Rfc2307CnNetgroup *string
 
 	/* Rfc2307MemberNisNetgroup.
 
 	   Filter by rfc2307.member.nis_netgroup
 	*/
-	Rfc2307MemberNisNetgroupQueryParameter *string
+	Rfc2307MemberNisNetgroup *string
 
 	/* Rfc2307MemberUID.
 
 	   Filter by rfc2307.member.uid
 	*/
-	Rfc2307MemberUIDQueryParameter *string
+	Rfc2307MemberUID *string
 
 	/* Rfc2307NisMapentry.
 
 	   Filter by rfc2307.nis.mapentry
 	*/
-	Rfc2307NisMapentryQueryParameter *string
+	Rfc2307NisMapentry *string
 
 	/* Rfc2307NisMapname.
 
 	   Filter by rfc2307.nis.mapname
 	*/
-	Rfc2307NisMapnameQueryParameter *string
+	Rfc2307NisMapname *string
 
 	/* Rfc2307NisNetgroup.
 
 	   Filter by rfc2307.nis.netgroup
 	*/
-	Rfc2307NisNetgroupQueryParameter *string
+	Rfc2307NisNetgroup *string
 
 	/* Rfc2307NisNetgroupTriple.
 
 	   Filter by rfc2307.nis.netgroup_triple
 	*/
-	Rfc2307NisNetgroupTripleQueryParameter *string
+	Rfc2307NisNetgroupTriple *string
 
 	/* Rfc2307NisObject.
 
 	   Filter by rfc2307.nis.object
 	*/
-	Rfc2307NisObjectQueryParameter *string
+	Rfc2307NisObject *string
 
 	/* Rfc2307PosixAccount.
 
 	   Filter by rfc2307.posix.account
 	*/
-	Rfc2307PosixAccountQueryParameter *string
+	Rfc2307PosixAccount *string
 
 	/* Rfc2307PosixGroup.
 
 	   Filter by rfc2307.posix.group
 	*/
-	Rfc2307PosixGroupQueryParameter *string
+	Rfc2307PosixGroup *string
 
 	/* Rfc2307bisEnabled.
 
 	   Filter by rfc2307bis.enabled
 	*/
-	Rfc2307bisEnabledQueryParameter *bool
+	Rfc2307bisEnabled *bool
 
 	/* Rfc2307bisGroupOfUniqueNames.
 
 	   Filter by rfc2307bis.group_of_unique_names
 	*/
-	Rfc2307bisGroupOfUniqueNamesQueryParameter *string
+	Rfc2307bisGroupOfUniqueNames *string
 
 	/* Rfc2307bisMaximumGroups.
 
 	   Filter by rfc2307bis.maximum_groups
 	*/
-	Rfc2307bisMaximumGroupsQueryParameter *int64
+	Rfc2307bisMaximumGroups *int64
 
 	/* Rfc2307bisUniqueMember.
 
 	   Filter by rfc2307bis.unique_member
 	*/
-	Rfc2307bisUniqueMemberQueryParameter *string
+	Rfc2307bisUniqueMember *string
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -312,14 +312,14 @@ func (o *LdapSchemaCollectionGetParams) WithDefaults() *LdapSchemaCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *LdapSchemaCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LdapSchemaCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -361,422 +361,422 @@ func (o *LdapSchemaCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithCommentQueryParameter(comment *string) *LdapSchemaCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithComment(comment *string) *LdapSchemaCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithFieldsQueryParameter adds the fields to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithFieldsQueryParameter(fields []string) *LdapSchemaCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithFields(fields []string) *LdapSchemaCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGlobalSchemaQueryParameter adds the globalSchema to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithGlobalSchemaQueryParameter(globalSchema *bool) *LdapSchemaCollectionGetParams {
-	o.SetGlobalSchemaQueryParameter(globalSchema)
+// WithGlobalSchema adds the globalSchema to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithGlobalSchema(globalSchema *bool) *LdapSchemaCollectionGetParams {
+	o.SetGlobalSchema(globalSchema)
 	return o
 }
 
-// SetGlobalSchemaQueryParameter adds the globalSchema to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetGlobalSchemaQueryParameter(globalSchema *bool) {
-	o.GlobalSchemaQueryParameter = globalSchema
+// SetGlobalSchema adds the globalSchema to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetGlobalSchema(globalSchema *bool) {
+	o.GlobalSchema = globalSchema
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LdapSchemaCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithMaxRecords(maxRecords *int64) *LdapSchemaCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameQueryParameter(name *string) *LdapSchemaCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithName(name *string) *LdapSchemaCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNameMappingAccountUnixQueryParameter adds the nameMappingAccountUnix to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameMappingAccountUnixQueryParameter(nameMappingAccountUnix *string) *LdapSchemaCollectionGetParams {
-	o.SetNameMappingAccountUnixQueryParameter(nameMappingAccountUnix)
+// WithNameMappingAccountUnix adds the nameMappingAccountUnix to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithNameMappingAccountUnix(nameMappingAccountUnix *string) *LdapSchemaCollectionGetParams {
+	o.SetNameMappingAccountUnix(nameMappingAccountUnix)
 	return o
 }
 
-// SetNameMappingAccountUnixQueryParameter adds the nameMappingAccountUnix to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameMappingAccountUnixQueryParameter(nameMappingAccountUnix *string) {
-	o.NameMappingAccountUnixQueryParameter = nameMappingAccountUnix
+// SetNameMappingAccountUnix adds the nameMappingAccountUnix to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetNameMappingAccountUnix(nameMappingAccountUnix *string) {
+	o.NameMappingAccountUnix = nameMappingAccountUnix
 }
 
-// WithNameMappingAccountWindowsQueryParameter adds the nameMappingAccountWindows to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameMappingAccountWindowsQueryParameter(nameMappingAccountWindows *string) *LdapSchemaCollectionGetParams {
-	o.SetNameMappingAccountWindowsQueryParameter(nameMappingAccountWindows)
+// WithNameMappingAccountWindows adds the nameMappingAccountWindows to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithNameMappingAccountWindows(nameMappingAccountWindows *string) *LdapSchemaCollectionGetParams {
+	o.SetNameMappingAccountWindows(nameMappingAccountWindows)
 	return o
 }
 
-// SetNameMappingAccountWindowsQueryParameter adds the nameMappingAccountWindows to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameMappingAccountWindowsQueryParameter(nameMappingAccountWindows *string) {
-	o.NameMappingAccountWindowsQueryParameter = nameMappingAccountWindows
+// SetNameMappingAccountWindows adds the nameMappingAccountWindows to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetNameMappingAccountWindows(nameMappingAccountWindows *string) {
+	o.NameMappingAccountWindows = nameMappingAccountWindows
 }
 
-// WithNameMappingWindowsToUnixAttributeQueryParameter adds the nameMappingWindowsToUnixAttribute to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixAttributeQueryParameter(nameMappingWindowsToUnixAttribute *string) *LdapSchemaCollectionGetParams {
-	o.SetNameMappingWindowsToUnixAttributeQueryParameter(nameMappingWindowsToUnixAttribute)
+// WithNameMappingWindowsToUnixAttribute adds the nameMappingWindowsToUnixAttribute to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixAttribute(nameMappingWindowsToUnixAttribute *string) *LdapSchemaCollectionGetParams {
+	o.SetNameMappingWindowsToUnixAttribute(nameMappingWindowsToUnixAttribute)
 	return o
 }
 
-// SetNameMappingWindowsToUnixAttributeQueryParameter adds the nameMappingWindowsToUnixAttribute to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixAttributeQueryParameter(nameMappingWindowsToUnixAttribute *string) {
-	o.NameMappingWindowsToUnixAttributeQueryParameter = nameMappingWindowsToUnixAttribute
+// SetNameMappingWindowsToUnixAttribute adds the nameMappingWindowsToUnixAttribute to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixAttribute(nameMappingWindowsToUnixAttribute *string) {
+	o.NameMappingWindowsToUnixAttribute = nameMappingWindowsToUnixAttribute
 }
 
-// WithNameMappingWindowsToUnixNoDomainPrefixQueryParameter adds the nameMappingWindowsToUnixNoDomainPrefix to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixNoDomainPrefixQueryParameter(nameMappingWindowsToUnixNoDomainPrefix *bool) *LdapSchemaCollectionGetParams {
-	o.SetNameMappingWindowsToUnixNoDomainPrefixQueryParameter(nameMappingWindowsToUnixNoDomainPrefix)
+// WithNameMappingWindowsToUnixNoDomainPrefix adds the nameMappingWindowsToUnixNoDomainPrefix to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixNoDomainPrefix(nameMappingWindowsToUnixNoDomainPrefix *bool) *LdapSchemaCollectionGetParams {
+	o.SetNameMappingWindowsToUnixNoDomainPrefix(nameMappingWindowsToUnixNoDomainPrefix)
 	return o
 }
 
-// SetNameMappingWindowsToUnixNoDomainPrefixQueryParameter adds the nameMappingWindowsToUnixNoDomainPrefix to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixNoDomainPrefixQueryParameter(nameMappingWindowsToUnixNoDomainPrefix *bool) {
-	o.NameMappingWindowsToUnixNoDomainPrefixQueryParameter = nameMappingWindowsToUnixNoDomainPrefix
+// SetNameMappingWindowsToUnixNoDomainPrefix adds the nameMappingWindowsToUnixNoDomainPrefix to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixNoDomainPrefix(nameMappingWindowsToUnixNoDomainPrefix *bool) {
+	o.NameMappingWindowsToUnixNoDomainPrefix = nameMappingWindowsToUnixNoDomainPrefix
 }
 
-// WithNameMappingWindowsToUnixObjectClassQueryParameter adds the nameMappingWindowsToUnixObjectClass to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixObjectClassQueryParameter(nameMappingWindowsToUnixObjectClass *string) *LdapSchemaCollectionGetParams {
-	o.SetNameMappingWindowsToUnixObjectClassQueryParameter(nameMappingWindowsToUnixObjectClass)
+// WithNameMappingWindowsToUnixObjectClass adds the nameMappingWindowsToUnixObjectClass to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithNameMappingWindowsToUnixObjectClass(nameMappingWindowsToUnixObjectClass *string) *LdapSchemaCollectionGetParams {
+	o.SetNameMappingWindowsToUnixObjectClass(nameMappingWindowsToUnixObjectClass)
 	return o
 }
 
-// SetNameMappingWindowsToUnixObjectClassQueryParameter adds the nameMappingWindowsToUnixObjectClass to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixObjectClassQueryParameter(nameMappingWindowsToUnixObjectClass *string) {
-	o.NameMappingWindowsToUnixObjectClassQueryParameter = nameMappingWindowsToUnixObjectClass
+// SetNameMappingWindowsToUnixObjectClass adds the nameMappingWindowsToUnixObjectClass to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetNameMappingWindowsToUnixObjectClass(nameMappingWindowsToUnixObjectClass *string) {
+	o.NameMappingWindowsToUnixObjectClass = nameMappingWindowsToUnixObjectClass
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LdapSchemaCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithOrderBy(orderBy []string) *LdapSchemaCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *LdapSchemaCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithOwnerName(ownerName *string) *LdapSchemaCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *LdapSchemaCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithOwnerUUID(ownerUUID *string) *LdapSchemaCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LdapSchemaCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithReturnRecords(returnRecords *bool) *LdapSchemaCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LdapSchemaCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LdapSchemaCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithRfc2307AttributeGecosQueryParameter adds the rfc2307AttributeGecos to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeGecosQueryParameter(rfc2307AttributeGecos *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeGecosQueryParameter(rfc2307AttributeGecos)
+// WithRfc2307AttributeGecos adds the rfc2307AttributeGecos to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeGecos(rfc2307AttributeGecos *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeGecos(rfc2307AttributeGecos)
 	return o
 }
 
-// SetRfc2307AttributeGecosQueryParameter adds the rfc2307AttributeGecos to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeGecosQueryParameter(rfc2307AttributeGecos *string) {
-	o.Rfc2307AttributeGecosQueryParameter = rfc2307AttributeGecos
+// SetRfc2307AttributeGecos adds the rfc2307AttributeGecos to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeGecos(rfc2307AttributeGecos *string) {
+	o.Rfc2307AttributeGecos = rfc2307AttributeGecos
 }
 
-// WithRfc2307AttributeGIDNumberQueryParameter adds the rfc2307AttributeGidNumber to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeGIDNumberQueryParameter(rfc2307AttributeGidNumber *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeGIDNumberQueryParameter(rfc2307AttributeGidNumber)
+// WithRfc2307AttributeGidNumber adds the rfc2307AttributeGidNumber to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeGidNumber(rfc2307AttributeGidNumber *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeGidNumber(rfc2307AttributeGidNumber)
 	return o
 }
 
-// SetRfc2307AttributeGIDNumberQueryParameter adds the rfc2307AttributeGidNumber to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeGIDNumberQueryParameter(rfc2307AttributeGidNumber *string) {
-	o.Rfc2307AttributeGIDNumberQueryParameter = rfc2307AttributeGidNumber
+// SetRfc2307AttributeGidNumber adds the rfc2307AttributeGidNumber to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeGidNumber(rfc2307AttributeGidNumber *string) {
+	o.Rfc2307AttributeGidNumber = rfc2307AttributeGidNumber
 }
 
-// WithRfc2307AttributeHomeDirectoryQueryParameter adds the rfc2307AttributeHomeDirectory to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeHomeDirectoryQueryParameter(rfc2307AttributeHomeDirectory *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeHomeDirectoryQueryParameter(rfc2307AttributeHomeDirectory)
+// WithRfc2307AttributeHomeDirectory adds the rfc2307AttributeHomeDirectory to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeHomeDirectory(rfc2307AttributeHomeDirectory *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeHomeDirectory(rfc2307AttributeHomeDirectory)
 	return o
 }
 
-// SetRfc2307AttributeHomeDirectoryQueryParameter adds the rfc2307AttributeHomeDirectory to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeHomeDirectoryQueryParameter(rfc2307AttributeHomeDirectory *string) {
-	o.Rfc2307AttributeHomeDirectoryQueryParameter = rfc2307AttributeHomeDirectory
+// SetRfc2307AttributeHomeDirectory adds the rfc2307AttributeHomeDirectory to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeHomeDirectory(rfc2307AttributeHomeDirectory *string) {
+	o.Rfc2307AttributeHomeDirectory = rfc2307AttributeHomeDirectory
 }
 
-// WithRfc2307AttributeLoginShellQueryParameter adds the rfc2307AttributeLoginShell to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeLoginShellQueryParameter(rfc2307AttributeLoginShell *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeLoginShellQueryParameter(rfc2307AttributeLoginShell)
+// WithRfc2307AttributeLoginShell adds the rfc2307AttributeLoginShell to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeLoginShell(rfc2307AttributeLoginShell *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeLoginShell(rfc2307AttributeLoginShell)
 	return o
 }
 
-// SetRfc2307AttributeLoginShellQueryParameter adds the rfc2307AttributeLoginShell to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeLoginShellQueryParameter(rfc2307AttributeLoginShell *string) {
-	o.Rfc2307AttributeLoginShellQueryParameter = rfc2307AttributeLoginShell
+// SetRfc2307AttributeLoginShell adds the rfc2307AttributeLoginShell to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeLoginShell(rfc2307AttributeLoginShell *string) {
+	o.Rfc2307AttributeLoginShell = rfc2307AttributeLoginShell
 }
 
-// WithRfc2307AttributeUIDQueryParameter adds the rfc2307AttributeUID to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUIDQueryParameter(rfc2307AttributeUID *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeUIDQueryParameter(rfc2307AttributeUID)
+// WithRfc2307AttributeUID adds the rfc2307AttributeUID to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUID(rfc2307AttributeUID *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeUID(rfc2307AttributeUID)
 	return o
 }
 
-// SetRfc2307AttributeUIDQueryParameter adds the rfc2307AttributeUid to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUIDQueryParameter(rfc2307AttributeUID *string) {
-	o.Rfc2307AttributeUIDQueryParameter = rfc2307AttributeUID
+// SetRfc2307AttributeUID adds the rfc2307AttributeUid to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUID(rfc2307AttributeUID *string) {
+	o.Rfc2307AttributeUID = rfc2307AttributeUID
 }
 
-// WithRfc2307AttributeUIDNumberQueryParameter adds the rfc2307AttributeUIDNumber to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUIDNumberQueryParameter(rfc2307AttributeUIDNumber *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeUIDNumberQueryParameter(rfc2307AttributeUIDNumber)
+// WithRfc2307AttributeUIDNumber adds the rfc2307AttributeUIDNumber to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUIDNumber(rfc2307AttributeUIDNumber *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeUIDNumber(rfc2307AttributeUIDNumber)
 	return o
 }
 
-// SetRfc2307AttributeUIDNumberQueryParameter adds the rfc2307AttributeUidNumber to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUIDNumberQueryParameter(rfc2307AttributeUIDNumber *string) {
-	o.Rfc2307AttributeUIDNumberQueryParameter = rfc2307AttributeUIDNumber
+// SetRfc2307AttributeUIDNumber adds the rfc2307AttributeUidNumber to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUIDNumber(rfc2307AttributeUIDNumber *string) {
+	o.Rfc2307AttributeUIDNumber = rfc2307AttributeUIDNumber
 }
 
-// WithRfc2307AttributeUserPasswordQueryParameter adds the rfc2307AttributeUserPassword to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUserPasswordQueryParameter(rfc2307AttributeUserPassword *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307AttributeUserPasswordQueryParameter(rfc2307AttributeUserPassword)
+// WithRfc2307AttributeUserPassword adds the rfc2307AttributeUserPassword to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307AttributeUserPassword(rfc2307AttributeUserPassword *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307AttributeUserPassword(rfc2307AttributeUserPassword)
 	return o
 }
 
-// SetRfc2307AttributeUserPasswordQueryParameter adds the rfc2307AttributeUserPassword to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUserPasswordQueryParameter(rfc2307AttributeUserPassword *string) {
-	o.Rfc2307AttributeUserPasswordQueryParameter = rfc2307AttributeUserPassword
+// SetRfc2307AttributeUserPassword adds the rfc2307AttributeUserPassword to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307AttributeUserPassword(rfc2307AttributeUserPassword *string) {
+	o.Rfc2307AttributeUserPassword = rfc2307AttributeUserPassword
 }
 
-// WithRfc2307CnGroupQueryParameter adds the rfc2307CnGroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307CnGroupQueryParameter(rfc2307CnGroup *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307CnGroupQueryParameter(rfc2307CnGroup)
+// WithRfc2307CnGroup adds the rfc2307CnGroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307CnGroup(rfc2307CnGroup *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307CnGroup(rfc2307CnGroup)
 	return o
 }
 
-// SetRfc2307CnGroupQueryParameter adds the rfc2307CnGroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307CnGroupQueryParameter(rfc2307CnGroup *string) {
-	o.Rfc2307CnGroupQueryParameter = rfc2307CnGroup
+// SetRfc2307CnGroup adds the rfc2307CnGroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307CnGroup(rfc2307CnGroup *string) {
+	o.Rfc2307CnGroup = rfc2307CnGroup
 }
 
-// WithRfc2307CnNetgroupQueryParameter adds the rfc2307CnNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307CnNetgroupQueryParameter(rfc2307CnNetgroup *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307CnNetgroupQueryParameter(rfc2307CnNetgroup)
+// WithRfc2307CnNetgroup adds the rfc2307CnNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307CnNetgroup(rfc2307CnNetgroup *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307CnNetgroup(rfc2307CnNetgroup)
 	return o
 }
 
-// SetRfc2307CnNetgroupQueryParameter adds the rfc2307CnNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307CnNetgroupQueryParameter(rfc2307CnNetgroup *string) {
-	o.Rfc2307CnNetgroupQueryParameter = rfc2307CnNetgroup
+// SetRfc2307CnNetgroup adds the rfc2307CnNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307CnNetgroup(rfc2307CnNetgroup *string) {
+	o.Rfc2307CnNetgroup = rfc2307CnNetgroup
 }
 
-// WithRfc2307MemberNisNetgroupQueryParameter adds the rfc2307MemberNisNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307MemberNisNetgroupQueryParameter(rfc2307MemberNisNetgroup *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307MemberNisNetgroupQueryParameter(rfc2307MemberNisNetgroup)
+// WithRfc2307MemberNisNetgroup adds the rfc2307MemberNisNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307MemberNisNetgroup(rfc2307MemberNisNetgroup *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307MemberNisNetgroup(rfc2307MemberNisNetgroup)
 	return o
 }
 
-// SetRfc2307MemberNisNetgroupQueryParameter adds the rfc2307MemberNisNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307MemberNisNetgroupQueryParameter(rfc2307MemberNisNetgroup *string) {
-	o.Rfc2307MemberNisNetgroupQueryParameter = rfc2307MemberNisNetgroup
+// SetRfc2307MemberNisNetgroup adds the rfc2307MemberNisNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307MemberNisNetgroup(rfc2307MemberNisNetgroup *string) {
+	o.Rfc2307MemberNisNetgroup = rfc2307MemberNisNetgroup
 }
 
-// WithRfc2307MemberUIDQueryParameter adds the rfc2307MemberUID to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307MemberUIDQueryParameter(rfc2307MemberUID *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307MemberUIDQueryParameter(rfc2307MemberUID)
+// WithRfc2307MemberUID adds the rfc2307MemberUID to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307MemberUID(rfc2307MemberUID *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307MemberUID(rfc2307MemberUID)
 	return o
 }
 
-// SetRfc2307MemberUIDQueryParameter adds the rfc2307MemberUid to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307MemberUIDQueryParameter(rfc2307MemberUID *string) {
-	o.Rfc2307MemberUIDQueryParameter = rfc2307MemberUID
+// SetRfc2307MemberUID adds the rfc2307MemberUid to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307MemberUID(rfc2307MemberUID *string) {
+	o.Rfc2307MemberUID = rfc2307MemberUID
 }
 
-// WithRfc2307NisMapentryQueryParameter adds the rfc2307NisMapentry to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307NisMapentryQueryParameter(rfc2307NisMapentry *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307NisMapentryQueryParameter(rfc2307NisMapentry)
+// WithRfc2307NisMapentry adds the rfc2307NisMapentry to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307NisMapentry(rfc2307NisMapentry *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307NisMapentry(rfc2307NisMapentry)
 	return o
 }
 
-// SetRfc2307NisMapentryQueryParameter adds the rfc2307NisMapentry to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307NisMapentryQueryParameter(rfc2307NisMapentry *string) {
-	o.Rfc2307NisMapentryQueryParameter = rfc2307NisMapentry
+// SetRfc2307NisMapentry adds the rfc2307NisMapentry to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307NisMapentry(rfc2307NisMapentry *string) {
+	o.Rfc2307NisMapentry = rfc2307NisMapentry
 }
 
-// WithRfc2307NisMapnameQueryParameter adds the rfc2307NisMapname to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307NisMapnameQueryParameter(rfc2307NisMapname *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307NisMapnameQueryParameter(rfc2307NisMapname)
+// WithRfc2307NisMapname adds the rfc2307NisMapname to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307NisMapname(rfc2307NisMapname *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307NisMapname(rfc2307NisMapname)
 	return o
 }
 
-// SetRfc2307NisMapnameQueryParameter adds the rfc2307NisMapname to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307NisMapnameQueryParameter(rfc2307NisMapname *string) {
-	o.Rfc2307NisMapnameQueryParameter = rfc2307NisMapname
+// SetRfc2307NisMapname adds the rfc2307NisMapname to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307NisMapname(rfc2307NisMapname *string) {
+	o.Rfc2307NisMapname = rfc2307NisMapname
 }
 
-// WithRfc2307NisNetgroupQueryParameter adds the rfc2307NisNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307NisNetgroupQueryParameter(rfc2307NisNetgroup *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307NisNetgroupQueryParameter(rfc2307NisNetgroup)
+// WithRfc2307NisNetgroup adds the rfc2307NisNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307NisNetgroup(rfc2307NisNetgroup *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307NisNetgroup(rfc2307NisNetgroup)
 	return o
 }
 
-// SetRfc2307NisNetgroupQueryParameter adds the rfc2307NisNetgroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307NisNetgroupQueryParameter(rfc2307NisNetgroup *string) {
-	o.Rfc2307NisNetgroupQueryParameter = rfc2307NisNetgroup
+// SetRfc2307NisNetgroup adds the rfc2307NisNetgroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307NisNetgroup(rfc2307NisNetgroup *string) {
+	o.Rfc2307NisNetgroup = rfc2307NisNetgroup
 }
 
-// WithRfc2307NisNetgroupTripleQueryParameter adds the rfc2307NisNetgroupTriple to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307NisNetgroupTripleQueryParameter(rfc2307NisNetgroupTriple *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307NisNetgroupTripleQueryParameter(rfc2307NisNetgroupTriple)
+// WithRfc2307NisNetgroupTriple adds the rfc2307NisNetgroupTriple to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307NisNetgroupTriple(rfc2307NisNetgroupTriple *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307NisNetgroupTriple(rfc2307NisNetgroupTriple)
 	return o
 }
 
-// SetRfc2307NisNetgroupTripleQueryParameter adds the rfc2307NisNetgroupTriple to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307NisNetgroupTripleQueryParameter(rfc2307NisNetgroupTriple *string) {
-	o.Rfc2307NisNetgroupTripleQueryParameter = rfc2307NisNetgroupTriple
+// SetRfc2307NisNetgroupTriple adds the rfc2307NisNetgroupTriple to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307NisNetgroupTriple(rfc2307NisNetgroupTriple *string) {
+	o.Rfc2307NisNetgroupTriple = rfc2307NisNetgroupTriple
 }
 
-// WithRfc2307NisObjectQueryParameter adds the rfc2307NisObject to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307NisObjectQueryParameter(rfc2307NisObject *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307NisObjectQueryParameter(rfc2307NisObject)
+// WithRfc2307NisObject adds the rfc2307NisObject to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307NisObject(rfc2307NisObject *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307NisObject(rfc2307NisObject)
 	return o
 }
 
-// SetRfc2307NisObjectQueryParameter adds the rfc2307NisObject to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307NisObjectQueryParameter(rfc2307NisObject *string) {
-	o.Rfc2307NisObjectQueryParameter = rfc2307NisObject
+// SetRfc2307NisObject adds the rfc2307NisObject to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307NisObject(rfc2307NisObject *string) {
+	o.Rfc2307NisObject = rfc2307NisObject
 }
 
-// WithRfc2307PosixAccountQueryParameter adds the rfc2307PosixAccount to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307PosixAccountQueryParameter(rfc2307PosixAccount *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307PosixAccountQueryParameter(rfc2307PosixAccount)
+// WithRfc2307PosixAccount adds the rfc2307PosixAccount to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307PosixAccount(rfc2307PosixAccount *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307PosixAccount(rfc2307PosixAccount)
 	return o
 }
 
-// SetRfc2307PosixAccountQueryParameter adds the rfc2307PosixAccount to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307PosixAccountQueryParameter(rfc2307PosixAccount *string) {
-	o.Rfc2307PosixAccountQueryParameter = rfc2307PosixAccount
+// SetRfc2307PosixAccount adds the rfc2307PosixAccount to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307PosixAccount(rfc2307PosixAccount *string) {
+	o.Rfc2307PosixAccount = rfc2307PosixAccount
 }
 
-// WithRfc2307PosixGroupQueryParameter adds the rfc2307PosixGroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307PosixGroupQueryParameter(rfc2307PosixGroup *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307PosixGroupQueryParameter(rfc2307PosixGroup)
+// WithRfc2307PosixGroup adds the rfc2307PosixGroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307PosixGroup(rfc2307PosixGroup *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307PosixGroup(rfc2307PosixGroup)
 	return o
 }
 
-// SetRfc2307PosixGroupQueryParameter adds the rfc2307PosixGroup to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307PosixGroupQueryParameter(rfc2307PosixGroup *string) {
-	o.Rfc2307PosixGroupQueryParameter = rfc2307PosixGroup
+// SetRfc2307PosixGroup adds the rfc2307PosixGroup to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307PosixGroup(rfc2307PosixGroup *string) {
+	o.Rfc2307PosixGroup = rfc2307PosixGroup
 }
 
-// WithRfc2307bisEnabledQueryParameter adds the rfc2307bisEnabled to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307bisEnabledQueryParameter(rfc2307bisEnabled *bool) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307bisEnabledQueryParameter(rfc2307bisEnabled)
+// WithRfc2307bisEnabled adds the rfc2307bisEnabled to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307bisEnabled(rfc2307bisEnabled *bool) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307bisEnabled(rfc2307bisEnabled)
 	return o
 }
 
-// SetRfc2307bisEnabledQueryParameter adds the rfc2307bisEnabled to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307bisEnabledQueryParameter(rfc2307bisEnabled *bool) {
-	o.Rfc2307bisEnabledQueryParameter = rfc2307bisEnabled
+// SetRfc2307bisEnabled adds the rfc2307bisEnabled to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307bisEnabled(rfc2307bisEnabled *bool) {
+	o.Rfc2307bisEnabled = rfc2307bisEnabled
 }
 
-// WithRfc2307bisGroupOfUniqueNamesQueryParameter adds the rfc2307bisGroupOfUniqueNames to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307bisGroupOfUniqueNamesQueryParameter(rfc2307bisGroupOfUniqueNames *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307bisGroupOfUniqueNamesQueryParameter(rfc2307bisGroupOfUniqueNames)
+// WithRfc2307bisGroupOfUniqueNames adds the rfc2307bisGroupOfUniqueNames to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307bisGroupOfUniqueNames(rfc2307bisGroupOfUniqueNames *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307bisGroupOfUniqueNames(rfc2307bisGroupOfUniqueNames)
 	return o
 }
 
-// SetRfc2307bisGroupOfUniqueNamesQueryParameter adds the rfc2307bisGroupOfUniqueNames to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307bisGroupOfUniqueNamesQueryParameter(rfc2307bisGroupOfUniqueNames *string) {
-	o.Rfc2307bisGroupOfUniqueNamesQueryParameter = rfc2307bisGroupOfUniqueNames
+// SetRfc2307bisGroupOfUniqueNames adds the rfc2307bisGroupOfUniqueNames to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307bisGroupOfUniqueNames(rfc2307bisGroupOfUniqueNames *string) {
+	o.Rfc2307bisGroupOfUniqueNames = rfc2307bisGroupOfUniqueNames
 }
 
-// WithRfc2307bisMaximumGroupsQueryParameter adds the rfc2307bisMaximumGroups to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307bisMaximumGroupsQueryParameter(rfc2307bisMaximumGroups *int64) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307bisMaximumGroupsQueryParameter(rfc2307bisMaximumGroups)
+// WithRfc2307bisMaximumGroups adds the rfc2307bisMaximumGroups to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307bisMaximumGroups(rfc2307bisMaximumGroups *int64) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307bisMaximumGroups(rfc2307bisMaximumGroups)
 	return o
 }
 
-// SetRfc2307bisMaximumGroupsQueryParameter adds the rfc2307bisMaximumGroups to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307bisMaximumGroupsQueryParameter(rfc2307bisMaximumGroups *int64) {
-	o.Rfc2307bisMaximumGroupsQueryParameter = rfc2307bisMaximumGroups
+// SetRfc2307bisMaximumGroups adds the rfc2307bisMaximumGroups to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307bisMaximumGroups(rfc2307bisMaximumGroups *int64) {
+	o.Rfc2307bisMaximumGroups = rfc2307bisMaximumGroups
 }
 
-// WithRfc2307bisUniqueMemberQueryParameter adds the rfc2307bisUniqueMember to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithRfc2307bisUniqueMemberQueryParameter(rfc2307bisUniqueMember *string) *LdapSchemaCollectionGetParams {
-	o.SetRfc2307bisUniqueMemberQueryParameter(rfc2307bisUniqueMember)
+// WithRfc2307bisUniqueMember adds the rfc2307bisUniqueMember to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithRfc2307bisUniqueMember(rfc2307bisUniqueMember *string) *LdapSchemaCollectionGetParams {
+	o.SetRfc2307bisUniqueMember(rfc2307bisUniqueMember)
 	return o
 }
 
-// SetRfc2307bisUniqueMemberQueryParameter adds the rfc2307bisUniqueMember to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetRfc2307bisUniqueMemberQueryParameter(rfc2307bisUniqueMember *string) {
-	o.Rfc2307bisUniqueMemberQueryParameter = rfc2307bisUniqueMember
+// SetRfc2307bisUniqueMember adds the rfc2307bisUniqueMember to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetRfc2307bisUniqueMember(rfc2307bisUniqueMember *string) {
+	o.Rfc2307bisUniqueMember = rfc2307bisUniqueMember
 }
 
-// WithScopeQueryParameter adds the scope to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) WithScopeQueryParameter(scope *string) *LdapSchemaCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) WithScope(scope *string) *LdapSchemaCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the ldap schema collection get params
-func (o *LdapSchemaCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the ldap schema collection get params
+func (o *LdapSchemaCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -787,13 +787,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -804,7 +804,7 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -815,13 +815,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.GlobalSchemaQueryParameter != nil {
+	if o.GlobalSchema != nil {
 
 		// query param global_schema
 		var qrGlobalSchema bool
 
-		if o.GlobalSchemaQueryParameter != nil {
-			qrGlobalSchema = *o.GlobalSchemaQueryParameter
+		if o.GlobalSchema != nil {
+			qrGlobalSchema = *o.GlobalSchema
 		}
 		qGlobalSchema := swag.FormatBool(qrGlobalSchema)
 		if qGlobalSchema != "" {
@@ -832,13 +832,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -849,13 +849,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -866,13 +866,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingAccountUnixQueryParameter != nil {
+	if o.NameMappingAccountUnix != nil {
 
 		// query param name_mapping.account.unix
 		var qrNameMappingAccountUnix string
 
-		if o.NameMappingAccountUnixQueryParameter != nil {
-			qrNameMappingAccountUnix = *o.NameMappingAccountUnixQueryParameter
+		if o.NameMappingAccountUnix != nil {
+			qrNameMappingAccountUnix = *o.NameMappingAccountUnix
 		}
 		qNameMappingAccountUnix := qrNameMappingAccountUnix
 		if qNameMappingAccountUnix != "" {
@@ -883,13 +883,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingAccountWindowsQueryParameter != nil {
+	if o.NameMappingAccountWindows != nil {
 
 		// query param name_mapping.account.windows
 		var qrNameMappingAccountWindows string
 
-		if o.NameMappingAccountWindowsQueryParameter != nil {
-			qrNameMappingAccountWindows = *o.NameMappingAccountWindowsQueryParameter
+		if o.NameMappingAccountWindows != nil {
+			qrNameMappingAccountWindows = *o.NameMappingAccountWindows
 		}
 		qNameMappingAccountWindows := qrNameMappingAccountWindows
 		if qNameMappingAccountWindows != "" {
@@ -900,13 +900,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingWindowsToUnixAttributeQueryParameter != nil {
+	if o.NameMappingWindowsToUnixAttribute != nil {
 
 		// query param name_mapping.windows_to_unix.attribute
 		var qrNameMappingWindowsToUnixAttribute string
 
-		if o.NameMappingWindowsToUnixAttributeQueryParameter != nil {
-			qrNameMappingWindowsToUnixAttribute = *o.NameMappingWindowsToUnixAttributeQueryParameter
+		if o.NameMappingWindowsToUnixAttribute != nil {
+			qrNameMappingWindowsToUnixAttribute = *o.NameMappingWindowsToUnixAttribute
 		}
 		qNameMappingWindowsToUnixAttribute := qrNameMappingWindowsToUnixAttribute
 		if qNameMappingWindowsToUnixAttribute != "" {
@@ -917,13 +917,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingWindowsToUnixNoDomainPrefixQueryParameter != nil {
+	if o.NameMappingWindowsToUnixNoDomainPrefix != nil {
 
 		// query param name_mapping.windows_to_unix.no_domain_prefix
 		var qrNameMappingWindowsToUnixNoDomainPrefix bool
 
-		if o.NameMappingWindowsToUnixNoDomainPrefixQueryParameter != nil {
-			qrNameMappingWindowsToUnixNoDomainPrefix = *o.NameMappingWindowsToUnixNoDomainPrefixQueryParameter
+		if o.NameMappingWindowsToUnixNoDomainPrefix != nil {
+			qrNameMappingWindowsToUnixNoDomainPrefix = *o.NameMappingWindowsToUnixNoDomainPrefix
 		}
 		qNameMappingWindowsToUnixNoDomainPrefix := swag.FormatBool(qrNameMappingWindowsToUnixNoDomainPrefix)
 		if qNameMappingWindowsToUnixNoDomainPrefix != "" {
@@ -934,13 +934,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingWindowsToUnixObjectClassQueryParameter != nil {
+	if o.NameMappingWindowsToUnixObjectClass != nil {
 
 		// query param name_mapping.windows_to_unix.object_class
 		var qrNameMappingWindowsToUnixObjectClass string
 
-		if o.NameMappingWindowsToUnixObjectClassQueryParameter != nil {
-			qrNameMappingWindowsToUnixObjectClass = *o.NameMappingWindowsToUnixObjectClassQueryParameter
+		if o.NameMappingWindowsToUnixObjectClass != nil {
+			qrNameMappingWindowsToUnixObjectClass = *o.NameMappingWindowsToUnixObjectClass
 		}
 		qNameMappingWindowsToUnixObjectClass := qrNameMappingWindowsToUnixObjectClass
 		if qNameMappingWindowsToUnixObjectClass != "" {
@@ -951,7 +951,7 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -962,13 +962,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -979,13 +979,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -996,13 +996,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1013,13 +1013,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1030,13 +1030,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeGecosQueryParameter != nil {
+	if o.Rfc2307AttributeGecos != nil {
 
 		// query param rfc2307.attribute.gecos
 		var qrRfc2307AttributeGecos string
 
-		if o.Rfc2307AttributeGecosQueryParameter != nil {
-			qrRfc2307AttributeGecos = *o.Rfc2307AttributeGecosQueryParameter
+		if o.Rfc2307AttributeGecos != nil {
+			qrRfc2307AttributeGecos = *o.Rfc2307AttributeGecos
 		}
 		qRfc2307AttributeGecos := qrRfc2307AttributeGecos
 		if qRfc2307AttributeGecos != "" {
@@ -1047,13 +1047,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeGIDNumberQueryParameter != nil {
+	if o.Rfc2307AttributeGidNumber != nil {
 
 		// query param rfc2307.attribute.gid_number
 		var qrRfc2307AttributeGidNumber string
 
-		if o.Rfc2307AttributeGIDNumberQueryParameter != nil {
-			qrRfc2307AttributeGidNumber = *o.Rfc2307AttributeGIDNumberQueryParameter
+		if o.Rfc2307AttributeGidNumber != nil {
+			qrRfc2307AttributeGidNumber = *o.Rfc2307AttributeGidNumber
 		}
 		qRfc2307AttributeGidNumber := qrRfc2307AttributeGidNumber
 		if qRfc2307AttributeGidNumber != "" {
@@ -1064,13 +1064,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeHomeDirectoryQueryParameter != nil {
+	if o.Rfc2307AttributeHomeDirectory != nil {
 
 		// query param rfc2307.attribute.home_directory
 		var qrRfc2307AttributeHomeDirectory string
 
-		if o.Rfc2307AttributeHomeDirectoryQueryParameter != nil {
-			qrRfc2307AttributeHomeDirectory = *o.Rfc2307AttributeHomeDirectoryQueryParameter
+		if o.Rfc2307AttributeHomeDirectory != nil {
+			qrRfc2307AttributeHomeDirectory = *o.Rfc2307AttributeHomeDirectory
 		}
 		qRfc2307AttributeHomeDirectory := qrRfc2307AttributeHomeDirectory
 		if qRfc2307AttributeHomeDirectory != "" {
@@ -1081,13 +1081,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeLoginShellQueryParameter != nil {
+	if o.Rfc2307AttributeLoginShell != nil {
 
 		// query param rfc2307.attribute.login_shell
 		var qrRfc2307AttributeLoginShell string
 
-		if o.Rfc2307AttributeLoginShellQueryParameter != nil {
-			qrRfc2307AttributeLoginShell = *o.Rfc2307AttributeLoginShellQueryParameter
+		if o.Rfc2307AttributeLoginShell != nil {
+			qrRfc2307AttributeLoginShell = *o.Rfc2307AttributeLoginShell
 		}
 		qRfc2307AttributeLoginShell := qrRfc2307AttributeLoginShell
 		if qRfc2307AttributeLoginShell != "" {
@@ -1098,13 +1098,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeUIDQueryParameter != nil {
+	if o.Rfc2307AttributeUID != nil {
 
 		// query param rfc2307.attribute.uid
 		var qrRfc2307AttributeUID string
 
-		if o.Rfc2307AttributeUIDQueryParameter != nil {
-			qrRfc2307AttributeUID = *o.Rfc2307AttributeUIDQueryParameter
+		if o.Rfc2307AttributeUID != nil {
+			qrRfc2307AttributeUID = *o.Rfc2307AttributeUID
 		}
 		qRfc2307AttributeUID := qrRfc2307AttributeUID
 		if qRfc2307AttributeUID != "" {
@@ -1115,13 +1115,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeUIDNumberQueryParameter != nil {
+	if o.Rfc2307AttributeUIDNumber != nil {
 
 		// query param rfc2307.attribute.uid_number
 		var qrRfc2307AttributeUIDNumber string
 
-		if o.Rfc2307AttributeUIDNumberQueryParameter != nil {
-			qrRfc2307AttributeUIDNumber = *o.Rfc2307AttributeUIDNumberQueryParameter
+		if o.Rfc2307AttributeUIDNumber != nil {
+			qrRfc2307AttributeUIDNumber = *o.Rfc2307AttributeUIDNumber
 		}
 		qRfc2307AttributeUIDNumber := qrRfc2307AttributeUIDNumber
 		if qRfc2307AttributeUIDNumber != "" {
@@ -1132,13 +1132,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307AttributeUserPasswordQueryParameter != nil {
+	if o.Rfc2307AttributeUserPassword != nil {
 
 		// query param rfc2307.attribute.user_password
 		var qrRfc2307AttributeUserPassword string
 
-		if o.Rfc2307AttributeUserPasswordQueryParameter != nil {
-			qrRfc2307AttributeUserPassword = *o.Rfc2307AttributeUserPasswordQueryParameter
+		if o.Rfc2307AttributeUserPassword != nil {
+			qrRfc2307AttributeUserPassword = *o.Rfc2307AttributeUserPassword
 		}
 		qRfc2307AttributeUserPassword := qrRfc2307AttributeUserPassword
 		if qRfc2307AttributeUserPassword != "" {
@@ -1149,13 +1149,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307CnGroupQueryParameter != nil {
+	if o.Rfc2307CnGroup != nil {
 
 		// query param rfc2307.cn.group
 		var qrRfc2307CnGroup string
 
-		if o.Rfc2307CnGroupQueryParameter != nil {
-			qrRfc2307CnGroup = *o.Rfc2307CnGroupQueryParameter
+		if o.Rfc2307CnGroup != nil {
+			qrRfc2307CnGroup = *o.Rfc2307CnGroup
 		}
 		qRfc2307CnGroup := qrRfc2307CnGroup
 		if qRfc2307CnGroup != "" {
@@ -1166,13 +1166,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307CnNetgroupQueryParameter != nil {
+	if o.Rfc2307CnNetgroup != nil {
 
 		// query param rfc2307.cn.netgroup
 		var qrRfc2307CnNetgroup string
 
-		if o.Rfc2307CnNetgroupQueryParameter != nil {
-			qrRfc2307CnNetgroup = *o.Rfc2307CnNetgroupQueryParameter
+		if o.Rfc2307CnNetgroup != nil {
+			qrRfc2307CnNetgroup = *o.Rfc2307CnNetgroup
 		}
 		qRfc2307CnNetgroup := qrRfc2307CnNetgroup
 		if qRfc2307CnNetgroup != "" {
@@ -1183,13 +1183,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307MemberNisNetgroupQueryParameter != nil {
+	if o.Rfc2307MemberNisNetgroup != nil {
 
 		// query param rfc2307.member.nis_netgroup
 		var qrRfc2307MemberNisNetgroup string
 
-		if o.Rfc2307MemberNisNetgroupQueryParameter != nil {
-			qrRfc2307MemberNisNetgroup = *o.Rfc2307MemberNisNetgroupQueryParameter
+		if o.Rfc2307MemberNisNetgroup != nil {
+			qrRfc2307MemberNisNetgroup = *o.Rfc2307MemberNisNetgroup
 		}
 		qRfc2307MemberNisNetgroup := qrRfc2307MemberNisNetgroup
 		if qRfc2307MemberNisNetgroup != "" {
@@ -1200,13 +1200,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307MemberUIDQueryParameter != nil {
+	if o.Rfc2307MemberUID != nil {
 
 		// query param rfc2307.member.uid
 		var qrRfc2307MemberUID string
 
-		if o.Rfc2307MemberUIDQueryParameter != nil {
-			qrRfc2307MemberUID = *o.Rfc2307MemberUIDQueryParameter
+		if o.Rfc2307MemberUID != nil {
+			qrRfc2307MemberUID = *o.Rfc2307MemberUID
 		}
 		qRfc2307MemberUID := qrRfc2307MemberUID
 		if qRfc2307MemberUID != "" {
@@ -1217,13 +1217,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307NisMapentryQueryParameter != nil {
+	if o.Rfc2307NisMapentry != nil {
 
 		// query param rfc2307.nis.mapentry
 		var qrRfc2307NisMapentry string
 
-		if o.Rfc2307NisMapentryQueryParameter != nil {
-			qrRfc2307NisMapentry = *o.Rfc2307NisMapentryQueryParameter
+		if o.Rfc2307NisMapentry != nil {
+			qrRfc2307NisMapentry = *o.Rfc2307NisMapentry
 		}
 		qRfc2307NisMapentry := qrRfc2307NisMapentry
 		if qRfc2307NisMapentry != "" {
@@ -1234,13 +1234,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307NisMapnameQueryParameter != nil {
+	if o.Rfc2307NisMapname != nil {
 
 		// query param rfc2307.nis.mapname
 		var qrRfc2307NisMapname string
 
-		if o.Rfc2307NisMapnameQueryParameter != nil {
-			qrRfc2307NisMapname = *o.Rfc2307NisMapnameQueryParameter
+		if o.Rfc2307NisMapname != nil {
+			qrRfc2307NisMapname = *o.Rfc2307NisMapname
 		}
 		qRfc2307NisMapname := qrRfc2307NisMapname
 		if qRfc2307NisMapname != "" {
@@ -1251,13 +1251,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307NisNetgroupQueryParameter != nil {
+	if o.Rfc2307NisNetgroup != nil {
 
 		// query param rfc2307.nis.netgroup
 		var qrRfc2307NisNetgroup string
 
-		if o.Rfc2307NisNetgroupQueryParameter != nil {
-			qrRfc2307NisNetgroup = *o.Rfc2307NisNetgroupQueryParameter
+		if o.Rfc2307NisNetgroup != nil {
+			qrRfc2307NisNetgroup = *o.Rfc2307NisNetgroup
 		}
 		qRfc2307NisNetgroup := qrRfc2307NisNetgroup
 		if qRfc2307NisNetgroup != "" {
@@ -1268,13 +1268,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307NisNetgroupTripleQueryParameter != nil {
+	if o.Rfc2307NisNetgroupTriple != nil {
 
 		// query param rfc2307.nis.netgroup_triple
 		var qrRfc2307NisNetgroupTriple string
 
-		if o.Rfc2307NisNetgroupTripleQueryParameter != nil {
-			qrRfc2307NisNetgroupTriple = *o.Rfc2307NisNetgroupTripleQueryParameter
+		if o.Rfc2307NisNetgroupTriple != nil {
+			qrRfc2307NisNetgroupTriple = *o.Rfc2307NisNetgroupTriple
 		}
 		qRfc2307NisNetgroupTriple := qrRfc2307NisNetgroupTriple
 		if qRfc2307NisNetgroupTriple != "" {
@@ -1285,13 +1285,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307NisObjectQueryParameter != nil {
+	if o.Rfc2307NisObject != nil {
 
 		// query param rfc2307.nis.object
 		var qrRfc2307NisObject string
 
-		if o.Rfc2307NisObjectQueryParameter != nil {
-			qrRfc2307NisObject = *o.Rfc2307NisObjectQueryParameter
+		if o.Rfc2307NisObject != nil {
+			qrRfc2307NisObject = *o.Rfc2307NisObject
 		}
 		qRfc2307NisObject := qrRfc2307NisObject
 		if qRfc2307NisObject != "" {
@@ -1302,13 +1302,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307PosixAccountQueryParameter != nil {
+	if o.Rfc2307PosixAccount != nil {
 
 		// query param rfc2307.posix.account
 		var qrRfc2307PosixAccount string
 
-		if o.Rfc2307PosixAccountQueryParameter != nil {
-			qrRfc2307PosixAccount = *o.Rfc2307PosixAccountQueryParameter
+		if o.Rfc2307PosixAccount != nil {
+			qrRfc2307PosixAccount = *o.Rfc2307PosixAccount
 		}
 		qRfc2307PosixAccount := qrRfc2307PosixAccount
 		if qRfc2307PosixAccount != "" {
@@ -1319,13 +1319,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307PosixGroupQueryParameter != nil {
+	if o.Rfc2307PosixGroup != nil {
 
 		// query param rfc2307.posix.group
 		var qrRfc2307PosixGroup string
 
-		if o.Rfc2307PosixGroupQueryParameter != nil {
-			qrRfc2307PosixGroup = *o.Rfc2307PosixGroupQueryParameter
+		if o.Rfc2307PosixGroup != nil {
+			qrRfc2307PosixGroup = *o.Rfc2307PosixGroup
 		}
 		qRfc2307PosixGroup := qrRfc2307PosixGroup
 		if qRfc2307PosixGroup != "" {
@@ -1336,13 +1336,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307bisEnabledQueryParameter != nil {
+	if o.Rfc2307bisEnabled != nil {
 
 		// query param rfc2307bis.enabled
 		var qrRfc2307bisEnabled bool
 
-		if o.Rfc2307bisEnabledQueryParameter != nil {
-			qrRfc2307bisEnabled = *o.Rfc2307bisEnabledQueryParameter
+		if o.Rfc2307bisEnabled != nil {
+			qrRfc2307bisEnabled = *o.Rfc2307bisEnabled
 		}
 		qRfc2307bisEnabled := swag.FormatBool(qrRfc2307bisEnabled)
 		if qRfc2307bisEnabled != "" {
@@ -1353,13 +1353,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307bisGroupOfUniqueNamesQueryParameter != nil {
+	if o.Rfc2307bisGroupOfUniqueNames != nil {
 
 		// query param rfc2307bis.group_of_unique_names
 		var qrRfc2307bisGroupOfUniqueNames string
 
-		if o.Rfc2307bisGroupOfUniqueNamesQueryParameter != nil {
-			qrRfc2307bisGroupOfUniqueNames = *o.Rfc2307bisGroupOfUniqueNamesQueryParameter
+		if o.Rfc2307bisGroupOfUniqueNames != nil {
+			qrRfc2307bisGroupOfUniqueNames = *o.Rfc2307bisGroupOfUniqueNames
 		}
 		qRfc2307bisGroupOfUniqueNames := qrRfc2307bisGroupOfUniqueNames
 		if qRfc2307bisGroupOfUniqueNames != "" {
@@ -1370,13 +1370,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307bisMaximumGroupsQueryParameter != nil {
+	if o.Rfc2307bisMaximumGroups != nil {
 
 		// query param rfc2307bis.maximum_groups
 		var qrRfc2307bisMaximumGroups int64
 
-		if o.Rfc2307bisMaximumGroupsQueryParameter != nil {
-			qrRfc2307bisMaximumGroups = *o.Rfc2307bisMaximumGroupsQueryParameter
+		if o.Rfc2307bisMaximumGroups != nil {
+			qrRfc2307bisMaximumGroups = *o.Rfc2307bisMaximumGroups
 		}
 		qRfc2307bisMaximumGroups := swag.FormatInt64(qrRfc2307bisMaximumGroups)
 		if qRfc2307bisMaximumGroups != "" {
@@ -1387,13 +1387,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Rfc2307bisUniqueMemberQueryParameter != nil {
+	if o.Rfc2307bisUniqueMember != nil {
 
 		// query param rfc2307bis.unique_member
 		var qrRfc2307bisUniqueMember string
 
-		if o.Rfc2307bisUniqueMemberQueryParameter != nil {
-			qrRfc2307bisUniqueMember = *o.Rfc2307bisUniqueMemberQueryParameter
+		if o.Rfc2307bisUniqueMember != nil {
+			qrRfc2307bisUniqueMember = *o.Rfc2307bisUniqueMember
 		}
 		qRfc2307bisUniqueMember := qrRfc2307bisUniqueMember
 		if qRfc2307bisUniqueMember != "" {
@@ -1404,13 +1404,13 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -1429,7 +1429,7 @@ func (o *LdapSchemaCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamLdapSchemaCollectionGet binds the parameter fields
 func (o *LdapSchemaCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1446,7 +1446,7 @@ func (o *LdapSchemaCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamLdapSchemaCollectionGet binds the parameter order_by
 func (o *LdapSchemaCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,7 +66,7 @@ type SoftwareGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ReturnTimeout.
 
@@ -74,7 +74,7 @@ type SoftwareGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *SoftwareGetParams) WithDefaults() *SoftwareGetParams {
 // All values with no default are reset to their zero value.
 func (o *SoftwareGetParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SoftwareGetParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -140,26 +140,26 @@ func (o *SoftwareGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the software get params
-func (o *SoftwareGetParams) WithFieldsQueryParameter(fields []string) *SoftwareGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the software get params
+func (o *SoftwareGetParams) WithFields(fields []string) *SoftwareGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the software get params
-func (o *SoftwareGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the software get params
+func (o *SoftwareGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the software get params
-func (o *SoftwareGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwareGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the software get params
+func (o *SoftwareGetParams) WithReturnTimeout(returnTimeout *int64) *SoftwareGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the software get params
-func (o *SoftwareGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the software get params
+func (o *SoftwareGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -170,7 +170,7 @@ func (o *SoftwareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -181,13 +181,13 @@ func (o *SoftwareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -206,7 +206,7 @@ func (o *SoftwareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamSoftwareGet binds the parameter fields
 func (o *SoftwareGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,13 +66,13 @@ type SnmpTraphostsDeleteParams struct {
 
 	   Fully Qualified Domain Name (FQDN), IPv4 address or IPv6 address of SNMP traphost.
 	*/
-	HostPathParameter string
+	Host string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *SnmpTraphostsDeleteParams) WithDefaults() *SnmpTraphostsDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpTraphostsDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnmpTraphostsDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -138,26 +138,26 @@ func (o *SnmpTraphostsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithHostPathParameter adds the host to the snmp traphosts delete params
-func (o *SnmpTraphostsDeleteParams) WithHostPathParameter(host string) *SnmpTraphostsDeleteParams {
-	o.SetHostPathParameter(host)
+// WithHost adds the host to the snmp traphosts delete params
+func (o *SnmpTraphostsDeleteParams) WithHost(host string) *SnmpTraphostsDeleteParams {
+	o.SetHost(host)
 	return o
 }
 
-// SetHostPathParameter adds the host to the snmp traphosts delete params
-func (o *SnmpTraphostsDeleteParams) SetHostPathParameter(host string) {
-	o.HostPathParameter = host
+// SetHost adds the host to the snmp traphosts delete params
+func (o *SnmpTraphostsDeleteParams) SetHost(host string) {
+	o.Host = host
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts delete params
-func (o *SnmpTraphostsDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpTraphostsDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp traphosts delete params
+func (o *SnmpTraphostsDeleteParams) WithReturnTimeout(returnTimeout *int64) *SnmpTraphostsDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts delete params
-func (o *SnmpTraphostsDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp traphosts delete params
+func (o *SnmpTraphostsDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -169,17 +169,17 @@ func (o *SnmpTraphostsDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param host
-	if err := r.SetPathParam("host", o.HostPathParameter); err != nil {
+	if err := r.SetPathParam("host", o.Host); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

@@ -22,15 +22,15 @@ type SoftwarePackageDownload struct {
 	// Password for download
 	// Example: admin_password
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// HTTP or FTP URL of the package through a server
 	// Example: http://server/package
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 
 	// Username for download
 	// Example: admin
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // Validate validates this software package download

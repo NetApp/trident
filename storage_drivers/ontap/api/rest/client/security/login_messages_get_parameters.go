@@ -66,13 +66,13 @@ type LoginMessagesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Login messages configuration UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *LoginMessagesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the login messages get params
-func (o *LoginMessagesGetParams) WithFieldsQueryParameter(fields []string) *LoginMessagesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the login messages get params
+func (o *LoginMessagesGetParams) WithFields(fields []string) *LoginMessagesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the login messages get params
-func (o *LoginMessagesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the login messages get params
+func (o *LoginMessagesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the login messages get params
-func (o *LoginMessagesGetParams) WithUUIDPathParameter(uuid string) *LoginMessagesGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the login messages get params
+func (o *LoginMessagesGetParams) WithUUID(uuid string) *LoginMessagesGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the login messages get params
-func (o *LoginMessagesGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the login messages get params
+func (o *LoginMessagesGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *LoginMessagesGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *LoginMessagesGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *LoginMessagesGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamLoginMessagesGet binds the parameter fields
 func (o *LoginMessagesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

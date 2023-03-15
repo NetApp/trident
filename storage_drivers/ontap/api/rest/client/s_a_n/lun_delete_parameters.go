@@ -69,14 +69,14 @@ type LunDeleteParams struct {
 	**This parameter should be used with caution.**
 
 	*/
-	AllowDeleteWhileMappedQueryParameter *bool
+	AllowDeleteWhileMapped *bool
 
 	/* UUID.
 
 	   The unique identifier of the LUN to retrieve.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -96,11 +96,11 @@ func (o *LunDeleteParams) WithDefaults() *LunDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *LunDeleteParams) SetDefaults() {
 	var (
-		allowDeleteWhileMappedQueryParameterDefault = bool(false)
+		allowDeleteWhileMappedDefault = bool(false)
 	)
 
 	val := LunDeleteParams{
-		AllowDeleteWhileMappedQueryParameter: &allowDeleteWhileMappedQueryParameterDefault,
+		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
 	}
 
 	val.timeout = o.timeout
@@ -142,26 +142,26 @@ func (o *LunDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the lun delete params
-func (o *LunDeleteParams) WithAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) *LunDeleteParams {
-	o.SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped)
+// WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the lun delete params
+func (o *LunDeleteParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *LunDeleteParams {
+	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
 	return o
 }
 
-// SetAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the lun delete params
-func (o *LunDeleteParams) SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) {
-	o.AllowDeleteWhileMappedQueryParameter = allowDeleteWhileMapped
+// SetAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the lun delete params
+func (o *LunDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) {
+	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
-// WithUUIDPathParameter adds the uuid to the lun delete params
-func (o *LunDeleteParams) WithUUIDPathParameter(uuid string) *LunDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the lun delete params
+func (o *LunDeleteParams) WithUUID(uuid string) *LunDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the lun delete params
-func (o *LunDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the lun delete params
+func (o *LunDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -172,13 +172,13 @@ func (o *LunDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.AllowDeleteWhileMappedQueryParameter != nil {
+	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
 		var qrAllowDeleteWhileMapped bool
 
-		if o.AllowDeleteWhileMappedQueryParameter != nil {
-			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMappedQueryParameter
+		if o.AllowDeleteWhileMapped != nil {
+			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMapped
 		}
 		qAllowDeleteWhileMapped := swag.FormatBool(qrAllowDeleteWhileMapped)
 		if qAllowDeleteWhileMapped != "" {
@@ -190,7 +190,7 @@ func (o *LunDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

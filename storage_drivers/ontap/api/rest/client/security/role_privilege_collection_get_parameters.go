@@ -66,31 +66,31 @@ type RolePrivilegeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Role name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerUUID.
 
 	   Role owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type RolePrivilegeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,7 +106,7 @@ type RolePrivilegeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,14 +126,14 @@ func (o *RolePrivilegeCollectionGetParams) WithDefaults() *RolePrivilegeCollecti
 // All values with no default are reset to their zero value.
 func (o *RolePrivilegeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := RolePrivilegeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -175,81 +175,81 @@ func (o *RolePrivilegeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithFieldsQueryParameter(fields []string) *RolePrivilegeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithFields(fields []string) *RolePrivilegeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *RolePrivilegeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithMaxRecords(maxRecords *int64) *RolePrivilegeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNamePathParameter adds the name to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithNamePathParameter(name string) *RolePrivilegeCollectionGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithName(name string) *RolePrivilegeCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *RolePrivilegeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithOrderBy(orderBy []string) *RolePrivilegeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *RolePrivilegeCollectionGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithOwnerUUID(ownerUUID string) *RolePrivilegeCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *RolePrivilegeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithReturnRecords(returnRecords *bool) *RolePrivilegeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *RolePrivilegeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *RolePrivilegeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the role privilege collection get params
-func (o *RolePrivilegeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the role privilege collection get params
+func (o *RolePrivilegeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,7 +260,7 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -271,13 +271,13 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -289,11 +289,11 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -305,17 +305,17 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -326,13 +326,13 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -351,7 +351,7 @@ func (o *RolePrivilegeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamRolePrivilegeCollectionGet binds the parameter fields
 func (o *RolePrivilegeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -368,7 +368,7 @@ func (o *RolePrivilegeCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamRolePrivilegeCollectionGet binds the parameter order_by
 func (o *RolePrivilegeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

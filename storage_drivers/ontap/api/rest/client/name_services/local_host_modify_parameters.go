@@ -67,7 +67,7 @@ type LocalHostModifyParams struct {
 
 	   The IP address.
 	*/
-	AddressPathParameter string
+	Address string
 
 	/* Info.
 
@@ -79,7 +79,7 @@ type LocalHostModifyParams struct {
 
 	   UUID of the owner to which this object belongs.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -134,15 +134,15 @@ func (o *LocalHostModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressPathParameter adds the address to the local host modify params
-func (o *LocalHostModifyParams) WithAddressPathParameter(address string) *LocalHostModifyParams {
-	o.SetAddressPathParameter(address)
+// WithAddress adds the address to the local host modify params
+func (o *LocalHostModifyParams) WithAddress(address string) *LocalHostModifyParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressPathParameter adds the address to the local host modify params
-func (o *LocalHostModifyParams) SetAddressPathParameter(address string) {
-	o.AddressPathParameter = address
+// SetAddress adds the address to the local host modify params
+func (o *LocalHostModifyParams) SetAddress(address string) {
+	o.Address = address
 }
 
 // WithInfo adds the info to the local host modify params
@@ -156,15 +156,15 @@ func (o *LocalHostModifyParams) SetInfo(info *models.LocalHost) {
 	o.Info = info
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the local host modify params
-func (o *LocalHostModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *LocalHostModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the local host modify params
+func (o *LocalHostModifyParams) WithOwnerUUID(ownerUUID string) *LocalHostModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the local host modify params
-func (o *LocalHostModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the local host modify params
+func (o *LocalHostModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *LocalHostModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param address
-	if err := r.SetPathParam("address", o.AddressPathParameter); err != nil {
+	if err := r.SetPathParam("address", o.Address); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -186,7 +186,7 @@ func (o *LocalHostModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

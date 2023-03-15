@@ -23,6 +23,12 @@ type AggregateCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AggregateCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 201:
+		result := NewAggregateCreateCreated()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAggregateCreateAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -41,6 +47,81 @@ func (o *AggregateCreateReader) ReadResponse(response runtime.ClientResponse, co
 	}
 }
 
+// NewAggregateCreateCreated creates a AggregateCreateCreated with default headers values
+func NewAggregateCreateCreated() *AggregateCreateCreated {
+	return &AggregateCreateCreated{}
+}
+
+/*
+AggregateCreateCreated describes a response with status code 201, with default header values.
+
+Created
+*/
+type AggregateCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.AggregateSimulate
+}
+
+// IsSuccess returns true when this aggregate create created response has a 2xx status code
+func (o *AggregateCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate create created response has a 3xx status code
+func (o *AggregateCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate create created response has a 4xx status code
+func (o *AggregateCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate create created response has a 5xx status code
+func (o *AggregateCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate create created response a status code equal to that given
+func (o *AggregateCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
+func (o *AggregateCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated  %+v", 201, o.Payload)
+}
+
+func (o *AggregateCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateCreated  %+v", 201, o.Payload)
+}
+
+func (o *AggregateCreateCreated) GetPayload() *models.AggregateSimulate {
+	return o.Payload
+}
+
+func (o *AggregateCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AggregateSimulate)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewAggregateCreateAccepted creates a AggregateCreateAccepted with default headers values
 func NewAggregateCreateAccepted() *AggregateCreateAccepted {
 	return &AggregateCreateAccepted{}
@@ -52,7 +133,12 @@ AggregateCreateAccepted describes a response with status code 202, with default 
 Accepted
 */
 type AggregateCreateAccepted struct {
-	Payload *models.JobLinkResponse
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.AggregateSimulate
 }
 
 // IsSuccess returns true when this aggregate create accepted response has a 2xx status code
@@ -88,13 +174,20 @@ func (o *AggregateCreateAccepted) String() string {
 	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted  %+v", 202, o.Payload)
 }
 
-func (o *AggregateCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *AggregateCreateAccepted) GetPayload() *models.AggregateSimulate {
 	return o.Payload
 }
 
 func (o *AggregateCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AggregateSimulate)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

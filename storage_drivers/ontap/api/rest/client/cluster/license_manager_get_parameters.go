@@ -66,22 +66,22 @@ type LicenseManagerGetParams struct {
 
 	   Filter by default
 	*/
-	DefaultQueryParameter *bool
+	Default *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* URIHost.
 
 	   Filter by uri.host
 	*/
-	URIHostQueryParameter *string
+	URIHost *string
 
 	// UUID.
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,48 +136,48 @@ func (o *LicenseManagerGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDefaultQueryParameter adds the defaultVar to the license manager get params
-func (o *LicenseManagerGetParams) WithDefaultQueryParameter(defaultVar *bool) *LicenseManagerGetParams {
-	o.SetDefaultQueryParameter(defaultVar)
+// WithDefault adds the defaultVar to the license manager get params
+func (o *LicenseManagerGetParams) WithDefault(defaultVar *bool) *LicenseManagerGetParams {
+	o.SetDefault(defaultVar)
 	return o
 }
 
-// SetDefaultQueryParameter adds the default to the license manager get params
-func (o *LicenseManagerGetParams) SetDefaultQueryParameter(defaultVar *bool) {
-	o.DefaultQueryParameter = defaultVar
+// SetDefault adds the default to the license manager get params
+func (o *LicenseManagerGetParams) SetDefault(defaultVar *bool) {
+	o.Default = defaultVar
 }
 
-// WithFieldsQueryParameter adds the fields to the license manager get params
-func (o *LicenseManagerGetParams) WithFieldsQueryParameter(fields []string) *LicenseManagerGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the license manager get params
+func (o *LicenseManagerGetParams) WithFields(fields []string) *LicenseManagerGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the license manager get params
-func (o *LicenseManagerGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the license manager get params
+func (o *LicenseManagerGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithURIHostQueryParameter adds the uRIHost to the license manager get params
-func (o *LicenseManagerGetParams) WithURIHostQueryParameter(uRIHost *string) *LicenseManagerGetParams {
-	o.SetURIHostQueryParameter(uRIHost)
+// WithURIHost adds the uRIHost to the license manager get params
+func (o *LicenseManagerGetParams) WithURIHost(uRIHost *string) *LicenseManagerGetParams {
+	o.SetURIHost(uRIHost)
 	return o
 }
 
-// SetURIHostQueryParameter adds the uriHost to the license manager get params
-func (o *LicenseManagerGetParams) SetURIHostQueryParameter(uRIHost *string) {
-	o.URIHostQueryParameter = uRIHost
+// SetURIHost adds the uriHost to the license manager get params
+func (o *LicenseManagerGetParams) SetURIHost(uRIHost *string) {
+	o.URIHost = uRIHost
 }
 
-// WithUUIDPathParameter adds the uuid to the license manager get params
-func (o *LicenseManagerGetParams) WithUUIDPathParameter(uuid string) *LicenseManagerGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the license manager get params
+func (o *LicenseManagerGetParams) WithUUID(uuid string) *LicenseManagerGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the license manager get params
-func (o *LicenseManagerGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the license manager get params
+func (o *LicenseManagerGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -188,13 +188,13 @@ func (o *LicenseManagerGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.DefaultQueryParameter != nil {
+	if o.Default != nil {
 
 		// query param default
 		var qrDefault bool
 
-		if o.DefaultQueryParameter != nil {
-			qrDefault = *o.DefaultQueryParameter
+		if o.Default != nil {
+			qrDefault = *o.Default
 		}
 		qDefault := swag.FormatBool(qrDefault)
 		if qDefault != "" {
@@ -205,7 +205,7 @@ func (o *LicenseManagerGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -216,13 +216,13 @@ func (o *LicenseManagerGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.URIHostQueryParameter != nil {
+	if o.URIHost != nil {
 
 		// query param uri.host
 		var qrURIHost string
 
-		if o.URIHostQueryParameter != nil {
-			qrURIHost = *o.URIHostQueryParameter
+		if o.URIHost != nil {
+			qrURIHost = *o.URIHost
 		}
 		qURIHost := qrURIHost
 		if qURIHost != "" {
@@ -234,7 +234,7 @@ func (o *LicenseManagerGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -246,7 +246,7 @@ func (o *LicenseManagerGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamLicenseManagerGet binds the parameter fields
 func (o *LicenseManagerGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

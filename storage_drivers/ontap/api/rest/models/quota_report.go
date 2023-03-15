@@ -22,41 +22,41 @@ import (
 type QuotaReport struct {
 
 	// links
-	Links *QuotaReportLinks `json:"_links,omitempty"`
+	Links *QuotaReportInlineLinks `json:"_links,omitempty"`
 
 	// files
-	Files *QuotaReportFiles `json:"files,omitempty"`
+	Files *QuotaReportInlineFiles `json:"files,omitempty"`
 
 	// group
-	Group *QuotaReportGroup `json:"group,omitempty"`
+	Group *QuotaReportInlineGroup `json:"group,omitempty"`
 
 	// Index that identifies a unique quota record. Valid in URL.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// qtree
-	Qtree *QuotaReportQtree `json:"qtree,omitempty"`
+	Qtree *QuotaReportInlineQtree `json:"qtree,omitempty"`
+
+	// This parameter specifies the target user or users associated with the given quota report record. This parameter is available for user quota records and is not available for group or tree quota records. The target user or users are identified by a user name and user identifier. The user name can be a UNIX user name or a Windows user name, and the identifer can be a UNIX user identifier or a Windows security identifier.
+	QuotaReportInlineUsers []*QuotaReportInlineUsersInlineArrayItem `json:"users,omitempty"`
 
 	// space
-	Space *QuotaReportSpace `json:"space,omitempty"`
+	Space *QuotaReportInlineSpace `json:"space,omitempty"`
 
 	// Quota specifier
 	// Read Only: true
-	Specifier string `json:"specifier,omitempty"`
+	Specifier *string `json:"specifier,omitempty"`
 
 	// svm
-	Svm *QuotaReportSvm `json:"svm,omitempty"`
+	Svm *QuotaReportInlineSvm `json:"svm,omitempty"`
 
 	// Quota type associated with the quota record.
 	// Read Only: true
 	// Enum: [tree user group]
-	Type string `json:"type,omitempty"`
-
-	// This parameter specifies the target user or users associated with the given quota report record. This parameter is available for user quota records and is not available for group or tree quota records. The target user or users are identified by a user name and user identifier. The user name can be a UNIX user name or a Windows user name, and the identifer can be a UNIX user identifier or a Windows security identifier.
-	Users []*QuotaReportUsersItems0 `json:"users,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// volume
-	Volume *QuotaReportVolume `json:"volume,omitempty"`
+	Volume *QuotaReportInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this quota report
@@ -79,6 +79,10 @@ func (m *QuotaReport) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateQuotaReportInlineUsers(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSpace(formats); err != nil {
 		res = append(res, err)
 	}
@@ -88,10 +92,6 @@ func (m *QuotaReport) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateUsers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -168,6 +168,30 @@ func (m *QuotaReport) validateQtree(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *QuotaReport) validateQuotaReportInlineUsers(formats strfmt.Registry) error {
+	if swag.IsZero(m.QuotaReportInlineUsers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.QuotaReportInlineUsers); i++ {
+		if swag.IsZero(m.QuotaReportInlineUsers[i]) { // not required
+			continue
+		}
+
+		if m.QuotaReportInlineUsers[i] != nil {
+			if err := m.QuotaReportInlineUsers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -266,32 +290,8 @@ func (m *QuotaReport) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *QuotaReport) validateUsers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Users) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Users); i++ {
-		if swag.IsZero(m.Users[i]) { // not required
-			continue
-		}
-
-		if m.Users[i] != nil {
-			if err := m.Users[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("users" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -338,6 +338,10 @@ func (m *QuotaReport) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateQuotaReportInlineUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSpace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -351,10 +355,6 @@ func (m *QuotaReport) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUsers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -412,7 +412,7 @@ func (m *QuotaReport) contextValidateGroup(ctx context.Context, formats strfmt.R
 
 func (m *QuotaReport) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -428,6 +428,24 @@ func (m *QuotaReport) contextValidateQtree(ctx context.Context, formats strfmt.R
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *QuotaReport) contextValidateQuotaReportInlineUsers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.QuotaReportInlineUsers); i++ {
+
+		if m.QuotaReportInlineUsers[i] != nil {
+			if err := m.QuotaReportInlineUsers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -449,7 +467,7 @@ func (m *QuotaReport) contextValidateSpace(ctx context.Context, formats strfmt.R
 
 func (m *QuotaReport) contextValidateSpecifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "specifier", "body", string(m.Specifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "specifier", "body", m.Specifier); err != nil {
 		return err
 	}
 
@@ -472,26 +490,8 @@ func (m *QuotaReport) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *QuotaReport) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *QuotaReport) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Users); i++ {
-
-		if m.Users[i] != nil {
-			if err := m.Users[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("users" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -529,25 +529,25 @@ func (m *QuotaReport) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportFiles quota report files
+// QuotaReportInlineFiles quota report inline files
 //
-// swagger:model QuotaReportFiles
-type QuotaReportFiles struct {
+// swagger:model quota_report_inline_files
+type QuotaReportInlineFiles struct {
 
 	// File hard limit
 	// Read Only: true
-	HardLimit int64 `json:"hard_limit,omitempty"`
+	HardLimit *int64 `json:"hard_limit,omitempty"`
 
 	// File soft limit
 	// Read Only: true
-	SoftLimit int64 `json:"soft_limit,omitempty"`
+	SoftLimit *int64 `json:"soft_limit,omitempty"`
 
 	// used
-	Used *QuotaReportFilesUsed `json:"used,omitempty"`
+	Used *QuotaReportInlineFilesInlineUsed `json:"used,omitempty"`
 }
 
-// Validate validates this quota report files
-func (m *QuotaReportFiles) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline files
+func (m *QuotaReportInlineFiles) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUsed(formats); err != nil {
@@ -560,7 +560,7 @@ func (m *QuotaReportFiles) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportFiles) validateUsed(formats strfmt.Registry) error {
+func (m *QuotaReportInlineFiles) validateUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.Used) { // not required
 		return nil
 	}
@@ -577,8 +577,8 @@ func (m *QuotaReportFiles) validateUsed(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report files based on the context it is used
-func (m *QuotaReportFiles) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline files based on the context it is used
+func (m *QuotaReportInlineFiles) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHardLimit(ctx, formats); err != nil {
@@ -599,25 +599,25 @@ func (m *QuotaReportFiles) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QuotaReportFiles) contextValidateHardLimit(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFiles) contextValidateHardLimit(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "files"+"."+"hard_limit", "body", int64(m.HardLimit)); err != nil {
+	if err := validate.ReadOnly(ctx, "files"+"."+"hard_limit", "body", m.HardLimit); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportFiles) contextValidateSoftLimit(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFiles) contextValidateSoftLimit(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "files"+"."+"soft_limit", "body", int64(m.SoftLimit)); err != nil {
+	if err := validate.ReadOnly(ctx, "files"+"."+"soft_limit", "body", m.SoftLimit); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportFiles) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFiles) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Used != nil {
 		if err := m.Used.ContextValidate(ctx, formats); err != nil {
@@ -632,7 +632,7 @@ func (m *QuotaReportFiles) contextValidateUsed(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportFiles) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineFiles) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -640,8 +640,8 @@ func (m *QuotaReportFiles) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportFiles) UnmarshalBinary(b []byte) error {
-	var res QuotaReportFiles
+func (m *QuotaReportInlineFiles) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineFiles
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -649,31 +649,31 @@ func (m *QuotaReportFiles) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportFilesUsed quota report files used
+// QuotaReportInlineFilesInlineUsed quota report inline files inline used
 //
-// swagger:model QuotaReportFilesUsed
-type QuotaReportFilesUsed struct {
+// swagger:model quota_report_inline_files_inline_used
+type QuotaReportInlineFilesInlineUsed struct {
 
 	// Total files used as a percentage of file hard limit
 	// Read Only: true
-	HardLimitPercent int64 `json:"hard_limit_percent,omitempty"`
+	HardLimitPercent *int64 `json:"hard_limit_percent,omitempty"`
 
 	// Total files used as a percentage of file soft limit
 	// Read Only: true
-	SoftLimitPercent int64 `json:"soft_limit_percent,omitempty"`
+	SoftLimitPercent *int64 `json:"soft_limit_percent,omitempty"`
 
 	// Total files used
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 }
 
-// Validate validates this quota report files used
-func (m *QuotaReportFilesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline files inline used
+func (m *QuotaReportInlineFilesInlineUsed) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report files used based on the context it is used
-func (m *QuotaReportFilesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline files inline used based on the context it is used
+func (m *QuotaReportInlineFilesInlineUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHardLimitPercent(ctx, formats); err != nil {
@@ -694,27 +694,27 @@ func (m *QuotaReportFilesUsed) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *QuotaReportFilesUsed) contextValidateHardLimitPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFilesInlineUsed) contextValidateHardLimitPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"hard_limit_percent", "body", int64(m.HardLimitPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"hard_limit_percent", "body", m.HardLimitPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportFilesUsed) contextValidateSoftLimitPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFilesInlineUsed) contextValidateSoftLimitPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"soft_limit_percent", "body", int64(m.SoftLimitPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"soft_limit_percent", "body", m.SoftLimitPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportFilesUsed) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineFilesInlineUsed) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "files"+"."+"used"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -722,7 +722,7 @@ func (m *QuotaReportFilesUsed) contextValidateTotal(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportFilesUsed) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineFilesInlineUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -730,8 +730,8 @@ func (m *QuotaReportFilesUsed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportFilesUsed) UnmarshalBinary(b []byte) error {
-	var res QuotaReportFilesUsed
+func (m *QuotaReportInlineFilesInlineUsed) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineFilesInlineUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -739,27 +739,27 @@ func (m *QuotaReportFilesUsed) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportGroup This parameter specifies the target group associated with the given quota report record. This parameter is available for group quota records and is not available for user or tree quota records. The target group is identified by a UNIX group name and UNIX group identifer.
+// QuotaReportInlineGroup This parameter specifies the target group associated with the given quota report record. This parameter is available for group quota records and is not available for user or tree quota records. The target group is identified by a UNIX group name and UNIX group identifer.
 //
-// swagger:model QuotaReportGroup
-type QuotaReportGroup struct {
+// swagger:model quota_report_inline_group
+type QuotaReportInlineGroup struct {
 
 	// Quota target group ID
 	// Read Only: true
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Quota target group name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this quota report group
-func (m *QuotaReportGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline group
+func (m *QuotaReportInlineGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report group based on the context it is used
-func (m *QuotaReportGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline group based on the context it is used
+func (m *QuotaReportInlineGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateID(ctx, formats); err != nil {
@@ -776,18 +776,18 @@ func (m *QuotaReportGroup) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QuotaReportGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "group"+"."+"id", "body", string(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "group"+"."+"id", "body", m.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "group"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "group"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -795,7 +795,7 @@ func (m *QuotaReportGroup) contextValidateName(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportGroup) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -803,8 +803,8 @@ func (m *QuotaReportGroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportGroup) UnmarshalBinary(b []byte) error {
-	var res QuotaReportGroup
+func (m *QuotaReportInlineGroup) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -812,17 +812,17 @@ func (m *QuotaReportGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportLinks quota report links
+// QuotaReportInlineLinks quota report inline links
 //
-// swagger:model QuotaReportLinks
-type QuotaReportLinks struct {
+// swagger:model quota_report_inline__links
+type QuotaReportInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota report links
-func (m *QuotaReportLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline links
+func (m *QuotaReportInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -835,7 +835,7 @@ func (m *QuotaReportLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaReportInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -852,8 +852,8 @@ func (m *QuotaReportLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report links based on the context it is used
-func (m *QuotaReportLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline links based on the context it is used
+func (m *QuotaReportInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -866,7 +866,7 @@ func (m *QuotaReportLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QuotaReportLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -881,7 +881,7 @@ func (m *QuotaReportLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -889,8 +889,8 @@ func (m *QuotaReportLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaReportLinks
+func (m *QuotaReportInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -898,25 +898,25 @@ func (m *QuotaReportLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportQtree This parameter specifies the target qtree associated with the user, group, or tree record. For a user/group quota policy rule at volume level, this parameter is not valid. For a default tree quota policy rule, this parameter is specified as "" or "*". For a tree quota policy rule at qtree level, this parameter specifies a qtree name and a qtree identifier.
+// QuotaReportInlineQtree This parameter specifies the target qtree associated with the user, group, or tree record. For a user/group quota policy rule at volume level, this parameter is not valid. For a default tree quota policy rule, this parameter is specified as "" or "*". For a tree quota policy rule at qtree level, this parameter specifies a qtree name and a qtree identifier.
 //
-// swagger:model QuotaReportQtree
-type QuotaReportQtree struct {
+// swagger:model quota_report_inline_qtree
+type QuotaReportInlineQtree struct {
 
 	// links
-	Links *QuotaReportQtreeLinks `json:"_links,omitempty"`
+	Links *QuotaReportInlineQtreeInlineLinks `json:"_links,omitempty"`
 
 	// The unique identifier for a qtree.
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// The name of the qtree.
 	// Example: qt1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this quota report qtree
-func (m *QuotaReportQtree) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline qtree
+func (m *QuotaReportInlineQtree) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -929,7 +929,7 @@ func (m *QuotaReportQtree) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportQtree) validateLinks(formats strfmt.Registry) error {
+func (m *QuotaReportInlineQtree) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -946,8 +946,8 @@ func (m *QuotaReportQtree) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report qtree based on the context it is used
-func (m *QuotaReportQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline qtree based on the context it is used
+func (m *QuotaReportInlineQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -960,7 +960,7 @@ func (m *QuotaReportQtree) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QuotaReportQtree) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineQtree) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -975,7 +975,7 @@ func (m *QuotaReportQtree) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportQtree) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineQtree) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -983,8 +983,8 @@ func (m *QuotaReportQtree) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportQtree) UnmarshalBinary(b []byte) error {
-	var res QuotaReportQtree
+func (m *QuotaReportInlineQtree) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineQtree
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -992,17 +992,17 @@ func (m *QuotaReportQtree) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportQtreeLinks quota report qtree links
+// QuotaReportInlineQtreeInlineLinks quota report inline qtree inline links
 //
-// swagger:model QuotaReportQtreeLinks
-type QuotaReportQtreeLinks struct {
+// swagger:model quota_report_inline_qtree_inline__links
+type QuotaReportInlineQtreeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota report qtree links
-func (m *QuotaReportQtreeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline qtree inline links
+func (m *QuotaReportInlineQtreeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1015,7 +1015,7 @@ func (m *QuotaReportQtreeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportQtreeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaReportInlineQtreeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1032,8 +1032,8 @@ func (m *QuotaReportQtreeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report qtree links based on the context it is used
-func (m *QuotaReportQtreeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline qtree inline links based on the context it is used
+func (m *QuotaReportInlineQtreeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1046,7 +1046,7 @@ func (m *QuotaReportQtreeLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *QuotaReportQtreeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineQtreeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1061,7 +1061,7 @@ func (m *QuotaReportQtreeLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportQtreeLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineQtreeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1069,8 +1069,8 @@ func (m *QuotaReportQtreeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportQtreeLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaReportQtreeLinks
+func (m *QuotaReportInlineQtreeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineQtreeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1078,25 +1078,25 @@ func (m *QuotaReportQtreeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportSpace quota report space
+// QuotaReportInlineSpace quota report inline space
 //
-// swagger:model QuotaReportSpace
-type QuotaReportSpace struct {
+// swagger:model quota_report_inline_space
+type QuotaReportInlineSpace struct {
 
 	// Space hard limit in bytes
 	// Read Only: true
-	HardLimit int64 `json:"hard_limit,omitempty"`
+	HardLimit *int64 `json:"hard_limit,omitempty"`
 
 	// Space soft limit in bytes
 	// Read Only: true
-	SoftLimit int64 `json:"soft_limit,omitempty"`
+	SoftLimit *int64 `json:"soft_limit,omitempty"`
 
 	// used
-	Used *QuotaReportSpaceUsed `json:"used,omitempty"`
+	Used *QuotaReportInlineSpaceInlineUsed `json:"used,omitempty"`
 }
 
-// Validate validates this quota report space
-func (m *QuotaReportSpace) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline space
+func (m *QuotaReportInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUsed(formats); err != nil {
@@ -1109,7 +1109,7 @@ func (m *QuotaReportSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportSpace) validateUsed(formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpace) validateUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.Used) { // not required
 		return nil
 	}
@@ -1126,8 +1126,8 @@ func (m *QuotaReportSpace) validateUsed(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report space based on the context it is used
-func (m *QuotaReportSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline space based on the context it is used
+func (m *QuotaReportInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHardLimit(ctx, formats); err != nil {
@@ -1148,25 +1148,25 @@ func (m *QuotaReportSpace) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QuotaReportSpace) contextValidateHardLimit(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpace) contextValidateHardLimit(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"hard_limit", "body", int64(m.HardLimit)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"hard_limit", "body", m.HardLimit); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportSpace) contextValidateSoftLimit(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpace) contextValidateSoftLimit(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"soft_limit", "body", int64(m.SoftLimit)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"soft_limit", "body", m.SoftLimit); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Used != nil {
 		if err := m.Used.ContextValidate(ctx, formats); err != nil {
@@ -1181,7 +1181,7 @@ func (m *QuotaReportSpace) contextValidateUsed(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportSpace) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1189,8 +1189,8 @@ func (m *QuotaReportSpace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportSpace) UnmarshalBinary(b []byte) error {
-	var res QuotaReportSpace
+func (m *QuotaReportInlineSpace) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1198,31 +1198,31 @@ func (m *QuotaReportSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportSpaceUsed quota report space used
+// QuotaReportInlineSpaceInlineUsed quota report inline space inline used
 //
-// swagger:model QuotaReportSpaceUsed
-type QuotaReportSpaceUsed struct {
+// swagger:model quota_report_inline_space_inline_used
+type QuotaReportInlineSpaceInlineUsed struct {
 
 	// Total space used as a percentage of space hard limit
 	// Read Only: true
-	HardLimitPercent int64 `json:"hard_limit_percent,omitempty"`
+	HardLimitPercent *int64 `json:"hard_limit_percent,omitempty"`
 
 	// Total space used as a percentage of space soft limit
 	// Read Only: true
-	SoftLimitPercent int64 `json:"soft_limit_percent,omitempty"`
+	SoftLimitPercent *int64 `json:"soft_limit_percent,omitempty"`
 
 	// Total space used
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 }
 
-// Validate validates this quota report space used
-func (m *QuotaReportSpaceUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline space inline used
+func (m *QuotaReportInlineSpaceInlineUsed) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report space used based on the context it is used
-func (m *QuotaReportSpaceUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline space inline used based on the context it is used
+func (m *QuotaReportInlineSpaceInlineUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHardLimitPercent(ctx, formats); err != nil {
@@ -1243,27 +1243,27 @@ func (m *QuotaReportSpaceUsed) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *QuotaReportSpaceUsed) contextValidateHardLimitPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpaceInlineUsed) contextValidateHardLimitPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"hard_limit_percent", "body", int64(m.HardLimitPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"hard_limit_percent", "body", m.HardLimitPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportSpaceUsed) contextValidateSoftLimitPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpaceInlineUsed) contextValidateSoftLimitPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"soft_limit_percent", "body", int64(m.SoftLimitPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"soft_limit_percent", "body", m.SoftLimitPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportSpaceUsed) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSpaceInlineUsed) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -1271,7 +1271,7 @@ func (m *QuotaReportSpaceUsed) contextValidateTotal(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportSpaceUsed) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineSpaceInlineUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1279,8 +1279,8 @@ func (m *QuotaReportSpaceUsed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportSpaceUsed) UnmarshalBinary(b []byte) error {
-	var res QuotaReportSpaceUsed
+func (m *QuotaReportInlineSpaceInlineUsed) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineSpaceInlineUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1288,27 +1288,27 @@ func (m *QuotaReportSpaceUsed) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportSvm quota report svm
+// QuotaReportInlineSvm quota report inline svm
 //
-// swagger:model QuotaReportSvm
-type QuotaReportSvm struct {
+// swagger:model quota_report_inline_svm
+type QuotaReportInlineSvm struct {
 
 	// links
-	Links *QuotaReportSvmLinks `json:"_links,omitempty"`
+	Links *QuotaReportInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this quota report svm
-func (m *QuotaReportSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline svm
+func (m *QuotaReportInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1321,7 +1321,7 @@ func (m *QuotaReportSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportSvm) validateLinks(formats strfmt.Registry) error {
+func (m *QuotaReportInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1338,8 +1338,8 @@ func (m *QuotaReportSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report svm based on the context it is used
-func (m *QuotaReportSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline svm based on the context it is used
+func (m *QuotaReportInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1352,7 +1352,7 @@ func (m *QuotaReportSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *QuotaReportSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1367,7 +1367,7 @@ func (m *QuotaReportSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportSvm) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1375,8 +1375,8 @@ func (m *QuotaReportSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportSvm) UnmarshalBinary(b []byte) error {
-	var res QuotaReportSvm
+func (m *QuotaReportInlineSvm) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1384,17 +1384,17 @@ func (m *QuotaReportSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportSvmLinks quota report svm links
+// QuotaReportInlineSvmInlineLinks quota report inline svm inline links
 //
-// swagger:model QuotaReportSvmLinks
-type QuotaReportSvmLinks struct {
+// swagger:model quota_report_inline_svm_inline__links
+type QuotaReportInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota report svm links
-func (m *QuotaReportSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline svm inline links
+func (m *QuotaReportInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1407,7 +1407,7 @@ func (m *QuotaReportSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaReportInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1424,8 +1424,8 @@ func (m *QuotaReportSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report svm links based on the context it is used
-func (m *QuotaReportSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline svm inline links based on the context it is used
+func (m *QuotaReportInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1438,7 +1438,7 @@ func (m *QuotaReportSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *QuotaReportSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1453,7 +1453,7 @@ func (m *QuotaReportSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1461,8 +1461,8 @@ func (m *QuotaReportSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportSvmLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaReportSvmLinks
+func (m *QuotaReportInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1470,27 +1470,27 @@ func (m *QuotaReportSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportUsersItems0 quota report users items0
+// QuotaReportInlineUsersInlineArrayItem quota report inline users inline array item
 //
-// swagger:model QuotaReportUsersItems0
-type QuotaReportUsersItems0 struct {
+// swagger:model quota_report_inline_users_inline_array_item
+type QuotaReportInlineUsersInlineArrayItem struct {
 
 	// Quota target user ID
 	// Read Only: true
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Quota target user name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this quota report users items0
-func (m *QuotaReportUsersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline users inline array item
+func (m *QuotaReportInlineUsersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report users items0 based on the context it is used
-func (m *QuotaReportUsersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline users inline array item based on the context it is used
+func (m *QuotaReportInlineUsersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateID(ctx, formats); err != nil {
@@ -1507,18 +1507,18 @@ func (m *QuotaReportUsersItems0) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QuotaReportUsersItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineUsersInlineArrayItem) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *QuotaReportUsersItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineUsersInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1526,7 +1526,7 @@ func (m *QuotaReportUsersItems0) contextValidateName(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportUsersItems0) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineUsersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1534,8 +1534,8 @@ func (m *QuotaReportUsersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportUsersItems0) UnmarshalBinary(b []byte) error {
-	var res QuotaReportUsersItems0
+func (m *QuotaReportInlineUsersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineUsersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1543,25 +1543,25 @@ func (m *QuotaReportUsersItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportVolume quota report volume
+// QuotaReportInlineVolume quota report inline volume
 //
-// swagger:model QuotaReportVolume
-type QuotaReportVolume struct {
+// swagger:model quota_report_inline_volume
+type QuotaReportInlineVolume struct {
 
 	// links
-	Links *QuotaReportVolumeLinks `json:"_links,omitempty"`
+	Links *QuotaReportInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this quota report volume
-func (m *QuotaReportVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline volume
+func (m *QuotaReportInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1574,7 +1574,7 @@ func (m *QuotaReportVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportVolume) validateLinks(formats strfmt.Registry) error {
+func (m *QuotaReportInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1591,8 +1591,8 @@ func (m *QuotaReportVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report volume based on the context it is used
-func (m *QuotaReportVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline volume based on the context it is used
+func (m *QuotaReportInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1605,7 +1605,7 @@ func (m *QuotaReportVolume) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *QuotaReportVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1620,7 +1620,7 @@ func (m *QuotaReportVolume) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportVolume) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1628,8 +1628,8 @@ func (m *QuotaReportVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportVolume) UnmarshalBinary(b []byte) error {
-	var res QuotaReportVolume
+func (m *QuotaReportInlineVolume) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1637,17 +1637,17 @@ func (m *QuotaReportVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportVolumeLinks quota report volume links
+// QuotaReportInlineVolumeInlineLinks quota report inline volume inline links
 //
-// swagger:model QuotaReportVolumeLinks
-type QuotaReportVolumeLinks struct {
+// swagger:model quota_report_inline_volume_inline__links
+type QuotaReportInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota report volume links
-func (m *QuotaReportVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota report inline volume inline links
+func (m *QuotaReportInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1660,7 +1660,7 @@ func (m *QuotaReportVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaReportVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaReportInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1677,8 +1677,8 @@ func (m *QuotaReportVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota report volume links based on the context it is used
-func (m *QuotaReportVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota report inline volume inline links based on the context it is used
+func (m *QuotaReportInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1691,7 +1691,7 @@ func (m *QuotaReportVolumeLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QuotaReportVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaReportInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1706,7 +1706,7 @@ func (m *QuotaReportVolumeLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaReportVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaReportInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1714,8 +1714,8 @@ func (m *QuotaReportVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaReportVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaReportVolumeLinks
+func (m *QuotaReportInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaReportInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

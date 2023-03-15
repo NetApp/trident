@@ -68,7 +68,7 @@ type CifsServiceModifyParams struct {
 
 	   If this is set and a machine account with the same name as specified in 'cifs-server name' exists in the Active Directory, existing machine account will be overwritten and reused. The default value for this field is false.
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type CifsServiceModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *CifsServiceModifyParams) WithDefaults() *CifsServiceModifyParams {
 // All values with no default are reset to their zero value.
 func (o *CifsServiceModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := CifsServiceModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *CifsServiceModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithForceQueryParameter adds the force to the cifs service modify params
-func (o *CifsServiceModifyParams) WithForceQueryParameter(force *bool) *CifsServiceModifyParams {
-	o.SetForceQueryParameter(force)
+// WithForce adds the force to the cifs service modify params
+func (o *CifsServiceModifyParams) WithForce(force *bool) *CifsServiceModifyParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the cifs service modify params
-func (o *CifsServiceModifyParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetForce adds the force to the cifs service modify params
+func (o *CifsServiceModifyParams) SetForce(force *bool) {
+	o.Force = force
 }
 
 // WithInfo adds the info to the cifs service modify params
@@ -174,26 +174,26 @@ func (o *CifsServiceModifyParams) SetInfo(info *models.CifsService) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs service modify params
-func (o *CifsServiceModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsServiceModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs service modify params
+func (o *CifsServiceModifyParams) WithReturnTimeout(returnTimeout *int64) *CifsServiceModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs service modify params
-func (o *CifsServiceModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs service modify params
+func (o *CifsServiceModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs service modify params
-func (o *CifsServiceModifyParams) WithSVMUUIDPathParameter(svmUUID string) *CifsServiceModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs service modify params
+func (o *CifsServiceModifyParams) WithSvmUUID(svmUUID string) *CifsServiceModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs service modify params
-func (o *CifsServiceModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs service modify params
+func (o *CifsServiceModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -204,13 +204,13 @@ func (o *CifsServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.ForceQueryParameter != nil {
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -226,13 +226,13 @@ func (o *CifsServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -244,7 +244,7 @@ func (o *CifsServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

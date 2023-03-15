@@ -20,7 +20,7 @@ type AdDomainSvm struct {
 	// The fully qualified domain name of the Windows Active Directory to which this CIFS server belongs. A CIFS server appears as a member of Windows server object in the Active Directory store.
 	//
 	// Example: example.com
-	Fqdn string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn,omitempty"`
 
 	// Specifies the organizational unit within the Active Directory domain to associate with the CIFS server.
 	//
@@ -28,11 +28,11 @@ type AdDomainSvm struct {
 
 	// The account password used to add this CIFS server to the Active Directory. This is not audited. Valid in POST only.
 	//
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// The user account used to add this CIFS server to the Active Directory. Valid in POST only.
 	//
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this ad domain svm

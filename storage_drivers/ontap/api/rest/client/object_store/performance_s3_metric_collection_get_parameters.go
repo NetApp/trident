@@ -66,13 +66,13 @@ type PerformanceS3MetricCollectionGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,67 +87,67 @@ type PerformanceS3MetricCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* IopsOther.
 
 	   Filter by iops.other
 	*/
-	IopsOtherQueryParameter *int64
+	IopsOther *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsTotal.
 
 	   Filter by iops.total
 	*/
-	IopsTotalQueryParameter *int64
+	IopsTotal *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* LatencyOther.
 
 	   Filter by latency.other
 	*/
-	LatencyOtherQueryParameter *int64
+	LatencyOther *int64
 
 	/* LatencyRead.
 
 	   Filter by latency.read
 	*/
-	LatencyReadQueryParameter *int64
+	LatencyRead *int64
 
 	/* LatencyTotal.
 
 	   Filter by latency.total
 	*/
-	LatencyTotalQueryParameter *int64
+	LatencyTotal *int64
 
 	/* LatencyWrite.
 
 	   Filter by latency.write
 	*/
-	LatencyWriteQueryParameter *int64
+	LatencyWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -155,7 +155,7 @@ type PerformanceS3MetricCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -163,49 +163,49 @@ type PerformanceS3MetricCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* SvmUUID.
 
 	   Unique identifier of the SVM.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* ThroughputOther.
 
 	   Filter by throughput.other
 	*/
-	ThroughputOtherQueryParameter *int64
+	ThroughputOther *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -225,17 +225,17 @@ func (o *PerformanceS3MetricCollectionGetParams) WithDefaults() *PerformanceS3Me
 // All values with no default are reset to their zero value.
 func (o *PerformanceS3MetricCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PerformanceS3MetricCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,246 +277,246 @@ func (o *PerformanceS3MetricCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithDurationQueryParameter(duration *string) *PerformanceS3MetricCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithDuration(duration *string) *PerformanceS3MetricCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithFieldsQueryParameter(fields []string) *PerformanceS3MetricCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithFields(fields []string) *PerformanceS3MetricCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithIntervalQueryParameter(interval *string) *PerformanceS3MetricCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithInterval(interval *string) *PerformanceS3MetricCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithIopsOtherQueryParameter adds the iopsOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithIopsOtherQueryParameter(iopsOther *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetIopsOtherQueryParameter(iopsOther)
+// WithIopsOther adds the iopsOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithIopsOther(iopsOther *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetIopsOther(iopsOther)
 	return o
 }
 
-// SetIopsOtherQueryParameter adds the iopsOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetIopsOtherQueryParameter(iopsOther *int64) {
-	o.IopsOtherQueryParameter = iopsOther
+// SetIopsOther adds the iopsOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetIopsOther(iopsOther *int64) {
+	o.IopsOther = iopsOther
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithIopsRead(iopsRead *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsTotalQueryParameter adds the iopsTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithIopsTotalQueryParameter(iopsTotal *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetIopsTotalQueryParameter(iopsTotal)
+// WithIopsTotal adds the iopsTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithIopsTotal(iopsTotal *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetIopsTotal(iopsTotal)
 	return o
 }
 
-// SetIopsTotalQueryParameter adds the iopsTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetIopsTotalQueryParameter(iopsTotal *int64) {
-	o.IopsTotalQueryParameter = iopsTotal
+// SetIopsTotal adds the iopsTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetIopsTotal(iopsTotal *int64) {
+	o.IopsTotal = iopsTotal
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithIopsWrite(iopsWrite *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithLatencyOtherQueryParameter adds the latencyOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithLatencyOtherQueryParameter(latencyOther *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetLatencyOtherQueryParameter(latencyOther)
+// WithLatencyOther adds the latencyOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithLatencyOther(latencyOther *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetLatencyOther(latencyOther)
 	return o
 }
 
-// SetLatencyOtherQueryParameter adds the latencyOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetLatencyOtherQueryParameter(latencyOther *int64) {
-	o.LatencyOtherQueryParameter = latencyOther
+// SetLatencyOther adds the latencyOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetLatencyOther(latencyOther *int64) {
+	o.LatencyOther = latencyOther
 }
 
-// WithLatencyReadQueryParameter adds the latencyRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithLatencyReadQueryParameter(latencyRead *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetLatencyReadQueryParameter(latencyRead)
+// WithLatencyRead adds the latencyRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithLatencyRead(latencyRead *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetLatencyRead(latencyRead)
 	return o
 }
 
-// SetLatencyReadQueryParameter adds the latencyRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetLatencyReadQueryParameter(latencyRead *int64) {
-	o.LatencyReadQueryParameter = latencyRead
+// SetLatencyRead adds the latencyRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetLatencyRead(latencyRead *int64) {
+	o.LatencyRead = latencyRead
 }
 
-// WithLatencyTotalQueryParameter adds the latencyTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithLatencyTotalQueryParameter(latencyTotal *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetLatencyTotalQueryParameter(latencyTotal)
+// WithLatencyTotal adds the latencyTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithLatencyTotal(latencyTotal *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetLatencyTotal(latencyTotal)
 	return o
 }
 
-// SetLatencyTotalQueryParameter adds the latencyTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetLatencyTotalQueryParameter(latencyTotal *int64) {
-	o.LatencyTotalQueryParameter = latencyTotal
+// SetLatencyTotal adds the latencyTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetLatencyTotal(latencyTotal *int64) {
+	o.LatencyTotal = latencyTotal
 }
 
-// WithLatencyWriteQueryParameter adds the latencyWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithLatencyWriteQueryParameter(latencyWrite *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetLatencyWriteQueryParameter(latencyWrite)
+// WithLatencyWrite adds the latencyWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithLatencyWrite(latencyWrite *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetLatencyWrite(latencyWrite)
 	return o
 }
 
-// SetLatencyWriteQueryParameter adds the latencyWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetLatencyWriteQueryParameter(latencyWrite *int64) {
-	o.LatencyWriteQueryParameter = latencyWrite
+// SetLatencyWrite adds the latencyWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetLatencyWrite(latencyWrite *int64) {
+	o.LatencyWrite = latencyWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithMaxRecords(maxRecords *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PerformanceS3MetricCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithOrderBy(orderBy []string) *PerformanceS3MetricCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PerformanceS3MetricCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithReturnRecords(returnRecords *bool) *PerformanceS3MetricCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithStatusQueryParameter(status *string) *PerformanceS3MetricCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithStatus(status *string) *PerformanceS3MetricCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *PerformanceS3MetricCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithSvmUUID(svmUUID string) *PerformanceS3MetricCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithThroughputOtherQueryParameter adds the throughputOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithThroughputOtherQueryParameter(throughputOther *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetThroughputOtherQueryParameter(throughputOther)
+// WithThroughputOther adds the throughputOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithThroughputOther(throughputOther *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetThroughputOther(throughputOther)
 	return o
 }
 
-// SetThroughputOtherQueryParameter adds the throughputOther to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetThroughputOtherQueryParameter(throughputOther *int64) {
-	o.ThroughputOtherQueryParameter = throughputOther
+// SetThroughputOther adds the throughputOther to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetThroughputOther(throughputOther *int64) {
+	o.ThroughputOther = throughputOther
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithThroughputRead(throughputRead *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithThroughputTotal(throughputTotal *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *PerformanceS3MetricCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *PerformanceS3MetricCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *PerformanceS3MetricCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) WithTimestamp(timestamp *string) *PerformanceS3MetricCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the performance s3 metric collection get params
-func (o *PerformanceS3MetricCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the performance s3 metric collection get params
+func (o *PerformanceS3MetricCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -527,13 +527,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -544,7 +544,7 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -555,13 +555,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -572,13 +572,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsOtherQueryParameter != nil {
+	if o.IopsOther != nil {
 
 		// query param iops.other
 		var qrIopsOther int64
 
-		if o.IopsOtherQueryParameter != nil {
-			qrIopsOther = *o.IopsOtherQueryParameter
+		if o.IopsOther != nil {
+			qrIopsOther = *o.IopsOther
 		}
 		qIopsOther := swag.FormatInt64(qrIopsOther)
 		if qIopsOther != "" {
@@ -589,13 +589,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -606,13 +606,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsTotalQueryParameter != nil {
+	if o.IopsTotal != nil {
 
 		// query param iops.total
 		var qrIopsTotal int64
 
-		if o.IopsTotalQueryParameter != nil {
-			qrIopsTotal = *o.IopsTotalQueryParameter
+		if o.IopsTotal != nil {
+			qrIopsTotal = *o.IopsTotal
 		}
 		qIopsTotal := swag.FormatInt64(qrIopsTotal)
 		if qIopsTotal != "" {
@@ -623,13 +623,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -640,13 +640,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LatencyOtherQueryParameter != nil {
+	if o.LatencyOther != nil {
 
 		// query param latency.other
 		var qrLatencyOther int64
 
-		if o.LatencyOtherQueryParameter != nil {
-			qrLatencyOther = *o.LatencyOtherQueryParameter
+		if o.LatencyOther != nil {
+			qrLatencyOther = *o.LatencyOther
 		}
 		qLatencyOther := swag.FormatInt64(qrLatencyOther)
 		if qLatencyOther != "" {
@@ -657,13 +657,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LatencyReadQueryParameter != nil {
+	if o.LatencyRead != nil {
 
 		// query param latency.read
 		var qrLatencyRead int64
 
-		if o.LatencyReadQueryParameter != nil {
-			qrLatencyRead = *o.LatencyReadQueryParameter
+		if o.LatencyRead != nil {
+			qrLatencyRead = *o.LatencyRead
 		}
 		qLatencyRead := swag.FormatInt64(qrLatencyRead)
 		if qLatencyRead != "" {
@@ -674,13 +674,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LatencyTotalQueryParameter != nil {
+	if o.LatencyTotal != nil {
 
 		// query param latency.total
 		var qrLatencyTotal int64
 
-		if o.LatencyTotalQueryParameter != nil {
-			qrLatencyTotal = *o.LatencyTotalQueryParameter
+		if o.LatencyTotal != nil {
+			qrLatencyTotal = *o.LatencyTotal
 		}
 		qLatencyTotal := swag.FormatInt64(qrLatencyTotal)
 		if qLatencyTotal != "" {
@@ -691,13 +691,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LatencyWriteQueryParameter != nil {
+	if o.LatencyWrite != nil {
 
 		// query param latency.write
 		var qrLatencyWrite int64
 
-		if o.LatencyWriteQueryParameter != nil {
-			qrLatencyWrite = *o.LatencyWriteQueryParameter
+		if o.LatencyWrite != nil {
+			qrLatencyWrite = *o.LatencyWrite
 		}
 		qLatencyWrite := swag.FormatInt64(qrLatencyWrite)
 		if qLatencyWrite != "" {
@@ -708,13 +708,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -725,7 +725,7 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -736,13 +736,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -753,13 +753,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -770,13 +770,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -788,17 +788,17 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.ThroughputOtherQueryParameter != nil {
+	if o.ThroughputOther != nil {
 
 		// query param throughput.other
 		var qrThroughputOther int64
 
-		if o.ThroughputOtherQueryParameter != nil {
-			qrThroughputOther = *o.ThroughputOtherQueryParameter
+		if o.ThroughputOther != nil {
+			qrThroughputOther = *o.ThroughputOther
 		}
 		qThroughputOther := swag.FormatInt64(qrThroughputOther)
 		if qThroughputOther != "" {
@@ -809,13 +809,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -826,13 +826,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -843,13 +843,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -860,13 +860,13 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -885,7 +885,7 @@ func (o *PerformanceS3MetricCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamPerformanceS3MetricCollectionGet binds the parameter fields
 func (o *PerformanceS3MetricCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -902,7 +902,7 @@ func (o *PerformanceS3MetricCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamPerformanceS3MetricCollectionGet binds the parameter order_by
 func (o *PerformanceS3MetricCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

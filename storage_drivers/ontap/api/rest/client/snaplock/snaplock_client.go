@@ -60,9 +60,9 @@ type ClientService interface {
 
 	SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldGetOK, error)
 
-	SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationDeleteOK, error)
+	SnaplockLegalHoldInstanceGet(params *SnaplockLegalHoldInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldInstanceGetOK, error)
 
-	SnaplockLegalHoldOperationGet(params *SnaplockLegalHoldOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationGetOK, error)
+	SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationDeleteOK, error)
 
 	SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCollectionGetOK, error)
 
@@ -777,12 +777,12 @@ func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetPara
 }
 
 /*
-	SnaplockLegalHoldGet Retrieves the list of ongoing operations for the specified litigation ID.
+	SnaplockLegalHoldGet Retrieves the status of legal-hold for the specified operation ID.
 
 ### Related ONTAP commands
 * `snaplock legal-hold show`
 ### Learn more
-* [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
+* [`DOC /storage/snaplock/litigations/{litigation.id}/operations`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_operations)
 */
 func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldGetOK, error) {
 	// TODO: Validate the params before sending
@@ -792,7 +792,7 @@ func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authIn
 	op := &runtime.ClientOperation{
 		ID:                 "snaplock_legal_hold_get",
 		Method:             "GET",
-		PathPattern:        "/storage/snaplock/litigations/{id}",
+		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/operations/{id}",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -816,6 +816,49 @@ func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authIn
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockLegalHoldGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SnaplockLegalHoldInstanceGet Retrieves the list of ongoing operations for the specified litigation ID.
+
+### Related ONTAP commands
+* `snaplock legal-hold show`
+### Learn more
+* [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
+*/
+func (a *Client) SnaplockLegalHoldInstanceGet(params *SnaplockLegalHoldInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldInstanceGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockLegalHoldInstanceGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_legal_hold_instance_get",
+		Method:             "GET",
+		PathPattern:        "/storage/snaplock/litigations/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockLegalHoldInstanceGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockLegalHoldInstanceGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockLegalHoldInstanceGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -865,49 +908,6 @@ func (a *Client) SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOpera
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockLegalHoldOperationDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-	SnaplockLegalHoldOperationGet Retrieves the status of legal-hold for the specified operation ID.
-
-### Related ONTAP commands
-* `snaplock legal-hold show`
-### Learn more
-* [`DOC /storage/snaplock/litigations/{litigation.id}/operations`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_operations)
-*/
-func (a *Client) SnaplockLegalHoldOperationGet(params *SnaplockLegalHoldOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewSnaplockLegalHoldOperationGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "snaplock_legal_hold_operation_get",
-		Method:             "GET",
-		PathPattern:        "/storage/snaplock/litigations/{litigation.id}/operations/{id}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &SnaplockLegalHoldOperationGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*SnaplockLegalHoldOperationGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*SnaplockLegalHoldOperationGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

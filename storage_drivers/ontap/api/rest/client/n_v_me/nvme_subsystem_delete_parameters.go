@@ -67,21 +67,21 @@ type NvmeSubsystemDeleteParams struct {
 	   Allows for the deletion of a mapped NVMe subsystem.
 
 	*/
-	AllowDeleteWhileMappedQueryParameter *bool
+	AllowDeleteWhileMapped *bool
 
 	/* AllowDeleteWithHosts.
 
 	   Allows for the deletion of an NVMe subsystem with NVMe hosts.
 
 	*/
-	AllowDeleteWithHostsQueryParameter *bool
+	AllowDeleteWithHosts *bool
 
 	/* UUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,37 +136,37 @@ func (o *NvmeSubsystemDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) WithAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) *NvmeSubsystemDeleteParams {
-	o.SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped)
+// WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *NvmeSubsystemDeleteParams {
+	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
 	return o
 }
 
-// SetAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) {
-	o.AllowDeleteWhileMappedQueryParameter = allowDeleteWhileMapped
+// SetAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) {
+	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
-// WithAllowDeleteWithHostsQueryParameter adds the allowDeleteWithHosts to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) WithAllowDeleteWithHostsQueryParameter(allowDeleteWithHosts *bool) *NvmeSubsystemDeleteParams {
-	o.SetAllowDeleteWithHostsQueryParameter(allowDeleteWithHosts)
+// WithAllowDeleteWithHosts adds the allowDeleteWithHosts to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) WithAllowDeleteWithHosts(allowDeleteWithHosts *bool) *NvmeSubsystemDeleteParams {
+	o.SetAllowDeleteWithHosts(allowDeleteWithHosts)
 	return o
 }
 
-// SetAllowDeleteWithHostsQueryParameter adds the allowDeleteWithHosts to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) SetAllowDeleteWithHostsQueryParameter(allowDeleteWithHosts *bool) {
-	o.AllowDeleteWithHostsQueryParameter = allowDeleteWithHosts
+// SetAllowDeleteWithHosts adds the allowDeleteWithHosts to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) SetAllowDeleteWithHosts(allowDeleteWithHosts *bool) {
+	o.AllowDeleteWithHosts = allowDeleteWithHosts
 }
 
-// WithUUIDPathParameter adds the uuid to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) WithUUIDPathParameter(uuid string) *NvmeSubsystemDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) WithUUID(uuid string) *NvmeSubsystemDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the nvme subsystem delete params
-func (o *NvmeSubsystemDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the nvme subsystem delete params
+func (o *NvmeSubsystemDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -177,13 +177,13 @@ func (o *NvmeSubsystemDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.AllowDeleteWhileMappedQueryParameter != nil {
+	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
 		var qrAllowDeleteWhileMapped bool
 
-		if o.AllowDeleteWhileMappedQueryParameter != nil {
-			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMappedQueryParameter
+		if o.AllowDeleteWhileMapped != nil {
+			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMapped
 		}
 		qAllowDeleteWhileMapped := swag.FormatBool(qrAllowDeleteWhileMapped)
 		if qAllowDeleteWhileMapped != "" {
@@ -194,13 +194,13 @@ func (o *NvmeSubsystemDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.AllowDeleteWithHostsQueryParameter != nil {
+	if o.AllowDeleteWithHosts != nil {
 
 		// query param allow_delete_with_hosts
 		var qrAllowDeleteWithHosts bool
 
-		if o.AllowDeleteWithHostsQueryParameter != nil {
-			qrAllowDeleteWithHosts = *o.AllowDeleteWithHostsQueryParameter
+		if o.AllowDeleteWithHosts != nil {
+			qrAllowDeleteWithHosts = *o.AllowDeleteWithHosts
 		}
 		qAllowDeleteWithHosts := swag.FormatBool(qrAllowDeleteWithHosts)
 		if qAllowDeleteWithHosts != "" {
@@ -212,7 +212,7 @@ func (o *NvmeSubsystemDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

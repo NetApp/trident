@@ -22,44 +22,44 @@ import (
 type ClusterPeer struct {
 
 	// links
-	Links *ClusterPeerLinks `json:"_links,omitempty"`
+	Links *ClusterPeerInlineLinks `json:"_links,omitempty"`
 
 	// authentication
-	Authentication *ClusterPeerAuthentication `json:"authentication,omitempty"`
-
-	// encryption
-	Encryption *ClusterPeerEncryption `json:"encryption,omitempty"`
+	Authentication *ClusterPeerInlineAuthentication `json:"authentication,omitempty"`
 
 	// The local SVMs allowed to peer with the peer cluster's SVMs. This list can be modified until the remote cluster accepts this cluster peering relationship.
-	InitialAllowedSvms []*ClusterPeerInitialAllowedSvmsItems0 `json:"initial_allowed_svms,omitempty"`
-
-	// ipspace
-	Ipspace *ClusterPeerIpspace `json:"ipspace,omitempty"`
-
-	// local network
-	LocalNetwork *ClusterPeerLocalNetwork `json:"local_network,omitempty"`
-
-	// Optional name for the cluster peer relationship. By default, it is the name of the remote cluster.
-	// Example: cluster2
-	Name string `json:"name,omitempty"`
+	ClusterPeerInlineInitialAllowedSvms []*ClusterPeerInlineInitialAllowedSvmsInlineArrayItem `json:"initial_allowed_svms,omitempty"`
 
 	// Peering applications against which allowed SVMs are configured.
 	// Example: ["snapmirror","flexcache"]
-	PeerApplications []SvmPeerPermissionApplications `json:"peer_applications,omitempty"`
+	ClusterPeerInlinePeerApplications []*SvmPeerPermissionApplications `json:"peer_applications,omitempty"`
+
+	// encryption
+	Encryption *ClusterPeerInlineEncryption `json:"encryption,omitempty"`
+
+	// ipspace
+	Ipspace *ClusterPeerInlineIpspace `json:"ipspace,omitempty"`
+
+	// local network
+	LocalNetwork *ClusterPeerInlineLocalNetwork `json:"local_network,omitempty"`
+
+	// Optional name for the cluster peer relationship. By default, it is the name of the remote cluster.
+	// Example: cluster2
+	Name *string `json:"name,omitempty"`
 
 	// remote
-	Remote *ClusterPeerRemote `json:"remote,omitempty"`
+	Remote *ClusterPeerInlineRemote `json:"remote,omitempty"`
 
 	// status
-	Status *ClusterPeerStatus `json:"status,omitempty"`
+	Status *ClusterPeerInlineStatus `json:"status,omitempty"`
 
 	// UUID of the cluster peer relationship. For anonymous cluster peer offers, the UUID will change when the remote cluster accepts the relationship.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// version
-	Version *ClusterPeerVersion `json:"version,omitempty"`
+	Version *ClusterPeerInlineVersion `json:"version,omitempty"`
 }
 
 // Validate validates this cluster peer
@@ -74,11 +74,15 @@ func (m *ClusterPeer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateEncryption(formats); err != nil {
+	if err := m.validateClusterPeerInlineInitialAllowedSvms(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateInitialAllowedSvms(formats); err != nil {
+	if err := m.validateClusterPeerInlinePeerApplications(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEncryption(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,10 +91,6 @@ func (m *ClusterPeer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLocalNetwork(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePeerApplications(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -146,6 +146,54 @@ func (m *ClusterPeer) validateAuthentication(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ClusterPeer) validateClusterPeerInlineInitialAllowedSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterPeerInlineInitialAllowedSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ClusterPeerInlineInitialAllowedSvms); i++ {
+		if swag.IsZero(m.ClusterPeerInlineInitialAllowedSvms[i]) { // not required
+			continue
+		}
+
+		if m.ClusterPeerInlineInitialAllowedSvms[i] != nil {
+			if err := m.ClusterPeerInlineInitialAllowedSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initial_allowed_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterPeer) validateClusterPeerInlinePeerApplications(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterPeerInlinePeerApplications) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ClusterPeerInlinePeerApplications); i++ {
+		if swag.IsZero(m.ClusterPeerInlinePeerApplications[i]) { // not required
+			continue
+		}
+
+		if m.ClusterPeerInlinePeerApplications[i] != nil {
+			if err := m.ClusterPeerInlinePeerApplications[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("peer_applications" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ClusterPeer) validateEncryption(formats strfmt.Registry) error {
 	if swag.IsZero(m.Encryption) { // not required
 		return nil
@@ -158,30 +206,6 @@ func (m *ClusterPeer) validateEncryption(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ClusterPeer) validateInitialAllowedSvms(formats strfmt.Registry) error {
-	if swag.IsZero(m.InitialAllowedSvms) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.InitialAllowedSvms); i++ {
-		if swag.IsZero(m.InitialAllowedSvms[i]) { // not required
-			continue
-		}
-
-		if m.InitialAllowedSvms[i] != nil {
-			if err := m.InitialAllowedSvms[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("initial_allowed_svms" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -216,25 +240,6 @@ func (m *ClusterPeer) validateLocalNetwork(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ClusterPeer) validatePeerApplications(formats strfmt.Registry) error {
-	if swag.IsZero(m.PeerApplications) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.PeerApplications); i++ {
-
-		if err := m.PeerApplications[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("peer_applications" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -303,11 +308,15 @@ func (m *ClusterPeer) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateEncryption(ctx, formats); err != nil {
+	if err := m.contextValidateClusterPeerInlineInitialAllowedSvms(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInitialAllowedSvms(ctx, formats); err != nil {
+	if err := m.contextValidateClusterPeerInlinePeerApplications(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEncryption(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -316,10 +325,6 @@ func (m *ClusterPeer) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateLocalNetwork(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePeerApplications(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -373,6 +378,42 @@ func (m *ClusterPeer) contextValidateAuthentication(ctx context.Context, formats
 	return nil
 }
 
+func (m *ClusterPeer) contextValidateClusterPeerInlineInitialAllowedSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ClusterPeerInlineInitialAllowedSvms); i++ {
+
+		if m.ClusterPeerInlineInitialAllowedSvms[i] != nil {
+			if err := m.ClusterPeerInlineInitialAllowedSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initial_allowed_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterPeer) contextValidateClusterPeerInlinePeerApplications(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ClusterPeerInlinePeerApplications); i++ {
+
+		if m.ClusterPeerInlinePeerApplications[i] != nil {
+			if err := m.ClusterPeerInlinePeerApplications[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("peer_applications" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ClusterPeer) contextValidateEncryption(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Encryption != nil {
@@ -382,24 +423,6 @@ func (m *ClusterPeer) contextValidateEncryption(ctx context.Context, formats str
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ClusterPeer) contextValidateInitialAllowedSvms(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.InitialAllowedSvms); i++ {
-
-		if m.InitialAllowedSvms[i] != nil {
-			if err := m.InitialAllowedSvms[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("initial_allowed_svms" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -428,22 +451,6 @@ func (m *ClusterPeer) contextValidateLocalNetwork(ctx context.Context, formats s
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ClusterPeer) contextValidatePeerApplications(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.PeerApplications); i++ {
-
-		if err := m.PeerApplications[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("peer_applications" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -479,7 +486,7 @@ func (m *ClusterPeer) contextValidateStatus(ctx context.Context, formats strfmt.
 
 func (m *ClusterPeer) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -518,14 +525,14 @@ func (m *ClusterPeer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerAuthentication cluster peer authentication
+// ClusterPeerInlineAuthentication cluster peer inline authentication
 //
-// swagger:model ClusterPeerAuthentication
-type ClusterPeerAuthentication struct {
+// swagger:model cluster_peer_inline_authentication
+type ClusterPeerInlineAuthentication struct {
 
 	// The time when the passphrase will expire, in ISO 8601 duration format or date and time format.  The default is 1 hour.
 	// Example: P1DT2H3M4S or '2017-01-25T11:20:13Z'
-	ExpiryTime string `json:"expiry_time,omitempty"`
+	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Auto generate a passphrase when true.
 	GeneratePassphrase *bool `json:"generate_passphrase,omitempty"`
@@ -535,16 +542,16 @@ type ClusterPeerAuthentication struct {
 	InUse *string `json:"in_use,omitempty"`
 
 	// A password to authenticate the cluster peer relationship.
-	Passphrase string `json:"passphrase,omitempty"`
+	Passphrase *string `json:"passphrase,omitempty"`
 
 	// state
 	// Read Only: true
 	// Enum: [ok absent pending problem]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this cluster peer authentication
-func (m *ClusterPeerAuthentication) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline authentication
+func (m *ClusterPeerInlineAuthentication) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInUse(formats); err != nil {
@@ -561,7 +568,7 @@ func (m *ClusterPeerAuthentication) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var clusterPeerAuthenticationTypeInUsePropEnum []interface{}
+var clusterPeerInlineAuthenticationTypeInUsePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -569,52 +576,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterPeerAuthenticationTypeInUsePropEnum = append(clusterPeerAuthenticationTypeInUsePropEnum, v)
+		clusterPeerInlineAuthenticationTypeInUsePropEnum = append(clusterPeerInlineAuthenticationTypeInUsePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// in_use
 	// InUse
 	// ok
 	// END DEBUGGING
-	// ClusterPeerAuthenticationInUseOk captures enum value "ok"
-	ClusterPeerAuthenticationInUseOk string = "ok"
+	// ClusterPeerInlineAuthenticationInUseOk captures enum value "ok"
+	ClusterPeerInlineAuthenticationInUseOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// in_use
 	// InUse
 	// absent
 	// END DEBUGGING
-	// ClusterPeerAuthenticationInUseAbsent captures enum value "absent"
-	ClusterPeerAuthenticationInUseAbsent string = "absent"
+	// ClusterPeerInlineAuthenticationInUseAbsent captures enum value "absent"
+	ClusterPeerInlineAuthenticationInUseAbsent string = "absent"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// in_use
 	// InUse
 	// revoked
 	// END DEBUGGING
-	// ClusterPeerAuthenticationInUseRevoked captures enum value "revoked"
-	ClusterPeerAuthenticationInUseRevoked string = "revoked"
+	// ClusterPeerInlineAuthenticationInUseRevoked captures enum value "revoked"
+	ClusterPeerInlineAuthenticationInUseRevoked string = "revoked"
 )
 
 // prop value enum
-func (m *ClusterPeerAuthentication) validateInUseEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterPeerAuthenticationTypeInUsePropEnum, true); err != nil {
+func (m *ClusterPeerInlineAuthentication) validateInUseEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterPeerInlineAuthenticationTypeInUsePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterPeerAuthentication) validateInUse(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineAuthentication) validateInUse(formats strfmt.Registry) error {
 	if swag.IsZero(m.InUse) { // not required
 		return nil
 	}
@@ -627,7 +634,7 @@ func (m *ClusterPeerAuthentication) validateInUse(formats strfmt.Registry) error
 	return nil
 }
 
-var clusterPeerAuthenticationTypeStatePropEnum []interface{}
+var clusterPeerInlineAuthenticationTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -635,76 +642,76 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterPeerAuthenticationTypeStatePropEnum = append(clusterPeerAuthenticationTypeStatePropEnum, v)
+		clusterPeerInlineAuthenticationTypeStatePropEnum = append(clusterPeerInlineAuthenticationTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ClusterPeerAuthenticationStateOk captures enum value "ok"
-	ClusterPeerAuthenticationStateOk string = "ok"
+	// ClusterPeerInlineAuthenticationStateOk captures enum value "ok"
+	ClusterPeerInlineAuthenticationStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// state
 	// State
 	// absent
 	// END DEBUGGING
-	// ClusterPeerAuthenticationStateAbsent captures enum value "absent"
-	ClusterPeerAuthenticationStateAbsent string = "absent"
+	// ClusterPeerInlineAuthenticationStateAbsent captures enum value "absent"
+	ClusterPeerInlineAuthenticationStateAbsent string = "absent"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// state
 	// State
 	// pending
 	// END DEBUGGING
-	// ClusterPeerAuthenticationStatePending captures enum value "pending"
-	ClusterPeerAuthenticationStatePending string = "pending"
+	// ClusterPeerInlineAuthenticationStatePending captures enum value "pending"
+	ClusterPeerInlineAuthenticationStatePending string = "pending"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerAuthentication
-	// ClusterPeerAuthentication
+	// cluster_peer_inline_authentication
+	// ClusterPeerInlineAuthentication
 	// state
 	// State
 	// problem
 	// END DEBUGGING
-	// ClusterPeerAuthenticationStateProblem captures enum value "problem"
-	ClusterPeerAuthenticationStateProblem string = "problem"
+	// ClusterPeerInlineAuthenticationStateProblem captures enum value "problem"
+	ClusterPeerInlineAuthenticationStateProblem string = "problem"
 )
 
 // prop value enum
-func (m *ClusterPeerAuthentication) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterPeerAuthenticationTypeStatePropEnum, true); err != nil {
+func (m *ClusterPeerInlineAuthentication) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterPeerInlineAuthenticationTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterPeerAuthentication) validateState(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineAuthentication) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("authentication"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("authentication"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cluster peer authentication based on the context it is used
-func (m *ClusterPeerAuthentication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline authentication based on the context it is used
+func (m *ClusterPeerInlineAuthentication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -717,9 +724,9 @@ func (m *ClusterPeerAuthentication) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ClusterPeerAuthentication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineAuthentication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "authentication"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "authentication"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -727,7 +734,7 @@ func (m *ClusterPeerAuthentication) contextValidateState(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerAuthentication) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineAuthentication) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -735,8 +742,8 @@ func (m *ClusterPeerAuthentication) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerAuthentication) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerAuthentication
+func (m *ClusterPeerInlineAuthentication) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineAuthentication
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -744,10 +751,10 @@ func (m *ClusterPeerAuthentication) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerEncryption cluster peer encryption
+// ClusterPeerInlineEncryption cluster peer inline encryption
 //
-// swagger:model ClusterPeerEncryption
-type ClusterPeerEncryption struct {
+// swagger:model cluster_peer_inline_encryption
+type ClusterPeerInlineEncryption struct {
 
 	// proposed
 	// Enum: [none tls_psk]
@@ -756,11 +763,11 @@ type ClusterPeerEncryption struct {
 	// state
 	// Read Only: true
 	// Enum: [none tls_psk]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this cluster peer encryption
-func (m *ClusterPeerEncryption) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline encryption
+func (m *ClusterPeerInlineEncryption) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProposed(formats); err != nil {
@@ -777,7 +784,7 @@ func (m *ClusterPeerEncryption) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var clusterPeerEncryptionTypeProposedPropEnum []interface{}
+var clusterPeerInlineEncryptionTypeProposedPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -785,42 +792,42 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterPeerEncryptionTypeProposedPropEnum = append(clusterPeerEncryptionTypeProposedPropEnum, v)
+		clusterPeerInlineEncryptionTypeProposedPropEnum = append(clusterPeerInlineEncryptionTypeProposedPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterPeerEncryption
-	// ClusterPeerEncryption
+	// cluster_peer_inline_encryption
+	// ClusterPeerInlineEncryption
 	// proposed
 	// Proposed
 	// none
 	// END DEBUGGING
-	// ClusterPeerEncryptionProposedNone captures enum value "none"
-	ClusterPeerEncryptionProposedNone string = "none"
+	// ClusterPeerInlineEncryptionProposedNone captures enum value "none"
+	ClusterPeerInlineEncryptionProposedNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerEncryption
-	// ClusterPeerEncryption
+	// cluster_peer_inline_encryption
+	// ClusterPeerInlineEncryption
 	// proposed
 	// Proposed
 	// tls_psk
 	// END DEBUGGING
-	// ClusterPeerEncryptionProposedTLSPsk captures enum value "tls_psk"
-	ClusterPeerEncryptionProposedTLSPsk string = "tls_psk"
+	// ClusterPeerInlineEncryptionProposedTLSPsk captures enum value "tls_psk"
+	ClusterPeerInlineEncryptionProposedTLSPsk string = "tls_psk"
 )
 
 // prop value enum
-func (m *ClusterPeerEncryption) validateProposedEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterPeerEncryptionTypeProposedPropEnum, true); err != nil {
+func (m *ClusterPeerInlineEncryption) validateProposedEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterPeerInlineEncryptionTypeProposedPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterPeerEncryption) validateProposed(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineEncryption) validateProposed(formats strfmt.Registry) error {
 	if swag.IsZero(m.Proposed) { // not required
 		return nil
 	}
@@ -833,7 +840,7 @@ func (m *ClusterPeerEncryption) validateProposed(formats strfmt.Registry) error 
 	return nil
 }
 
-var clusterPeerEncryptionTypeStatePropEnum []interface{}
+var clusterPeerInlineEncryptionTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -841,56 +848,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterPeerEncryptionTypeStatePropEnum = append(clusterPeerEncryptionTypeStatePropEnum, v)
+		clusterPeerInlineEncryptionTypeStatePropEnum = append(clusterPeerInlineEncryptionTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterPeerEncryption
-	// ClusterPeerEncryption
+	// cluster_peer_inline_encryption
+	// ClusterPeerInlineEncryption
 	// state
 	// State
 	// none
 	// END DEBUGGING
-	// ClusterPeerEncryptionStateNone captures enum value "none"
-	ClusterPeerEncryptionStateNone string = "none"
+	// ClusterPeerInlineEncryptionStateNone captures enum value "none"
+	ClusterPeerInlineEncryptionStateNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerEncryption
-	// ClusterPeerEncryption
+	// cluster_peer_inline_encryption
+	// ClusterPeerInlineEncryption
 	// state
 	// State
 	// tls_psk
 	// END DEBUGGING
-	// ClusterPeerEncryptionStateTLSPsk captures enum value "tls_psk"
-	ClusterPeerEncryptionStateTLSPsk string = "tls_psk"
+	// ClusterPeerInlineEncryptionStateTLSPsk captures enum value "tls_psk"
+	ClusterPeerInlineEncryptionStateTLSPsk string = "tls_psk"
 )
 
 // prop value enum
-func (m *ClusterPeerEncryption) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterPeerEncryptionTypeStatePropEnum, true); err != nil {
+func (m *ClusterPeerInlineEncryption) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterPeerInlineEncryptionTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterPeerEncryption) validateState(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineEncryption) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("encryption"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("encryption"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cluster peer encryption based on the context it is used
-func (m *ClusterPeerEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline encryption based on the context it is used
+func (m *ClusterPeerInlineEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -903,9 +910,9 @@ func (m *ClusterPeerEncryption) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ClusterPeerEncryption) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineEncryption) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "encryption"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "encryption"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -913,7 +920,7 @@ func (m *ClusterPeerEncryption) contextValidateState(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerEncryption) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineEncryption) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -921,8 +928,8 @@ func (m *ClusterPeerEncryption) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerEncryption) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerEncryption
+func (m *ClusterPeerInlineEncryption) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineEncryption
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -930,27 +937,27 @@ func (m *ClusterPeerEncryption) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerInitialAllowedSvmsItems0 cluster peer initial allowed svms items0
+// ClusterPeerInlineInitialAllowedSvmsInlineArrayItem cluster peer inline initial allowed svms inline array item
 //
-// swagger:model ClusterPeerInitialAllowedSvmsItems0
-type ClusterPeerInitialAllowedSvmsItems0 struct {
+// swagger:model cluster_peer_inline_initial_allowed_svms_inline_array_item
+type ClusterPeerInlineInitialAllowedSvmsInlineArrayItem struct {
 
 	// links
-	Links *ClusterPeerInitialAllowedSvmsItems0Links `json:"_links,omitempty"`
+	Links *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cluster peer initial allowed svms items0
-func (m *ClusterPeerInitialAllowedSvmsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline initial allowed svms inline array item
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -963,7 +970,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ClusterPeerInitialAllowedSvmsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -980,8 +987,8 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) validateLinks(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this cluster peer initial allowed svms items0 based on the context it is used
-func (m *ClusterPeerInitialAllowedSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline initial allowed svms inline array item based on the context it is used
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -994,7 +1001,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ClusterPeerInitialAllowedSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1009,7 +1016,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) contextValidateLinks(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerInitialAllowedSvmsItems0) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1017,8 +1024,8 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerInitialAllowedSvmsItems0) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerInitialAllowedSvmsItems0
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineInitialAllowedSvmsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1026,17 +1033,17 @@ func (m *ClusterPeerInitialAllowedSvmsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerInitialAllowedSvmsItems0Links cluster peer initial allowed svms items0 links
+// ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks cluster peer inline initial allowed svms inline array item inline links
 //
-// swagger:model ClusterPeerInitialAllowedSvmsItems0Links
-type ClusterPeerInitialAllowedSvmsItems0Links struct {
+// swagger:model cluster_peer_inline_initial_allowed_svms_inline_array_item_inline__links
+type ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster peer initial allowed svms items0 links
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline initial allowed svms inline array item inline links
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1049,7 +1056,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1066,8 +1073,8 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) validateSelf(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this cluster peer initial allowed svms items0 links based on the context it is used
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline initial allowed svms inline array item inline links based on the context it is used
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1080,7 +1087,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1095,7 +1102,7 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) contextValidateSelf(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1103,8 +1110,8 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerInitialAllowedSvmsItems0Links) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerInitialAllowedSvmsItems0Links
+func (m *ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineInitialAllowedSvmsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1112,25 +1119,25 @@ func (m *ClusterPeerInitialAllowedSvmsItems0Links) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// ClusterPeerIpspace The IPspace of the local intercluster LIFs.
+// ClusterPeerInlineIpspace The IPspace of the local intercluster LIFs.
 //
-// swagger:model ClusterPeerIpspace
-type ClusterPeerIpspace struct {
+// swagger:model cluster_peer_inline_ipspace
+type ClusterPeerInlineIpspace struct {
 
 	// links
-	Links *ClusterPeerIpspaceLinks `json:"_links,omitempty"`
+	Links *ClusterPeerInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cluster peer ipspace
-func (m *ClusterPeerIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline ipspace
+func (m *ClusterPeerInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1143,7 +1150,7 @@ func (m *ClusterPeerIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1160,8 +1167,8 @@ func (m *ClusterPeerIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer ipspace based on the context it is used
-func (m *ClusterPeerIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline ipspace based on the context it is used
+func (m *ClusterPeerInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1174,7 +1181,7 @@ func (m *ClusterPeerIpspace) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *ClusterPeerIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1189,7 +1196,7 @@ func (m *ClusterPeerIpspace) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerIpspace) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1197,8 +1204,8 @@ func (m *ClusterPeerIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerIpspace) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerIpspace
+func (m *ClusterPeerInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1206,17 +1213,17 @@ func (m *ClusterPeerIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerIpspaceLinks cluster peer ipspace links
+// ClusterPeerInlineIpspaceInlineLinks cluster peer inline ipspace inline links
 //
-// swagger:model ClusterPeerIpspaceLinks
-type ClusterPeerIpspaceLinks struct {
+// swagger:model cluster_peer_inline_ipspace_inline__links
+type ClusterPeerInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster peer ipspace links
-func (m *ClusterPeerIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline ipspace inline links
+func (m *ClusterPeerInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1229,7 +1236,7 @@ func (m *ClusterPeerIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1246,8 +1253,8 @@ func (m *ClusterPeerIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer ipspace links based on the context it is used
-func (m *ClusterPeerIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline ipspace inline links based on the context it is used
+func (m *ClusterPeerInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1260,7 +1267,7 @@ func (m *ClusterPeerIpspaceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ClusterPeerIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1275,7 +1282,7 @@ func (m *ClusterPeerIpspaceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1283,8 +1290,8 @@ func (m *ClusterPeerIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerIpspaceLinks
+func (m *ClusterPeerInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1292,10 +1299,10 @@ func (m *ClusterPeerIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerLinks cluster peer links
+// ClusterPeerInlineLinks cluster peer inline links
 //
-// swagger:model ClusterPeerLinks
-type ClusterPeerLinks struct {
+// swagger:model cluster_peer_inline__links
+type ClusterPeerInlineLinks struct {
 
 	// interfaces
 	Interfaces *Href `json:"interfaces,omitempty"`
@@ -1304,8 +1311,8 @@ type ClusterPeerLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster peer links
-func (m *ClusterPeerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline links
+func (m *ClusterPeerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInterfaces(formats); err != nil {
@@ -1322,7 +1329,7 @@ func (m *ClusterPeerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerLinks) validateInterfaces(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLinks) validateInterfaces(formats strfmt.Registry) error {
 	if swag.IsZero(m.Interfaces) { // not required
 		return nil
 	}
@@ -1339,7 +1346,7 @@ func (m *ClusterPeerLinks) validateInterfaces(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1356,8 +1363,8 @@ func (m *ClusterPeerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer links based on the context it is used
-func (m *ClusterPeerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline links based on the context it is used
+func (m *ClusterPeerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
@@ -1374,7 +1381,7 @@ func (m *ClusterPeerLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ClusterPeerLinks) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLinks) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Interfaces != nil {
 		if err := m.Interfaces.ContextValidate(ctx, formats); err != nil {
@@ -1388,7 +1395,7 @@ func (m *ClusterPeerLinks) contextValidateInterfaces(ctx context.Context, format
 	return nil
 }
 
-func (m *ClusterPeerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1403,7 +1410,7 @@ func (m *ClusterPeerLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1411,8 +1418,8 @@ func (m *ClusterPeerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerLinks
+func (m *ClusterPeerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1420,29 +1427,29 @@ func (m *ClusterPeerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerLocalNetwork Cluster peering requires an intercluster LIF on each local node. These can be optionally created by specifying a list of IP addresses corresponding to each node.
+// ClusterPeerInlineLocalNetwork Cluster peering requires an intercluster LIF on each local node. These can be optionally created by specifying a list of IP addresses corresponding to each node.
 //
-// swagger:model ClusterPeerLocalNetwork
-type ClusterPeerLocalNetwork struct {
+// swagger:model cluster_peer_inline_local_network
+type ClusterPeerInlineLocalNetwork struct {
 
 	// Broadcast domain that is in use within the IPspace.
 	// Example: bd1
-	BroadcastDomain string `json:"broadcast_domain,omitempty"`
+	BroadcastDomain *string `json:"broadcast_domain,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// interfaces
 	Interfaces []*ClusterPeerLocalNetworkInterfacesItems0 `json:"interfaces,omitempty"`
 
 	// IPv4 mask or netmask length.
 	// Example: 255.255.0.0
-	Netmask string `json:"netmask,omitempty"`
+	Netmask *string `json:"netmask,omitempty"`
 }
 
-// Validate validates this cluster peer local network
-func (m *ClusterPeerLocalNetwork) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline local network
+func (m *ClusterPeerInlineLocalNetwork) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInterfaces(formats); err != nil {
@@ -1455,7 +1462,7 @@ func (m *ClusterPeerLocalNetwork) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerLocalNetwork) validateInterfaces(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLocalNetwork) validateInterfaces(formats strfmt.Registry) error {
 	if swag.IsZero(m.Interfaces) { // not required
 		return nil
 	}
@@ -1479,8 +1486,8 @@ func (m *ClusterPeerLocalNetwork) validateInterfaces(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this cluster peer local network based on the context it is used
-func (m *ClusterPeerLocalNetwork) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline local network based on the context it is used
+func (m *ClusterPeerInlineLocalNetwork) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
@@ -1493,7 +1500,7 @@ func (m *ClusterPeerLocalNetwork) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ClusterPeerLocalNetwork) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineLocalNetwork) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Interfaces); i++ {
 
@@ -1512,7 +1519,7 @@ func (m *ClusterPeerLocalNetwork) contextValidateInterfaces(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerLocalNetwork) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineLocalNetwork) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1520,8 +1527,8 @@ func (m *ClusterPeerLocalNetwork) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerLocalNetwork) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerLocalNetwork
+func (m *ClusterPeerInlineLocalNetwork) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineLocalNetwork
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1535,7 +1542,7 @@ func (m *ClusterPeerLocalNetwork) UnmarshalBinary(b []byte) error {
 type ClusterPeerLocalNetworkInterfacesItems0 struct {
 
 	// List of local intercluster IP addresses.
-	IPAddress IPAddress `json:"ip_address,omitempty"`
+	IPAddress *IPAddress `json:"ip_address,omitempty"`
 }
 
 // Validate validates this cluster peer local network interfaces items0
@@ -1557,11 +1564,13 @@ func (m *ClusterPeerLocalNetworkInterfacesItems0) validateIPAddress(formats strf
 		return nil
 	}
 
-	if err := m.IPAddress.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip_address")
+	if m.IPAddress != nil {
+		if err := m.IPAddress.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -1583,11 +1592,13 @@ func (m *ClusterPeerLocalNetworkInterfacesItems0) ContextValidate(ctx context.Co
 
 func (m *ClusterPeerLocalNetworkInterfacesItems0) contextValidateIPAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.IPAddress.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip_address")
+	if m.IPAddress != nil {
+		if err := m.IPAddress.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -1611,27 +1622,27 @@ func (m *ClusterPeerLocalNetworkInterfacesItems0) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// ClusterPeerRemote cluster peer remote
+// ClusterPeerInlineRemote cluster peer inline remote
 //
-// swagger:model ClusterPeerRemote
-type ClusterPeerRemote struct {
+// swagger:model cluster_peer_inline_remote
+type ClusterPeerInlineRemote struct {
 
 	// The IPv4 addresses, IPv6 addresses, or hostnames of the peers.
-	IPAddresses []IPAddress `json:"ip_addresses,omitempty"`
+	IPAddresses []*IPAddress `json:"ip_addresses,omitempty"`
 
 	// The name of the remote cluster.
 	// Example: cluster2
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The serial number of the remote cluster.
 	// Example: 4048820-60-9
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this cluster peer remote
-func (m *ClusterPeerRemote) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline remote
+func (m *ClusterPeerInlineRemote) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIPAddresses(formats); err != nil {
@@ -1644,18 +1655,23 @@ func (m *ClusterPeerRemote) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerRemote) validateIPAddresses(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineRemote) validateIPAddresses(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPAddresses) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.IPAddresses); i++ {
+		if swag.IsZero(m.IPAddresses[i]) { // not required
+			continue
+		}
 
-		if err := m.IPAddresses[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("remote" + "." + "ip_addresses" + "." + strconv.Itoa(i))
+		if m.IPAddresses[i] != nil {
+			if err := m.IPAddresses[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("remote" + "." + "ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -1663,8 +1679,8 @@ func (m *ClusterPeerRemote) validateIPAddresses(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer remote based on the context it is used
-func (m *ClusterPeerRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline remote based on the context it is used
+func (m *ClusterPeerInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIPAddresses(ctx, formats); err != nil {
@@ -1685,15 +1701,17 @@ func (m *ClusterPeerRemote) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ClusterPeerRemote) contextValidateIPAddresses(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineRemote) contextValidateIPAddresses(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.IPAddresses); i++ {
 
-		if err := m.IPAddresses[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("remote" + "." + "ip_addresses" + "." + strconv.Itoa(i))
+		if m.IPAddresses[i] != nil {
+			if err := m.IPAddresses[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("remote" + "." + "ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -1701,18 +1719,18 @@ func (m *ClusterPeerRemote) contextValidateIPAddresses(ctx context.Context, form
 	return nil
 }
 
-func (m *ClusterPeerRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerRemote) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineRemote) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote"+"."+"serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote"+"."+"serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -1720,7 +1738,7 @@ func (m *ClusterPeerRemote) contextValidateSerialNumber(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerRemote) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineRemote) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1728,8 +1746,8 @@ func (m *ClusterPeerRemote) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerRemote) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerRemote
+func (m *ClusterPeerInlineRemote) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1737,16 +1755,16 @@ func (m *ClusterPeerRemote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerStatus cluster peer status
+// ClusterPeerInlineStatus cluster peer inline status
 //
-// swagger:model ClusterPeerStatus
-type ClusterPeerStatus struct {
+// swagger:model cluster_peer_inline_status
+type ClusterPeerInlineStatus struct {
 
 	// state
 	// Example: available
 	// Read Only: true
 	// Enum: [available partial unavailable pending unidentified]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// The last time the state was updated.
 	// Example: 2017-01-25T11:20:13Z
@@ -1755,8 +1773,8 @@ type ClusterPeerStatus struct {
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
 }
 
-// Validate validates this cluster peer status
-func (m *ClusterPeerStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline status
+func (m *ClusterPeerInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -1773,7 +1791,7 @@ func (m *ClusterPeerStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var clusterPeerStatusTypeStatePropEnum []interface{}
+var clusterPeerInlineStatusTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1781,85 +1799,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterPeerStatusTypeStatePropEnum = append(clusterPeerStatusTypeStatePropEnum, v)
+		clusterPeerInlineStatusTypeStatePropEnum = append(clusterPeerInlineStatusTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterPeerStatus
-	// ClusterPeerStatus
+	// cluster_peer_inline_status
+	// ClusterPeerInlineStatus
 	// state
 	// State
 	// available
 	// END DEBUGGING
-	// ClusterPeerStatusStateAvailable captures enum value "available"
-	ClusterPeerStatusStateAvailable string = "available"
+	// ClusterPeerInlineStatusStateAvailable captures enum value "available"
+	ClusterPeerInlineStatusStateAvailable string = "available"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerStatus
-	// ClusterPeerStatus
+	// cluster_peer_inline_status
+	// ClusterPeerInlineStatus
 	// state
 	// State
 	// partial
 	// END DEBUGGING
-	// ClusterPeerStatusStatePartial captures enum value "partial"
-	ClusterPeerStatusStatePartial string = "partial"
+	// ClusterPeerInlineStatusStatePartial captures enum value "partial"
+	ClusterPeerInlineStatusStatePartial string = "partial"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerStatus
-	// ClusterPeerStatus
+	// cluster_peer_inline_status
+	// ClusterPeerInlineStatus
 	// state
 	// State
 	// unavailable
 	// END DEBUGGING
-	// ClusterPeerStatusStateUnavailable captures enum value "unavailable"
-	ClusterPeerStatusStateUnavailable string = "unavailable"
+	// ClusterPeerInlineStatusStateUnavailable captures enum value "unavailable"
+	ClusterPeerInlineStatusStateUnavailable string = "unavailable"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerStatus
-	// ClusterPeerStatus
+	// cluster_peer_inline_status
+	// ClusterPeerInlineStatus
 	// state
 	// State
 	// pending
 	// END DEBUGGING
-	// ClusterPeerStatusStatePending captures enum value "pending"
-	ClusterPeerStatusStatePending string = "pending"
+	// ClusterPeerInlineStatusStatePending captures enum value "pending"
+	ClusterPeerInlineStatusStatePending string = "pending"
 
 	// BEGIN DEBUGGING
-	// ClusterPeerStatus
-	// ClusterPeerStatus
+	// cluster_peer_inline_status
+	// ClusterPeerInlineStatus
 	// state
 	// State
 	// unidentified
 	// END DEBUGGING
-	// ClusterPeerStatusStateUnidentified captures enum value "unidentified"
-	ClusterPeerStatusStateUnidentified string = "unidentified"
+	// ClusterPeerInlineStatusStateUnidentified captures enum value "unidentified"
+	ClusterPeerInlineStatusStateUnidentified string = "unidentified"
 )
 
 // prop value enum
-func (m *ClusterPeerStatus) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterPeerStatusTypeStatePropEnum, true); err != nil {
+func (m *ClusterPeerInlineStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterPeerInlineStatusTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterPeerStatus) validateState(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineStatus) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerStatus) validateUpdateTime(formats strfmt.Registry) error {
+func (m *ClusterPeerInlineStatus) validateUpdateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.UpdateTime) { // not required
 		return nil
 	}
@@ -1871,8 +1889,8 @@ func (m *ClusterPeerStatus) validateUpdateTime(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer status based on the context it is used
-func (m *ClusterPeerStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline status based on the context it is used
+func (m *ClusterPeerInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -1889,16 +1907,16 @@ func (m *ClusterPeerStatus) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ClusterPeerStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerStatus) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineStatus) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status"+"."+"update_time", "body", m.UpdateTime); err != nil {
 		return err
@@ -1908,7 +1926,7 @@ func (m *ClusterPeerStatus) contextValidateUpdateTime(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerStatus) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1916,8 +1934,8 @@ func (m *ClusterPeerStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerStatus) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerStatus
+func (m *ClusterPeerInlineStatus) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1925,39 +1943,39 @@ func (m *ClusterPeerStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerVersion This returns the cluster version information.  When the cluster has more than one node, the cluster version is equivalent to the lowest of generation, major, and minor versions on all nodes.
+// ClusterPeerInlineVersion This returns the cluster version information.  When the cluster has more than one node, the cluster version is equivalent to the lowest of generation, major, and minor versions on all nodes.
 //
-// swagger:model ClusterPeerVersion
-type ClusterPeerVersion struct {
+// swagger:model cluster_peer_inline_version
+type ClusterPeerInlineVersion struct {
 
 	// The full cluster version string.
 	// Example: NetApp Release 9.4.0: Sun Nov 05 18:20:57 UTC 2017
 	// Read Only: true
-	Full string `json:"full,omitempty"`
+	Full *string `json:"full,omitempty"`
 
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation,omitempty"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major int64 `json:"major,omitempty"`
+	Major *int64 `json:"major,omitempty"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor,omitempty"`
 }
 
-// Validate validates this cluster peer version
-func (m *ClusterPeerVersion) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer inline version
+func (m *ClusterPeerInlineVersion) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster peer version based on the context it is used
-func (m *ClusterPeerVersion) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer inline version based on the context it is used
+func (m *ClusterPeerInlineVersion) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFull(ctx, formats); err != nil {
@@ -1982,36 +2000,36 @@ func (m *ClusterPeerVersion) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *ClusterPeerVersion) contextValidateFull(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineVersion) contextValidateFull(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"full", "body", string(m.Full)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"full", "body", m.Full); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerVersion) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineVersion) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"generation", "body", int64(m.Generation)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"generation", "body", m.Generation); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerVersion) contextValidateMajor(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineVersion) contextValidateMajor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"major", "body", int64(m.Major)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"major", "body", m.Major); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterPeerVersion) contextValidateMinor(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerInlineVersion) contextValidateMinor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"minor", "body", int64(m.Minor)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"minor", "body", m.Minor); err != nil {
 		return err
 	}
 
@@ -2019,7 +2037,7 @@ func (m *ClusterPeerVersion) contextValidateMinor(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerVersion) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerInlineVersion) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2027,8 +2045,8 @@ func (m *ClusterPeerVersion) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerVersion) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerVersion
+func (m *ClusterPeerInlineVersion) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerInlineVersion
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

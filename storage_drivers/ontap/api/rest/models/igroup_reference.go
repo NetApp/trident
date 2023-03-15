@@ -20,19 +20,19 @@ import (
 type IgroupReference struct {
 
 	// links
-	Links *IgroupReferenceLinks `json:"_links,omitempty"`
+	Links *IgroupReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this igroup reference
@@ -75,11 +75,11 @@ func (m *IgroupReference) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -132,17 +132,17 @@ func (m *IgroupReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupReferenceLinks igroup reference links
+// IgroupReferenceInlineLinks igroup reference inline links
 //
-// swagger:model IgroupReferenceLinks
-type IgroupReferenceLinks struct {
+// swagger:model igroup_reference_inline__links
+type IgroupReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup reference links
-func (m *IgroupReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup reference inline links
+func (m *IgroupReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -155,7 +155,7 @@ func (m *IgroupReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -172,8 +172,8 @@ func (m *IgroupReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this igroup reference links based on the context it is used
-func (m *IgroupReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup reference inline links based on the context it is used
+func (m *IgroupReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -186,7 +186,7 @@ func (m *IgroupReferenceLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IgroupReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -201,7 +201,7 @@ func (m *IgroupReferenceLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -209,8 +209,8 @@ func (m *IgroupReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupReferenceLinks
+func (m *IgroupReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

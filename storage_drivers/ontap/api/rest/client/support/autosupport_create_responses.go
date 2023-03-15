@@ -56,6 +56,11 @@ AutosupportCreateCreated describes a response with status code 201, with default
 Created
 */
 type AutosupportCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *AutosupportCreateCreatedBody
 }
 
@@ -97,6 +102,13 @@ func (o *AutosupportCreateCreated) GetPayload() *AutosupportCreateCreatedBody {
 }
 
 func (o *AutosupportCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(AutosupportCreateCreatedBody)
 
@@ -199,7 +211,7 @@ type AutosupportCreateCreatedBody struct {
 	NumRecords int64 `json:"num_records,omitempty"`
 
 	// records
-	Records []*AutosupportCreateCreatedBodyRecordsItems0 `json:"records,omitempty"`
+	Records []*AutosupportCreateCreatedBodyRecordsItems0 `json:"records"`
 }
 
 // Validate validates this autosupport create created body

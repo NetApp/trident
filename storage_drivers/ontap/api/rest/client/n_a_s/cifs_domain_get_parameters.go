@@ -66,25 +66,25 @@ type CifsDomainGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* RediscoverTrusts.
 
 	   Force the discovery of trusted domains.
 	*/
-	RediscoverTrustsQueryParameter *bool
+	RediscoverTrusts *bool
 
 	/* ResetDiscoveredServers.
 
 	   Force a rediscovery.
 	*/
-	ResetDiscoveredServersQueryParameter *bool
+	ResetDiscoveredServers *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,14 +104,14 @@ func (o *CifsDomainGetParams) WithDefaults() *CifsDomainGetParams {
 // All values with no default are reset to their zero value.
 func (o *CifsDomainGetParams) SetDefaults() {
 	var (
-		rediscoverTrustsQueryParameterDefault = bool(false)
+		rediscoverTrustsDefault = bool(false)
 
-		resetDiscoveredServersQueryParameterDefault = bool(false)
+		resetDiscoveredServersDefault = bool(false)
 	)
 
 	val := CifsDomainGetParams{
-		RediscoverTrustsQueryParameter:       &rediscoverTrustsQueryParameterDefault,
-		ResetDiscoveredServersQueryParameter: &resetDiscoveredServersQueryParameterDefault,
+		RediscoverTrusts:       &rediscoverTrustsDefault,
+		ResetDiscoveredServers: &resetDiscoveredServersDefault,
 	}
 
 	val.timeout = o.timeout
@@ -153,48 +153,48 @@ func (o *CifsDomainGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs domain get params
-func (o *CifsDomainGetParams) WithFieldsQueryParameter(fields []string) *CifsDomainGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs domain get params
+func (o *CifsDomainGetParams) WithFields(fields []string) *CifsDomainGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs domain get params
-func (o *CifsDomainGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs domain get params
+func (o *CifsDomainGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithRediscoverTrustsQueryParameter adds the rediscoverTrusts to the cifs domain get params
-func (o *CifsDomainGetParams) WithRediscoverTrustsQueryParameter(rediscoverTrusts *bool) *CifsDomainGetParams {
-	o.SetRediscoverTrustsQueryParameter(rediscoverTrusts)
+// WithRediscoverTrusts adds the rediscoverTrusts to the cifs domain get params
+func (o *CifsDomainGetParams) WithRediscoverTrusts(rediscoverTrusts *bool) *CifsDomainGetParams {
+	o.SetRediscoverTrusts(rediscoverTrusts)
 	return o
 }
 
-// SetRediscoverTrustsQueryParameter adds the rediscoverTrusts to the cifs domain get params
-func (o *CifsDomainGetParams) SetRediscoverTrustsQueryParameter(rediscoverTrusts *bool) {
-	o.RediscoverTrustsQueryParameter = rediscoverTrusts
+// SetRediscoverTrusts adds the rediscoverTrusts to the cifs domain get params
+func (o *CifsDomainGetParams) SetRediscoverTrusts(rediscoverTrusts *bool) {
+	o.RediscoverTrusts = rediscoverTrusts
 }
 
-// WithResetDiscoveredServersQueryParameter adds the resetDiscoveredServers to the cifs domain get params
-func (o *CifsDomainGetParams) WithResetDiscoveredServersQueryParameter(resetDiscoveredServers *bool) *CifsDomainGetParams {
-	o.SetResetDiscoveredServersQueryParameter(resetDiscoveredServers)
+// WithResetDiscoveredServers adds the resetDiscoveredServers to the cifs domain get params
+func (o *CifsDomainGetParams) WithResetDiscoveredServers(resetDiscoveredServers *bool) *CifsDomainGetParams {
+	o.SetResetDiscoveredServers(resetDiscoveredServers)
 	return o
 }
 
-// SetResetDiscoveredServersQueryParameter adds the resetDiscoveredServers to the cifs domain get params
-func (o *CifsDomainGetParams) SetResetDiscoveredServersQueryParameter(resetDiscoveredServers *bool) {
-	o.ResetDiscoveredServersQueryParameter = resetDiscoveredServers
+// SetResetDiscoveredServers adds the resetDiscoveredServers to the cifs domain get params
+func (o *CifsDomainGetParams) SetResetDiscoveredServers(resetDiscoveredServers *bool) {
+	o.ResetDiscoveredServers = resetDiscoveredServers
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs domain get params
-func (o *CifsDomainGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsDomainGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs domain get params
+func (o *CifsDomainGetParams) WithSvmUUID(svmUUID string) *CifsDomainGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs domain get params
-func (o *CifsDomainGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs domain get params
+func (o *CifsDomainGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,7 +205,7 @@ func (o *CifsDomainGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -216,13 +216,13 @@ func (o *CifsDomainGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.RediscoverTrustsQueryParameter != nil {
+	if o.RediscoverTrusts != nil {
 
 		// query param rediscover_trusts
 		var qrRediscoverTrusts bool
 
-		if o.RediscoverTrustsQueryParameter != nil {
-			qrRediscoverTrusts = *o.RediscoverTrustsQueryParameter
+		if o.RediscoverTrusts != nil {
+			qrRediscoverTrusts = *o.RediscoverTrusts
 		}
 		qRediscoverTrusts := swag.FormatBool(qrRediscoverTrusts)
 		if qRediscoverTrusts != "" {
@@ -233,13 +233,13 @@ func (o *CifsDomainGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ResetDiscoveredServersQueryParameter != nil {
+	if o.ResetDiscoveredServers != nil {
 
 		// query param reset_discovered_servers
 		var qrResetDiscoveredServers bool
 
-		if o.ResetDiscoveredServersQueryParameter != nil {
-			qrResetDiscoveredServers = *o.ResetDiscoveredServersQueryParameter
+		if o.ResetDiscoveredServers != nil {
+			qrResetDiscoveredServers = *o.ResetDiscoveredServers
 		}
 		qResetDiscoveredServers := swag.FormatBool(qrResetDiscoveredServers)
 		if qResetDiscoveredServers != "" {
@@ -251,7 +251,7 @@ func (o *CifsDomainGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -263,7 +263,7 @@ func (o *CifsDomainGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamCifsDomainGet binds the parameter fields
 func (o *CifsDomainGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

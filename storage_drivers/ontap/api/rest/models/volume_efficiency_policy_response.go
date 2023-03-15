@@ -20,13 +20,14 @@ import (
 type VolumeEfficiencyPolicyResponse struct {
 
 	// links
-	Links *VolumeEfficiencyPolicyResponseLinks `json:"_links,omitempty"`
+	Links *VolumeEfficiencyPolicyResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*VolumeEfficiencyPolicy `json:"records,omitempty"`
+	// volume efficiency policy response inline records
+	VolumeEfficiencyPolicyResponseInlineRecords []*VolumeEfficiencyPolicy `json:"records,omitempty"`
 }
 
 // Validate validates this volume efficiency policy response
@@ -37,7 +38,7 @@ func (m *VolumeEfficiencyPolicyResponse) Validate(formats strfmt.Registry) error
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateVolumeEfficiencyPolicyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *VolumeEfficiencyPolicyResponse) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *VolumeEfficiencyPolicyResponse) validateVolumeEfficiencyPolicyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.VolumeEfficiencyPolicyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.VolumeEfficiencyPolicyResponseInlineRecords); i++ {
+		if swag.IsZero(m.VolumeEfficiencyPolicyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.VolumeEfficiencyPolicyResponseInlineRecords[i] != nil {
+			if err := m.VolumeEfficiencyPolicyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *VolumeEfficiencyPolicyResponse) ContextValidate(ctx context.Context, fo
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateVolumeEfficiencyPolicyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *VolumeEfficiencyPolicyResponse) contextValidateLinks(ctx context.Contex
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyResponse) contextValidateVolumeEfficiencyPolicyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.VolumeEfficiencyPolicyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.VolumeEfficiencyPolicyResponseInlineRecords[i] != nil {
+			if err := m.VolumeEfficiencyPolicyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *VolumeEfficiencyPolicyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicyResponseLinks volume efficiency policy response links
+// VolumeEfficiencyPolicyResponseInlineLinks volume efficiency policy response inline links
 //
-// swagger:model VolumeEfficiencyPolicyResponseLinks
-type VolumeEfficiencyPolicyResponseLinks struct {
+// swagger:model volume_efficiency_policy_response_inline__links
+type VolumeEfficiencyPolicyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type VolumeEfficiencyPolicyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this volume efficiency policy response links
-func (m *VolumeEfficiencyPolicyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy response inline links
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *VolumeEfficiencyPolicyResponseLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *VolumeEfficiencyPolicyResponseLinks) validateNext(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *VolumeEfficiencyPolicyResponseLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this volume efficiency policy response links based on the context it is used
-func (m *VolumeEfficiencyPolicyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume efficiency policy response inline links based on the context it is used
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *VolumeEfficiencyPolicyResponseLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *VolumeEfficiencyPolicyResponseLinks) contextValidateNext(ctx context.Co
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *VolumeEfficiencyPolicyResponseLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *VolumeEfficiencyPolicyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicyResponseLinks
+func (m *VolumeEfficiencyPolicyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

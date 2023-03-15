@@ -66,13 +66,13 @@ type ClusterNdmpGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Mode.
 
 	   Filter by mode
 	*/
-	ModeQueryParameter *string
+	Mode *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ClusterNdmpGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster ndmp get params
-func (o *ClusterNdmpGetParams) WithFieldsQueryParameter(fields []string) *ClusterNdmpGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster ndmp get params
+func (o *ClusterNdmpGetParams) WithFields(fields []string) *ClusterNdmpGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster ndmp get params
-func (o *ClusterNdmpGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster ndmp get params
+func (o *ClusterNdmpGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithModeQueryParameter adds the mode to the cluster ndmp get params
-func (o *ClusterNdmpGetParams) WithModeQueryParameter(mode *string) *ClusterNdmpGetParams {
-	o.SetModeQueryParameter(mode)
+// WithMode adds the mode to the cluster ndmp get params
+func (o *ClusterNdmpGetParams) WithMode(mode *string) *ClusterNdmpGetParams {
+	o.SetMode(mode)
 	return o
 }
 
-// SetModeQueryParameter adds the mode to the cluster ndmp get params
-func (o *ClusterNdmpGetParams) SetModeQueryParameter(mode *string) {
-	o.ModeQueryParameter = mode
+// SetMode adds the mode to the cluster ndmp get params
+func (o *ClusterNdmpGetParams) SetMode(mode *string) {
+	o.Mode = mode
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ClusterNdmpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -168,13 +168,13 @@ func (o *ClusterNdmpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ModeQueryParameter != nil {
+	if o.Mode != nil {
 
 		// query param mode
 		var qrMode string
 
-		if o.ModeQueryParameter != nil {
-			qrMode = *o.ModeQueryParameter
+		if o.Mode != nil {
+			qrMode = *o.Mode
 		}
 		qMode := qrMode
 		if qMode != "" {
@@ -193,7 +193,7 @@ func (o *ClusterNdmpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamClusterNdmpGet binds the parameter fields
 func (o *ClusterNdmpGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

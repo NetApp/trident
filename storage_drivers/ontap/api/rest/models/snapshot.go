@@ -22,10 +22,10 @@ import (
 type Snapshot struct {
 
 	// links
-	Links *SnapshotLinks `json:"_links,omitempty"`
+	Links *SnapshotInlineLinks `json:"_links,omitempty"`
 
 	// A comment associated with the Snapshot copy. This is an optional attribute for POST or PATCH.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Creation time of the Snapshot copy. It is the volume access time when the Snapshot copy was created.
 	// Example: 2019-02-04T19:00:00Z
@@ -33,59 +33,66 @@ type Snapshot struct {
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
+	// delta
+	Delta *SnapshotDelta `json:"delta,omitempty"`
+
 	// The expiry time for the Snapshot copy. This is an optional attribute for POST or PATCH. Snapshot copies with an expiry time set are not allowed to be deleted until the retention time is reached.
 	// Example: 2019-02-04T19:00:00Z
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
+	// Size of the logical used file system at the time the Snapshot copy is captured.
+	// Example: 1228800
+	// Read Only: true
+	LogicalSize *int64 `json:"logical_size,omitempty"`
+
 	// Snapshot copy. Valid in POST or PATCH.
 	// Example: this_snapshot
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// owners
 	// Read Only: true
-	Owners []string `json:"owners,omitempty"`
+	Owners []*string `json:"owners,omitempty"`
 
 	// provenance volume
-	ProvenanceVolume *SnapshotProvenanceVolume `json:"provenance_volume,omitempty"`
+	ProvenanceVolume *SnapshotInlineProvenanceVolume `json:"provenance_volume,omitempty"`
 
 	// Space reclaimed when the Snapshot copy is deleted, in bytes.
-	ReclaimableSpace int64 `json:"reclaimable_space,omitempty"`
+	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 
 	// Size of the active file system at the time the Snapshot copy is captured. The actual size of the Snapshot copy also includes those blocks trapped by other Snapshot copies. On a Snapshot copy deletion, the "size" amount of blocks is the maximum number of blocks available. On a Snapshot copy restore, the "afs-used size" value will match the Snapshot copy "size" value.
 	// Example: 122880
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
-	// SnapLock expiry time for the Snapshot copy, if the Snapshot copy is taken on a SnapLock volume. A Snapshot copy is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time.
+	// SnapLock expiry time for the Snapshot copy, if the Snapshot copy is taken on a SnapLock volume. A Snapshot copy is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during Snapshot copy POST and Snapshot copy PATCH on Snapshot copy locking enabled volumes.
 	// Example: 2019-02-04T19:00:00Z
-	// Read Only: true
 	// Format: date-time
 	SnaplockExpiryTime *strfmt.DateTime `json:"snaplock_expiry_time,omitempty"`
 
 	// Label for SnapMirror operations
-	SnapmirrorLabel string `json:"snapmirror_label,omitempty"`
+	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 
 	// State of the Snapshot copy. There are cases where some Snapshot copies are not complete. In the "partial" state, the Snapshot copy is consistent but exists only on the subset of the constituents that existed prior to the FlexGroup's expansion. Partial Snapshot copies cannot be used for a Snapshot copy restore operation. A Snapshot copy is in an "invalid" state when it is present in some FlexGroup constituents but not in others. At all other times, a Snapshot copy is valid.
 	// Read Only: true
 	// Enum: [valid invalid partial]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *SnapshotSvm `json:"svm,omitempty"`
+	Svm *SnapshotInlineSvm `json:"svm,omitempty"`
 
 	// The UUID of the Snapshot copy in the volume that uniquely identifies the Snapshot copy in that volume.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The 128 bit identifier that uniquely identifies a snapshot and its logical data layout.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	VersionUUID string `json:"version_uuid,omitempty"`
+	VersionUUID *string `json:"version_uuid,omitempty"`
 
 	// volume
-	Volume *SnapshotVolume `json:"volume,omitempty"`
+	Volume *SnapshotInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this snapshot
@@ -97,6 +104,10 @@ func (m *Snapshot) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCreateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDelta(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -163,6 +174,23 @@ func (m *Snapshot) validateCreateTime(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Snapshot) validateDelta(formats strfmt.Registry) error {
+	if swag.IsZero(m.Delta) { // not required
+		return nil
+	}
+
+	if m.Delta != nil {
+		if err := m.Delta.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("delta")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Snapshot) validateExpiryTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExpiryTime) { // not required
 		return nil
@@ -200,9 +228,12 @@ func (m *Snapshot) validateOwners(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.Owners); i++ {
+		if swag.IsZero(m.Owners[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateOwnersItemsEnum("owners"+"."+strconv.Itoa(i), "body", m.Owners[i]); err != nil {
+		if err := m.validateOwnersItemsEnum("owners"+"."+strconv.Itoa(i), "body", *m.Owners[i]); err != nil {
 			return err
 		}
 
@@ -299,7 +330,7 @@ func (m *Snapshot) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -352,6 +383,14 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDelta(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLogicalSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOwners(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -361,10 +400,6 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	}
 
 	if err := m.contextValidateSize(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSnaplockExpiryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -417,9 +452,32 @@ func (m *Snapshot) contextValidateCreateTime(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *Snapshot) contextValidateDelta(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Delta != nil {
+		if err := m.Delta.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("delta")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Snapshot) contextValidateLogicalSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "logical_size", "body", m.LogicalSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Snapshot) contextValidateOwners(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "owners", "body", []string(m.Owners)); err != nil {
+	if err := validate.ReadOnly(ctx, "owners", "body", []*string(m.Owners)); err != nil {
 		return err
 	}
 
@@ -442,16 +500,7 @@ func (m *Snapshot) contextValidateProvenanceVolume(ctx context.Context, formats 
 
 func (m *Snapshot) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Snapshot) contextValidateSnaplockExpiryTime(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "snaplock_expiry_time", "body", m.SnaplockExpiryTime); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -460,7 +509,7 @@ func (m *Snapshot) contextValidateSnaplockExpiryTime(ctx context.Context, format
 
 func (m *Snapshot) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -483,7 +532,7 @@ func (m *Snapshot) contextValidateSvm(ctx context.Context, formats strfmt.Regist
 
 func (m *Snapshot) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -492,7 +541,7 @@ func (m *Snapshot) contextValidateUUID(ctx context.Context, formats strfmt.Regis
 
 func (m *Snapshot) contextValidateVersionUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version_uuid", "body", string(m.VersionUUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "version_uuid", "body", m.VersionUUID); err != nil {
 		return err
 	}
 
@@ -531,17 +580,17 @@ func (m *Snapshot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotLinks snapshot links
+// SnapshotInlineLinks snapshot inline links
 //
-// swagger:model SnapshotLinks
-type SnapshotLinks struct {
+// swagger:model snapshot_inline__links
+type SnapshotInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot links
-func (m *SnapshotLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline links
+func (m *SnapshotInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -554,7 +603,7 @@ func (m *SnapshotLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -571,8 +620,8 @@ func (m *SnapshotLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot links based on the context it is used
-func (m *SnapshotLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline links based on the context it is used
+func (m *SnapshotInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -585,7 +634,7 @@ func (m *SnapshotLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *SnapshotLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -600,7 +649,7 @@ func (m *SnapshotLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -608,8 +657,8 @@ func (m *SnapshotLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotLinks
+func (m *SnapshotInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -617,24 +666,24 @@ func (m *SnapshotLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotProvenanceVolume snapshot provenance volume
+// SnapshotInlineProvenanceVolume snapshot inline provenance volume
 //
-// swagger:model SnapshotProvenanceVolume
-type SnapshotProvenanceVolume struct {
+// swagger:model snapshot_inline_provenance_volume
+type SnapshotInlineProvenanceVolume struct {
 
 	// UUID for the volume that is used to identify the source volume in a mirroring relationship. When the mirroring relationship is broken, a volume's Instance UUID and Provenance UUID are made identical. An unmirrored volume's Provenance UUID is the same as its Instance UUID. This field is valid for flexible volumes only.
 	// Example: 4cd8a442-86d1-11e0-ae1c-125648563413
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot provenance volume
-func (m *SnapshotProvenanceVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline provenance volume
+func (m *SnapshotInlineProvenanceVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot provenance volume based on the context it is used
-func (m *SnapshotProvenanceVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline provenance volume based on the context it is used
+func (m *SnapshotInlineProvenanceVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
@@ -647,9 +696,9 @@ func (m *SnapshotProvenanceVolume) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SnapshotProvenanceVolume) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineProvenanceVolume) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "provenance_volume"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "provenance_volume"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -657,7 +706,7 @@ func (m *SnapshotProvenanceVolume) contextValidateUUID(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotProvenanceVolume) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineProvenanceVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -665,8 +714,8 @@ func (m *SnapshotProvenanceVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotProvenanceVolume) UnmarshalBinary(b []byte) error {
-	var res SnapshotProvenanceVolume
+func (m *SnapshotInlineProvenanceVolume) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineProvenanceVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -674,27 +723,27 @@ func (m *SnapshotProvenanceVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotSvm snapshot svm
+// SnapshotInlineSvm snapshot inline svm
 //
-// swagger:model SnapshotSvm
-type SnapshotSvm struct {
+// swagger:model snapshot_inline_svm
+type SnapshotInlineSvm struct {
 
 	// links
-	Links *SnapshotSvmLinks `json:"_links,omitempty"`
+	Links *SnapshotInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot svm
-func (m *SnapshotSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline svm
+func (m *SnapshotInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -707,7 +756,7 @@ func (m *SnapshotSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnapshotInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -724,8 +773,8 @@ func (m *SnapshotSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot svm based on the context it is used
-func (m *SnapshotSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline svm based on the context it is used
+func (m *SnapshotInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -738,7 +787,7 @@ func (m *SnapshotSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SnapshotSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -753,7 +802,7 @@ func (m *SnapshotSvm) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotSvm) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -761,8 +810,8 @@ func (m *SnapshotSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotSvm) UnmarshalBinary(b []byte) error {
-	var res SnapshotSvm
+func (m *SnapshotInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -770,17 +819,17 @@ func (m *SnapshotSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotSvmLinks snapshot svm links
+// SnapshotInlineSvmInlineLinks snapshot inline svm inline links
 //
-// swagger:model SnapshotSvmLinks
-type SnapshotSvmLinks struct {
+// swagger:model snapshot_inline_svm_inline__links
+type SnapshotInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot svm links
-func (m *SnapshotSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline svm inline links
+func (m *SnapshotInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -793,7 +842,7 @@ func (m *SnapshotSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -810,8 +859,8 @@ func (m *SnapshotSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot svm links based on the context it is used
-func (m *SnapshotSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline svm inline links based on the context it is used
+func (m *SnapshotInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -824,7 +873,7 @@ func (m *SnapshotSvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SnapshotSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -839,7 +888,7 @@ func (m *SnapshotSvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -847,8 +896,8 @@ func (m *SnapshotSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotSvmLinks
+func (m *SnapshotInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -856,25 +905,25 @@ func (m *SnapshotSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotVolume snapshot volume
+// SnapshotInlineVolume snapshot inline volume
 //
-// swagger:model SnapshotVolume
-type SnapshotVolume struct {
+// swagger:model snapshot_inline_volume
+type SnapshotInlineVolume struct {
 
 	// links
-	Links *SnapshotVolumeLinks `json:"_links,omitempty"`
+	Links *SnapshotInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot volume
-func (m *SnapshotVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline volume
+func (m *SnapshotInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -887,7 +936,7 @@ func (m *SnapshotVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SnapshotInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -904,8 +953,8 @@ func (m *SnapshotVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot volume based on the context it is used
-func (m *SnapshotVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline volume based on the context it is used
+func (m *SnapshotInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -918,7 +967,7 @@ func (m *SnapshotVolume) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SnapshotVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -933,7 +982,7 @@ func (m *SnapshotVolume) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotVolume) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -941,8 +990,8 @@ func (m *SnapshotVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotVolume) UnmarshalBinary(b []byte) error {
-	var res SnapshotVolume
+func (m *SnapshotInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -950,17 +999,17 @@ func (m *SnapshotVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotVolumeLinks snapshot volume links
+// SnapshotInlineVolumeInlineLinks snapshot inline volume inline links
 //
-// swagger:model SnapshotVolumeLinks
-type SnapshotVolumeLinks struct {
+// swagger:model snapshot_inline_volume_inline__links
+type SnapshotInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot volume links
-func (m *SnapshotVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot inline volume inline links
+func (m *SnapshotInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -973,7 +1022,7 @@ func (m *SnapshotVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -990,8 +1039,8 @@ func (m *SnapshotVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot volume links based on the context it is used
-func (m *SnapshotVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot inline volume inline links based on the context it is used
+func (m *SnapshotInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1004,7 +1053,7 @@ func (m *SnapshotVolumeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SnapshotVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1019,7 +1068,7 @@ func (m *SnapshotVolumeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1027,8 +1076,8 @@ func (m *SnapshotVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotVolumeLinks
+func (m *SnapshotInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

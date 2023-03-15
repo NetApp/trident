@@ -22,22 +22,22 @@ import (
 type AutoUpdateStatus struct {
 
 	// links
-	Links *AutoUpdateStatusLinks `json:"_links,omitempty"`
+	Links *AutoUpdateStatusInlineLinks `json:"_links,omitempty"`
 
 	// Action to be applied to the automatic update.
 	// Example: schedule_now
 	// Enum: [cancel_schedule dismiss schedule schedule_now abort undismiss]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Category of the update
 	// Example: Firmware
 	// Read Only: true
-	ContentCategory string `json:"content_category,omitempty"`
+	ContentCategory *string `json:"content_category,omitempty"`
 
 	// Image or package type.
 	// Example: disk_fw
 	// Read Only: true
-	ContentType string `json:"content_type,omitempty"`
+	ContentType *string `json:"content_type,omitempty"`
 
 	// The date and time at which the update request was received.
 	// Example: 2020-12-01T09:12:23Z
@@ -48,7 +48,7 @@ type AutoUpdateStatus struct {
 	// Description of the update.
 	// Example: disk_fw version 3.0
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The date and time at which the update request processing ended.
 	// Example: 2020-12-01T09:12:23Z
@@ -71,17 +71,17 @@ type AutoUpdateStatus struct {
 	// Unique identifier provided by the back-end.
 	// Example: 572361f3-e769-439d-9c04-2ba48a08ff47
 	// Read Only: true
-	PackageID string `json:"package_id,omitempty"`
+	PackageID *string `json:"package_id,omitempty"`
 
 	// Percentage of update completed
 	// Example: 85
 	// Read Only: true
-	PercentComplete int64 `json:"percent_complete,omitempty"`
+	PercentComplete *int64 `json:"percent_complete,omitempty"`
 
 	// The time remaining for the update processing to complete in an ISO-8601 duration formatted string.
 	// Example: PT1H45M13S
 	// Read Only: true
-	RemainingTime string `json:"remaining_time,omitempty"`
+	RemainingTime *string `json:"remaining_time,omitempty"`
 
 	// Date and time when an automatic update action is scheduled.
 	// This field is required when the action field is set to "schedule".
@@ -106,15 +106,15 @@ type AutoUpdateStatus struct {
 	// Example: pending_confirmation
 	// Read Only: true
 	// Enum: [pending_confirmation downloading applying applied dismissed scheduled failed aborted]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// status
-	Status *AutoUpdateStatusStatus `json:"status,omitempty"`
+	Status *AutoUpdateStatusInlineStatus `json:"status,omitempty"`
 
 	// Unique identifier for this update.
 	// Example: 440ae2e4-fd8f-4225-9bee-94e2da3f9d8d
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this auto update status
@@ -277,7 +277,7 @@ func (m *AutoUpdateStatus) validateAction(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -477,7 +477,7 @@ func (m *AutoUpdateStatus) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -591,7 +591,7 @@ func (m *AutoUpdateStatus) contextValidateLinks(ctx context.Context, formats str
 
 func (m *AutoUpdateStatus) contextValidateContentCategory(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "content_category", "body", string(m.ContentCategory)); err != nil {
+	if err := validate.ReadOnly(ctx, "content_category", "body", m.ContentCategory); err != nil {
 		return err
 	}
 
@@ -600,7 +600,7 @@ func (m *AutoUpdateStatus) contextValidateContentCategory(ctx context.Context, f
 
 func (m *AutoUpdateStatus) contextValidateContentType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "content_type", "body", string(m.ContentType)); err != nil {
+	if err := validate.ReadOnly(ctx, "content_type", "body", m.ContentType); err != nil {
 		return err
 	}
 
@@ -618,7 +618,7 @@ func (m *AutoUpdateStatus) contextValidateCreationTime(ctx context.Context, form
 
 func (m *AutoUpdateStatus) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -654,7 +654,7 @@ func (m *AutoUpdateStatus) contextValidateLastStateChangeTime(ctx context.Contex
 
 func (m *AutoUpdateStatus) contextValidatePackageID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "package_id", "body", string(m.PackageID)); err != nil {
+	if err := validate.ReadOnly(ctx, "package_id", "body", m.PackageID); err != nil {
 		return err
 	}
 
@@ -663,7 +663,7 @@ func (m *AutoUpdateStatus) contextValidatePackageID(ctx context.Context, formats
 
 func (m *AutoUpdateStatus) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "percent_complete", "body", int64(m.PercentComplete)); err != nil {
+	if err := validate.ReadOnly(ctx, "percent_complete", "body", m.PercentComplete); err != nil {
 		return err
 	}
 
@@ -672,7 +672,7 @@ func (m *AutoUpdateStatus) contextValidatePercentComplete(ctx context.Context, f
 
 func (m *AutoUpdateStatus) contextValidateRemainingTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remaining_time", "body", string(m.RemainingTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "remaining_time", "body", m.RemainingTime); err != nil {
 		return err
 	}
 
@@ -699,7 +699,7 @@ func (m *AutoUpdateStatus) contextValidateStartTime(ctx context.Context, formats
 
 func (m *AutoUpdateStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -722,7 +722,7 @@ func (m *AutoUpdateStatus) contextValidateStatus(ctx context.Context, formats st
 
 func (m *AutoUpdateStatus) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -747,17 +747,17 @@ func (m *AutoUpdateStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateStatusLinks auto update status links
+// AutoUpdateStatusInlineLinks auto update status inline links
 //
-// swagger:model AutoUpdateStatusLinks
-type AutoUpdateStatusLinks struct {
+// swagger:model auto_update_status_inline__links
+type AutoUpdateStatusInlineLinks struct {
 
 	// self
-	Self *AutoUpdateStatusLinksSelf `json:"self,omitempty"`
+	Self *AutoUpdateStatusInlineLinksInlineSelf `json:"self,omitempty"`
 }
 
-// Validate validates this auto update status links
-func (m *AutoUpdateStatusLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update status inline links
+func (m *AutoUpdateStatusInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -770,7 +770,7 @@ func (m *AutoUpdateStatusLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateStatusLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -787,8 +787,8 @@ func (m *AutoUpdateStatusLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this auto update status links based on the context it is used
-func (m *AutoUpdateStatusLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update status inline links based on the context it is used
+func (m *AutoUpdateStatusInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -801,7 +801,7 @@ func (m *AutoUpdateStatusLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *AutoUpdateStatusLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -816,7 +816,7 @@ func (m *AutoUpdateStatusLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateStatusLinks) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateStatusInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -824,8 +824,8 @@ func (m *AutoUpdateStatusLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateStatusLinks) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateStatusLinks
+func (m *AutoUpdateStatusInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateStatusInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -833,17 +833,17 @@ func (m *AutoUpdateStatusLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateStatusLinksSelf auto update status links self
+// AutoUpdateStatusInlineLinksInlineSelf auto update status inline links inline self
 //
-// swagger:model AutoUpdateStatusLinksSelf
-type AutoUpdateStatusLinksSelf struct {
+// swagger:model auto_update_status_inline__links_inline_self
+type AutoUpdateStatusInlineLinksInlineSelf struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this auto update status links self
-func (m *AutoUpdateStatusLinksSelf) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update status inline links inline self
+func (m *AutoUpdateStatusInlineLinksInlineSelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -856,7 +856,7 @@ func (m *AutoUpdateStatusLinksSelf) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateStatusLinksSelf) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineLinksInlineSelf) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -873,8 +873,8 @@ func (m *AutoUpdateStatusLinksSelf) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this auto update status links self based on the context it is used
-func (m *AutoUpdateStatusLinksSelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update status inline links inline self based on the context it is used
+func (m *AutoUpdateStatusInlineLinksInlineSelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -887,7 +887,7 @@ func (m *AutoUpdateStatusLinksSelf) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *AutoUpdateStatusLinksSelf) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineLinksInlineSelf) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -902,7 +902,7 @@ func (m *AutoUpdateStatusLinksSelf) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateStatusLinksSelf) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateStatusInlineLinksInlineSelf) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -910,8 +910,8 @@ func (m *AutoUpdateStatusLinksSelf) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateStatusLinksSelf) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateStatusLinksSelf
+func (m *AutoUpdateStatusInlineLinksInlineSelf) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateStatusInlineLinksInlineSelf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -919,7 +919,7 @@ func (m *AutoUpdateStatusLinksSelf) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateStatusStatus Status of the update.
+// AutoUpdateStatusInlineStatus Status of the update.
 // ONTAP Message Codes
 // | Code       | Description |
 // | ---------- | ----------- |
@@ -970,8 +970,8 @@ func (m *AutoUpdateStatusLinksSelf) UnmarshalBinary(b []byte) error {
 // | 131072331 | DQP update timed out. |
 // | 131072332 | Failed to copy firmware. |
 //
-// swagger:model AutoUpdateStatusStatus
-type AutoUpdateStatusStatus struct {
+// swagger:model auto_update_status_inline_status
+type AutoUpdateStatusInlineStatus struct {
 
 	// Message arguments
 	// Read Only: true
@@ -980,21 +980,21 @@ type AutoUpdateStatusStatus struct {
 	// Error code
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// The target parameter that caused the error.
 	// Example: uuid
 	// Read Only: true
-	Target string `json:"target,omitempty"`
+	Target *string `json:"target,omitempty"`
 }
 
-// Validate validates this auto update status status
-func (m *AutoUpdateStatusStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update status inline status
+func (m *AutoUpdateStatusInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateArguments(formats); err != nil {
@@ -1007,7 +1007,7 @@ func (m *AutoUpdateStatusStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateStatusStatus) validateArguments(formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineStatus) validateArguments(formats strfmt.Registry) error {
 	if swag.IsZero(m.Arguments) { // not required
 		return nil
 	}
@@ -1031,8 +1031,8 @@ func (m *AutoUpdateStatusStatus) validateArguments(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this auto update status status based on the context it is used
-func (m *AutoUpdateStatusStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update status inline status based on the context it is used
+func (m *AutoUpdateStatusInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateArguments(ctx, formats); err != nil {
@@ -1057,7 +1057,7 @@ func (m *AutoUpdateStatusStatus) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AutoUpdateStatusStatus) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineStatus) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status"+"."+"arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
 		return err
@@ -1079,27 +1079,27 @@ func (m *AutoUpdateStatusStatus) contextValidateArguments(ctx context.Context, f
 	return nil
 }
 
-func (m *AutoUpdateStatusStatus) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineStatus) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AutoUpdateStatusStatus) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineStatus) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AutoUpdateStatusStatus) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateStatusInlineStatus) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"target", "body", string(m.Target)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 
@@ -1107,7 +1107,7 @@ func (m *AutoUpdateStatusStatus) contextValidateTarget(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateStatusStatus) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateStatusInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1115,8 +1115,8 @@ func (m *AutoUpdateStatusStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateStatusStatus) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateStatusStatus
+func (m *AutoUpdateStatusInlineStatus) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateStatusInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

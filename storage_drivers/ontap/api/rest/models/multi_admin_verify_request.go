@@ -30,12 +30,8 @@ type MultiAdminVerifyRequest struct {
 	// Format: date-time
 	ApproveTime *strfmt.DateTime `json:"approve_time,omitempty"`
 
-	// The users that have approved the request.
-	// Read Only: true
-	ApprovedUsers []string `json:"approved_users,omitempty"`
-
 	// Optional user-provided comment that is sent to the approval-group email indicating why the request was made.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// create time
 	// Read Only: true
@@ -49,43 +45,47 @@ type MultiAdminVerifyRequest struct {
 
 	// Unique index that represents a request.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
-	// The command to execute.
-	Operation string `json:"operation,omitempty"`
-
-	// owner
-	Owner *MultiAdminVerifyRequestOwner `json:"owner,omitempty"`
-
-	// The number of approvers remaining that are required to approve.
+	// The users that have approved the request.
 	// Read Only: true
-	PendingApprovers int64 `json:"pending_approvers,omitempty"`
+	MultiAdminVerifyRequestInlineApprovedUsers []*string `json:"approved_users,omitempty"`
 
 	// List of users that can execute the operation once approved. If not set, any authorized user can perform the operation.
-	PermittedUsers []string `json:"permitted_users,omitempty"`
+	MultiAdminVerifyRequestInlinePermittedUsers []*string `json:"permitted_users,omitempty"`
 
 	// The users that are able to approve the request.
 	// Read Only: true
-	PotentialApprovers []string `json:"potential_approvers,omitempty"`
+	MultiAdminVerifyRequestInlinePotentialApprovers []*string `json:"potential_approvers,omitempty"`
+
+	// The command to execute.
+	Operation *string `json:"operation,omitempty"`
+
+	// owner
+	Owner *MultiAdminVerifyRequestInlineOwner `json:"owner,omitempty"`
+
+	// The number of approvers remaining that are required to approve.
+	// Read Only: true
+	PendingApprovers *int64 `json:"pending_approvers,omitempty"`
 
 	// Identifies the specific entry upon which the user wants to operate.
-	Query string `json:"query,omitempty"`
+	Query *string `json:"query,omitempty"`
 
 	// The number of required approvers, excluding the user that made the request.
 	// Read Only: true
-	RequiredApprovers int64 `json:"required_approvers,omitempty"`
+	RequiredApprovers *int64 `json:"required_approvers,omitempty"`
 
 	// The state of the request. PATCH supports approved and vetoed. The state only changes after setting to approved once no more approvers are required.
 	// Enum: [pending approved vetoed expired executed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// The user that created the request. Automatically set by ONTAP.
 	// Read Only: true
-	UserRequested string `json:"user_requested,omitempty"`
+	UserRequested *string `json:"user_requested,omitempty"`
 
 	// The user that vetoed the request.
 	// Read Only: true
-	UserVetoed string `json:"user_vetoed,omitempty"`
+	UserVetoed *string `json:"user_vetoed,omitempty"`
 }
 
 // Validate validates this multi admin verify request
@@ -266,7 +266,7 @@ func (m *MultiAdminVerifyRequest) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -285,10 +285,6 @@ func (m *MultiAdminVerifyRequest) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateApprovedUsers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -301,15 +297,19 @@ func (m *MultiAdminVerifyRequest) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMultiAdminVerifyRequestInlineApprovedUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMultiAdminVerifyRequestInlinePotentialApprovers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOwner(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidatePendingApprovers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePotentialApprovers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -349,15 +349,6 @@ func (m *MultiAdminVerifyRequest) contextValidateApproveTime(ctx context.Context
 	return nil
 }
 
-func (m *MultiAdminVerifyRequest) contextValidateApprovedUsers(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "approved_users", "body", []string(m.ApprovedUsers)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *MultiAdminVerifyRequest) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
@@ -378,7 +369,25 @@ func (m *MultiAdminVerifyRequest) contextValidateExecutionExpiryTime(ctx context
 
 func (m *MultiAdminVerifyRequest) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MultiAdminVerifyRequest) contextValidateMultiAdminVerifyRequestInlineApprovedUsers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "approved_users", "body", []*string(m.MultiAdminVerifyRequestInlineApprovedUsers)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MultiAdminVerifyRequest) contextValidateMultiAdminVerifyRequestInlinePotentialApprovers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "potential_approvers", "body", []*string(m.MultiAdminVerifyRequestInlinePotentialApprovers)); err != nil {
 		return err
 	}
 
@@ -401,16 +410,7 @@ func (m *MultiAdminVerifyRequest) contextValidateOwner(ctx context.Context, form
 
 func (m *MultiAdminVerifyRequest) contextValidatePendingApprovers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pending_approvers", "body", int64(m.PendingApprovers)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MultiAdminVerifyRequest) contextValidatePotentialApprovers(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "potential_approvers", "body", []string(m.PotentialApprovers)); err != nil {
+	if err := validate.ReadOnly(ctx, "pending_approvers", "body", m.PendingApprovers); err != nil {
 		return err
 	}
 
@@ -419,7 +419,7 @@ func (m *MultiAdminVerifyRequest) contextValidatePotentialApprovers(ctx context.
 
 func (m *MultiAdminVerifyRequest) contextValidateRequiredApprovers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "required_approvers", "body", int64(m.RequiredApprovers)); err != nil {
+	if err := validate.ReadOnly(ctx, "required_approvers", "body", m.RequiredApprovers); err != nil {
 		return err
 	}
 
@@ -428,7 +428,7 @@ func (m *MultiAdminVerifyRequest) contextValidateRequiredApprovers(ctx context.C
 
 func (m *MultiAdminVerifyRequest) contextValidateUserRequested(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user_requested", "body", string(m.UserRequested)); err != nil {
+	if err := validate.ReadOnly(ctx, "user_requested", "body", m.UserRequested); err != nil {
 		return err
 	}
 
@@ -437,7 +437,7 @@ func (m *MultiAdminVerifyRequest) contextValidateUserRequested(ctx context.Conte
 
 func (m *MultiAdminVerifyRequest) contextValidateUserVetoed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user_vetoed", "body", string(m.UserVetoed)); err != nil {
+	if err := validate.ReadOnly(ctx, "user_vetoed", "body", m.UserVetoed); err != nil {
 		return err
 	}
 
@@ -462,27 +462,27 @@ func (m *MultiAdminVerifyRequest) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyRequestOwner The owner of the request. This can identify the cluster or an SVM.
+// MultiAdminVerifyRequestInlineOwner The owner of the request. This can identify the cluster or an SVM.
 //
-// swagger:model MultiAdminVerifyRequestOwner
-type MultiAdminVerifyRequestOwner struct {
+// swagger:model multi_admin_verify_request_inline_owner
+type MultiAdminVerifyRequestInlineOwner struct {
 
 	// links
-	Links *MultiAdminVerifyRequestOwnerLinks `json:"_links,omitempty"`
+	Links *MultiAdminVerifyRequestInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this multi admin verify request owner
-func (m *MultiAdminVerifyRequestOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify request inline owner
+func (m *MultiAdminVerifyRequestInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -495,7 +495,7 @@ func (m *MultiAdminVerifyRequestOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MultiAdminVerifyRequestOwner) validateLinks(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRequestInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -512,8 +512,8 @@ func (m *MultiAdminVerifyRequestOwner) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this multi admin verify request owner based on the context it is used
-func (m *MultiAdminVerifyRequestOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify request inline owner based on the context it is used
+func (m *MultiAdminVerifyRequestInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -526,7 +526,7 @@ func (m *MultiAdminVerifyRequestOwner) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *MultiAdminVerifyRequestOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRequestInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -541,7 +541,7 @@ func (m *MultiAdminVerifyRequestOwner) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRequestOwner) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRequestInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -549,8 +549,8 @@ func (m *MultiAdminVerifyRequestOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRequestOwner) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRequestOwner
+func (m *MultiAdminVerifyRequestInlineOwner) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRequestInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -558,17 +558,17 @@ func (m *MultiAdminVerifyRequestOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyRequestOwnerLinks multi admin verify request owner links
+// MultiAdminVerifyRequestInlineOwnerInlineLinks multi admin verify request inline owner inline links
 //
-// swagger:model MultiAdminVerifyRequestOwnerLinks
-type MultiAdminVerifyRequestOwnerLinks struct {
+// swagger:model multi_admin_verify_request_inline_owner_inline__links
+type MultiAdminVerifyRequestInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this multi admin verify request owner links
-func (m *MultiAdminVerifyRequestOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify request inline owner inline links
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -581,7 +581,7 @@ func (m *MultiAdminVerifyRequestOwnerLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *MultiAdminVerifyRequestOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -598,8 +598,8 @@ func (m *MultiAdminVerifyRequestOwnerLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this multi admin verify request owner links based on the context it is used
-func (m *MultiAdminVerifyRequestOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify request inline owner inline links based on the context it is used
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -612,7 +612,7 @@ func (m *MultiAdminVerifyRequestOwnerLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *MultiAdminVerifyRequestOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -627,7 +627,7 @@ func (m *MultiAdminVerifyRequestOwnerLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRequestOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -635,8 +635,8 @@ func (m *MultiAdminVerifyRequestOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRequestOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRequestOwnerLinks
+func (m *MultiAdminVerifyRequestInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRequestInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

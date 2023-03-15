@@ -52,6 +52,11 @@ CifsSymlinkMappingCreateCreated describes a response with status code 201, with 
 Created
 */
 type CifsSymlinkMappingCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.CifsSymlinkMappingResponse
 }
 
@@ -93,6 +98,13 @@ func (o *CifsSymlinkMappingCreateCreated) GetPayload() *models.CifsSymlinkMappin
 }
 
 func (o *CifsSymlinkMappingCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.CifsSymlinkMappingResponse)
 

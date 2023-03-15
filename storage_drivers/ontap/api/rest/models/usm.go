@@ -21,12 +21,12 @@ import (
 type Usm struct {
 
 	// links
-	Links *UsmLinks `json:"_links,omitempty"`
+	Links *UsmInlineLinks `json:"_links,omitempty"`
 
 	// Authentication protocol password.
 	// Example: humTdumt*@t0nAwa11
 	// Min Length: 8
-	AuthenticationPassword string `json:"authentication_password,omitempty"`
+	AuthenticationPassword *string `json:"authentication_password,omitempty"`
 
 	// Authentication protocol.
 	// Example: sha2_256
@@ -36,7 +36,7 @@ type Usm struct {
 	// Privacy protocol password.
 	// Example: p@**GOandCLCt*200
 	// Min Length: 8
-	PrivacyPassword string `json:"privacy_password,omitempty"`
+	PrivacyPassword *string `json:"privacy_password,omitempty"`
 
 	// Privacy protocol.
 	// Example: aes128
@@ -96,7 +96,7 @@ func (m *Usm) validateAuthenticationPassword(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("authentication_password", "body", m.AuthenticationPassword, 8); err != nil {
+	if err := validate.MinLength("authentication_password", "body", *m.AuthenticationPassword, 8); err != nil {
 		return err
 	}
 
@@ -184,7 +184,7 @@ func (m *Usm) validatePrivacyPassword(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("privacy_password", "body", m.PrivacyPassword, 8); err != nil {
+	if err := validate.MinLength("privacy_password", "body", *m.PrivacyPassword, 8); err != nil {
 		return err
 	}
 
@@ -303,17 +303,17 @@ func (m *Usm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UsmLinks usm links
+// UsmInlineLinks usm inline links
 //
-// swagger:model UsmLinks
-type UsmLinks struct {
+// swagger:model usm_inline__links
+type UsmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this usm links
-func (m *UsmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this usm inline links
+func (m *UsmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -326,7 +326,7 @@ func (m *UsmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UsmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UsmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -343,8 +343,8 @@ func (m *UsmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this usm links based on the context it is used
-func (m *UsmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this usm inline links based on the context it is used
+func (m *UsmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -357,7 +357,7 @@ func (m *UsmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *UsmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UsmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -372,7 +372,7 @@ func (m *UsmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regis
 }
 
 // MarshalBinary interface implementation
-func (m *UsmLinks) MarshalBinary() ([]byte, error) {
+func (m *UsmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -380,8 +380,8 @@ func (m *UsmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UsmLinks) UnmarshalBinary(b []byte) error {
-	var res UsmLinks
+func (m *UsmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UsmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

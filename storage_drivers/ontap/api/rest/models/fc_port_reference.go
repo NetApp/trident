@@ -19,20 +19,20 @@ import (
 type FcPortReference struct {
 
 	// links
-	Links *FcPortReferenceLinks `json:"_links,omitempty"`
+	Links *FcPortReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the FC port.
 	//
 	// Example: 0a
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *FcPortReferenceNode `json:"node,omitempty"`
+	Node *FcPortReferenceInlineNode `json:"node,omitempty"`
 
 	// The unique identifier of the FC port.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this fc port reference
@@ -151,17 +151,17 @@ func (m *FcPortReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortReferenceLinks fc port reference links
+// FcPortReferenceInlineLinks fc port reference inline links
 //
-// swagger:model FcPortReferenceLinks
-type FcPortReferenceLinks struct {
+// swagger:model fc_port_reference_inline__links
+type FcPortReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc port reference links
-func (m *FcPortReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port reference inline links
+func (m *FcPortReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -174,7 +174,7 @@ func (m *FcPortReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcPortReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -191,8 +191,8 @@ func (m *FcPortReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port reference links based on the context it is used
-func (m *FcPortReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port reference inline links based on the context it is used
+func (m *FcPortReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -205,7 +205,7 @@ func (m *FcPortReferenceLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcPortReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -220,7 +220,7 @@ func (m *FcPortReferenceLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *FcPortReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -228,8 +228,8 @@ func (m *FcPortReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res FcPortReferenceLinks
+func (m *FcPortReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcPortReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -237,29 +237,29 @@ func (m *FcPortReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortReferenceNode The node on which the FC port is located.
+// FcPortReferenceInlineNode The node on which the FC port is located.
 //
-// swagger:model FcPortReferenceNode
-type FcPortReferenceNode struct {
+// swagger:model fc_port_reference_inline_node
+type FcPortReferenceInlineNode struct {
 
 	// The name of the node on which the FC port is located.
 	//
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this fc port reference node
-func (m *FcPortReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port reference inline node
+func (m *FcPortReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fc port reference node based on context it is used
-func (m *FcPortReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fc port reference inline node based on context it is used
+func (m *FcPortReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *FcPortReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -267,8 +267,8 @@ func (m *FcPortReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortReferenceNode) UnmarshalBinary(b []byte) error {
-	var res FcPortReferenceNode
+func (m *FcPortReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res FcPortReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

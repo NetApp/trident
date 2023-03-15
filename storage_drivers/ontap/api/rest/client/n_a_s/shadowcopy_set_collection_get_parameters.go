@@ -66,25 +66,25 @@ type ShadowcopySetCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* KeepSnapshots.
 
 	   Filter by keep_snapshots
 	*/
-	KeepSnapshotsQueryParameter *bool
+	KeepSnapshots *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type ShadowcopySetCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,25 +100,25 @@ type ShadowcopySetCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,14 +138,14 @@ func (o *ShadowcopySetCollectionGetParams) WithDefaults() *ShadowcopySetCollecti
 // All values with no default are reset to their zero value.
 func (o *ShadowcopySetCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ShadowcopySetCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -187,103 +187,103 @@ func (o *ShadowcopySetCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithFieldsQueryParameter(fields []string) *ShadowcopySetCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithFields(fields []string) *ShadowcopySetCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithKeepSnapshotsQueryParameter adds the keepSnapshots to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithKeepSnapshotsQueryParameter(keepSnapshots *bool) *ShadowcopySetCollectionGetParams {
-	o.SetKeepSnapshotsQueryParameter(keepSnapshots)
+// WithKeepSnapshots adds the keepSnapshots to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithKeepSnapshots(keepSnapshots *bool) *ShadowcopySetCollectionGetParams {
+	o.SetKeepSnapshots(keepSnapshots)
 	return o
 }
 
-// SetKeepSnapshotsQueryParameter adds the keepSnapshots to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetKeepSnapshotsQueryParameter(keepSnapshots *bool) {
-	o.KeepSnapshotsQueryParameter = keepSnapshots
+// SetKeepSnapshots adds the keepSnapshots to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetKeepSnapshots(keepSnapshots *bool) {
+	o.KeepSnapshots = keepSnapshots
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ShadowcopySetCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithMaxRecords(maxRecords *int64) *ShadowcopySetCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ShadowcopySetCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithOrderBy(orderBy []string) *ShadowcopySetCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ShadowcopySetCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithReturnRecords(returnRecords *bool) *ShadowcopySetCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ShadowcopySetCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ShadowcopySetCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ShadowcopySetCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithSvmName(svmName *string) *ShadowcopySetCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ShadowcopySetCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithSvmUUID(svmUUID *string) *ShadowcopySetCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ShadowcopySetCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) WithUUID(uuid *string) *ShadowcopySetCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the shadowcopy set collection get params
-func (o *ShadowcopySetCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the shadowcopy set collection get params
+func (o *ShadowcopySetCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -294,7 +294,7 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -305,13 +305,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.KeepSnapshotsQueryParameter != nil {
+	if o.KeepSnapshots != nil {
 
 		// query param keep_snapshots
 		var qrKeepSnapshots bool
 
-		if o.KeepSnapshotsQueryParameter != nil {
-			qrKeepSnapshots = *o.KeepSnapshotsQueryParameter
+		if o.KeepSnapshots != nil {
+			qrKeepSnapshots = *o.KeepSnapshots
 		}
 		qKeepSnapshots := swag.FormatBool(qrKeepSnapshots)
 		if qKeepSnapshots != "" {
@@ -322,13 +322,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -401,13 +401,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -418,13 +418,13 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -443,7 +443,7 @@ func (o *ShadowcopySetCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamShadowcopySetCollectionGet binds the parameter fields
 func (o *ShadowcopySetCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -460,7 +460,7 @@ func (o *ShadowcopySetCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamShadowcopySetCollectionGet binds the parameter order_by
 func (o *ShadowcopySetCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

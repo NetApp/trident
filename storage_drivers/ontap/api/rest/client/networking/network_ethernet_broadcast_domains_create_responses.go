@@ -52,6 +52,10 @@ NetworkEthernetBroadcastDomainsCreateCreated describes a response with status co
 Created
 */
 type NetworkEthernetBroadcastDomainsCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this network ethernet broadcast domains create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *NetworkEthernetBroadcastDomainsCreateCreated) String() string {
 }
 
 func (o *NetworkEthernetBroadcastDomainsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

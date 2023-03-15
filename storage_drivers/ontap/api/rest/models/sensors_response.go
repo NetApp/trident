@@ -23,10 +23,11 @@ type SensorsResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Sensors `json:"records,omitempty"`
+	// sensors response inline records
+	SensorsResponseInlineRecords []*Sensors `json:"records,omitempty"`
 }
 
 // Validate validates this sensors response
@@ -37,7 +38,7 @@ func (m *SensorsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSensorsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SensorsResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SensorsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SensorsResponse) validateSensorsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SensorsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SensorsResponseInlineRecords); i++ {
+		if swag.IsZero(m.SensorsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SensorsResponseInlineRecords[i] != nil {
+			if err := m.SensorsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SensorsResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSensorsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SensorsResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *SensorsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SensorsResponse) contextValidateSensorsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SensorsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SensorsResponseInlineRecords[i] != nil {
+			if err := m.SensorsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

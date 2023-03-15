@@ -21,11 +21,11 @@ type ErrorArguments struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this error arguments
@@ -53,7 +53,7 @@ func (m *ErrorArguments) ContextValidate(ctx context.Context, formats strfmt.Reg
 
 func (m *ErrorArguments) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (m *ErrorArguments) contextValidateCode(ctx context.Context, formats strfmt
 
 func (m *ErrorArguments) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 

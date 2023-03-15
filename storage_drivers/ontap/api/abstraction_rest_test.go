@@ -14,6 +14,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/utils"
 )
 
 var ctx = context.Background()
@@ -46,7 +47,7 @@ func TestEnsureIGroupAdded(t *testing.T) {
 	assert.NoError(t, err)
 
 	// positive test case
-	igroup := &models.Igroup{Initiators: []*models.IgroupInitiatorsItems0{{Name: initiator}}}
+	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: utils.Ptr(initiator)}}}
 	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(igroup, nil)
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.NoError(t, err)
@@ -62,14 +63,14 @@ func TestEnsureLunMapped(t *testing.T) {
 
 	initiatorGroup := "initiatorGroup"
 	lunPath := "/dev/sda"
-	number := int64(100)
+	number := utils.Ptr(int64(100))
 	lunPayload := &models.LunMapResponse{
-		NumRecords: 1,
-		Records: []*models.LunMap{
+		NumRecords: utils.Ptr(int64(1)),
+		LunMapResponseInlineRecords: []*models.LunMap{
 			{
 				LogicalUnitNumber: nil,
-				Igroup: &models.LunMapIgroup{
-					Name: initiatorGroup,
+				Igroup: &models.LunMapInlineIgroup{
+					Name: utils.Ptr(initiatorGroup),
 				},
 			},
 		},
@@ -91,12 +92,12 @@ func TestEnsureLunMapped(t *testing.T) {
 	assert.Equal(t, -1, resultLun)
 
 	// positive test case where lun == nil, lunGetByName gets called to find the LUN details
-	lun := &models.Lun{LunMaps: []*models.LunLunMapsItems0{{LogicalUnitNumber: number}}}
+	lun := &models.Lun{LunInlineLunMaps: []*models.LunInlineLunMapsInlineArrayItem{{LogicalUnitNumber: number}}}
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(lun, nil)
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
 	assert.Nil(t, err)
-	assert.Equal(t, int(number), resultLun)
+	assert.Equal(t, int(*number), resultLun)
 
 	// record.LogicalUnitNumber == nil and lunGetByName returns error
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, errors.New("error getting lun by name"))
@@ -118,17 +119,17 @@ func TestEnsureLunMapped(t *testing.T) {
 	assert.Equal(t, -1, resultLun)
 
 	// positive test case where record.LogicalUnitNumber != nil
-	lunMapCollection.Payload.Records[0].LogicalUnitNumber = &number
+	lunMapCollection.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber = number
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
 	assert.Nil(t, err)
-	assert.Equal(t, int(number), resultLun)
+	assert.Equal(t, int(*number), resultLun)
 
 	// If lun not already mapped OR incorrectly mapped
-	lunMapCollection.Payload.Records[0].Igroup.Name = "tmp"
+	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = utils.Ptr("tmp")
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, false)
 	assert.Nil(t, err)
-	assert.Equal(t, int(number), resultLun)
+	assert.Equal(t, int(*number), resultLun)
 }

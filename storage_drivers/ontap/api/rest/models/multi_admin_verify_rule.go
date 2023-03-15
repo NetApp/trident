@@ -21,10 +21,7 @@ import (
 type MultiAdminVerifyRule struct {
 
 	// Time for requests to be approved, in ISO-8601 duration format. If not set, the global setting is used.
-	ApprovalExpiry string `json:"approval_expiry,omitempty"`
-
-	// List of approval groups that are allowed to approve requests for rules that don't have approval groups.
-	ApprovalGroups []*MultiAdminVerifyRuleApprovalGroupsItems0 `json:"approval_groups,omitempty"`
+	ApprovalExpiry *string `json:"approval_expiry,omitempty"`
 
 	// When true, ONTAP automatically creates a request for any failed operation where there is no matching pending request.
 	AutoRequestCreate *bool `json:"auto_request_create,omitempty"`
@@ -35,16 +32,19 @@ type MultiAdminVerifyRule struct {
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
 	// Time for requests to be executed once approved, in ISO-8601 duration format. If not set, the global setting is used.
-	ExecutionExpiry string `json:"execution_expiry,omitempty"`
+	ExecutionExpiry *string `json:"execution_expiry,omitempty"`
+
+	// List of approval groups that are allowed to approve requests for rules that don't have approval groups.
+	MultiAdminVerifyRuleInlineApprovalGroups []*MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem `json:"approval_groups,omitempty"`
 
 	// Command that requires one or more approvals.
-	Operation string `json:"operation,omitempty"`
+	Operation *string `json:"operation,omitempty"`
 
 	// owner
-	Owner *MultiAdminVerifyRuleOwner `json:"owner,omitempty"`
+	Owner *MultiAdminVerifyRuleInlineOwner `json:"owner,omitempty"`
 
 	// When specified, this property limits the entries that require approvals to those that match the specified query.
-	Query string `json:"query,omitempty"`
+	Query *string `json:"query,omitempty"`
 
 	// The number of required approvers, excluding the user that made the request.
 	RequiredApprovers *int64 `json:"required_approvers,omitempty"`
@@ -58,11 +58,11 @@ type MultiAdminVerifyRule struct {
 func (m *MultiAdminVerifyRule) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateApprovalGroups(formats); err != nil {
+	if err := m.validateCreateTime(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateCreateTime(formats); err != nil {
+	if err := m.validateMultiAdminVerifyRuleInlineApprovalGroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,30 +76,6 @@ func (m *MultiAdminVerifyRule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MultiAdminVerifyRule) validateApprovalGroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.ApprovalGroups) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ApprovalGroups); i++ {
-		if swag.IsZero(m.ApprovalGroups[i]) { // not required
-			continue
-		}
-
-		if m.ApprovalGroups[i] != nil {
-			if err := m.ApprovalGroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("approval_groups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *MultiAdminVerifyRule) validateCreateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.CreateTime) { // not required
 		return nil
@@ -107,6 +83,30 @@ func (m *MultiAdminVerifyRule) validateCreateTime(formats strfmt.Registry) error
 
 	if err := validate.FormatOf("create_time", "body", "date-time", m.CreateTime.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *MultiAdminVerifyRule) validateMultiAdminVerifyRuleInlineApprovalGroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.MultiAdminVerifyRuleInlineApprovalGroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MultiAdminVerifyRuleInlineApprovalGroups); i++ {
+		if swag.IsZero(m.MultiAdminVerifyRuleInlineApprovalGroups[i]) { // not required
+			continue
+		}
+
+		if m.MultiAdminVerifyRuleInlineApprovalGroups[i] != nil {
+			if err := m.MultiAdminVerifyRuleInlineApprovalGroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("approval_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -133,11 +133,11 @@ func (m *MultiAdminVerifyRule) validateOwner(formats strfmt.Registry) error {
 func (m *MultiAdminVerifyRule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateApprovalGroups(ctx, formats); err != nil {
+	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
+	if err := m.contextValidateMultiAdminVerifyRuleInlineApprovalGroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -155,12 +155,21 @@ func (m *MultiAdminVerifyRule) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *MultiAdminVerifyRule) contextValidateApprovalGroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRule) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ApprovalGroups); i++ {
+	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
+		return err
+	}
 
-		if m.ApprovalGroups[i] != nil {
-			if err := m.ApprovalGroups[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *MultiAdminVerifyRule) contextValidateMultiAdminVerifyRuleInlineApprovalGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.MultiAdminVerifyRuleInlineApprovalGroups); i++ {
+
+		if m.MultiAdminVerifyRuleInlineApprovalGroups[i] != nil {
+			if err := m.MultiAdminVerifyRuleInlineApprovalGroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("approval_groups" + "." + strconv.Itoa(i))
 				}
@@ -168,15 +177,6 @@ func (m *MultiAdminVerifyRule) contextValidateApprovalGroups(ctx context.Context
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *MultiAdminVerifyRule) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
-		return err
 	}
 
 	return nil
@@ -223,27 +223,27 @@ func (m *MultiAdminVerifyRule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyRuleApprovalGroupsItems0 multi admin verify rule approval groups items0
+// MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem multi admin verify rule inline approval groups inline array item
 //
-// swagger:model MultiAdminVerifyRuleApprovalGroupsItems0
-type MultiAdminVerifyRuleApprovalGroupsItems0 struct {
+// swagger:model multi_admin_verify_rule_inline_approval_groups_inline_array_item
+type MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem struct {
 
 	// Name of the approval group.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this multi admin verify rule approval groups items0
-func (m *MultiAdminVerifyRuleApprovalGroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify rule inline approval groups inline array item
+func (m *MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this multi admin verify rule approval groups items0 based on context it is used
-func (m *MultiAdminVerifyRuleApprovalGroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this multi admin verify rule inline approval groups inline array item based on context it is used
+func (m *MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleApprovalGroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -251,8 +251,8 @@ func (m *MultiAdminVerifyRuleApprovalGroupsItems0) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleApprovalGroupsItems0) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRuleApprovalGroupsItems0
+func (m *MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRuleInlineApprovalGroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -260,27 +260,27 @@ func (m *MultiAdminVerifyRuleApprovalGroupsItems0) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// MultiAdminVerifyRuleOwner The owner of the rule. The only valid owner is currently the cluster.
+// MultiAdminVerifyRuleInlineOwner The owner of the rule. The only valid owner is currently the cluster.
 //
-// swagger:model MultiAdminVerifyRuleOwner
-type MultiAdminVerifyRuleOwner struct {
+// swagger:model multi_admin_verify_rule_inline_owner
+type MultiAdminVerifyRuleInlineOwner struct {
 
 	// links
-	Links *MultiAdminVerifyRuleOwnerLinks `json:"_links,omitempty"`
+	Links *MultiAdminVerifyRuleInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this multi admin verify rule owner
-func (m *MultiAdminVerifyRuleOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify rule inline owner
+func (m *MultiAdminVerifyRuleInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -293,7 +293,7 @@ func (m *MultiAdminVerifyRuleOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleOwner) validateLinks(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -310,8 +310,8 @@ func (m *MultiAdminVerifyRuleOwner) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this multi admin verify rule owner based on the context it is used
-func (m *MultiAdminVerifyRuleOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify rule inline owner based on the context it is used
+func (m *MultiAdminVerifyRuleInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -324,7 +324,7 @@ func (m *MultiAdminVerifyRuleOwner) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -339,7 +339,7 @@ func (m *MultiAdminVerifyRuleOwner) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleOwner) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRuleInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -347,8 +347,8 @@ func (m *MultiAdminVerifyRuleOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleOwner) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRuleOwner
+func (m *MultiAdminVerifyRuleInlineOwner) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRuleInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -356,17 +356,17 @@ func (m *MultiAdminVerifyRuleOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyRuleOwnerLinks multi admin verify rule owner links
+// MultiAdminVerifyRuleInlineOwnerInlineLinks multi admin verify rule inline owner inline links
 //
-// swagger:model MultiAdminVerifyRuleOwnerLinks
-type MultiAdminVerifyRuleOwnerLinks struct {
+// swagger:model multi_admin_verify_rule_inline_owner_inline__links
+type MultiAdminVerifyRuleInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this multi admin verify rule owner links
-func (m *MultiAdminVerifyRuleOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify rule inline owner inline links
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -379,7 +379,7 @@ func (m *MultiAdminVerifyRuleOwnerLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -396,8 +396,8 @@ func (m *MultiAdminVerifyRuleOwnerLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this multi admin verify rule owner links based on the context it is used
-func (m *MultiAdminVerifyRuleOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify rule inline owner inline links based on the context it is used
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -410,7 +410,7 @@ func (m *MultiAdminVerifyRuleOwnerLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -425,7 +425,7 @@ func (m *MultiAdminVerifyRuleOwnerLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -433,8 +433,8 @@ func (m *MultiAdminVerifyRuleOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRuleOwnerLinks
+func (m *MultiAdminVerifyRuleInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRuleInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

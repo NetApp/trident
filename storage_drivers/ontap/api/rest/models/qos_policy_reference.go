@@ -19,31 +19,31 @@ import (
 type QosPolicyReference struct {
 
 	// links
-	Links *QosPolicyReferenceLinks `json:"_links,omitempty"`
+	Links *QosPolicyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this qos policy reference
@@ -123,17 +123,17 @@ func (m *QosPolicyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyReferenceLinks qos policy reference links
+// QosPolicyReferenceInlineLinks qos policy reference inline links
 //
-// swagger:model QosPolicyReferenceLinks
-type QosPolicyReferenceLinks struct {
+// swagger:model qos_policy_reference_inline__links
+type QosPolicyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos policy reference links
-func (m *QosPolicyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy reference inline links
+func (m *QosPolicyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -146,7 +146,7 @@ func (m *QosPolicyReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosPolicyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -163,8 +163,8 @@ func (m *QosPolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos policy reference links based on the context it is used
-func (m *QosPolicyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy reference inline links based on the context it is used
+func (m *QosPolicyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *QosPolicyReferenceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *QosPolicyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -192,7 +192,7 @@ func (m *QosPolicyReferenceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -200,8 +200,8 @@ func (m *QosPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res QosPolicyReferenceLinks
+func (m *QosPolicyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosPolicyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

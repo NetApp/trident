@@ -23,7 +23,7 @@ type ShareLock struct {
 	// Types of share lock modes.
 	// Read Only: true
 	// Enum: [delete_on_close read_deny_read read_deny_write read_deny_all read_deny_delete read_deny_none read_deny_read_write read_deny_read_delete read_deny_write_delete write_deny_read write_deny_write write_deny_all write_deny_delete write_deny_none write_deny_read_write write_deny_read_delete write_deny_write_delete delete_deny_read delete_deny_write delete_deny_all delete_deny_delete delete_deny_none delete_deny_read_write delete_deny_read_delete delete_deny_write_delete read_write_deny_read read_write_deny_write read_write_deny_all read_write_deny_delete read_write_deny_none read_write_deny_read_write read_write_deny_read_delete read_write_deny_write_delete read_delete_deny_read read_delete_deny_write read_delete_deny_all read_delete_deny_delete read_delete_deny_none read_delete_deny_read_write read_delete_deny_read_delete read_delete_deny_write_delete write_delete_deny_read write_delete_deny_write write_delete_deny_all write_delete_deny_delete write_delete_deny_none write_delete_deny_read_write write_delete_deny_read_delete write_delete_deny_write_delete all_deny_read all_deny_write all_deny_all all_deny_delete all_deny_none all_deny_read_write all_deny_read_delete all_deny_write_delete none_deny_read none_deny_write none_deny_all none_deny_delete none_deny_none none_deny_read_write none_deny_read_delete none_deny_write_delete]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Indicates whether it is a soft share lock.
 	// Read Only: true
@@ -723,7 +723,7 @@ func (m *ShareLock) validateMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
@@ -750,7 +750,7 @@ func (m *ShareLock) ContextValidate(ctx context.Context, formats strfmt.Registry
 
 func (m *ShareLock) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mode", "body", string(m.Mode)); err != nil {
+	if err := validate.ReadOnly(ctx, "mode", "body", m.Mode); err != nil {
 		return err
 	}
 

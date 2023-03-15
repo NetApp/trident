@@ -19,17 +19,17 @@ import (
 type SvmReference struct {
 
 	// links
-	Links *SvmReferenceLinks `json:"_links,omitempty"`
+	Links *SvmReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this svm reference
@@ -109,17 +109,17 @@ func (m *SvmReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmReferenceLinks svm reference links
+// SvmReferenceInlineLinks svm reference inline links
 //
-// swagger:model SvmReferenceLinks
-type SvmReferenceLinks struct {
+// swagger:model svm_reference_inline__links
+type SvmReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm reference links
-func (m *SvmReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm reference inline links
+func (m *SvmReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -132,7 +132,7 @@ func (m *SvmReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -149,8 +149,8 @@ func (m *SvmReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm reference links based on the context it is used
-func (m *SvmReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm reference inline links based on the context it is used
+func (m *SvmReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -163,7 +163,7 @@ func (m *SvmReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *SvmReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -178,7 +178,7 @@ func (m *SvmReferenceLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *SvmReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -186,8 +186,8 @@ func (m *SvmReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SvmReferenceLinks
+func (m *SvmReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -20,6 +21,9 @@ import (
 // swagger:model cifs_service_security
 type CifsServiceSecurity struct {
 
+	// advertised kdc encryptions
+	AdvertisedKdcEncryptions []*string `json:"advertised_kdc_encryptions,omitempty"`
+
 	// Specifies whether or not an AES session key is enabled for the Netlogon channel.
 	//
 	AesNetlogonEnabled *bool `json:"aes_netlogon_enabled,omitempty"`
@@ -27,6 +31,7 @@ type CifsServiceSecurity struct {
 	// Specifies whether encryption is required for domain controller connections.
 	EncryptDcConnection *bool `json:"encrypt_dc_connection,omitempty"`
 
+	// Important: This attribute has been deprecated. Use "security.advertised_kdc_encryptions" to specify the encryption type to use.
 	// Specifies whether AES-128 and AES-256 encryption is enabled for all Kerberos-based communication with the Active Directory KDC.
 	// To take advantage of the strongest security with Kerberos-based communication, AES-256 and AES-128 encryption can be enabled on the CIFS server.
 	// Kerberos-related communication for CIFS is used during CIFS server creation on the SVM, as well
@@ -103,6 +108,10 @@ type CifsServiceSecurity struct {
 func (m *CifsServiceSecurity) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAdvertisedKdcEncryptions(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLmCompatibilityLevel(formats); err != nil {
 		res = append(res, err)
 	}
@@ -118,6 +127,45 @@ func (m *CifsServiceSecurity) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var cifsServiceSecurityAdvertisedKdcEncryptionsItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["des","rc4","aes_128","aes_256"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceSecurityAdvertisedKdcEncryptionsItemsEnum = append(cifsServiceSecurityAdvertisedKdcEncryptionsItemsEnum, v)
+	}
+}
+
+func (m *CifsServiceSecurity) validateAdvertisedKdcEncryptionsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceSecurityAdvertisedKdcEncryptionsItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsServiceSecurity) validateAdvertisedKdcEncryptions(formats strfmt.Registry) error {
+	if swag.IsZero(m.AdvertisedKdcEncryptions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AdvertisedKdcEncryptions); i++ {
+		if swag.IsZero(m.AdvertisedKdcEncryptions[i]) { // not required
+			continue
+		}
+
+		// value enum
+		if err := m.validateAdvertisedKdcEncryptionsItemsEnum("advertised_kdc_encryptions"+"."+strconv.Itoa(i), "body", *m.AdvertisedKdcEncryptions[i]); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 

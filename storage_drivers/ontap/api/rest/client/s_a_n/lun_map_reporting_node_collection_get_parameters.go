@@ -66,39 +66,39 @@ type LunMapReportingNodeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupUUID.
 
 	   The unique identifier of the igroup.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* LunUUID.
 
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -106,7 +106,7 @@ type LunMapReportingNodeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -114,13 +114,13 @@ type LunMapReportingNodeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -140,14 +140,14 @@ func (o *LunMapReportingNodeCollectionGetParams) WithDefaults() *LunMapReporting
 // All values with no default are reset to their zero value.
 func (o *LunMapReportingNodeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LunMapReportingNodeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -189,103 +189,103 @@ func (o *LunMapReportingNodeCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithFieldsQueryParameter(fields []string) *LunMapReportingNodeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithFields(fields []string) *LunMapReportingNodeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithIgroupUUIDPathParameter(igroupUUID string) *LunMapReportingNodeCollectionGetParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithIgroupUUID(igroupUUID string) *LunMapReportingNodeCollectionGetParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithLunUUIDPathParameter(lunUUID string) *LunMapReportingNodeCollectionGetParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithLunUUID(lunUUID string) *LunMapReportingNodeCollectionGetParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LunMapReportingNodeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithMaxRecords(maxRecords *int64) *LunMapReportingNodeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithNameQueryParameter(name *string) *LunMapReportingNodeCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithName(name *string) *LunMapReportingNodeCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LunMapReportingNodeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithOrderBy(orderBy []string) *LunMapReportingNodeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunMapReportingNodeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithReturnRecords(returnRecords *bool) *LunMapReportingNodeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LunMapReportingNodeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LunMapReportingNodeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDQueryParameter adds the uuid to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) WithUUIDQueryParameter(uuid *string) *LunMapReportingNodeCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) WithUUID(uuid *string) *LunMapReportingNodeCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the lun map reporting node collection get params
-func (o *LunMapReportingNodeCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the lun map reporting node collection get params
+func (o *LunMapReportingNodeCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -296,7 +296,7 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -308,22 +308,22 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -334,13 +334,13 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -351,7 +351,7 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -362,13 +362,13 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -379,13 +379,13 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -396,13 +396,13 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -421,7 +421,7 @@ func (o *LunMapReportingNodeCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamLunMapReportingNodeCollectionGet binds the parameter fields
 func (o *LunMapReportingNodeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -438,7 +438,7 @@ func (o *LunMapReportingNodeCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamLunMapReportingNodeCollectionGet binds the parameter order_by
 func (o *LunMapReportingNodeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

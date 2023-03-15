@@ -22,24 +22,24 @@ type SQLOnSmb struct {
 
 	// access
 	// Required: true
-	Access *SQLOnSmbAccess `json:"access"`
+	Access *SQLOnSmbInlineAccess `json:"access"`
 
 	// db
 	// Required: true
-	Db *SQLOnSmbDb `json:"db"`
+	Db *SQLOnSmbInlineDb `json:"db"`
 
 	// log
 	// Required: true
-	Log *SQLOnSmbLog `json:"log"`
+	Log *SQLOnSmbInlineLog `json:"log"`
 
 	// protection type
-	ProtectionType *SQLOnSmbProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *SQLOnSmbInlineProtectionType `json:"protection_type,omitempty"`
 
 	// The number of server cores for the DB.
 	ServerCoresCount *int64 `json:"server_cores_count,omitempty"`
 
 	// temp db
-	TempDb *SQLOnSmbTempDb `json:"temp_db,omitempty"`
+	TempDb *SQLOnSmbInlineTempDb `json:"temp_db,omitempty"`
 }
 
 // Validate validates this sql on smb
@@ -278,15 +278,15 @@ func (m *SQLOnSmb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbAccess SQL on smb access
+// SQLOnSmbInlineAccess sql on smb inline access
 //
-// swagger:model SQLOnSmbAccess
-type SQLOnSmbAccess struct {
+// swagger:model sql_on_smb_inline_access
+type SQLOnSmbInlineAccess struct {
 
 	// SQL installer admin user name.
 	// Max Length: 256
 	// Min Length: 1
-	Installer string `json:"installer,omitempty"`
+	Installer *string `json:"installer,omitempty"`
 
 	// SQL service account user name.
 	// Required: true
@@ -295,8 +295,8 @@ type SQLOnSmbAccess struct {
 	ServiceAccount *string `json:"service_account"`
 }
 
-// Validate validates this SQL on smb access
-func (m *SQLOnSmbAccess) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline access
+func (m *SQLOnSmbInlineAccess) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInstaller(formats); err != nil {
@@ -313,23 +313,23 @@ func (m *SQLOnSmbAccess) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbAccess) validateInstaller(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineAccess) validateInstaller(formats strfmt.Registry) error {
 	if swag.IsZero(m.Installer) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("access"+"."+"installer", "body", m.Installer, 1); err != nil {
+	if err := validate.MinLength("access"+"."+"installer", "body", *m.Installer, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("access"+"."+"installer", "body", m.Installer, 256); err != nil {
+	if err := validate.MaxLength("access"+"."+"installer", "body", *m.Installer, 256); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SQLOnSmbAccess) validateServiceAccount(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineAccess) validateServiceAccount(formats strfmt.Registry) error {
 
 	if err := validate.Required("access"+"."+"service_account", "body", m.ServiceAccount); err != nil {
 		return err
@@ -346,13 +346,13 @@ func (m *SQLOnSmbAccess) validateServiceAccount(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this SQL on smb access based on context it is used
-func (m *SQLOnSmbAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on smb inline access based on context it is used
+func (m *SQLOnSmbInlineAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbAccess) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineAccess) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -360,8 +360,8 @@ func (m *SQLOnSmbAccess) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbAccess) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbAccess
+func (m *SQLOnSmbInlineAccess) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineAccess
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -369,21 +369,21 @@ func (m *SQLOnSmbAccess) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbDb SQL on smb db
+// SQLOnSmbInlineDb sql on smb inline db
 //
-// swagger:model SQLOnSmbDb
-type SQLOnSmbDb struct {
+// swagger:model sql_on_smb_inline_db
+type SQLOnSmbInlineDb struct {
 
 	// The size of the DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *SQLOnSmbDbStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSmbInlineDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on smb db
-func (m *SQLOnSmbDb) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline db
+func (m *SQLOnSmbInlineDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -400,7 +400,7 @@ func (m *SQLOnSmbDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbDb) validateSize(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineDb) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("db"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -409,7 +409,7 @@ func (m *SQLOnSmbDb) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbDb) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -426,8 +426,8 @@ func (m *SQLOnSmbDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on smb db based on the context it is used
-func (m *SQLOnSmbDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on smb inline db based on the context it is used
+func (m *SQLOnSmbInlineDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -440,7 +440,7 @@ func (m *SQLOnSmbDb) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *SQLOnSmbDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -455,7 +455,7 @@ func (m *SQLOnSmbDb) contextValidateStorageService(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbDb) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -463,8 +463,8 @@ func (m *SQLOnSmbDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbDb) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbDb
+func (m *SQLOnSmbInlineDb) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -472,18 +472,18 @@ func (m *SQLOnSmbDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbDbStorageService SQL on smb db storage service
+// SQLOnSmbInlineDbInlineStorageService sql on smb inline db inline storage service
 //
-// swagger:model SQLOnSmbDbStorageService
-type SQLOnSmbDbStorageService struct {
+// swagger:model sql_on_smb_inline_db_inline_storage_service
+type SQLOnSmbInlineDbInlineStorageService struct {
 
 	// The storage service of the DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on smb db storage service
-func (m *SQLOnSmbDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline db inline storage service
+func (m *SQLOnSmbInlineDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -496,7 +496,7 @@ func (m *SQLOnSmbDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSmbDbStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSmbInlineDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -504,52 +504,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSmbDbStorageServiceTypeNamePropEnum = append(sqlOnSmbDbStorageServiceTypeNamePropEnum, v)
+		sqlOnSmbInlineDbInlineStorageServiceTypeNamePropEnum = append(sqlOnSmbInlineDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbDbStorageService
-	// SQLOnSmbDbStorageService
+	// sql_on_smb_inline_db_inline_storage_service
+	// SQLOnSmbInlineDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSmbDbStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSmbDbStorageServiceNameExtreme string = "extreme"
+	// SQLOnSmbInlineDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSmbInlineDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbDbStorageService
-	// SQLOnSmbDbStorageService
+	// sql_on_smb_inline_db_inline_storage_service
+	// SQLOnSmbInlineDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSmbDbStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSmbDbStorageServiceNamePerformance string = "performance"
+	// SQLOnSmbInlineDbInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSmbInlineDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbDbStorageService
-	// SQLOnSmbDbStorageService
+	// sql_on_smb_inline_db_inline_storage_service
+	// SQLOnSmbInlineDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSmbDbStorageServiceNameValue captures enum value "value"
-	SQLOnSmbDbStorageServiceNameValue string = "value"
+	// SQLOnSmbInlineDbInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSmbInlineDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSmbDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSmbDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSmbInlineDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSmbInlineDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSmbDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -562,13 +562,13 @@ func (m *SQLOnSmbDbStorageService) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this SQL on smb db storage service based on context it is used
-func (m *SQLOnSmbDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on smb inline db inline storage service based on context it is used
+func (m *SQLOnSmbInlineDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -576,8 +576,8 @@ func (m *SQLOnSmbDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbDbStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbDbStorageService
+func (m *SQLOnSmbInlineDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -585,21 +585,21 @@ func (m *SQLOnSmbDbStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbLog SQL on smb log
+// SQLOnSmbInlineLog sql on smb inline log
 //
-// swagger:model SQLOnSmbLog
-type SQLOnSmbLog struct {
+// swagger:model sql_on_smb_inline_log
+type SQLOnSmbInlineLog struct {
 
 	// The size of the log DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *SQLOnSmbLogStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSmbInlineLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on smb log
-func (m *SQLOnSmbLog) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline log
+func (m *SQLOnSmbInlineLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -616,7 +616,7 @@ func (m *SQLOnSmbLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbLog) validateSize(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineLog) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("log"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -625,7 +625,7 @@ func (m *SQLOnSmbLog) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbLog) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -642,8 +642,8 @@ func (m *SQLOnSmbLog) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on smb log based on the context it is used
-func (m *SQLOnSmbLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on smb inline log based on the context it is used
+func (m *SQLOnSmbInlineLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -656,7 +656,7 @@ func (m *SQLOnSmbLog) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SQLOnSmbLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -671,7 +671,7 @@ func (m *SQLOnSmbLog) contextValidateStorageService(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbLog) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -679,8 +679,8 @@ func (m *SQLOnSmbLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbLog) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbLog
+func (m *SQLOnSmbInlineLog) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -688,18 +688,18 @@ func (m *SQLOnSmbLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbLogStorageService SQL on smb log storage service
+// SQLOnSmbInlineLogInlineStorageService sql on smb inline log inline storage service
 //
-// swagger:model SQLOnSmbLogStorageService
-type SQLOnSmbLogStorageService struct {
+// swagger:model sql_on_smb_inline_log_inline_storage_service
+type SQLOnSmbInlineLogInlineStorageService struct {
 
 	// The storage service of the log DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on smb log storage service
-func (m *SQLOnSmbLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline log inline storage service
+func (m *SQLOnSmbInlineLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -712,7 +712,7 @@ func (m *SQLOnSmbLogStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSmbLogStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSmbInlineLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -720,52 +720,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSmbLogStorageServiceTypeNamePropEnum = append(sqlOnSmbLogStorageServiceTypeNamePropEnum, v)
+		sqlOnSmbInlineLogInlineStorageServiceTypeNamePropEnum = append(sqlOnSmbInlineLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbLogStorageService
-	// SQLOnSmbLogStorageService
+	// sql_on_smb_inline_log_inline_storage_service
+	// SQLOnSmbInlineLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSmbLogStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSmbLogStorageServiceNameExtreme string = "extreme"
+	// SQLOnSmbInlineLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSmbInlineLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbLogStorageService
-	// SQLOnSmbLogStorageService
+	// sql_on_smb_inline_log_inline_storage_service
+	// SQLOnSmbInlineLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSmbLogStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSmbLogStorageServiceNamePerformance string = "performance"
+	// SQLOnSmbInlineLogInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSmbInlineLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbLogStorageService
-	// SQLOnSmbLogStorageService
+	// sql_on_smb_inline_log_inline_storage_service
+	// SQLOnSmbInlineLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSmbLogStorageServiceNameValue captures enum value "value"
-	SQLOnSmbLogStorageServiceNameValue string = "value"
+	// SQLOnSmbInlineLogInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSmbInlineLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSmbLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSmbLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSmbInlineLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSmbInlineLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSmbLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -778,13 +778,13 @@ func (m *SQLOnSmbLogStorageService) validateName(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validates this SQL on smb log storage service based on context it is used
-func (m *SQLOnSmbLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on smb inline log inline storage service based on context it is used
+func (m *SQLOnSmbInlineLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -792,8 +792,8 @@ func (m *SQLOnSmbLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbLogStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbLogStorageService
+func (m *SQLOnSmbInlineLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -801,22 +801,22 @@ func (m *SQLOnSmbLogStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbProtectionType SQL on smb protection type
+// SQLOnSmbInlineProtectionType sql on smb inline protection type
 //
-// swagger:model SQLOnSmbProtectionType
-type SQLOnSmbProtectionType struct {
+// swagger:model sql_on_smb_inline_protection_type
+type SQLOnSmbInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this SQL on smb protection type
-func (m *SQLOnSmbProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline protection type
+func (m *SQLOnSmbInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -833,7 +833,7 @@ func (m *SQLOnSmbProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSmbProtectionTypeTypeLocalRpoPropEnum []interface{}
+var sqlOnSmbInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -841,55 +841,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSmbProtectionTypeTypeLocalRpoPropEnum = append(sqlOnSmbProtectionTypeTypeLocalRpoPropEnum, v)
+		sqlOnSmbInlineProtectionTypeTypeLocalRpoPropEnum = append(sqlOnSmbInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbProtectionType
-	// SQLOnSmbProtectionType
+	// sql_on_smb_inline_protection_type
+	// SQLOnSmbInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// SQLOnSmbProtectionTypeLocalRpoHourly captures enum value "hourly"
-	SQLOnSmbProtectionTypeLocalRpoHourly string = "hourly"
+	// SQLOnSmbInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	SQLOnSmbInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbProtectionType
-	// SQLOnSmbProtectionType
+	// sql_on_smb_inline_protection_type
+	// SQLOnSmbInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// SQLOnSmbProtectionTypeLocalRpoNone captures enum value "none"
-	SQLOnSmbProtectionTypeLocalRpoNone string = "none"
+	// SQLOnSmbInlineProtectionTypeLocalRpoNone captures enum value "none"
+	SQLOnSmbInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *SQLOnSmbProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSmbProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *SQLOnSmbInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSmbInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSmbProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var sqlOnSmbProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var sqlOnSmbInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -897,61 +897,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSmbProtectionTypeTypeRemoteRpoPropEnum = append(sqlOnSmbProtectionTypeTypeRemoteRpoPropEnum, v)
+		sqlOnSmbInlineProtectionTypeTypeRemoteRpoPropEnum = append(sqlOnSmbInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbProtectionType
-	// SQLOnSmbProtectionType
+	// sql_on_smb_inline_protection_type
+	// SQLOnSmbInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// SQLOnSmbProtectionTypeRemoteRpoNone captures enum value "none"
-	SQLOnSmbProtectionTypeRemoteRpoNone string = "none"
+	// SQLOnSmbInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	SQLOnSmbInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbProtectionType
-	// SQLOnSmbProtectionType
+	// sql_on_smb_inline_protection_type
+	// SQLOnSmbInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// SQLOnSmbProtectionTypeRemoteRpoZero captures enum value "zero"
-	SQLOnSmbProtectionTypeRemoteRpoZero string = "zero"
+	// SQLOnSmbInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	SQLOnSmbInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *SQLOnSmbProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSmbProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *SQLOnSmbInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSmbInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSmbProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this SQL on smb protection type based on context it is used
-func (m *SQLOnSmbProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on smb inline protection type based on context it is used
+func (m *SQLOnSmbInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbProtectionType) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -959,8 +959,8 @@ func (m *SQLOnSmbProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbProtectionType) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbProtectionType
+func (m *SQLOnSmbInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -968,20 +968,20 @@ func (m *SQLOnSmbProtectionType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbTempDb SQL on smb temp db
+// SQLOnSmbInlineTempDb sql on smb inline temp db
 //
-// swagger:model SQLOnSmbTempDb
-type SQLOnSmbTempDb struct {
+// swagger:model sql_on_smb_inline_temp_db
+type SQLOnSmbInlineTempDb struct {
 
 	// The size of the temp DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *SQLOnSmbTempDbStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSmbInlineTempDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on smb temp db
-func (m *SQLOnSmbTempDb) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline temp db
+func (m *SQLOnSmbInlineTempDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -994,7 +994,7 @@ func (m *SQLOnSmbTempDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSmbTempDb) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineTempDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -1011,8 +1011,8 @@ func (m *SQLOnSmbTempDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on smb temp db based on the context it is used
-func (m *SQLOnSmbTempDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on smb inline temp db based on the context it is used
+func (m *SQLOnSmbInlineTempDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -1025,7 +1025,7 @@ func (m *SQLOnSmbTempDb) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SQLOnSmbTempDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineTempDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1040,7 +1040,7 @@ func (m *SQLOnSmbTempDb) contextValidateStorageService(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbTempDb) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineTempDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1048,8 +1048,8 @@ func (m *SQLOnSmbTempDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbTempDb) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbTempDb
+func (m *SQLOnSmbInlineTempDb) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineTempDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1057,18 +1057,18 @@ func (m *SQLOnSmbTempDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSmbTempDbStorageService SQL on smb temp db storage service
+// SQLOnSmbInlineTempDbInlineStorageService sql on smb inline temp db inline storage service
 //
-// swagger:model SQLOnSmbTempDbStorageService
-type SQLOnSmbTempDbStorageService struct {
+// swagger:model sql_on_smb_inline_temp_db_inline_storage_service
+type SQLOnSmbInlineTempDbInlineStorageService struct {
 
 	// The storage service of the temp DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on smb temp db storage service
-func (m *SQLOnSmbTempDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on smb inline temp db inline storage service
+func (m *SQLOnSmbInlineTempDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1081,7 +1081,7 @@ func (m *SQLOnSmbTempDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSmbTempDbStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSmbInlineTempDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1089,52 +1089,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSmbTempDbStorageServiceTypeNamePropEnum = append(sqlOnSmbTempDbStorageServiceTypeNamePropEnum, v)
+		sqlOnSmbInlineTempDbInlineStorageServiceTypeNamePropEnum = append(sqlOnSmbInlineTempDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbTempDbStorageService
-	// SQLOnSmbTempDbStorageService
+	// sql_on_smb_inline_temp_db_inline_storage_service
+	// SQLOnSmbInlineTempDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSmbTempDbStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSmbTempDbStorageServiceNameExtreme string = "extreme"
+	// SQLOnSmbInlineTempDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSmbInlineTempDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbTempDbStorageService
-	// SQLOnSmbTempDbStorageService
+	// sql_on_smb_inline_temp_db_inline_storage_service
+	// SQLOnSmbInlineTempDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSmbTempDbStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSmbTempDbStorageServiceNamePerformance string = "performance"
+	// SQLOnSmbInlineTempDbInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSmbInlineTempDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSmbTempDbStorageService
-	// SQLOnSmbTempDbStorageService
+	// sql_on_smb_inline_temp_db_inline_storage_service
+	// SQLOnSmbInlineTempDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSmbTempDbStorageServiceNameValue captures enum value "value"
-	SQLOnSmbTempDbStorageServiceNameValue string = "value"
+	// SQLOnSmbInlineTempDbInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSmbInlineTempDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSmbTempDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSmbTempDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSmbInlineTempDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSmbInlineTempDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSmbTempDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSmbInlineTempDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1147,13 +1147,13 @@ func (m *SQLOnSmbTempDbStorageService) validateName(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validates this SQL on smb temp db storage service based on context it is used
-func (m *SQLOnSmbTempDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on smb inline temp db inline storage service based on context it is used
+func (m *SQLOnSmbInlineTempDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSmbTempDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSmbInlineTempDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1161,8 +1161,8 @@ func (m *SQLOnSmbTempDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSmbTempDbStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSmbTempDbStorageService
+func (m *SQLOnSmbInlineTempDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSmbInlineTempDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

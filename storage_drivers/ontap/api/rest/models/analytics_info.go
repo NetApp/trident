@@ -19,22 +19,25 @@ import (
 type AnalyticsInfo struct {
 
 	// by accessed time
-	ByAccessedTime *AnalyticsInfoByAccessedTime `json:"by_accessed_time,omitempty"`
+	ByAccessedTime *AnalyticsInfoInlineByAccessedTime `json:"by_accessed_time,omitempty"`
 
 	// by modified time
-	ByModifiedTime *AnalyticsInfoByModifiedTime `json:"by_modified_time,omitempty"`
+	ByModifiedTime *AnalyticsInfoInlineByModifiedTime `json:"by_modified_time,omitempty"`
 
 	// Number of bytes used on-disk
 	// Example: 15436648448
-	BytesUsed int64 `json:"bytes_used,omitempty"`
+	BytesUsed *int64 `json:"bytes_used,omitempty"`
 
 	// Number of descendants
 	// Example: 21134
-	FileCount int64 `json:"file_count,omitempty"`
+	FileCount *int64 `json:"file_count,omitempty"`
+
+	// Returns true if data collection is incomplete for this directory tree.
+	IncompleteData *bool `json:"incomplete_data,omitempty"`
 
 	// Number of sub directories
 	// Example: 35
-	SubdirCount int64 `json:"subdir_count,omitempty"`
+	SubdirCount *int64 `json:"subdir_count,omitempty"`
 }
 
 // Validate validates this analytics info
@@ -153,17 +156,17 @@ func (m *AnalyticsInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AnalyticsInfoByAccessedTime File system analytics information, broken down by date of last access.
+// AnalyticsInfoInlineByAccessedTime File system analytics information, broken down by date of last access.
 //
-// swagger:model AnalyticsInfoByAccessedTime
-type AnalyticsInfoByAccessedTime struct {
+// swagger:model analytics_info_inline_by_accessed_time
+type AnalyticsInfoInlineByAccessedTime struct {
 
 	// bytes used
-	BytesUsed *AnalyticsInfoByAccessedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this analytics info by accessed time
-func (m *AnalyticsInfoByAccessedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics info inline by accessed time
+func (m *AnalyticsInfoInlineByAccessedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -176,7 +179,7 @@ func (m *AnalyticsInfoByAccessedTime) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -193,8 +196,8 @@ func (m *AnalyticsInfoByAccessedTime) validateBytesUsed(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this analytics info by accessed time based on the context it is used
-func (m *AnalyticsInfoByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics info inline by accessed time based on the context it is used
+func (m *AnalyticsInfoInlineByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -207,7 +210,7 @@ func (m *AnalyticsInfoByAccessedTime) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -222,7 +225,7 @@ func (m *AnalyticsInfoByAccessedTime) contextValidateBytesUsed(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsInfoByAccessedTime) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsInfoInlineByAccessedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -230,8 +233,8 @@ func (m *AnalyticsInfoByAccessedTime) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsInfoByAccessedTime) UnmarshalBinary(b []byte) error {
-	var res AnalyticsInfoByAccessedTime
+func (m *AnalyticsInfoInlineByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res AnalyticsInfoInlineByAccessedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -239,31 +242,31 @@ func (m *AnalyticsInfoByAccessedTime) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AnalyticsInfoByAccessedTimeBytesUsed Number of bytes used on-disk, broken down by date of last access.
+// AnalyticsInfoInlineByAccessedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last access.
 //
-// swagger:model AnalyticsInfoByAccessedTimeBytesUsed
-type AnalyticsInfoByAccessedTimeBytesUsed struct {
+// swagger:model analytics_info_inline_by_accessed_time_inline_bytes_used
+type AnalyticsInfoInlineByAccessedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 
 	// The newest time label with a non-zero histogram value.
-	NewestLabel AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
 
 	// The oldest time label with a non-zero histogram value.
-	OldestLabel AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
 
 	// Percentages for this histogram
-	// Example: ["0.1","11.24","0.18","15.75","0.75","83.5","0"]
-	Percentages []float64 `json:"percentages,omitempty"`
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
 
 	// Values for this histogram
-	// Example: ["15925248","1735569408","27672576","2430595072","116105216","12889948160","0"]
-	Values []int64 `json:"values,omitempty"`
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
 }
 
-// Validate validates this analytics info by accessed time bytes used
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics info inline by accessed time inline bytes used
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -284,7 +287,7 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -299,38 +302,42 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) validateLabels(formats strfmt.Reg
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.NewestLabel) { // not required
 		return nil
 	}
 
-	if err := m.NewestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.OldestLabel) { // not required
 		return nil
 	}
 
-	if err := m.OldestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this analytics info by accessed time bytes used based on the context it is used
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics info inline by accessed time inline bytes used based on the context it is used
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -351,7 +358,7 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -363,32 +370,36 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) contextValidateLabels(ctx context
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -396,8 +407,8 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsInfoByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res AnalyticsInfoByAccessedTimeBytesUsed
+func (m *AnalyticsInfoInlineByAccessedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res AnalyticsInfoInlineByAccessedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -405,17 +416,17 @@ func (m *AnalyticsInfoByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AnalyticsInfoByModifiedTime File system analytics information, broken down by date of last modification.
+// AnalyticsInfoInlineByModifiedTime File system analytics information, broken down by date of last modification.
 //
-// swagger:model AnalyticsInfoByModifiedTime
-type AnalyticsInfoByModifiedTime struct {
+// swagger:model analytics_info_inline_by_modified_time
+type AnalyticsInfoInlineByModifiedTime struct {
 
 	// bytes used
-	BytesUsed *AnalyticsInfoByModifiedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this analytics info by modified time
-func (m *AnalyticsInfoByModifiedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics info inline by modified time
+func (m *AnalyticsInfoInlineByModifiedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -428,7 +439,7 @@ func (m *AnalyticsInfoByModifiedTime) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -445,8 +456,8 @@ func (m *AnalyticsInfoByModifiedTime) validateBytesUsed(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this analytics info by modified time based on the context it is used
-func (m *AnalyticsInfoByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics info inline by modified time based on the context it is used
+func (m *AnalyticsInfoInlineByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -459,7 +470,7 @@ func (m *AnalyticsInfoByModifiedTime) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -474,7 +485,7 @@ func (m *AnalyticsInfoByModifiedTime) contextValidateBytesUsed(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsInfoByModifiedTime) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsInfoInlineByModifiedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -482,8 +493,8 @@ func (m *AnalyticsInfoByModifiedTime) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsInfoByModifiedTime) UnmarshalBinary(b []byte) error {
-	var res AnalyticsInfoByModifiedTime
+func (m *AnalyticsInfoInlineByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res AnalyticsInfoInlineByModifiedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -491,31 +502,31 @@ func (m *AnalyticsInfoByModifiedTime) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AnalyticsInfoByModifiedTimeBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+// AnalyticsInfoInlineByModifiedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last modification.
 //
-// swagger:model AnalyticsInfoByModifiedTimeBytesUsed
-type AnalyticsInfoByModifiedTimeBytesUsed struct {
+// swagger:model analytics_info_inline_by_modified_time_inline_bytes_used
+type AnalyticsInfoInlineByModifiedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 
 	// The newest time label with a non-zero histogram value.
-	NewestLabel AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
 
 	// The oldest time label with a non-zero histogram value.
-	OldestLabel AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
 
 	// Percentages for this histogram
-	// Example: ["0.1","11.24","0.18","15.75","0.75","83.5","0"]
-	Percentages []float64 `json:"percentages,omitempty"`
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
 
 	// Values for this histogram
-	// Example: ["15925248","1735569408","27672576","2430595072","116105216","12889948160","0"]
-	Values []int64 `json:"values,omitempty"`
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
 }
 
-// Validate validates this analytics info by modified time bytes used
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics info inline by modified time inline bytes used
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -536,7 +547,7 @@ func (m *AnalyticsInfoByModifiedTimeBytesUsed) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -551,38 +562,42 @@ func (m *AnalyticsInfoByModifiedTimeBytesUsed) validateLabels(formats strfmt.Reg
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.NewestLabel) { // not required
 		return nil
 	}
 
-	if err := m.NewestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.OldestLabel) { // not required
 		return nil
 	}
 
-	if err := m.OldestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this analytics info by modified time bytes used based on the context it is used
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics info inline by modified time inline bytes used based on the context it is used
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -603,7 +618,7 @@ func (m *AnalyticsInfoByModifiedTimeBytesUsed) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -615,32 +630,36 @@ func (m *AnalyticsInfoByModifiedTimeBytesUsed) contextValidateLabels(ctx context
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -648,8 +667,8 @@ func (m *AnalyticsInfoByModifiedTimeBytesUsed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsInfoByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res AnalyticsInfoByModifiedTimeBytesUsed
+func (m *AnalyticsInfoInlineByModifiedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res AnalyticsInfoInlineByModifiedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

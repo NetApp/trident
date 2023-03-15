@@ -24,17 +24,17 @@ import (
 type NvmeNamespace struct {
 
 	// links
-	Links *NvmeNamespaceLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineLinks `json:"_links,omitempty"`
 
 	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
 	// clone
-	Clone *NvmeNamespaceClone `json:"clone,omitempty"`
+	Clone *NvmeNamespaceInlineClone `json:"clone,omitempty"`
 
 	// A configurable comment available for use by the administrator. Valid in POST and PATCH.
 	//
@@ -43,7 +43,7 @@ type NvmeNamespace struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// convert
-	Convert *NvmeNamespaceConvert `json:"convert,omitempty"`
+	Convert *NvmeNamespaceInlineConvert `json:"convert,omitempty"`
 
 	// The time the NVMe namespace was created.
 	// Example: 2018-06-04T19:00:00Z
@@ -57,43 +57,43 @@ type NvmeNamespace struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// location
-	Location *NvmeNamespaceLocation `json:"location,omitempty"`
+	Location *NvmeNamespaceInlineLocation `json:"location,omitempty"`
 
 	// metric
-	Metric *NvmeNamespaceMetric `json:"metric,omitempty"`
+	Metric *NvmeNamespaceInlineMetric `json:"metric,omitempty"`
 
 	// The fully qualified path name of the NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the namespace. Valid in POST.<br/>
 	// NVMe namespaces do not support rename, or movement between volumes.
 	//
 	// Example: /vol/volume1/qtree1/namespace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The operating system type of the NVMe namespace.<br/>
 	// Required in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//
 	// Enum: [aix linux vmware windows]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// space
-	Space *NvmeNamespaceSpace `json:"space,omitempty"`
+	Space *NvmeNamespaceInlineSpace `json:"space,omitempty"`
 
 	// statistics
-	Statistics *NvmeNamespaceStatistics `json:"statistics,omitempty"`
+	Statistics *NvmeNamespaceInlineStatistics `json:"statistics,omitempty"`
 
 	// status
-	Status *NvmeNamespaceStatus `json:"status,omitempty"`
+	Status *NvmeNamespaceInlineStatus `json:"status,omitempty"`
 
 	// subsystem map
-	SubsystemMap *NvmeNamespaceSubsystemMap `json:"subsystem_map,omitempty"`
+	SubsystemMap *NvmeNamespaceInlineSubsystemMap `json:"subsystem_map,omitempty"`
 
 	// svm
-	Svm *NvmeNamespaceSvm `json:"svm,omitempty"`
+	Svm *NvmeNamespaceInlineSvm `json:"svm,omitempty"`
 
 	// The unique identifier of the NVMe namespace.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this nvme namespace
@@ -340,7 +340,7 @@ func (m *NvmeNamespace) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -654,7 +654,7 @@ func (m *NvmeNamespace) contextValidateSvm(ctx context.Context, formats strfmt.R
 
 func (m *NvmeNamespace) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -679,18 +679,18 @@ func (m *NvmeNamespace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceClone This sub-object is used in POST to create a new NVMe namespace as a clone of an existing namespace, or PATCH to overwrite an existing namespace as a clone of another. Setting a property in this sub-object indicates that a namespace clone is desired.<br/>
+// NvmeNamespaceInlineClone This sub-object is used in POST to create a new NVMe namespace as a clone of an existing namespace, or PATCH to overwrite an existing namespace as a clone of another. Setting a property in this sub-object indicates that a namespace clone is desired.<br/>
 // When used in a PATCH, the patched NVMe namespace's data is over-written as a clone of the source and the following properties are preserved from the patched namespace unless otherwise specified as part of the PATCH: `auto_delete` (unless specified in the request), `subsystem_map`, `status.state`, and `uuid`.
 //
-// swagger:model NvmeNamespaceClone
-type NvmeNamespaceClone struct {
+// swagger:model nvme_namespace_inline_clone
+type NvmeNamespaceInlineClone struct {
 
 	// source
-	Source *NvmeNamespaceCloneSource `json:"source,omitempty"`
+	Source *NvmeNamespaceInlineCloneInlineSource `json:"source,omitempty"`
 }
 
-// Validate validates this nvme namespace clone
-func (m *NvmeNamespaceClone) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline clone
+func (m *NvmeNamespaceInlineClone) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSource(formats); err != nil {
@@ -703,7 +703,7 @@ func (m *NvmeNamespaceClone) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceClone) validateSource(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineClone) validateSource(formats strfmt.Registry) error {
 	if swag.IsZero(m.Source) { // not required
 		return nil
 	}
@@ -720,8 +720,8 @@ func (m *NvmeNamespaceClone) validateSource(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace clone based on the context it is used
-func (m *NvmeNamespaceClone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline clone based on the context it is used
+func (m *NvmeNamespaceInlineClone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSource(ctx, formats); err != nil {
@@ -734,7 +734,7 @@ func (m *NvmeNamespaceClone) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NvmeNamespaceClone) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineClone) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Source != nil {
 		if err := m.Source.ContextValidate(ctx, formats); err != nil {
@@ -749,7 +749,7 @@ func (m *NvmeNamespaceClone) contextValidateSource(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceClone) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineClone) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -757,8 +757,8 @@ func (m *NvmeNamespaceClone) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceClone) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceClone
+func (m *NvmeNamespaceInlineClone) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineClone
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -766,36 +766,36 @@ func (m *NvmeNamespaceClone) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceCloneSource The source NVMe namespace for a namespace clone operation. This can be specified using property `clone.source.uuid` or `clone.source.name`. If both properties are supplied, they must refer to the same namespace.<br/>
+// NvmeNamespaceInlineCloneInlineSource The source NVMe namespace for a namespace clone operation. This can be specified using property `clone.source.uuid` or `clone.source.name`. If both properties are supplied, they must refer to the same namespace.<br/>
 // Valid in POST to create a new NVMe namespace as a clone of the source.<br/>
 // Valid in PATCH to overwrite an existing NVMe namespace's data as a clone of another.
 //
-// swagger:model NvmeNamespaceCloneSource
-type NvmeNamespaceCloneSource struct {
+// swagger:model nvme_namespace_inline_clone_inline_source
+type NvmeNamespaceInlineCloneInlineSource struct {
 
 	// The fully qualified path name of the clone source NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the namespace. Valid in POST and PATCH.
 	//
 	// Example: /vol/volume1/namespace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source NVMe namespace. Valid in POST and PATCH.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace clone source
-func (m *NvmeNamespaceCloneSource) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline clone inline source
+func (m *NvmeNamespaceInlineCloneInlineSource) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nvme namespace clone source based on context it is used
-func (m *NvmeNamespaceCloneSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nvme namespace inline clone inline source based on context it is used
+func (m *NvmeNamespaceInlineCloneInlineSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceCloneSource) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineCloneInlineSource) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -803,8 +803,8 @@ func (m *NvmeNamespaceCloneSource) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceCloneSource) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceCloneSource
+func (m *NvmeNamespaceInlineCloneInlineSource) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineCloneInlineSource
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -812,17 +812,17 @@ func (m *NvmeNamespaceCloneSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceConvert This sub-object is used in POST to convert a valid in-place LUN to an NVMe namespace. Setting a property in this sub-object indicates that a conversion from the specified LUN to NVMe namespace is desired.<br/>
+// NvmeNamespaceInlineConvert This sub-object is used in POST to convert a valid in-place LUN to an NVMe namespace. Setting a property in this sub-object indicates that a conversion from the specified LUN to NVMe namespace is desired.<br/>
 //
-// swagger:model NvmeNamespaceConvert
-type NvmeNamespaceConvert struct {
+// swagger:model nvme_namespace_inline_convert
+type NvmeNamespaceInlineConvert struct {
 
 	// lun
-	Lun *NvmeNamespaceConvertLun `json:"lun,omitempty"`
+	Lun *NvmeNamespaceInlineConvertInlineLun `json:"lun,omitempty"`
 }
 
-// Validate validates this nvme namespace convert
-func (m *NvmeNamespaceConvert) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline convert
+func (m *NvmeNamespaceInlineConvert) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLun(formats); err != nil {
@@ -835,7 +835,7 @@ func (m *NvmeNamespaceConvert) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceConvert) validateLun(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineConvert) validateLun(formats strfmt.Registry) error {
 	if swag.IsZero(m.Lun) { // not required
 		return nil
 	}
@@ -852,8 +852,8 @@ func (m *NvmeNamespaceConvert) validateLun(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace convert based on the context it is used
-func (m *NvmeNamespaceConvert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline convert based on the context it is used
+func (m *NvmeNamespaceInlineConvert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLun(ctx, formats); err != nil {
@@ -866,7 +866,7 @@ func (m *NvmeNamespaceConvert) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NvmeNamespaceConvert) contextValidateLun(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineConvert) contextValidateLun(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Lun != nil {
 		if err := m.Lun.ContextValidate(ctx, formats); err != nil {
@@ -881,7 +881,7 @@ func (m *NvmeNamespaceConvert) contextValidateLun(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceConvert) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineConvert) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -889,8 +889,8 @@ func (m *NvmeNamespaceConvert) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceConvert) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceConvert
+func (m *NvmeNamespaceInlineConvert) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineConvert
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -898,35 +898,35 @@ func (m *NvmeNamespaceConvert) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceConvertLun The source LUN for convert operation. This can be specified using property `convert.lun.uuid` or `convert.lun.name`. If both properties are supplied, they must refer to the same LUN.<br/>
+// NvmeNamespaceInlineConvertInlineLun The source LUN for convert operation. This can be specified using property `convert.lun.uuid` or `convert.lun.name`. If both properties are supplied, they must refer to the same LUN.<br/>
 // Valid in POST. A convert request from LUN to NVMe namespace cannot be combined with setting any other namespace properties. All other properties of the converted NVMe namespace comes from the source LUN.<br/>
 //
-// swagger:model NvmeNamespaceConvertLun
-type NvmeNamespaceConvertLun struct {
+// swagger:model nvme_namespace_inline_convert_inline_lun
+type NvmeNamespaceInlineConvertInlineLun struct {
 
 	// The fully qualified path name of the source LUN composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the LUN. Valid in POST.
 	//
 	// Example: /vol/volume1/lun1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the source LUN. Valid in POST.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace convert lun
-func (m *NvmeNamespaceConvertLun) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline convert inline lun
+func (m *NvmeNamespaceInlineConvertInlineLun) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nvme namespace convert lun based on context it is used
-func (m *NvmeNamespaceConvertLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nvme namespace inline convert inline lun based on context it is used
+func (m *NvmeNamespaceInlineConvertInlineLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceConvertLun) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineConvertInlineLun) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -934,8 +934,8 @@ func (m *NvmeNamespaceConvertLun) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceConvertLun) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceConvertLun
+func (m *NvmeNamespaceInlineConvertInlineLun) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineConvertInlineLun
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -943,17 +943,17 @@ func (m *NvmeNamespaceConvertLun) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLinks nvme namespace links
+// NvmeNamespaceInlineLinks nvme namespace inline links
 //
-// swagger:model NvmeNamespaceLinks
-type NvmeNamespaceLinks struct {
+// swagger:model nvme_namespace_inline__links
+type NvmeNamespaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace links
-func (m *NvmeNamespaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline links
+func (m *NvmeNamespaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -966,7 +966,7 @@ func (m *NvmeNamespaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -983,8 +983,8 @@ func (m *NvmeNamespaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace links based on the context it is used
-func (m *NvmeNamespaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline links based on the context it is used
+func (m *NvmeNamespaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -997,7 +997,7 @@ func (m *NvmeNamespaceLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NvmeNamespaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1012,7 +1012,7 @@ func (m *NvmeNamespaceLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1020,8 +1020,8 @@ func (m *NvmeNamespaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLinks
+func (m *NvmeNamespaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1029,31 +1029,31 @@ func (m *NvmeNamespaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocation The location of the NVMe namespace within the ONTAP cluster. Valid in POST.<br/>
+// NvmeNamespaceInlineLocation The location of the NVMe namespace within the ONTAP cluster. Valid in POST.<br/>
 // NVMe namespaces do not support rename, or movement between volumes.
 //
-// swagger:model NvmeNamespaceLocation
-type NvmeNamespaceLocation struct {
+// swagger:model nvme_namespace_inline_location
+type NvmeNamespaceInlineLocation struct {
 
 	// The base name component of the NVMe namespace. Valid in POST.<br/>
 	// If properties `name` and `location.namespace` are specified in the same request, they must refer to the base name.<br/>
 	// NVMe namespaces do not support rename.
 	//
 	// Example: namespace1
-	Namespace string `json:"namespace,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
 
 	// node
-	Node *NvmeNamespaceLocationNode `json:"node,omitempty"`
+	Node *NvmeNamespaceInlineLocationInlineNode `json:"node,omitempty"`
 
 	// qtree
-	Qtree *NvmeNamespaceLocationQtree `json:"qtree,omitempty"`
+	Qtree *NvmeNamespaceInlineLocationInlineQtree `json:"qtree,omitempty"`
 
 	// volume
-	Volume *NvmeNamespaceLocationVolume `json:"volume,omitempty"`
+	Volume *NvmeNamespaceInlineLocationInlineVolume `json:"volume,omitempty"`
 }
 
-// Validate validates this nvme namespace location
-func (m *NvmeNamespaceLocation) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location
+func (m *NvmeNamespaceInlineLocation) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -1074,7 +1074,7 @@ func (m *NvmeNamespaceLocation) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) validateNode(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1091,7 +1091,7 @@ func (m *NvmeNamespaceLocation) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) validateQtree(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) validateQtree(formats strfmt.Registry) error {
 	if swag.IsZero(m.Qtree) { // not required
 		return nil
 	}
@@ -1108,7 +1108,7 @@ func (m *NvmeNamespaceLocation) validateQtree(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) validateVolume(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
 	}
@@ -1125,8 +1125,8 @@ func (m *NvmeNamespaceLocation) validateVolume(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location based on the context it is used
-func (m *NvmeNamespaceLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location based on the context it is used
+func (m *NvmeNamespaceInlineLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -1147,7 +1147,7 @@ func (m *NvmeNamespaceLocation) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1161,7 +1161,7 @@ func (m *NvmeNamespaceLocation) contextValidateNode(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) contextValidateQtree(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) contextValidateQtree(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Qtree != nil {
 		if err := m.Qtree.ContextValidate(ctx, formats); err != nil {
@@ -1175,7 +1175,7 @@ func (m *NvmeNamespaceLocation) contextValidateQtree(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeNamespaceLocation) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocation) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Volume != nil {
 		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
@@ -1190,7 +1190,7 @@ func (m *NvmeNamespaceLocation) contextValidateVolume(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocation) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocation) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1198,8 +1198,8 @@ func (m *NvmeNamespaceLocation) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocation) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocation
+func (m *NvmeNamespaceInlineLocation) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocation
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1207,25 +1207,25 @@ func (m *NvmeNamespaceLocation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationNode The cluster node that hosts the NVMe namespace.
+// NvmeNamespaceInlineLocationInlineNode The cluster node that hosts the NVMe namespace.
 //
-// swagger:model NvmeNamespaceLocationNode
-type NvmeNamespaceLocationNode struct {
+// swagger:model nvme_namespace_inline_location_inline_node
+type NvmeNamespaceInlineLocationInlineNode struct {
 
 	// links
-	Links *NvmeNamespaceLocationNodeLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineLocationInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace location node
-func (m *NvmeNamespaceLocationNode) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline node
+func (m *NvmeNamespaceInlineLocationInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1238,7 +1238,7 @@ func (m *NvmeNamespaceLocationNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocationNode) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1255,8 +1255,8 @@ func (m *NvmeNamespaceLocationNode) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location node based on the context it is used
-func (m *NvmeNamespaceLocationNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline node based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1269,7 +1269,7 @@ func (m *NvmeNamespaceLocationNode) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeNamespaceLocationNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1284,7 +1284,7 @@ func (m *NvmeNamespaceLocationNode) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationNode) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1292,8 +1292,8 @@ func (m *NvmeNamespaceLocationNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationNode) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationNode
+func (m *NvmeNamespaceInlineLocationInlineNode) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1301,17 +1301,17 @@ func (m *NvmeNamespaceLocationNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationNodeLinks nvme namespace location node links
+// NvmeNamespaceInlineLocationInlineNodeInlineLinks nvme namespace inline location inline node inline links
 //
-// swagger:model NvmeNamespaceLocationNodeLinks
-type NvmeNamespaceLocationNodeLinks struct {
+// swagger:model nvme_namespace_inline_location_inline_node_inline__links
+type NvmeNamespaceInlineLocationInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace location node links
-func (m *NvmeNamespaceLocationNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline node inline links
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1324,7 +1324,7 @@ func (m *NvmeNamespaceLocationNodeLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeNamespaceLocationNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1341,8 +1341,8 @@ func (m *NvmeNamespaceLocationNodeLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location node links based on the context it is used
-func (m *NvmeNamespaceLocationNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline node inline links based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1355,7 +1355,7 @@ func (m *NvmeNamespaceLocationNodeLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeNamespaceLocationNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1370,7 +1370,7 @@ func (m *NvmeNamespaceLocationNodeLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1378,8 +1378,8 @@ func (m *NvmeNamespaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationNodeLinks
+func (m *NvmeNamespaceInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1387,15 +1387,15 @@ func (m *NvmeNamespaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationQtree The qtree in which the NVMe namespace is optionally located. Valid in POST.<br/>
+// NvmeNamespaceInlineLocationInlineQtree The qtree in which the NVMe namespace is optionally located. Valid in POST.<br/>
 // If properties `name` and `location.qtree.name` and/or `location.qtree.uuid` are specified in the same request, they must refer to the same qtree.<br/>
 // NVMe namespaces do not support rename.
 //
-// swagger:model NvmeNamespaceLocationQtree
-type NvmeNamespaceLocationQtree struct {
+// swagger:model nvme_namespace_inline_location_inline_qtree
+type NvmeNamespaceInlineLocationInlineQtree struct {
 
 	// links
-	Links *NvmeNamespaceLocationQtreeLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineLocationInlineQtreeInlineLinks `json:"_links,omitempty"`
 
 	// The identifier for the qtree, unique within the qtree's volume.
 	//
@@ -1406,11 +1406,11 @@ type NvmeNamespaceLocationQtree struct {
 
 	// The name of the qtree.
 	// Example: qt1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this nvme namespace location qtree
-func (m *NvmeNamespaceLocationQtree) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline qtree
+func (m *NvmeNamespaceInlineLocationInlineQtree) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1427,7 +1427,7 @@ func (m *NvmeNamespaceLocationQtree) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocationQtree) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineQtree) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1444,7 +1444,7 @@ func (m *NvmeNamespaceLocationQtree) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NvmeNamespaceLocationQtree) validateID(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineQtree) validateID(formats strfmt.Registry) error {
 	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
@@ -1460,8 +1460,8 @@ func (m *NvmeNamespaceLocationQtree) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location qtree based on the context it is used
-func (m *NvmeNamespaceLocationQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline qtree based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1474,7 +1474,7 @@ func (m *NvmeNamespaceLocationQtree) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeNamespaceLocationQtree) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineQtree) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1489,7 +1489,7 @@ func (m *NvmeNamespaceLocationQtree) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationQtree) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineQtree) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1497,8 +1497,8 @@ func (m *NvmeNamespaceLocationQtree) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationQtree) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationQtree
+func (m *NvmeNamespaceInlineLocationInlineQtree) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineQtree
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1506,17 +1506,17 @@ func (m *NvmeNamespaceLocationQtree) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationQtreeLinks nvme namespace location qtree links
+// NvmeNamespaceInlineLocationInlineQtreeInlineLinks nvme namespace inline location inline qtree inline links
 //
-// swagger:model NvmeNamespaceLocationQtreeLinks
-type NvmeNamespaceLocationQtreeLinks struct {
+// swagger:model nvme_namespace_inline_location_inline_qtree_inline__links
+type NvmeNamespaceInlineLocationInlineQtreeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace location qtree links
-func (m *NvmeNamespaceLocationQtreeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline qtree inline links
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1529,7 +1529,7 @@ func (m *NvmeNamespaceLocationQtreeLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NvmeNamespaceLocationQtreeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1546,8 +1546,8 @@ func (m *NvmeNamespaceLocationQtreeLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location qtree links based on the context it is used
-func (m *NvmeNamespaceLocationQtreeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline qtree inline links based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1560,7 +1560,7 @@ func (m *NvmeNamespaceLocationQtreeLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *NvmeNamespaceLocationQtreeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1575,7 +1575,7 @@ func (m *NvmeNamespaceLocationQtreeLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationQtreeLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1583,8 +1583,8 @@ func (m *NvmeNamespaceLocationQtreeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationQtreeLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationQtreeLinks
+func (m *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineQtreeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1592,27 +1592,27 @@ func (m *NvmeNamespaceLocationQtreeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationVolume The volume in which the NVMe namespace is located. Valid in POST.<br/>
+// NvmeNamespaceInlineLocationInlineVolume The volume in which the NVMe namespace is located. Valid in POST.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
 // NVMe namespaces do not support movement between volumes.
 //
-// swagger:model NvmeNamespaceLocationVolume
-type NvmeNamespaceLocationVolume struct {
+// swagger:model nvme_namespace_inline_location_inline_volume
+type NvmeNamespaceInlineLocationInlineVolume struct {
 
 	// links
-	Links *NvmeNamespaceLocationVolumeLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineLocationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace location volume
-func (m *NvmeNamespaceLocationVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline volume
+func (m *NvmeNamespaceInlineLocationInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1625,7 +1625,7 @@ func (m *NvmeNamespaceLocationVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceLocationVolume) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1642,8 +1642,8 @@ func (m *NvmeNamespaceLocationVolume) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location volume based on the context it is used
-func (m *NvmeNamespaceLocationVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline volume based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1656,7 +1656,7 @@ func (m *NvmeNamespaceLocationVolume) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeNamespaceLocationVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1671,7 +1671,7 @@ func (m *NvmeNamespaceLocationVolume) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationVolume) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1679,8 +1679,8 @@ func (m *NvmeNamespaceLocationVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationVolume) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationVolume
+func (m *NvmeNamespaceInlineLocationInlineVolume) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1688,17 +1688,17 @@ func (m *NvmeNamespaceLocationVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceLocationVolumeLinks nvme namespace location volume links
+// NvmeNamespaceInlineLocationInlineVolumeInlineLinks nvme namespace inline location inline volume inline links
 //
-// swagger:model NvmeNamespaceLocationVolumeLinks
-type NvmeNamespaceLocationVolumeLinks struct {
+// swagger:model nvme_namespace_inline_location_inline_volume_inline__links
+type NvmeNamespaceInlineLocationInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace location volume links
-func (m *NvmeNamespaceLocationVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline location inline volume inline links
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1711,7 +1711,7 @@ func (m *NvmeNamespaceLocationVolumeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NvmeNamespaceLocationVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1728,8 +1728,8 @@ func (m *NvmeNamespaceLocationVolumeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this nvme namespace location volume links based on the context it is used
-func (m *NvmeNamespaceLocationVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline location inline volume inline links based on the context it is used
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1742,7 +1742,7 @@ func (m *NvmeNamespaceLocationVolumeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *NvmeNamespaceLocationVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1757,7 +1757,7 @@ func (m *NvmeNamespaceLocationVolumeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceLocationVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1765,8 +1765,8 @@ func (m *NvmeNamespaceLocationVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceLocationVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceLocationVolumeLinks
+func (m *NvmeNamespaceInlineLocationInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineLocationInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1774,35 +1774,35 @@ func (m *NvmeNamespaceLocationVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceMetric Performance numbers, such as IOPS latency and throughput
+// NvmeNamespaceInlineMetric Performance numbers, such as IOPS latency and throughput
 //
-// swagger:model NvmeNamespaceMetric
-type NvmeNamespaceMetric struct {
+// swagger:model nvme_namespace_inline_metric
+type NvmeNamespaceInlineMetric struct {
 
 	// links
-	Links *NvmeNamespaceMetricLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *NvmeNamespaceMetricIops `json:"iops,omitempty"`
+	Iops *NvmeNamespaceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *NvmeNamespaceMetricLatency `json:"latency,omitempty"`
+	Latency *NvmeNamespaceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *NvmeNamespaceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *NvmeNamespaceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1811,8 +1811,8 @@ type NvmeNamespaceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme namespace metric
-func (m *NvmeNamespaceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline metric
+func (m *NvmeNamespaceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1849,7 +1849,7 @@ func (m *NvmeNamespaceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1866,7 +1866,7 @@ func (m *NvmeNamespaceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeNamespaceMetricTypeDurationPropEnum []interface{}
+var nvmeNamespaceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1874,95 +1874,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceMetricTypeDurationPropEnum = append(nvmeNamespaceMetricTypeDurationPropEnum, v)
+		nvmeNamespaceInlineMetricTypeDurationPropEnum = append(nvmeNamespaceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationPT15S captures enum value "PT15S"
-	NvmeNamespaceMetricDurationPT15S string = "PT15S"
+	// NvmeNamespaceInlineMetricDurationPT15S captures enum value "PT15S"
+	NvmeNamespaceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationPT4M captures enum value "PT4M"
-	NvmeNamespaceMetricDurationPT4M string = "PT4M"
+	// NvmeNamespaceInlineMetricDurationPT4M captures enum value "PT4M"
+	NvmeNamespaceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationPT30M captures enum value "PT30M"
-	NvmeNamespaceMetricDurationPT30M string = "PT30M"
+	// NvmeNamespaceInlineMetricDurationPT30M captures enum value "PT30M"
+	NvmeNamespaceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationPT2H captures enum value "PT2H"
-	NvmeNamespaceMetricDurationPT2H string = "PT2H"
+	// NvmeNamespaceInlineMetricDurationPT2H captures enum value "PT2H"
+	NvmeNamespaceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationP1D captures enum value "P1D"
-	NvmeNamespaceMetricDurationP1D string = "P1D"
+	// NvmeNamespaceInlineMetricDurationP1D captures enum value "P1D"
+	NvmeNamespaceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NvmeNamespaceMetricDurationPT5M captures enum value "PT5M"
-	NvmeNamespaceMetricDurationPT5M string = "PT5M"
+	// NvmeNamespaceInlineMetricDurationPT5M captures enum value "PT5M"
+	NvmeNamespaceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *NvmeNamespaceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceMetricTypeDurationPropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateIops(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1979,7 +1979,7 @@ func (m *NvmeNamespaceMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateLatency(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1996,7 +1996,7 @@ func (m *NvmeNamespaceMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeNamespaceMetricTypeStatusPropEnum []interface{}
+var nvmeNamespaceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2004,145 +2004,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceMetricTypeStatusPropEnum = append(nvmeNamespaceMetricTypeStatusPropEnum, v)
+		nvmeNamespaceInlineMetricTypeStatusPropEnum = append(nvmeNamespaceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusOk captures enum value "ok"
-	NvmeNamespaceMetricStatusOk string = "ok"
+	// NvmeNamespaceInlineMetricStatusOk captures enum value "ok"
+	NvmeNamespaceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusError captures enum value "error"
-	NvmeNamespaceMetricStatusError string = "error"
+	// NvmeNamespaceInlineMetricStatusError captures enum value "error"
+	NvmeNamespaceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusPartialNoData captures enum value "partial_no_data"
-	NvmeNamespaceMetricStatusPartialNoData string = "partial_no_data"
+	// NvmeNamespaceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	NvmeNamespaceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeNamespaceMetricStatusPartialNoResponse string = "partial_no_response"
+	// NvmeNamespaceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeNamespaceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeNamespaceMetricStatusPartialOtherError string = "partial_other_error"
+	// NvmeNamespaceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeNamespaceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusNegativeDelta captures enum value "negative_delta"
-	NvmeNamespaceMetricStatusNegativeDelta string = "negative_delta"
+	// NvmeNamespaceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	NvmeNamespaceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusNotFound captures enum value "not_found"
-	NvmeNamespaceMetricStatusNotFound string = "not_found"
+	// NvmeNamespaceInlineMetricStatusNotFound captures enum value "not_found"
+	NvmeNamespaceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusBackfilledData captures enum value "backfilled_data"
-	NvmeNamespaceMetricStatusBackfilledData string = "backfilled_data"
+	// NvmeNamespaceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	NvmeNamespaceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeNamespaceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeNamespaceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeNamespaceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeNamespaceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeNamespaceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeNamespaceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceMetric
-	// NvmeNamespaceMetric
+	// nvme_namespace_inline_metric
+	// NvmeNamespaceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeNamespaceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeNamespaceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeNamespaceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeNamespaceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeNamespaceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceMetricTypeStatusPropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -2159,7 +2159,7 @@ func (m *NvmeNamespaceMetric) validateThroughput(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2171,8 +2171,8 @@ func (m *NvmeNamespaceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace metric based on the context it is used
-func (m *NvmeNamespaceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline metric based on the context it is used
+func (m *NvmeNamespaceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2209,7 +2209,7 @@ func (m *NvmeNamespaceMetric) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2223,16 +2223,16 @@ func (m *NvmeNamespaceMetric) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -2246,7 +2246,7 @@ func (m *NvmeNamespaceMetric) contextValidateIops(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -2260,16 +2260,16 @@ func (m *NvmeNamespaceMetric) contextValidateLatency(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -2283,7 +2283,7 @@ func (m *NvmeNamespaceMetric) contextValidateThroughput(ctx context.Context, for
 	return nil
 }
 
-func (m *NvmeNamespaceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2293,7 +2293,7 @@ func (m *NvmeNamespaceMetric) contextValidateTimestamp(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceMetric) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2301,8 +2301,8 @@ func (m *NvmeNamespaceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceMetric) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceMetric
+func (m *NvmeNamespaceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2310,34 +2310,34 @@ func (m *NvmeNamespaceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceMetricIops The rate of I/O operations observed at the storage object.
+// NvmeNamespaceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model NvmeNamespaceMetricIops
-type NvmeNamespaceMetricIops struct {
+// swagger:model nvme_namespace_inline_metric_inline_iops
+type NvmeNamespaceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace metric iops
-func (m *NvmeNamespaceMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline metric inline iops
+func (m *NvmeNamespaceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace metric iops based on the context it is used
-func (m *NvmeNamespaceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline metric inline iops based on the context it is used
+func (m *NvmeNamespaceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2347,7 +2347,7 @@ func (m *NvmeNamespaceMetricIops) ContextValidate(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceMetricIops) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2355,8 +2355,8 @@ func (m *NvmeNamespaceMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceMetricIops) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceMetricIops
+func (m *NvmeNamespaceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2364,34 +2364,34 @@ func (m *NvmeNamespaceMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceMetricLatency The round trip latency in microseconds observed at the storage object.
+// NvmeNamespaceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model NvmeNamespaceMetricLatency
-type NvmeNamespaceMetricLatency struct {
+// swagger:model nvme_namespace_inline_metric_inline_latency
+type NvmeNamespaceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace metric latency
-func (m *NvmeNamespaceMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline metric inline latency
+func (m *NvmeNamespaceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace metric latency based on the context it is used
-func (m *NvmeNamespaceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline metric inline latency based on the context it is used
+func (m *NvmeNamespaceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2401,7 +2401,7 @@ func (m *NvmeNamespaceMetricLatency) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2409,8 +2409,8 @@ func (m *NvmeNamespaceMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceMetricLatency) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceMetricLatency
+func (m *NvmeNamespaceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2418,17 +2418,17 @@ func (m *NvmeNamespaceMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceMetricLinks nvme namespace metric links
+// NvmeNamespaceInlineMetricInlineLinks nvme namespace inline metric inline links
 //
-// swagger:model NvmeNamespaceMetricLinks
-type NvmeNamespaceMetricLinks struct {
+// swagger:model nvme_namespace_inline_metric_inline__links
+type NvmeNamespaceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace metric links
-func (m *NvmeNamespaceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline metric inline links
+func (m *NvmeNamespaceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2441,7 +2441,7 @@ func (m *NvmeNamespaceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2458,8 +2458,8 @@ func (m *NvmeNamespaceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace metric links based on the context it is used
-func (m *NvmeNamespaceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline metric inline links based on the context it is used
+func (m *NvmeNamespaceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2472,7 +2472,7 @@ func (m *NvmeNamespaceMetricLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NvmeNamespaceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2487,7 +2487,7 @@ func (m *NvmeNamespaceMetricLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2495,8 +2495,8 @@ func (m *NvmeNamespaceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceMetricLinks
+func (m *NvmeNamespaceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2504,31 +2504,31 @@ func (m *NvmeNamespaceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// NvmeNamespaceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model NvmeNamespaceMetricThroughput
-type NvmeNamespaceMetricThroughput struct {
+// swagger:model nvme_namespace_inline_metric_inline_throughput
+type NvmeNamespaceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace metric throughput
-func (m *NvmeNamespaceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline metric inline throughput
+func (m *NvmeNamespaceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace metric throughput based on the context it is used
-func (m *NvmeNamespaceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline metric inline throughput based on the context it is used
+func (m *NvmeNamespaceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2538,7 +2538,7 @@ func (m *NvmeNamespaceMetricThroughput) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2546,8 +2546,8 @@ func (m *NvmeNamespaceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceMetricThroughput
+func (m *NvmeNamespaceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2555,10 +2555,10 @@ func (m *NvmeNamespaceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSpace The storage space related properties of the NVMe namespace.
+// NvmeNamespaceInlineSpace The storage space related properties of the NVMe namespace.
 //
-// swagger:model NvmeNamespaceSpace
-type NvmeNamespaceSpace struct {
+// swagger:model nvme_namespace_inline_space
+type NvmeNamespaceInlineSpace struct {
 
 	// The size of blocks in the namespace in bytes.<br/>
 	// Valid in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
@@ -2568,7 +2568,7 @@ type NvmeNamespaceSpace struct {
 	BlockSize *int64 `json:"block_size,omitempty"`
 
 	// guarantee
-	Guarantee *NvmeNamespaceSpaceGuarantee `json:"guarantee,omitempty"`
+	Guarantee *NvmeNamespaceInlineSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
 	// The total provisioned size of the NVMe namespace. Valid in POST and PATCH. The NVMe namespace size can be increased but not be made smaller using the REST interface.<br/>
 	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The maximum size is variable with respect to large NVMe namespace support in ONTAP. If large namespaces are supported, the maximum size is 128 TB (140737488355328 bytes) and if not supported, the maximum size is just under 16 TB (17557557870592 bytes). The minimum size supported is always 4096 bytes.<br/>
@@ -2577,18 +2577,18 @@ type NvmeNamespaceSpace struct {
 	// Example: 1073741824
 	// Maximum: 1.40737488355328e+14
 	// Minimum: 4096
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used and an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this nvme namespace space
-func (m *NvmeNamespaceSpace) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline space
+func (m *NvmeNamespaceInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBlockSize(formats); err != nil {
@@ -2609,7 +2609,7 @@ func (m *NvmeNamespaceSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeNamespaceSpaceTypeBlockSizePropEnum []interface{}
+var nvmeNamespaceInlineSpaceTypeBlockSizePropEnum []interface{}
 
 func init() {
 	var res []int64
@@ -2617,19 +2617,19 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceSpaceTypeBlockSizePropEnum = append(nvmeNamespaceSpaceTypeBlockSizePropEnum, v)
+		nvmeNamespaceInlineSpaceTypeBlockSizePropEnum = append(nvmeNamespaceInlineSpaceTypeBlockSizePropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *NvmeNamespaceSpace) validateBlockSizeEnum(path, location string, value int64) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceSpaceTypeBlockSizePropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineSpace) validateBlockSizeEnum(path, location string, value int64) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineSpaceTypeBlockSizePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceSpace) validateBlockSize(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpace) validateBlockSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.BlockSize) { // not required
 		return nil
 	}
@@ -2642,7 +2642,7 @@ func (m *NvmeNamespaceSpace) validateBlockSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceSpace) validateGuarantee(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpace) validateGuarantee(formats strfmt.Registry) error {
 	if swag.IsZero(m.Guarantee) { // not required
 		return nil
 	}
@@ -2659,24 +2659,24 @@ func (m *NvmeNamespaceSpace) validateGuarantee(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceSpace) validateSize(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpace) validateSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.Size) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("space"+"."+"size", "body", m.Size, 4096, false); err != nil {
+	if err := validate.MinimumInt("space"+"."+"size", "body", *m.Size, 4096, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("space"+"."+"size", "body", m.Size, 1.40737488355328e+14, false); err != nil {
+	if err := validate.MaximumInt("space"+"."+"size", "body", *m.Size, 1.40737488355328e+14, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this nvme namespace space based on the context it is used
-func (m *NvmeNamespaceSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline space based on the context it is used
+func (m *NvmeNamespaceInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
@@ -2693,7 +2693,7 @@ func (m *NvmeNamespaceSpace) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NvmeNamespaceSpace) contextValidateGuarantee(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpace) contextValidateGuarantee(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Guarantee != nil {
 		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
@@ -2707,9 +2707,9 @@ func (m *NvmeNamespaceSpace) contextValidateGuarantee(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeNamespaceSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -2717,7 +2717,7 @@ func (m *NvmeNamespaceSpace) contextValidateUsed(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSpace) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2725,8 +2725,8 @@ func (m *NvmeNamespaceSpace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSpace) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSpace
+func (m *NvmeNamespaceInlineSpace) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2734,10 +2734,10 @@ func (m *NvmeNamespaceSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSpaceGuarantee Properties that request and report the space guarantee for the NVMe namespace.
+// NvmeNamespaceInlineSpaceInlineGuarantee Properties that request and report the space guarantee for the NVMe namespace.
 //
-// swagger:model NvmeNamespaceSpaceGuarantee
-type NvmeNamespaceSpaceGuarantee struct {
+// swagger:model nvme_namespace_inline_space_inline_guarantee
+type NvmeNamespaceInlineSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the NVMe namespace. If _true_, a space reservation is requested for the namespace; if _false_, the namespace is thin provisioned. Guaranteeing a space reservation request for a namespace requires that the volume in which the namespace resides also be space reserved and that the fractional reserve for the volume be 100%.<br/>
 	// The space reservation policy for an NVMe namespace is determined by ONTAP.
@@ -2752,13 +2752,13 @@ type NvmeNamespaceSpaceGuarantee struct {
 	Reserved *bool `json:"reserved,omitempty"`
 }
 
-// Validate validates this nvme namespace space guarantee
-func (m *NvmeNamespaceSpaceGuarantee) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline space inline guarantee
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace space guarantee based on the context it is used
-func (m *NvmeNamespaceSpaceGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline space inline guarantee based on the context it is used
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateRequested(ctx, formats); err != nil {
@@ -2775,7 +2775,7 @@ func (m *NvmeNamespaceSpaceGuarantee) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeNamespaceSpaceGuarantee) contextValidateRequested(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) contextValidateRequested(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"guarantee"+"."+"requested", "body", m.Requested); err != nil {
 		return err
@@ -2784,7 +2784,7 @@ func (m *NvmeNamespaceSpaceGuarantee) contextValidateRequested(ctx context.Conte
 	return nil
 }
 
-func (m *NvmeNamespaceSpaceGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) contextValidateReserved(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"guarantee"+"."+"reserved", "body", m.Reserved); err != nil {
 		return err
@@ -2794,7 +2794,7 @@ func (m *NvmeNamespaceSpaceGuarantee) contextValidateReserved(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSpaceGuarantee) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2802,8 +2802,8 @@ func (m *NvmeNamespaceSpaceGuarantee) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSpaceGuarantee) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSpaceGuarantee
+func (m *NvmeNamespaceInlineSpaceInlineGuarantee) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSpaceInlineGuarantee
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2811,25 +2811,25 @@ func (m *NvmeNamespaceSpaceGuarantee) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// NvmeNamespaceInlineStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
-// swagger:model NvmeNamespaceStatistics
-type NvmeNamespaceStatistics struct {
+// swagger:model nvme_namespace_inline_statistics
+type NvmeNamespaceInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *NvmeNamespaceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *NvmeNamespaceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeNamespaceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *NvmeNamespaceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeNamespaceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *NvmeNamespaceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2838,8 +2838,8 @@ type NvmeNamespaceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme namespace statistics
-func (m *NvmeNamespaceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline statistics
+func (m *NvmeNamespaceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -2868,7 +2868,7 @@ func (m *NvmeNamespaceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -2885,7 +2885,7 @@ func (m *NvmeNamespaceStatistics) validateIopsRaw(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -2902,7 +2902,7 @@ func (m *NvmeNamespaceStatistics) validateLatencyRaw(formats strfmt.Registry) er
 	return nil
 }
 
-var nvmeNamespaceStatisticsTypeStatusPropEnum []interface{}
+var nvmeNamespaceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2910,145 +2910,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceStatisticsTypeStatusPropEnum = append(nvmeNamespaceStatisticsTypeStatusPropEnum, v)
+		nvmeNamespaceInlineStatisticsTypeStatusPropEnum = append(nvmeNamespaceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusOk captures enum value "ok"
-	NvmeNamespaceStatisticsStatusOk string = "ok"
+	// NvmeNamespaceInlineStatisticsStatusOk captures enum value "ok"
+	NvmeNamespaceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusError captures enum value "error"
-	NvmeNamespaceStatisticsStatusError string = "error"
+	// NvmeNamespaceInlineStatisticsStatusError captures enum value "error"
+	NvmeNamespaceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	NvmeNamespaceStatisticsStatusPartialNoData string = "partial_no_data"
+	// NvmeNamespaceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	NvmeNamespaceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeNamespaceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// NvmeNamespaceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeNamespaceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeNamespaceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// NvmeNamespaceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeNamespaceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	NvmeNamespaceStatisticsStatusNegativeDelta string = "negative_delta"
+	// NvmeNamespaceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	NvmeNamespaceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusNotFound captures enum value "not_found"
-	NvmeNamespaceStatisticsStatusNotFound string = "not_found"
+	// NvmeNamespaceInlineStatisticsStatusNotFound captures enum value "not_found"
+	NvmeNamespaceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	NvmeNamespaceStatisticsStatusBackfilledData string = "backfilled_data"
+	// NvmeNamespaceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	NvmeNamespaceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeNamespaceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeNamespaceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeNamespaceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeNamespaceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeNamespaceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeNamespaceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatistics
-	// NvmeNamespaceStatistics
+	// nvme_namespace_inline_statistics
+	// NvmeNamespaceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeNamespaceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeNamespaceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeNamespaceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeNamespaceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeNamespaceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -3065,7 +3065,7 @@ func (m *NvmeNamespaceStatistics) validateThroughputRaw(formats strfmt.Registry)
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3077,8 +3077,8 @@ func (m *NvmeNamespaceStatistics) validateTimestamp(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this nvme namespace statistics based on the context it is used
-func (m *NvmeNamespaceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline statistics based on the context it is used
+func (m *NvmeNamespaceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -3107,7 +3107,7 @@ func (m *NvmeNamespaceStatistics) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -3121,7 +3121,7 @@ func (m *NvmeNamespaceStatistics) contextValidateIopsRaw(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -3135,16 +3135,16 @@ func (m *NvmeNamespaceStatistics) contextValidateLatencyRaw(ctx context.Context,
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -3158,7 +3158,7 @@ func (m *NvmeNamespaceStatistics) contextValidateThroughputRaw(ctx context.Conte
 	return nil
 }
 
-func (m *NvmeNamespaceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -3168,7 +3168,7 @@ func (m *NvmeNamespaceStatistics) contextValidateTimestamp(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceStatistics) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3176,8 +3176,8 @@ func (m *NvmeNamespaceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceStatistics) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceStatistics
+func (m *NvmeNamespaceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3185,34 +3185,34 @@ func (m *NvmeNamespaceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// NvmeNamespaceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model NvmeNamespaceStatisticsIopsRaw
-type NvmeNamespaceStatisticsIopsRaw struct {
+// swagger:model nvme_namespace_inline_statistics_inline_iops_raw
+type NvmeNamespaceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace statistics iops raw
-func (m *NvmeNamespaceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline statistics inline iops raw
+func (m *NvmeNamespaceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace statistics iops raw based on the context it is used
-func (m *NvmeNamespaceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline statistics inline iops raw based on the context it is used
+func (m *NvmeNamespaceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3222,7 +3222,7 @@ func (m *NvmeNamespaceStatisticsIopsRaw) ContextValidate(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3230,8 +3230,8 @@ func (m *NvmeNamespaceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceStatisticsIopsRaw
+func (m *NvmeNamespaceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3239,34 +3239,34 @@ func (m *NvmeNamespaceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// NvmeNamespaceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model NvmeNamespaceStatisticsLatencyRaw
-type NvmeNamespaceStatisticsLatencyRaw struct {
+// swagger:model nvme_namespace_inline_statistics_inline_latency_raw
+type NvmeNamespaceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace statistics latency raw
-func (m *NvmeNamespaceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline statistics inline latency raw
+func (m *NvmeNamespaceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace statistics latency raw based on the context it is used
-func (m *NvmeNamespaceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline statistics inline latency raw based on the context it is used
+func (m *NvmeNamespaceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3276,7 +3276,7 @@ func (m *NvmeNamespaceStatisticsLatencyRaw) ContextValidate(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3284,8 +3284,8 @@ func (m *NvmeNamespaceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceStatisticsLatencyRaw
+func (m *NvmeNamespaceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3293,31 +3293,31 @@ func (m *NvmeNamespaceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// NvmeNamespaceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model NvmeNamespaceStatisticsThroughputRaw
-type NvmeNamespaceStatisticsThroughputRaw struct {
+// swagger:model nvme_namespace_inline_statistics_inline_throughput_raw
+type NvmeNamespaceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme namespace statistics throughput raw
-func (m *NvmeNamespaceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline statistics inline throughput raw
+func (m *NvmeNamespaceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace statistics throughput raw based on the context it is used
-func (m *NvmeNamespaceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline statistics inline throughput raw based on the context it is used
+func (m *NvmeNamespaceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3327,7 +3327,7 @@ func (m *NvmeNamespaceStatisticsThroughputRaw) ContextValidate(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3335,8 +3335,8 @@ func (m *NvmeNamespaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceStatisticsThroughputRaw
+func (m *NvmeNamespaceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3344,19 +3344,19 @@ func (m *NvmeNamespaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceStatus Status information about the NVMe namespace.
+// NvmeNamespaceInlineStatus Status information about the NVMe namespace.
 //
-// swagger:model NvmeNamespaceStatus
-type NvmeNamespaceStatus struct {
+// swagger:model nvme_namespace_inline_status
+type NvmeNamespaceInlineStatus struct {
 
 	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
 	//
 	// Read Only: true
 	// Enum: [online aggregate_offline volume_offline]
-	ContainerState string `json:"container_state,omitempty"`
+	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Mapped *bool `json:"mapped,omitempty"`
@@ -3371,11 +3371,11 @@ type NvmeNamespaceStatus struct {
 	// Example: online
 	// Read Only: true
 	// Enum: [nvfail offline online space_error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this nvme namespace status
-func (m *NvmeNamespaceStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline status
+func (m *NvmeNamespaceInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateContainerState(formats); err != nil {
@@ -3392,7 +3392,7 @@ func (m *NvmeNamespaceStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeNamespaceStatusTypeContainerStatePropEnum []interface{}
+var nvmeNamespaceInlineStatusTypeContainerStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3400,65 +3400,65 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceStatusTypeContainerStatePropEnum = append(nvmeNamespaceStatusTypeContainerStatePropEnum, v)
+		nvmeNamespaceInlineStatusTypeContainerStatePropEnum = append(nvmeNamespaceInlineStatusTypeContainerStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// container_state
 	// ContainerState
 	// online
 	// END DEBUGGING
-	// NvmeNamespaceStatusContainerStateOnline captures enum value "online"
-	NvmeNamespaceStatusContainerStateOnline string = "online"
+	// NvmeNamespaceInlineStatusContainerStateOnline captures enum value "online"
+	NvmeNamespaceInlineStatusContainerStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// container_state
 	// ContainerState
 	// aggregate_offline
 	// END DEBUGGING
-	// NvmeNamespaceStatusContainerStateAggregateOffline captures enum value "aggregate_offline"
-	NvmeNamespaceStatusContainerStateAggregateOffline string = "aggregate_offline"
+	// NvmeNamespaceInlineStatusContainerStateAggregateOffline captures enum value "aggregate_offline"
+	NvmeNamespaceInlineStatusContainerStateAggregateOffline string = "aggregate_offline"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// container_state
 	// ContainerState
 	// volume_offline
 	// END DEBUGGING
-	// NvmeNamespaceStatusContainerStateVolumeOffline captures enum value "volume_offline"
-	NvmeNamespaceStatusContainerStateVolumeOffline string = "volume_offline"
+	// NvmeNamespaceInlineStatusContainerStateVolumeOffline captures enum value "volume_offline"
+	NvmeNamespaceInlineStatusContainerStateVolumeOffline string = "volume_offline"
 )
 
 // prop value enum
-func (m *NvmeNamespaceStatus) validateContainerStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceStatusTypeContainerStatePropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineStatus) validateContainerStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineStatusTypeContainerStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) validateContainerState(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) validateContainerState(formats strfmt.Registry) error {
 	if swag.IsZero(m.ContainerState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateContainerStateEnum("status"+"."+"container_state", "body", m.ContainerState); err != nil {
+	if err := m.validateContainerStateEnum("status"+"."+"container_state", "body", *m.ContainerState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nvmeNamespaceStatusTypeStatePropEnum []interface{}
+var nvmeNamespaceInlineStatusTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3466,76 +3466,76 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeNamespaceStatusTypeStatePropEnum = append(nvmeNamespaceStatusTypeStatePropEnum, v)
+		nvmeNamespaceInlineStatusTypeStatePropEnum = append(nvmeNamespaceInlineStatusTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// state
 	// State
 	// nvfail
 	// END DEBUGGING
-	// NvmeNamespaceStatusStateNvfail captures enum value "nvfail"
-	NvmeNamespaceStatusStateNvfail string = "nvfail"
+	// NvmeNamespaceInlineStatusStateNvfail captures enum value "nvfail"
+	NvmeNamespaceInlineStatusStateNvfail string = "nvfail"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// NvmeNamespaceStatusStateOffline captures enum value "offline"
-	NvmeNamespaceStatusStateOffline string = "offline"
+	// NvmeNamespaceInlineStatusStateOffline captures enum value "offline"
+	NvmeNamespaceInlineStatusStateOffline string = "offline"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// NvmeNamespaceStatusStateOnline captures enum value "online"
-	NvmeNamespaceStatusStateOnline string = "online"
+	// NvmeNamespaceInlineStatusStateOnline captures enum value "online"
+	NvmeNamespaceInlineStatusStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// NvmeNamespaceStatus
-	// NvmeNamespaceStatus
+	// nvme_namespace_inline_status
+	// NvmeNamespaceInlineStatus
 	// state
 	// State
 	// space_error
 	// END DEBUGGING
-	// NvmeNamespaceStatusStateSpaceError captures enum value "space_error"
-	NvmeNamespaceStatusStateSpaceError string = "space_error"
+	// NvmeNamespaceInlineStatusStateSpaceError captures enum value "space_error"
+	NvmeNamespaceInlineStatusStateSpaceError string = "space_error"
 )
 
 // prop value enum
-func (m *NvmeNamespaceStatus) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeNamespaceStatusTypeStatePropEnum, true); err != nil {
+func (m *NvmeNamespaceInlineStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceInlineStatusTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) validateState(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this nvme namespace status based on the context it is used
-func (m *NvmeNamespaceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline status based on the context it is used
+func (m *NvmeNamespaceInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateContainerState(ctx, formats); err != nil {
@@ -3560,16 +3560,16 @@ func (m *NvmeNamespaceStatus) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) contextValidateContainerState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) contextValidateContainerState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"container_state", "body", string(m.ContainerState)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"container_state", "body", m.ContainerState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) contextValidateMapped(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) contextValidateMapped(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status"+"."+"mapped", "body", m.Mapped); err != nil {
 		return err
@@ -3578,7 +3578,7 @@ func (m *NvmeNamespaceStatus) contextValidateMapped(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) contextValidateReadOnly(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) contextValidateReadOnly(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status"+"."+"read_only", "body", m.ReadOnly); err != nil {
 		return err
@@ -3587,9 +3587,9 @@ func (m *NvmeNamespaceStatus) contextValidateReadOnly(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeNamespaceStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "status"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -3597,7 +3597,7 @@ func (m *NvmeNamespaceStatus) contextValidateState(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceStatus) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3605,8 +3605,8 @@ func (m *NvmeNamespaceStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceStatus) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceStatus
+func (m *NvmeNamespaceInlineStatus) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3614,35 +3614,35 @@ func (m *NvmeNamespaceStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-// There is an added cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// NvmeNamespaceInlineSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
+// There is an added computational cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
-// swagger:model NvmeNamespaceSubsystemMap
-type NvmeNamespaceSubsystemMap struct {
+// swagger:model nvme_namespace_inline_subsystem_map
+type NvmeNamespaceInlineSubsystemMap struct {
 
 	// links
-	Links *NvmeNamespaceSubsystemMapLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineSubsystemMapInlineLinks `json:"_links,omitempty"`
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00103050h
 	// Read Only: true
-	Anagrpid string `json:"anagrpid,omitempty"`
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
 	// Read Only: true
-	Nsid string `json:"nsid,omitempty"`
+	Nsid *string `json:"nsid,omitempty"`
 
 	// subsystem
-	Subsystem *NvmeNamespaceSubsystemMapSubsystem `json:"subsystem,omitempty"`
+	Subsystem *NvmeNamespaceInlineSubsystemMapInlineSubsystem `json:"subsystem,omitempty"`
 }
 
-// Validate validates this nvme namespace subsystem map
-func (m *NvmeNamespaceSubsystemMap) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline subsystem map
+func (m *NvmeNamespaceInlineSubsystemMap) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3659,7 +3659,7 @@ func (m *NvmeNamespaceSubsystemMap) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3676,7 +3676,7 @@ func (m *NvmeNamespaceSubsystemMap) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) validateSubsystem(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
 	}
@@ -3693,8 +3693,8 @@ func (m *NvmeNamespaceSubsystemMap) validateSubsystem(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme namespace subsystem map based on the context it is used
-func (m *NvmeNamespaceSubsystemMap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline subsystem map based on the context it is used
+func (m *NvmeNamespaceInlineSubsystemMap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3719,7 +3719,7 @@ func (m *NvmeNamespaceSubsystemMap) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3733,25 +3733,25 @@ func (m *NvmeNamespaceSubsystemMap) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"anagrpid", "body", string(m.Anagrpid)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"anagrpid", "body", m.Anagrpid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"nsid", "body", string(m.Nsid)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"nsid", "body", m.Nsid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMap) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMap) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Subsystem != nil {
 		if err := m.Subsystem.ContextValidate(ctx, formats); err != nil {
@@ -3766,7 +3766,7 @@ func (m *NvmeNamespaceSubsystemMap) contextValidateSubsystem(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMap) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSubsystemMap) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3774,8 +3774,8 @@ func (m *NvmeNamespaceSubsystemMap) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMap) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSubsystemMap
+func (m *NvmeNamespaceInlineSubsystemMap) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSubsystemMap
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3783,17 +3783,17 @@ func (m *NvmeNamespaceSubsystemMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSubsystemMapLinks nvme namespace subsystem map links
+// NvmeNamespaceInlineSubsystemMapInlineLinks nvme namespace inline subsystem map inline links
 //
-// swagger:model NvmeNamespaceSubsystemMapLinks
-type NvmeNamespaceSubsystemMapLinks struct {
+// swagger:model nvme_namespace_inline_subsystem_map_inline__links
+type NvmeNamespaceInlineSubsystemMapInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace subsystem map links
-func (m *NvmeNamespaceSubsystemMapLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline subsystem map inline links
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3806,7 +3806,7 @@ func (m *NvmeNamespaceSubsystemMapLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3823,8 +3823,8 @@ func (m *NvmeNamespaceSubsystemMapLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme namespace subsystem map links based on the context it is used
-func (m *NvmeNamespaceSubsystemMapLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline subsystem map inline links based on the context it is used
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3837,7 +3837,7 @@ func (m *NvmeNamespaceSubsystemMapLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3852,7 +3852,7 @@ func (m *NvmeNamespaceSubsystemMapLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3860,8 +3860,8 @@ func (m *NvmeNamespaceSubsystemMapLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSubsystemMapLinks
+func (m *NvmeNamespaceInlineSubsystemMapInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSubsystemMapInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3869,28 +3869,29 @@ func (m *NvmeNamespaceSubsystemMapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSubsystemMapSubsystem The NVMe subsystem to which the NVMe namespace is mapped.
+// NvmeNamespaceInlineSubsystemMapInlineSubsystem The NVMe subsystem to which the NVMe namespace is mapped.
 //
-// swagger:model NvmeNamespaceSubsystemMapSubsystem
-type NvmeNamespaceSubsystemMapSubsystem struct {
+// swagger:model nvme_namespace_inline_subsystem_map_inline_subsystem
+type NvmeNamespaceInlineSubsystemMapInlineSubsystem struct {
 
 	// links
-	Links *NvmeNamespaceSubsystemMapSubsystemLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the NVMe subsystem.
 	//
+	// Example: subsystem1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the NVMe subsystem.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace subsystem map subsystem
-func (m *NvmeNamespaceSubsystemMapSubsystem) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline subsystem map inline subsystem
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3907,7 +3908,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapSubsystem) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3924,24 +3925,24 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapSubsystem) validateName(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("subsystem_map"+"."+"subsystem"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("subsystem_map"+"."+"subsystem"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem_map"+"."+"subsystem"+"."+"name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem_map"+"."+"subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this nvme namespace subsystem map subsystem based on the context it is used
-func (m *NvmeNamespaceSubsystemMapSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline subsystem map inline subsystem based on the context it is used
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3954,7 +3955,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3969,7 +3970,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) contextValidateLinks(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapSubsystem) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3977,8 +3978,8 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapSubsystem) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSubsystemMapSubsystem
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystem) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSubsystemMapInlineSubsystem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3986,17 +3987,17 @@ func (m *NvmeNamespaceSubsystemMapSubsystem) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSubsystemMapSubsystemLinks nvme namespace subsystem map subsystem links
+// NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks nvme namespace inline subsystem map inline subsystem inline links
 //
-// swagger:model NvmeNamespaceSubsystemMapSubsystemLinks
-type NvmeNamespaceSubsystemMapSubsystemLinks struct {
+// swagger:model nvme_namespace_inline_subsystem_map_inline_subsystem_inline__links
+type NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace subsystem map subsystem links
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline subsystem map inline subsystem inline links
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -4009,7 +4010,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -4026,8 +4027,8 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this nvme namespace subsystem map subsystem links based on the context it is used
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline subsystem map inline subsystem inline links based on the context it is used
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -4040,7 +4041,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -4055,7 +4056,7 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4063,8 +4064,8 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSubsystemMapSubsystemLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSubsystemMapSubsystemLinks
+func (m *NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSubsystemMapInlineSubsystemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4072,27 +4073,27 @@ func (m *NvmeNamespaceSubsystemMapSubsystemLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// NvmeNamespaceSvm nvme namespace svm
+// NvmeNamespaceInlineSvm nvme namespace inline svm
 //
-// swagger:model NvmeNamespaceSvm
-type NvmeNamespaceSvm struct {
+// swagger:model nvme_namespace_inline_svm
+type NvmeNamespaceInlineSvm struct {
 
 	// links
-	Links *NvmeNamespaceSvmLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme namespace svm
-func (m *NvmeNamespaceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline svm
+func (m *NvmeNamespaceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -4105,7 +4106,7 @@ func (m *NvmeNamespaceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -4122,8 +4123,8 @@ func (m *NvmeNamespaceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace svm based on the context it is used
-func (m *NvmeNamespaceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline svm based on the context it is used
+func (m *NvmeNamespaceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -4136,7 +4137,7 @@ func (m *NvmeNamespaceSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NvmeNamespaceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -4151,7 +4152,7 @@ func (m *NvmeNamespaceSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSvm) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4159,8 +4160,8 @@ func (m *NvmeNamespaceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSvm) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSvm
+func (m *NvmeNamespaceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4168,17 +4169,17 @@ func (m *NvmeNamespaceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceSvmLinks nvme namespace svm links
+// NvmeNamespaceInlineSvmInlineLinks nvme namespace inline svm inline links
 //
-// swagger:model NvmeNamespaceSvmLinks
-type NvmeNamespaceSvmLinks struct {
+// swagger:model nvme_namespace_inline_svm_inline__links
+type NvmeNamespaceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace svm links
-func (m *NvmeNamespaceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace inline svm inline links
+func (m *NvmeNamespaceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -4191,7 +4192,7 @@ func (m *NvmeNamespaceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -4208,8 +4209,8 @@ func (m *NvmeNamespaceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme namespace svm links based on the context it is used
-func (m *NvmeNamespaceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace inline svm inline links based on the context it is used
+func (m *NvmeNamespaceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -4222,7 +4223,7 @@ func (m *NvmeNamespaceSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NvmeNamespaceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -4237,7 +4238,7 @@ func (m *NvmeNamespaceSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4245,8 +4246,8 @@ func (m *NvmeNamespaceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceSvmLinks
+func (m *NvmeNamespaceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

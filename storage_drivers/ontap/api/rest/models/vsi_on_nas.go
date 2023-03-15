@@ -23,16 +23,16 @@ type VsiOnNas struct {
 
 	// datastore
 	// Required: true
-	Datastore *VsiOnNasDatastore `json:"datastore"`
+	Datastore *VsiOnNasInlineDatastore `json:"datastore"`
 
 	// hyper v access
-	HypervAccess *VsiOnNasHypervAccess `json:"hyper_v_access,omitempty"`
-
-	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
-	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
+	HypervAccess *VsiOnNasInlineHypervAccess `json:"hyper_v_access,omitempty"`
 
 	// protection type
-	ProtectionType *VsiOnNasProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *VsiOnNasInlineProtectionType `json:"protection_type,omitempty"`
+
+	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
+	VsiOnNasInlineNfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 }
 
 // Validate validates this vsi on nas
@@ -47,11 +47,11 @@ func (m *VsiOnNas) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNfsAccess(formats); err != nil {
+	if err := m.validateProtectionType(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateProtectionType(formats); err != nil {
+	if err := m.validateVsiOnNasInlineNfsAccess(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -96,30 +96,6 @@ func (m *VsiOnNas) validateHypervAccess(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnNas) validateNfsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.NfsAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-		if swag.IsZero(m.NfsAccess[i]) { // not required
-			continue
-		}
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *VsiOnNas) validateProtectionType(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProtectionType) { // not required
 		return nil
@@ -137,6 +113,30 @@ func (m *VsiOnNas) validateProtectionType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VsiOnNas) validateVsiOnNasInlineNfsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.VsiOnNasInlineNfsAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VsiOnNasInlineNfsAccess); i++ {
+		if swag.IsZero(m.VsiOnNasInlineNfsAccess[i]) { // not required
+			continue
+		}
+
+		if m.VsiOnNasInlineNfsAccess[i] != nil {
+			if err := m.VsiOnNasInlineNfsAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this vsi on nas based on the context it is used
 func (m *VsiOnNas) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -149,11 +149,11 @@ func (m *VsiOnNas) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNfsAccess(ctx, formats); err != nil {
+	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
+	if err := m.contextValidateVsiOnNasInlineNfsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -191,24 +191,6 @@ func (m *VsiOnNas) contextValidateHypervAccess(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *VsiOnNas) contextValidateNfsAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *VsiOnNas) contextValidateProtectionType(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProtectionType != nil {
@@ -218,6 +200,24 @@ func (m *VsiOnNas) contextValidateProtectionType(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VsiOnNas) contextValidateVsiOnNasInlineNfsAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VsiOnNasInlineNfsAccess); i++ {
+
+		if m.VsiOnNasInlineNfsAccess[i] != nil {
+			if err := m.VsiOnNasInlineNfsAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -241,26 +241,26 @@ func (m *VsiOnNas) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnNasDatastore vsi on nas datastore
+// VsiOnNasInlineDatastore vsi on nas inline datastore
 //
-// swagger:model VsiOnNasDatastore
-type VsiOnNasDatastore struct {
+// swagger:model vsi_on_nas_inline_datastore
+type VsiOnNasInlineDatastore struct {
 
 	// The number of datastores to support.
 	// Maximum: 16
 	// Minimum: 1
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The size of the datastore. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *VsiOnNasDatastoreStorageService `json:"storage_service,omitempty"`
+	StorageService *VsiOnNasInlineDatastoreInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this vsi on nas datastore
-func (m *VsiOnNasDatastore) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on nas inline datastore
+func (m *VsiOnNasInlineDatastore) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCount(formats); err != nil {
@@ -281,23 +281,23 @@ func (m *VsiOnNasDatastore) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnNasDatastore) validateCount(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineDatastore) validateCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.Count) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("datastore"+"."+"count", "body", m.Count, 1, false); err != nil {
+	if err := validate.MinimumInt("datastore"+"."+"count", "body", *m.Count, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("datastore"+"."+"count", "body", m.Count, 16, false); err != nil {
+	if err := validate.MaximumInt("datastore"+"."+"count", "body", *m.Count, 16, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VsiOnNasDatastore) validateSize(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineDatastore) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("datastore"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -306,7 +306,7 @@ func (m *VsiOnNasDatastore) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnNasDatastore) validateStorageService(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineDatastore) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -323,8 +323,8 @@ func (m *VsiOnNasDatastore) validateStorageService(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this vsi on nas datastore based on the context it is used
-func (m *VsiOnNasDatastore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vsi on nas inline datastore based on the context it is used
+func (m *VsiOnNasInlineDatastore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -337,7 +337,7 @@ func (m *VsiOnNasDatastore) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *VsiOnNasDatastore) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *VsiOnNasInlineDatastore) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -352,7 +352,7 @@ func (m *VsiOnNasDatastore) contextValidateStorageService(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnNasDatastore) MarshalBinary() ([]byte, error) {
+func (m *VsiOnNasInlineDatastore) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -360,8 +360,8 @@ func (m *VsiOnNasDatastore) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnNasDatastore) UnmarshalBinary(b []byte) error {
-	var res VsiOnNasDatastore
+func (m *VsiOnNasInlineDatastore) UnmarshalBinary(b []byte) error {
+	var res VsiOnNasInlineDatastore
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -369,18 +369,18 @@ func (m *VsiOnNasDatastore) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnNasDatastoreStorageService vsi on nas datastore storage service
+// VsiOnNasInlineDatastoreInlineStorageService vsi on nas inline datastore inline storage service
 //
-// swagger:model VsiOnNasDatastoreStorageService
-type VsiOnNasDatastoreStorageService struct {
+// swagger:model vsi_on_nas_inline_datastore_inline_storage_service
+type VsiOnNasInlineDatastoreInlineStorageService struct {
 
 	// The storage service of the datastore.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this vsi on nas datastore storage service
-func (m *VsiOnNasDatastoreStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on nas inline datastore inline storage service
+func (m *VsiOnNasInlineDatastoreInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -393,7 +393,7 @@ func (m *VsiOnNasDatastoreStorageService) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-var vsiOnNasDatastoreStorageServiceTypeNamePropEnum []interface{}
+var vsiOnNasInlineDatastoreInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -401,52 +401,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnNasDatastoreStorageServiceTypeNamePropEnum = append(vsiOnNasDatastoreStorageServiceTypeNamePropEnum, v)
+		vsiOnNasInlineDatastoreInlineStorageServiceTypeNamePropEnum = append(vsiOnNasInlineDatastoreInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnNasDatastoreStorageService
-	// VsiOnNasDatastoreStorageService
+	// vsi_on_nas_inline_datastore_inline_storage_service
+	// VsiOnNasInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// VsiOnNasDatastoreStorageServiceNameExtreme captures enum value "extreme"
-	VsiOnNasDatastoreStorageServiceNameExtreme string = "extreme"
+	// VsiOnNasInlineDatastoreInlineStorageServiceNameExtreme captures enum value "extreme"
+	VsiOnNasInlineDatastoreInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// VsiOnNasDatastoreStorageService
-	// VsiOnNasDatastoreStorageService
+	// vsi_on_nas_inline_datastore_inline_storage_service
+	// VsiOnNasInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// VsiOnNasDatastoreStorageServiceNamePerformance captures enum value "performance"
-	VsiOnNasDatastoreStorageServiceNamePerformance string = "performance"
+	// VsiOnNasInlineDatastoreInlineStorageServiceNamePerformance captures enum value "performance"
+	VsiOnNasInlineDatastoreInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// VsiOnNasDatastoreStorageService
-	// VsiOnNasDatastoreStorageService
+	// vsi_on_nas_inline_datastore_inline_storage_service
+	// VsiOnNasInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// VsiOnNasDatastoreStorageServiceNameValue captures enum value "value"
-	VsiOnNasDatastoreStorageServiceNameValue string = "value"
+	// VsiOnNasInlineDatastoreInlineStorageServiceNameValue captures enum value "value"
+	VsiOnNasInlineDatastoreInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *VsiOnNasDatastoreStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnNasDatastoreStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *VsiOnNasInlineDatastoreInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnNasInlineDatastoreInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnNasDatastoreStorageService) validateName(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineDatastoreInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -459,13 +459,13 @@ func (m *VsiOnNasDatastoreStorageService) validateName(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validates this vsi on nas datastore storage service based on context it is used
-func (m *VsiOnNasDatastoreStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vsi on nas inline datastore inline storage service based on context it is used
+func (m *VsiOnNasInlineDatastoreInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnNasDatastoreStorageService) MarshalBinary() ([]byte, error) {
+func (m *VsiOnNasInlineDatastoreInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -473,8 +473,8 @@ func (m *VsiOnNasDatastoreStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnNasDatastoreStorageService) UnmarshalBinary(b []byte) error {
-	var res VsiOnNasDatastoreStorageService
+func (m *VsiOnNasInlineDatastoreInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res VsiOnNasInlineDatastoreInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -482,19 +482,19 @@ func (m *VsiOnNasDatastoreStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnNasHypervAccess vsi on nas hyperv access
+// VsiOnNasInlineHypervAccess vsi on nas inline hyper v access
 //
-// swagger:model VsiOnNasHypervAccess
-type VsiOnNasHypervAccess struct {
+// swagger:model vsi_on_nas_inline_hyper_v_access
+type VsiOnNasInlineHypervAccess struct {
 
 	// Hyper-V service account.
 	// Max Length: 256
 	// Min Length: 1
-	ServiceAccount string `json:"service_account,omitempty"`
+	ServiceAccount *string `json:"service_account,omitempty"`
 }
 
-// Validate validates this vsi on nas hyperv access
-func (m *VsiOnNasHypervAccess) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on nas inline hyper v access
+func (m *VsiOnNasInlineHypervAccess) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateServiceAccount(formats); err != nil {
@@ -507,29 +507,29 @@ func (m *VsiOnNasHypervAccess) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnNasHypervAccess) validateServiceAccount(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineHypervAccess) validateServiceAccount(formats strfmt.Registry) error {
 	if swag.IsZero(m.ServiceAccount) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("hyper_v_access"+"."+"service_account", "body", m.ServiceAccount, 1); err != nil {
+	if err := validate.MinLength("hyper_v_access"+"."+"service_account", "body", *m.ServiceAccount, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("hyper_v_access"+"."+"service_account", "body", m.ServiceAccount, 256); err != nil {
+	if err := validate.MaxLength("hyper_v_access"+"."+"service_account", "body", *m.ServiceAccount, 256); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vsi on nas hyperv access based on context it is used
-func (m *VsiOnNasHypervAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vsi on nas inline hyper v access based on context it is used
+func (m *VsiOnNasInlineHypervAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnNasHypervAccess) MarshalBinary() ([]byte, error) {
+func (m *VsiOnNasInlineHypervAccess) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -537,8 +537,8 @@ func (m *VsiOnNasHypervAccess) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnNasHypervAccess) UnmarshalBinary(b []byte) error {
-	var res VsiOnNasHypervAccess
+func (m *VsiOnNasInlineHypervAccess) UnmarshalBinary(b []byte) error {
+	var res VsiOnNasInlineHypervAccess
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -546,22 +546,22 @@ func (m *VsiOnNasHypervAccess) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnNasProtectionType vsi on nas protection type
+// VsiOnNasInlineProtectionType vsi on nas inline protection type
 //
-// swagger:model VsiOnNasProtectionType
-type VsiOnNasProtectionType struct {
+// swagger:model vsi_on_nas_inline_protection_type
+type VsiOnNasInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this vsi on nas protection type
-func (m *VsiOnNasProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on nas inline protection type
+func (m *VsiOnNasInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -578,7 +578,7 @@ func (m *VsiOnNasProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var vsiOnNasProtectionTypeTypeLocalRpoPropEnum []interface{}
+var vsiOnNasInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -586,55 +586,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnNasProtectionTypeTypeLocalRpoPropEnum = append(vsiOnNasProtectionTypeTypeLocalRpoPropEnum, v)
+		vsiOnNasInlineProtectionTypeTypeLocalRpoPropEnum = append(vsiOnNasInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnNasProtectionType
-	// VsiOnNasProtectionType
+	// vsi_on_nas_inline_protection_type
+	// VsiOnNasInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// VsiOnNasProtectionTypeLocalRpoHourly captures enum value "hourly"
-	VsiOnNasProtectionTypeLocalRpoHourly string = "hourly"
+	// VsiOnNasInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	VsiOnNasInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// VsiOnNasProtectionType
-	// VsiOnNasProtectionType
+	// vsi_on_nas_inline_protection_type
+	// VsiOnNasInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// VsiOnNasProtectionTypeLocalRpoNone captures enum value "none"
-	VsiOnNasProtectionTypeLocalRpoNone string = "none"
+	// VsiOnNasInlineProtectionTypeLocalRpoNone captures enum value "none"
+	VsiOnNasInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *VsiOnNasProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnNasProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *VsiOnNasInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnNasInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnNasProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var vsiOnNasProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var vsiOnNasInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -642,61 +642,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnNasProtectionTypeTypeRemoteRpoPropEnum = append(vsiOnNasProtectionTypeTypeRemoteRpoPropEnum, v)
+		vsiOnNasInlineProtectionTypeTypeRemoteRpoPropEnum = append(vsiOnNasInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnNasProtectionType
-	// VsiOnNasProtectionType
+	// vsi_on_nas_inline_protection_type
+	// VsiOnNasInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// VsiOnNasProtectionTypeRemoteRpoNone captures enum value "none"
-	VsiOnNasProtectionTypeRemoteRpoNone string = "none"
+	// VsiOnNasInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	VsiOnNasInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// VsiOnNasProtectionType
-	// VsiOnNasProtectionType
+	// vsi_on_nas_inline_protection_type
+	// VsiOnNasInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// VsiOnNasProtectionTypeRemoteRpoZero captures enum value "zero"
-	VsiOnNasProtectionTypeRemoteRpoZero string = "zero"
+	// VsiOnNasInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	VsiOnNasInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *VsiOnNasProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnNasProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *VsiOnNasInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnNasInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnNasProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *VsiOnNasInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vsi on nas protection type based on context it is used
-func (m *VsiOnNasProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vsi on nas inline protection type based on context it is used
+func (m *VsiOnNasInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnNasProtectionType) MarshalBinary() ([]byte, error) {
+func (m *VsiOnNasInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -704,8 +704,8 @@ func (m *VsiOnNasProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnNasProtectionType) UnmarshalBinary(b []byte) error {
-	var res VsiOnNasProtectionType
+func (m *VsiOnNasInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res VsiOnNasInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -73,7 +73,7 @@ type SnaplockRetentionPolicyModifyParams struct {
 
 	   Name of the retention policy
 	*/
-	PolicyNamePathParameter string
+	PolicyName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *SnaplockRetentionPolicyModifyParams) SetInfo(info *models.SnaplockReten
 	o.Info = info
 }
 
-// WithPolicyNamePathParameter adds the policyName to the snaplock retention policy modify params
-func (o *SnaplockRetentionPolicyModifyParams) WithPolicyNamePathParameter(policyName string) *SnaplockRetentionPolicyModifyParams {
-	o.SetPolicyNamePathParameter(policyName)
+// WithPolicyName adds the policyName to the snaplock retention policy modify params
+func (o *SnaplockRetentionPolicyModifyParams) WithPolicyName(policyName string) *SnaplockRetentionPolicyModifyParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNamePathParameter adds the policyName to the snaplock retention policy modify params
-func (o *SnaplockRetentionPolicyModifyParams) SetPolicyNamePathParameter(policyName string) {
-	o.PolicyNamePathParameter = policyName
+// SetPolicyName adds the policyName to the snaplock retention policy modify params
+func (o *SnaplockRetentionPolicyModifyParams) SetPolicyName(policyName string) {
+	o.PolicyName = policyName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *SnaplockRetentionPolicyModifyParams) WriteToRequest(r runtime.ClientReq
 	}
 
 	// path param policy.name
-	if err := r.SetPathParam("policy.name", o.PolicyNamePathParameter); err != nil {
+	if err := r.SetPathParam("policy.name", o.PolicyName); err != nil {
 		return err
 	}
 

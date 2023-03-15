@@ -23,7 +23,7 @@ type SQLOnSan struct {
 
 	// db
 	// Required: true
-	Db *SQLOnSanDb `json:"db"`
+	Db *SQLOnSanInlineDb `json:"db"`
 
 	// The name of the initiator group through which the contents of this application will be accessed. Modification of this parameter is a disruptive operation. All LUNs in the application component will be unmapped from the current igroup and re-mapped to the new igroup.
 	// Required: true
@@ -33,25 +33,25 @@ type SQLOnSan struct {
 
 	// log
 	// Required: true
-	Log *SQLOnSanLog `json:"log"`
-
-	// The list of initiator groups to create.
-	// Max Items: 1
-	// Min Items: 0
-	NewIgroups []*SQLOnSanNewIgroups `json:"new_igroups,omitempty"`
+	Log *SQLOnSanInlineLog `json:"log"`
 
 	// The name of the host OS running the application.
 	// Enum: [windows windows_2008 windows_gpt]
 	OsType *string `json:"os_type,omitempty"`
 
 	// protection type
-	ProtectionType *SQLOnSanProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *SQLOnSanInlineProtectionType `json:"protection_type,omitempty"`
 
 	// The number of server cores for the DB.
 	ServerCoresCount *int64 `json:"server_cores_count,omitempty"`
 
+	// The list of initiator groups to create.
+	// Max Items: 1
+	// Min Items: 0
+	SQLOnSanInlineNewIgroups []*SQLOnSanNewIgroups `json:"new_igroups,omitempty"`
+
 	// temp db
-	TempDb *SQLOnSanTempDb `json:"temp_db,omitempty"`
+	TempDb *SQLOnSanInlineTempDb `json:"temp_db,omitempty"`
 }
 
 // Validate validates this sql on san
@@ -70,15 +70,15 @@ func (m *SQLOnSan) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNewIgroups(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateProtectionType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSQLOnSanInlineNewIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -140,40 +140,6 @@ func (m *SQLOnSan) validateLog(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SQLOnSan) validateNewIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.NewIgroups) { // not required
-		return nil
-	}
-
-	iNewIgroupsSize := int64(len(m.NewIgroups))
-
-	if err := validate.MinItems("new_igroups", "body", iNewIgroupsSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("new_igroups", "body", iNewIgroupsSize, 1); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-		if swag.IsZero(m.NewIgroups[i]) { // not required
-			continue
-		}
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -262,6 +228,40 @@ func (m *SQLOnSan) validateProtectionType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SQLOnSan) validateSQLOnSanInlineNewIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.SQLOnSanInlineNewIgroups) { // not required
+		return nil
+	}
+
+	iSQLOnSanInlineNewIgroupsSize := int64(len(m.SQLOnSanInlineNewIgroups))
+
+	if err := validate.MinItems("new_igroups", "body", iSQLOnSanInlineNewIgroupsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("new_igroups", "body", iSQLOnSanInlineNewIgroupsSize, 1); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SQLOnSanInlineNewIgroups); i++ {
+		if swag.IsZero(m.SQLOnSanInlineNewIgroups[i]) { // not required
+			continue
+		}
+
+		if m.SQLOnSanInlineNewIgroups[i] != nil {
+			if err := m.SQLOnSanInlineNewIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *SQLOnSan) validateTempDb(formats strfmt.Registry) error {
 	if swag.IsZero(m.TempDb) { // not required
 		return nil
@@ -291,11 +291,11 @@ func (m *SQLOnSan) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
+	if err := m.contextValidateSQLOnSanInlineNewIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -337,24 +337,6 @@ func (m *SQLOnSan) contextValidateLog(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SQLOnSan) contextValidateNewIgroups(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *SQLOnSan) contextValidateProtectionType(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProtectionType != nil {
@@ -364,6 +346,24 @@ func (m *SQLOnSan) contextValidateProtectionType(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SQLOnSan) contextValidateSQLOnSanInlineNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SQLOnSanInlineNewIgroups); i++ {
+
+		if m.SQLOnSanInlineNewIgroups[i] != nil {
+			if err := m.SQLOnSanInlineNewIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -401,21 +401,21 @@ func (m *SQLOnSan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanDb SQL on san db
+// SQLOnSanInlineDb sql on san inline db
 //
-// swagger:model SQLOnSanDb
-type SQLOnSanDb struct {
+// swagger:model sql_on_san_inline_db
+type SQLOnSanInlineDb struct {
 
 	// The size of the DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *SQLOnSanDbStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSanInlineDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on san db
-func (m *SQLOnSanDb) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline db
+func (m *SQLOnSanInlineDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -432,7 +432,7 @@ func (m *SQLOnSanDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSanDb) validateSize(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineDb) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("db"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -441,7 +441,7 @@ func (m *SQLOnSanDb) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSanDb) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -458,8 +458,8 @@ func (m *SQLOnSanDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on san db based on the context it is used
-func (m *SQLOnSanDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on san inline db based on the context it is used
+func (m *SQLOnSanInlineDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -472,7 +472,7 @@ func (m *SQLOnSanDb) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *SQLOnSanDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSanInlineDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -487,7 +487,7 @@ func (m *SQLOnSanDb) contextValidateStorageService(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanDb) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -495,8 +495,8 @@ func (m *SQLOnSanDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanDb) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanDb
+func (m *SQLOnSanInlineDb) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -504,18 +504,18 @@ func (m *SQLOnSanDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanDbStorageService SQL on san db storage service
+// SQLOnSanInlineDbInlineStorageService sql on san inline db inline storage service
 //
-// swagger:model SQLOnSanDbStorageService
-type SQLOnSanDbStorageService struct {
+// swagger:model sql_on_san_inline_db_inline_storage_service
+type SQLOnSanInlineDbInlineStorageService struct {
 
 	// The storage service of the DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on san db storage service
-func (m *SQLOnSanDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline db inline storage service
+func (m *SQLOnSanInlineDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -528,7 +528,7 @@ func (m *SQLOnSanDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSanDbStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSanInlineDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -536,52 +536,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSanDbStorageServiceTypeNamePropEnum = append(sqlOnSanDbStorageServiceTypeNamePropEnum, v)
+		sqlOnSanInlineDbInlineStorageServiceTypeNamePropEnum = append(sqlOnSanInlineDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSanDbStorageService
-	// SQLOnSanDbStorageService
+	// sql_on_san_inline_db_inline_storage_service
+	// SQLOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSanDbStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSanDbStorageServiceNameExtreme string = "extreme"
+	// SQLOnSanInlineDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSanInlineDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanDbStorageService
-	// SQLOnSanDbStorageService
+	// sql_on_san_inline_db_inline_storage_service
+	// SQLOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSanDbStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSanDbStorageServiceNamePerformance string = "performance"
+	// SQLOnSanInlineDbInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSanInlineDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanDbStorageService
-	// SQLOnSanDbStorageService
+	// sql_on_san_inline_db_inline_storage_service
+	// SQLOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSanDbStorageServiceNameValue captures enum value "value"
-	SQLOnSanDbStorageServiceNameValue string = "value"
+	// SQLOnSanInlineDbInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSanInlineDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSanDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSanDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSanInlineDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSanInlineDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSanDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -594,13 +594,13 @@ func (m *SQLOnSanDbStorageService) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this SQL on san db storage service based on context it is used
-func (m *SQLOnSanDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on san inline db inline storage service based on context it is used
+func (m *SQLOnSanInlineDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -608,8 +608,8 @@ func (m *SQLOnSanDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanDbStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanDbStorageService
+func (m *SQLOnSanInlineDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -617,21 +617,21 @@ func (m *SQLOnSanDbStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanLog SQL on san log
+// SQLOnSanInlineLog sql on san inline log
 //
-// swagger:model SQLOnSanLog
-type SQLOnSanLog struct {
+// swagger:model sql_on_san_inline_log
+type SQLOnSanInlineLog struct {
 
 	// The size of the log DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *SQLOnSanLogStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSanInlineLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on san log
-func (m *SQLOnSanLog) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline log
+func (m *SQLOnSanInlineLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -648,7 +648,7 @@ func (m *SQLOnSanLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSanLog) validateSize(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineLog) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("log"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -657,7 +657,7 @@ func (m *SQLOnSanLog) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSanLog) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -674,8 +674,8 @@ func (m *SQLOnSanLog) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on san log based on the context it is used
-func (m *SQLOnSanLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on san inline log based on the context it is used
+func (m *SQLOnSanInlineLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -688,7 +688,7 @@ func (m *SQLOnSanLog) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SQLOnSanLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSanInlineLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -703,7 +703,7 @@ func (m *SQLOnSanLog) contextValidateStorageService(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanLog) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -711,8 +711,8 @@ func (m *SQLOnSanLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanLog) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanLog
+func (m *SQLOnSanInlineLog) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -720,18 +720,18 @@ func (m *SQLOnSanLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanLogStorageService SQL on san log storage service
+// SQLOnSanInlineLogInlineStorageService sql on san inline log inline storage service
 //
-// swagger:model SQLOnSanLogStorageService
-type SQLOnSanLogStorageService struct {
+// swagger:model sql_on_san_inline_log_inline_storage_service
+type SQLOnSanInlineLogInlineStorageService struct {
 
 	// The storage service of the log DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on san log storage service
-func (m *SQLOnSanLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline log inline storage service
+func (m *SQLOnSanInlineLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -744,7 +744,7 @@ func (m *SQLOnSanLogStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSanLogStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSanInlineLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -752,52 +752,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSanLogStorageServiceTypeNamePropEnum = append(sqlOnSanLogStorageServiceTypeNamePropEnum, v)
+		sqlOnSanInlineLogInlineStorageServiceTypeNamePropEnum = append(sqlOnSanInlineLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSanLogStorageService
-	// SQLOnSanLogStorageService
+	// sql_on_san_inline_log_inline_storage_service
+	// SQLOnSanInlineLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSanLogStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSanLogStorageServiceNameExtreme string = "extreme"
+	// SQLOnSanInlineLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSanInlineLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanLogStorageService
-	// SQLOnSanLogStorageService
+	// sql_on_san_inline_log_inline_storage_service
+	// SQLOnSanInlineLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSanLogStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSanLogStorageServiceNamePerformance string = "performance"
+	// SQLOnSanInlineLogInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSanInlineLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanLogStorageService
-	// SQLOnSanLogStorageService
+	// sql_on_san_inline_log_inline_storage_service
+	// SQLOnSanInlineLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSanLogStorageServiceNameValue captures enum value "value"
-	SQLOnSanLogStorageServiceNameValue string = "value"
+	// SQLOnSanInlineLogInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSanInlineLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSanLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSanLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSanInlineLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSanInlineLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSanLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -810,13 +810,13 @@ func (m *SQLOnSanLogStorageService) validateName(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validates this SQL on san log storage service based on context it is used
-func (m *SQLOnSanLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on san inline log inline storage service based on context it is used
+func (m *SQLOnSanInlineLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -824,8 +824,8 @@ func (m *SQLOnSanLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanLogStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanLogStorageService
+func (m *SQLOnSanInlineLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -833,22 +833,22 @@ func (m *SQLOnSanLogStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanProtectionType SQL on san protection type
+// SQLOnSanInlineProtectionType sql on san inline protection type
 //
-// swagger:model SQLOnSanProtectionType
-type SQLOnSanProtectionType struct {
+// swagger:model sql_on_san_inline_protection_type
+type SQLOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this SQL on san protection type
-func (m *SQLOnSanProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline protection type
+func (m *SQLOnSanInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -865,7 +865,7 @@ func (m *SQLOnSanProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSanProtectionTypeTypeLocalRpoPropEnum []interface{}
+var sqlOnSanInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -873,55 +873,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSanProtectionTypeTypeLocalRpoPropEnum = append(sqlOnSanProtectionTypeTypeLocalRpoPropEnum, v)
+		sqlOnSanInlineProtectionTypeTypeLocalRpoPropEnum = append(sqlOnSanInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSanProtectionType
-	// SQLOnSanProtectionType
+	// sql_on_san_inline_protection_type
+	// SQLOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// SQLOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
-	SQLOnSanProtectionTypeLocalRpoHourly string = "hourly"
+	// SQLOnSanInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	SQLOnSanInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanProtectionType
-	// SQLOnSanProtectionType
+	// sql_on_san_inline_protection_type
+	// SQLOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// SQLOnSanProtectionTypeLocalRpoNone captures enum value "none"
-	SQLOnSanProtectionTypeLocalRpoNone string = "none"
+	// SQLOnSanInlineProtectionTypeLocalRpoNone captures enum value "none"
+	SQLOnSanInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *SQLOnSanProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSanProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *SQLOnSanInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSanInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSanProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var sqlOnSanProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var sqlOnSanInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -929,61 +929,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSanProtectionTypeTypeRemoteRpoPropEnum = append(sqlOnSanProtectionTypeTypeRemoteRpoPropEnum, v)
+		sqlOnSanInlineProtectionTypeTypeRemoteRpoPropEnum = append(sqlOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSanProtectionType
-	// SQLOnSanProtectionType
+	// sql_on_san_inline_protection_type
+	// SQLOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// SQLOnSanProtectionTypeRemoteRpoNone captures enum value "none"
-	SQLOnSanProtectionTypeRemoteRpoNone string = "none"
+	// SQLOnSanInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	SQLOnSanInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanProtectionType
-	// SQLOnSanProtectionType
+	// sql_on_san_inline_protection_type
+	// SQLOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// SQLOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
-	SQLOnSanProtectionTypeRemoteRpoZero string = "zero"
+	// SQLOnSanInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	SQLOnSanInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *SQLOnSanProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSanProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *SQLOnSanInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSanProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this SQL on san protection type based on context it is used
-func (m *SQLOnSanProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on san inline protection type based on context it is used
+func (m *SQLOnSanInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanProtectionType) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -991,8 +991,8 @@ func (m *SQLOnSanProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanProtectionType) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanProtectionType
+func (m *SQLOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1000,20 +1000,20 @@ func (m *SQLOnSanProtectionType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanTempDb SQL on san temp db
+// SQLOnSanInlineTempDb sql on san inline temp db
 //
-// swagger:model SQLOnSanTempDb
-type SQLOnSanTempDb struct {
+// swagger:model sql_on_san_inline_temp_db
+type SQLOnSanInlineTempDb struct {
 
 	// The size of the temp DB. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *SQLOnSanTempDbStorageService `json:"storage_service,omitempty"`
+	StorageService *SQLOnSanInlineTempDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this SQL on san temp db
-func (m *SQLOnSanTempDb) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline temp db
+func (m *SQLOnSanInlineTempDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -1026,7 +1026,7 @@ func (m *SQLOnSanTempDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SQLOnSanTempDb) validateStorageService(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineTempDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -1043,8 +1043,8 @@ func (m *SQLOnSanTempDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this SQL on san temp db based on the context it is used
-func (m *SQLOnSanTempDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sql on san inline temp db based on the context it is used
+func (m *SQLOnSanInlineTempDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -1057,7 +1057,7 @@ func (m *SQLOnSanTempDb) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SQLOnSanTempDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SQLOnSanInlineTempDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1072,7 +1072,7 @@ func (m *SQLOnSanTempDb) contextValidateStorageService(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanTempDb) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineTempDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1080,8 +1080,8 @@ func (m *SQLOnSanTempDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanTempDb) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanTempDb
+func (m *SQLOnSanInlineTempDb) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineTempDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1089,18 +1089,18 @@ func (m *SQLOnSanTempDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SQLOnSanTempDbStorageService SQL on san temp db storage service
+// SQLOnSanInlineTempDbInlineStorageService sql on san inline temp db inline storage service
 //
-// swagger:model SQLOnSanTempDbStorageService
-type SQLOnSanTempDbStorageService struct {
+// swagger:model sql_on_san_inline_temp_db_inline_storage_service
+type SQLOnSanInlineTempDbInlineStorageService struct {
 
 	// The storage service of the temp DB.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this SQL on san temp db storage service
-func (m *SQLOnSanTempDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this sql on san inline temp db inline storage service
+func (m *SQLOnSanInlineTempDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1113,7 +1113,7 @@ func (m *SQLOnSanTempDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sqlOnSanTempDbStorageServiceTypeNamePropEnum []interface{}
+var sqlOnSanInlineTempDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1121,52 +1121,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sqlOnSanTempDbStorageServiceTypeNamePropEnum = append(sqlOnSanTempDbStorageServiceTypeNamePropEnum, v)
+		sqlOnSanInlineTempDbInlineStorageServiceTypeNamePropEnum = append(sqlOnSanInlineTempDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SQLOnSanTempDbStorageService
-	// SQLOnSanTempDbStorageService
+	// sql_on_san_inline_temp_db_inline_storage_service
+	// SQLOnSanInlineTempDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SQLOnSanTempDbStorageServiceNameExtreme captures enum value "extreme"
-	SQLOnSanTempDbStorageServiceNameExtreme string = "extreme"
+	// SQLOnSanInlineTempDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	SQLOnSanInlineTempDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanTempDbStorageService
-	// SQLOnSanTempDbStorageService
+	// sql_on_san_inline_temp_db_inline_storage_service
+	// SQLOnSanInlineTempDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SQLOnSanTempDbStorageServiceNamePerformance captures enum value "performance"
-	SQLOnSanTempDbStorageServiceNamePerformance string = "performance"
+	// SQLOnSanInlineTempDbInlineStorageServiceNamePerformance captures enum value "performance"
+	SQLOnSanInlineTempDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SQLOnSanTempDbStorageService
-	// SQLOnSanTempDbStorageService
+	// sql_on_san_inline_temp_db_inline_storage_service
+	// SQLOnSanInlineTempDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SQLOnSanTempDbStorageServiceNameValue captures enum value "value"
-	SQLOnSanTempDbStorageServiceNameValue string = "value"
+	// SQLOnSanInlineTempDbInlineStorageServiceNameValue captures enum value "value"
+	SQLOnSanInlineTempDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SQLOnSanTempDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sqlOnSanTempDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SQLOnSanInlineTempDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sqlOnSanInlineTempDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SQLOnSanTempDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *SQLOnSanInlineTempDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1179,13 +1179,13 @@ func (m *SQLOnSanTempDbStorageService) validateName(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validates this SQL on san temp db storage service based on context it is used
-func (m *SQLOnSanTempDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this sql on san inline temp db inline storage service based on context it is used
+func (m *SQLOnSanInlineTempDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SQLOnSanTempDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *SQLOnSanInlineTempDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1193,8 +1193,8 @@ func (m *SQLOnSanTempDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SQLOnSanTempDbStorageService) UnmarshalBinary(b []byte) error {
-	var res SQLOnSanTempDbStorageService
+func (m *SQLOnSanInlineTempDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SQLOnSanInlineTempDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

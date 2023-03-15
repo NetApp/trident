@@ -65,7 +65,7 @@ type SecurityCertificateDeleteParams struct {
 
 	   Certificate UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SecurityCertificateDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the security certificate delete params
-func (o *SecurityCertificateDeleteParams) WithUUIDPathParameter(uuid string) *SecurityCertificateDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security certificate delete params
+func (o *SecurityCertificateDeleteParams) WithUUID(uuid string) *SecurityCertificateDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security certificate delete params
-func (o *SecurityCertificateDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security certificate delete params
+func (o *SecurityCertificateDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SecurityCertificateDeleteParams) WriteToRequest(r runtime.ClientRequest
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

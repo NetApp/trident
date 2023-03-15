@@ -21,28 +21,28 @@ import (
 type SnaplockLitigation struct {
 
 	// links
-	Links *SnaplockLitigationLinks `json:"_links,omitempty"`
+	Links *SnaplockLitigationInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the litigation ID.
 	// Read Only: true
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Specifies the legal-hold litigation name.
 	// Example: lit1
-	Name string `json:"name,omitempty"`
-
-	// operations
-	Operations []*SnaplockLegalHoldOperation `json:"operations,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the path on which legal-hold operation has to be applied.
 	// Example: /dir1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
+
+	// snaplock litigation inline operations
+	SnaplockLitigationInlineOperations []*SnaplockLegalHoldOperation `json:"operations,omitempty"`
 
 	// svm
-	Svm *SnaplockLitigationSvm `json:"svm,omitempty"`
+	Svm *SnaplockLitigationInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *SnaplockLitigationVolume `json:"volume,omitempty"`
+	Volume *SnaplockLitigationInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this snaplock litigation
@@ -53,7 +53,7 @@ func (m *SnaplockLitigation) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateOperations(formats); err != nil {
+	if err := m.validateSnaplockLitigationInlineOperations(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,18 +88,18 @@ func (m *SnaplockLitigation) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLitigation) validateOperations(formats strfmt.Registry) error {
-	if swag.IsZero(m.Operations) { // not required
+func (m *SnaplockLitigation) validateSnaplockLitigationInlineOperations(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockLitigationInlineOperations) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Operations); i++ {
-		if swag.IsZero(m.Operations[i]) { // not required
+	for i := 0; i < len(m.SnaplockLitigationInlineOperations); i++ {
+		if swag.IsZero(m.SnaplockLitigationInlineOperations[i]) { // not required
 			continue
 		}
 
-		if m.Operations[i] != nil {
-			if err := m.Operations[i].Validate(formats); err != nil {
+		if m.SnaplockLitigationInlineOperations[i] != nil {
+			if err := m.SnaplockLitigationInlineOperations[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("operations" + "." + strconv.Itoa(i))
 				}
@@ -158,7 +158,7 @@ func (m *SnaplockLitigation) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateOperations(ctx, formats); err != nil {
+	if err := m.contextValidateSnaplockLitigationInlineOperations(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -192,19 +192,19 @@ func (m *SnaplockLitigation) contextValidateLinks(ctx context.Context, formats s
 
 func (m *SnaplockLitigation) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SnaplockLitigation) contextValidateOperations(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigation) contextValidateSnaplockLitigationInlineOperations(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Operations); i++ {
+	for i := 0; i < len(m.SnaplockLitigationInlineOperations); i++ {
 
-		if m.Operations[i] != nil {
-			if err := m.Operations[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnaplockLitigationInlineOperations[i] != nil {
+			if err := m.SnaplockLitigationInlineOperations[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("operations" + "." + strconv.Itoa(i))
 				}
@@ -263,17 +263,17 @@ func (m *SnaplockLitigation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationLinks snaplock litigation links
+// SnaplockLitigationInlineLinks snaplock litigation inline links
 //
-// swagger:model SnaplockLitigationLinks
-type SnaplockLitigationLinks struct {
+// swagger:model snaplock_litigation_inline__links
+type SnaplockLitigationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock litigation links
-func (m *SnaplockLitigationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation inline links
+func (m *SnaplockLitigationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -286,7 +286,7 @@ func (m *SnaplockLitigationLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLitigationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -303,8 +303,8 @@ func (m *SnaplockLitigationLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation links based on the context it is used
-func (m *SnaplockLitigationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation inline links based on the context it is used
+func (m *SnaplockLitigationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -317,7 +317,7 @@ func (m *SnaplockLitigationLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SnaplockLitigationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -332,7 +332,7 @@ func (m *SnaplockLitigationLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -340,8 +340,8 @@ func (m *SnaplockLitigationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationLinks
+func (m *SnaplockLitigationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -349,27 +349,27 @@ func (m *SnaplockLitigationLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationSvm snaplock litigation svm
+// SnaplockLitigationInlineSvm snaplock litigation inline svm
 //
-// swagger:model SnaplockLitigationSvm
-type SnaplockLitigationSvm struct {
+// swagger:model snaplock_litigation_inline_svm
+type SnaplockLitigationInlineSvm struct {
 
 	// links
-	Links *SnaplockLitigationSvmLinks `json:"_links,omitempty"`
+	Links *SnaplockLitigationInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock litigation svm
-func (m *SnaplockLitigationSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation inline svm
+func (m *SnaplockLitigationInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -382,7 +382,7 @@ func (m *SnaplockLitigationSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLitigationSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -399,8 +399,8 @@ func (m *SnaplockLitigationSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation svm based on the context it is used
-func (m *SnaplockLitigationSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation inline svm based on the context it is used
+func (m *SnaplockLitigationInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -413,7 +413,7 @@ func (m *SnaplockLitigationSvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnaplockLitigationSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -428,7 +428,7 @@ func (m *SnaplockLitigationSvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationSvm) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -436,8 +436,8 @@ func (m *SnaplockLitigationSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationSvm) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationSvm
+func (m *SnaplockLitigationInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -445,17 +445,17 @@ func (m *SnaplockLitigationSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationSvmLinks snaplock litigation svm links
+// SnaplockLitigationInlineSvmInlineLinks snaplock litigation inline svm inline links
 //
-// swagger:model SnaplockLitigationSvmLinks
-type SnaplockLitigationSvmLinks struct {
+// swagger:model snaplock_litigation_inline_svm_inline__links
+type SnaplockLitigationInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock litigation svm links
-func (m *SnaplockLitigationSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation inline svm inline links
+func (m *SnaplockLitigationInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -468,7 +468,7 @@ func (m *SnaplockLitigationSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLitigationSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -485,8 +485,8 @@ func (m *SnaplockLitigationSvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation svm links based on the context it is used
-func (m *SnaplockLitigationSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation inline svm inline links based on the context it is used
+func (m *SnaplockLitigationInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -499,7 +499,7 @@ func (m *SnaplockLitigationSvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockLitigationSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -514,7 +514,7 @@ func (m *SnaplockLitigationSvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -522,8 +522,8 @@ func (m *SnaplockLitigationSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationSvmLinks
+func (m *SnaplockLitigationInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -531,25 +531,25 @@ func (m *SnaplockLitigationSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationVolume snaplock litigation volume
+// SnaplockLitigationInlineVolume snaplock litigation inline volume
 //
-// swagger:model SnaplockLitigationVolume
-type SnaplockLitigationVolume struct {
+// swagger:model snaplock_litigation_inline_volume
+type SnaplockLitigationInlineVolume struct {
 
 	// links
-	Links *SnaplockLitigationVolumeLinks `json:"_links,omitempty"`
+	Links *SnaplockLitigationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock litigation volume
-func (m *SnaplockLitigationVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation inline volume
+func (m *SnaplockLitigationInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -562,7 +562,7 @@ func (m *SnaplockLitigationVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLitigationVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -579,8 +579,8 @@ func (m *SnaplockLitigationVolume) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation volume based on the context it is used
-func (m *SnaplockLitigationVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation inline volume based on the context it is used
+func (m *SnaplockLitigationInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -593,7 +593,7 @@ func (m *SnaplockLitigationVolume) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SnaplockLitigationVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -608,7 +608,7 @@ func (m *SnaplockLitigationVolume) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationVolume) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -616,8 +616,8 @@ func (m *SnaplockLitigationVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationVolume) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationVolume
+func (m *SnaplockLitigationInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -625,17 +625,17 @@ func (m *SnaplockLitigationVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationVolumeLinks snaplock litigation volume links
+// SnaplockLitigationInlineVolumeInlineLinks snaplock litigation inline volume inline links
 //
-// swagger:model SnaplockLitigationVolumeLinks
-type SnaplockLitigationVolumeLinks struct {
+// swagger:model snaplock_litigation_inline_volume_inline__links
+type SnaplockLitigationInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock litigation volume links
-func (m *SnaplockLitigationVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation inline volume inline links
+func (m *SnaplockLitigationInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -648,7 +648,7 @@ func (m *SnaplockLitigationVolumeLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SnaplockLitigationVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -665,8 +665,8 @@ func (m *SnaplockLitigationVolumeLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation volume links based on the context it is used
-func (m *SnaplockLitigationVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation inline volume inline links based on the context it is used
+func (m *SnaplockLitigationInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -679,7 +679,7 @@ func (m *SnaplockLitigationVolumeLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *SnaplockLitigationVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -694,7 +694,7 @@ func (m *SnaplockLitigationVolumeLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -702,8 +702,8 @@ func (m *SnaplockLitigationVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationVolumeLinks
+func (m *SnaplockLitigationInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

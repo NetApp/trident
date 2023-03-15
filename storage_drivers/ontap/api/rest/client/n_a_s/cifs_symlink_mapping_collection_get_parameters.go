@@ -66,19 +66,19 @@ type CifsSymlinkMappingCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type CifsSymlinkMappingCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,55 +94,55 @@ type CifsSymlinkMappingCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TargetHomeDirectory.
 
 	   Filter by target.home_directory
 	*/
-	TargetHomeDirectoryQueryParameter *bool
+	TargetHomeDirectory *bool
 
 	/* TargetLocality.
 
 	   Filter by target.locality
 	*/
-	TargetLocalityQueryParameter *string
+	TargetLocality *string
 
 	/* TargetPath.
 
 	   Filter by target.path
 	*/
-	TargetPathQueryParameter *string
+	TargetPath *string
 
 	/* TargetServer.
 
 	   Filter by target.server
 	*/
-	TargetServerQueryParameter *string
+	TargetServer *string
 
 	/* TargetShare.
 
 	   Filter by target.share
 	*/
-	TargetShareQueryParameter *string
+	TargetShare *string
 
 	/* UnixPath.
 
 	   Filter by unix_path
 	*/
-	UnixPathQueryParameter *string
+	UnixPath *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +162,14 @@ func (o *CifsSymlinkMappingCollectionGetParams) WithDefaults() *CifsSymlinkMappi
 // All values with no default are reset to their zero value.
 func (o *CifsSymlinkMappingCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsSymlinkMappingCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +211,147 @@ func (o *CifsSymlinkMappingCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithFields(fields []string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsSymlinkMappingCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsSymlinkMappingCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithOrderBy(orderBy []string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsSymlinkMappingCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsSymlinkMappingCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsSymlinkMappingCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsSymlinkMappingCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithSvmName(svmName *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTargetHomeDirectoryQueryParameter adds the targetHomeDirectory to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithTargetHomeDirectoryQueryParameter(targetHomeDirectory *bool) *CifsSymlinkMappingCollectionGetParams {
-	o.SetTargetHomeDirectoryQueryParameter(targetHomeDirectory)
+// WithTargetHomeDirectory adds the targetHomeDirectory to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithTargetHomeDirectory(targetHomeDirectory *bool) *CifsSymlinkMappingCollectionGetParams {
+	o.SetTargetHomeDirectory(targetHomeDirectory)
 	return o
 }
 
-// SetTargetHomeDirectoryQueryParameter adds the targetHomeDirectory to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetTargetHomeDirectoryQueryParameter(targetHomeDirectory *bool) {
-	o.TargetHomeDirectoryQueryParameter = targetHomeDirectory
+// SetTargetHomeDirectory adds the targetHomeDirectory to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetTargetHomeDirectory(targetHomeDirectory *bool) {
+	o.TargetHomeDirectory = targetHomeDirectory
 }
 
-// WithTargetLocalityQueryParameter adds the targetLocality to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithTargetLocalityQueryParameter(targetLocality *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetTargetLocalityQueryParameter(targetLocality)
+// WithTargetLocality adds the targetLocality to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithTargetLocality(targetLocality *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetTargetLocality(targetLocality)
 	return o
 }
 
-// SetTargetLocalityQueryParameter adds the targetLocality to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetTargetLocalityQueryParameter(targetLocality *string) {
-	o.TargetLocalityQueryParameter = targetLocality
+// SetTargetLocality adds the targetLocality to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetTargetLocality(targetLocality *string) {
+	o.TargetLocality = targetLocality
 }
 
-// WithTargetPathQueryParameter adds the targetPath to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithTargetPathQueryParameter(targetPath *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetTargetPathQueryParameter(targetPath)
+// WithTargetPath adds the targetPath to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithTargetPath(targetPath *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetTargetPath(targetPath)
 	return o
 }
 
-// SetTargetPathQueryParameter adds the targetPath to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetTargetPathQueryParameter(targetPath *string) {
-	o.TargetPathQueryParameter = targetPath
+// SetTargetPath adds the targetPath to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetTargetPath(targetPath *string) {
+	o.TargetPath = targetPath
 }
 
-// WithTargetServerQueryParameter adds the targetServer to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithTargetServerQueryParameter(targetServer *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetTargetServerQueryParameter(targetServer)
+// WithTargetServer adds the targetServer to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithTargetServer(targetServer *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetTargetServer(targetServer)
 	return o
 }
 
-// SetTargetServerQueryParameter adds the targetServer to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetTargetServerQueryParameter(targetServer *string) {
-	o.TargetServerQueryParameter = targetServer
+// SetTargetServer adds the targetServer to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetTargetServer(targetServer *string) {
+	o.TargetServer = targetServer
 }
 
-// WithTargetShareQueryParameter adds the targetShare to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithTargetShareQueryParameter(targetShare *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetTargetShareQueryParameter(targetShare)
+// WithTargetShare adds the targetShare to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithTargetShare(targetShare *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetTargetShare(targetShare)
 	return o
 }
 
-// SetTargetShareQueryParameter adds the targetShare to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetTargetShareQueryParameter(targetShare *string) {
-	o.TargetShareQueryParameter = targetShare
+// SetTargetShare adds the targetShare to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetTargetShare(targetShare *string) {
+	o.TargetShare = targetShare
 }
 
-// WithUnixPathQueryParameter adds the unixPath to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) WithUnixPathQueryParameter(unixPath *string) *CifsSymlinkMappingCollectionGetParams {
-	o.SetUnixPathQueryParameter(unixPath)
+// WithUnixPath adds the unixPath to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) WithUnixPath(unixPath *string) *CifsSymlinkMappingCollectionGetParams {
+	o.SetUnixPath(unixPath)
 	return o
 }
 
-// SetUnixPathQueryParameter adds the unixPath to the cifs symlink mapping collection get params
-func (o *CifsSymlinkMappingCollectionGetParams) SetUnixPathQueryParameter(unixPath *string) {
-	o.UnixPathQueryParameter = unixPath
+// SetUnixPath adds the unixPath to the cifs symlink mapping collection get params
+func (o *CifsSymlinkMappingCollectionGetParams) SetUnixPath(unixPath *string) {
+	o.UnixPath = unixPath
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,7 +362,7 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,7 +390,7 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +401,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -418,13 +418,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -435,13 +435,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -452,13 +452,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -469,13 +469,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.TargetHomeDirectoryQueryParameter != nil {
+	if o.TargetHomeDirectory != nil {
 
 		// query param target.home_directory
 		var qrTargetHomeDirectory bool
 
-		if o.TargetHomeDirectoryQueryParameter != nil {
-			qrTargetHomeDirectory = *o.TargetHomeDirectoryQueryParameter
+		if o.TargetHomeDirectory != nil {
+			qrTargetHomeDirectory = *o.TargetHomeDirectory
 		}
 		qTargetHomeDirectory := swag.FormatBool(qrTargetHomeDirectory)
 		if qTargetHomeDirectory != "" {
@@ -486,13 +486,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.TargetLocalityQueryParameter != nil {
+	if o.TargetLocality != nil {
 
 		// query param target.locality
 		var qrTargetLocality string
 
-		if o.TargetLocalityQueryParameter != nil {
-			qrTargetLocality = *o.TargetLocalityQueryParameter
+		if o.TargetLocality != nil {
+			qrTargetLocality = *o.TargetLocality
 		}
 		qTargetLocality := qrTargetLocality
 		if qTargetLocality != "" {
@@ -503,13 +503,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.TargetPathQueryParameter != nil {
+	if o.TargetPath != nil {
 
 		// query param target.path
 		var qrTargetPath string
 
-		if o.TargetPathQueryParameter != nil {
-			qrTargetPath = *o.TargetPathQueryParameter
+		if o.TargetPath != nil {
+			qrTargetPath = *o.TargetPath
 		}
 		qTargetPath := qrTargetPath
 		if qTargetPath != "" {
@@ -520,13 +520,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.TargetServerQueryParameter != nil {
+	if o.TargetServer != nil {
 
 		// query param target.server
 		var qrTargetServer string
 
-		if o.TargetServerQueryParameter != nil {
-			qrTargetServer = *o.TargetServerQueryParameter
+		if o.TargetServer != nil {
+			qrTargetServer = *o.TargetServer
 		}
 		qTargetServer := qrTargetServer
 		if qTargetServer != "" {
@@ -537,13 +537,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.TargetShareQueryParameter != nil {
+	if o.TargetShare != nil {
 
 		// query param target.share
 		var qrTargetShare string
 
-		if o.TargetShareQueryParameter != nil {
-			qrTargetShare = *o.TargetShareQueryParameter
+		if o.TargetShare != nil {
+			qrTargetShare = *o.TargetShare
 		}
 		qTargetShare := qrTargetShare
 		if qTargetShare != "" {
@@ -554,13 +554,13 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.UnixPathQueryParameter != nil {
+	if o.UnixPath != nil {
 
 		// query param unix_path
 		var qrUnixPath string
 
-		if o.UnixPathQueryParameter != nil {
-			qrUnixPath = *o.UnixPathQueryParameter
+		if o.UnixPath != nil {
+			qrUnixPath = *o.UnixPath
 		}
 		qUnixPath := qrUnixPath
 		if qUnixPath != "" {
@@ -579,7 +579,7 @@ func (o *CifsSymlinkMappingCollectionGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamCifsSymlinkMappingCollectionGet binds the parameter fields
 func (o *CifsSymlinkMappingCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *CifsSymlinkMappingCollectionGetParams) bindParamFields(formats strfmt.R
 
 // bindParamCifsSymlinkMappingCollectionGet binds the parameter order_by
 func (o *CifsSymlinkMappingCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

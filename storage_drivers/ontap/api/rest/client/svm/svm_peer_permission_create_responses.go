@@ -52,6 +52,11 @@ SvmPeerPermissionCreateCreated describes a response with status code 201, with d
 Created
 */
 type SvmPeerPermissionCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.SvmPeerPermission
 }
 
@@ -93,6 +98,13 @@ func (o *SvmPeerPermissionCreateCreated) GetPayload() *models.SvmPeerPermission 
 }
 
 func (o *SvmPeerPermissionCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.SvmPeerPermission)
 

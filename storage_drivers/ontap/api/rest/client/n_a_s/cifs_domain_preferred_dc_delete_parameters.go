@@ -65,19 +65,19 @@ type CifsDomainPreferredDcDeleteParams struct {
 
 	   Fully Qualified Domain Name
 	*/
-	FqdnPathParameter string
+	Fqdn string
 
 	/* ServerIP.
 
 	   Domain Controller IP address
 	*/
-	ServerIPPathParameter string
+	ServerIP string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,37 +132,37 @@ func (o *CifsDomainPreferredDcDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFqdnPathParameter adds the fqdn to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) WithFqdnPathParameter(fqdn string) *CifsDomainPreferredDcDeleteParams {
-	o.SetFqdnPathParameter(fqdn)
+// WithFqdn adds the fqdn to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) WithFqdn(fqdn string) *CifsDomainPreferredDcDeleteParams {
+	o.SetFqdn(fqdn)
 	return o
 }
 
-// SetFqdnPathParameter adds the fqdn to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) SetFqdnPathParameter(fqdn string) {
-	o.FqdnPathParameter = fqdn
+// SetFqdn adds the fqdn to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) SetFqdn(fqdn string) {
+	o.Fqdn = fqdn
 }
 
-// WithServerIPPathParameter adds the serverIP to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) WithServerIPPathParameter(serverIP string) *CifsDomainPreferredDcDeleteParams {
-	o.SetServerIPPathParameter(serverIP)
+// WithServerIP adds the serverIP to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) WithServerIP(serverIP string) *CifsDomainPreferredDcDeleteParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetServerIPPathParameter adds the serverIp to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) SetServerIPPathParameter(serverIP string) {
-	o.ServerIPPathParameter = serverIP
+// SetServerIP adds the serverIp to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) SetServerIP(serverIP string) {
+	o.ServerIP = serverIP
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsDomainPreferredDcDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) WithSvmUUID(svmUUID string) *CifsDomainPreferredDcDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs domain preferred dc delete params
-func (o *CifsDomainPreferredDcDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs domain preferred dc delete params
+func (o *CifsDomainPreferredDcDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,17 +174,17 @@ func (o *CifsDomainPreferredDcDeleteParams) WriteToRequest(r runtime.ClientReque
 	var res []error
 
 	// path param fqdn
-	if err := r.SetPathParam("fqdn", o.FqdnPathParameter); err != nil {
+	if err := r.SetPathParam("fqdn", o.Fqdn); err != nil {
 		return err
 	}
 
 	// path param server_ip
-	if err := r.SetPathParam("server_ip", o.ServerIPPathParameter); err != nil {
+	if err := r.SetPathParam("server_ip", o.ServerIP); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

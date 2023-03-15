@@ -19,14 +19,14 @@ type VolumeEncryptionSupport struct {
 
 	// Code corresponding to the status message. Returns a 0 if volume encryption is supported in all nodes of the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Reason for not supporting volume encryption.
 	// Example: No platform support for volume encryption in following nodes - node1, node2.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Set to true when volume encryption support is available on all nodes of the cluster.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
 // Validate validates this volume encryption support

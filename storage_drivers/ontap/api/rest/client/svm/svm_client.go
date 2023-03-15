@@ -36,11 +36,11 @@ type ClientService interface {
 
 	SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmGetOK, error)
 
-	SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrateDeleteAccepted, error)
-
 	SvmMigrationCollectionGet(params *SvmMigrationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCollectionGetOK, error)
 
 	SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error)
+
+	SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteAccepted, error)
 
 	SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationGetOK, error)
 
@@ -95,7 +95,7 @@ type ClientService interface {
 * It is not recommended to create or delete more than five SVMs in parallel.
 * REST APIs only expose a data SVM as an SVM.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `snapmirror.*`
 ### Related ONTAP commands
 * `vserver show`
@@ -142,6 +142,12 @@ There is an added cost to retrieving values for these properties. They are not i
 	    <br/>
 	    ```
 	    GET "/api/svm/svms?ndmp.allowed=true"
+	    ```
+	    <br/>
+	 8. Retrieves a list of SVMs in the cluster that have the s3 protocol allowed
+	    <br/>
+	    ```
+	    GET "/api/svm/svms?s3.allowed=true"
 	    ```
 	    <br/>
 
@@ -199,6 +205,7 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `ip_interfaces.ip.address` - IP address
 * `ip_interfaces.ip.netmask` - Netmask length or IP address
 * `ip_interfaces.location.broadcast_domain.uuid` or `ip_interfaces.location.broadcast_domain.name` - Broadcast domain name or UUID belonging to the same IPspace of the SVM.
+* `subnet.uuid` or `subnet.name` - Either name or UUID of the subnet to create.
 * `routes` - If provided, the following field is required:
   - `routes.gateway` - Gateway IP address
 
@@ -229,6 +236,8 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `s3` - If provided, the following field should also be specified:
   - `s3.name` - Name of the S3 server. If `s3.name' is not specified while `s3.enabled` is set to 'true', the S3 server will be created with the default name '<svm.name>_S3Server'.
 
+* `auto_enable_analytics` - Auto-enable file system analytics on new volumes created in the SVM
+* `auto_enable_activity_tracking` - Auto-enable volume activity-tracking on new volumes created in the SVM
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `language` - _C.UTF-8_
@@ -338,6 +347,18 @@ If not specified in POST, the following default property values are assigned:
     POST "/api/svm/svms" '{"name":"testVs", "ndmp":{"allowed":"false"}}'
     ```
     <br/>
+ 15. Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "auto_enable_analytics":true}}'
+    ```
+    <br/>
+ 16. Creates an SVM and specifies whether volume_activity_tracking is enabled on all newly created volumes in the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "auto_enable_activity_tracking":true}}'
+    ```
+    <br/>
 
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
@@ -438,7 +459,7 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 * The SVM object includes a large set of fields and can be expensive to retrieve.
 * REST APIs only expose a data SVM as an SVM.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `snapmirror.*`
 ### Example
 
@@ -481,47 +502,6 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-	SvmMigrateDelete Deletes the SVM migration.
-
-### Related ONTAP commands
-* `vserver migrate abort`
-*/
-func (a *Client) SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrateDeleteAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewSvmMigrateDeleteParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "svm_migrate_delete",
-		Method:             "DELETE",
-		PathPattern:        "/svm/migrations/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &SvmMigrateDeleteReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*SvmMigrateDeleteAccepted)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*SvmMigrateDeleteDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -576,9 +556,12 @@ Optionally, you can specify the aggregate list for creating the volumes, and IPs
 ### Optional properties
 * `destination.ipspace.name` or `destination.ipspace.uuid` - Destination IP Space name or UUID where the vserver will be migrated to.
 * `destination.volume_placement.aggregates` - List of aggregates where the migrating volumes should go on the destination.
+* `destination.volume_placement.volume_aggregate_pairs` - List of volume aggregate pairs indicating where the migrating volumes should go on the destination.
+* `ip_interface_placement` -  List of source SVM's IP interface and port pairs on the destination for migrating the SVM's IP interfaces.
 * `auto_cutover` - Option to specify whether to perform cutover automatically. Default is true.
 * `auto_source_cleanup` - Option to specify whether to perform souce cleanup automatically. Default is true.
 * `check_only` - Option to perform all the prechecks for migrate without actually starting the migrate. Default is false.
+* `throttle` - Option to specify a throttle value in KB/s. Defaults to unlimited.
 ### Related ONTAP commands
 * `vserver migrate start`
 */
@@ -614,6 +597,47 @@ func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo r
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmMigrationCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SvmMigrationDelete Deletes the SVM migration.
+
+### Related ONTAP commands
+* `vserver migrate abort`
+*/
+func (a *Client) SvmMigrationDelete(params *SvmMigrationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_delete",
+		Method:             "DELETE",
+		PathPattern:        "/svm/migrations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationDeleteDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -865,6 +889,18 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"max_volumes":"200"}'
     ```
     <br/>
+ 11. Updates whether file system analytics is enabled on all newly created volumes in the SVM.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"auto_enable_analytics":"true"}'
+    ```
+    <br/>
+ 12. Updates whether volume activity tracking is enabled on all newly created volumes in the SVM.
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"auto_enable_activity_tracking":"true"}'
+    ```
+    <br/>
 
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
@@ -1027,12 +1063,19 @@ func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.Cli
 ### Related ONTAP commands
 * `vserver peer delete`
 ### Example
-Deletes an SVM peer relationship.
-<br/>
-```
-DELETE "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9"
-```
-<br/>
+ 1. Deletes an SVM peer relationship.
+    <br/>
+    ```
+    DELETE "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9"
+    ```
+    <br/>
+ 2. Deletes an SVM peer relationship using force flag
+    <br/>
+    ```
+    DELETE "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"force": "true"}'
+    ```
+    <br/>
+
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
 */
@@ -1139,6 +1182,12 @@ The following examples show how to update an SVM peer relationship. The input pa
     <br/>
     ```
     PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"name":"vs2"}'
+    ```
+    <br/>
+ 2. Suspends an SVM peer relationship using force flag
+    <br/>
+    ```
+    PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"state":"suspended", "force": "true"}'
     ```
     <br/>
 

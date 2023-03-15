@@ -21,23 +21,23 @@ import (
 type Fabric struct {
 
 	// links
-	Links *FabricLinks `json:"_links,omitempty"`
+	Links *FabricInlineLinks `json:"_links,omitempty"`
 
 	// cache
-	Cache *FabricCache `json:"cache,omitempty"`
+	Cache *FabricInlineCache `json:"cache,omitempty"`
 
 	// An array of the connections between the cluster and the switches Fibre Channel fabric.
 	//
-	Connections []*FabricConnectionsItems0 `json:"connections,omitempty"`
+	FabricInlineConnections []*FabricInlineConnectionsInlineArrayItem `json:"connections,omitempty"`
 
 	// The world wide name (WWN) of the primary switch of the Fibre Channel (FC) fabric. This is used as a unique identifier for the FC fabric.
 	//
 	// Example: 10:00:c1:c2:c3:c4:c5:c6
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// zoneset
-	Zoneset *FabricZoneset `json:"zoneset,omitempty"`
+	Zoneset *FabricInlineZoneset `json:"zoneset,omitempty"`
 }
 
 // Validate validates this fabric
@@ -52,7 +52,7 @@ func (m *Fabric) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateConnections(formats); err != nil {
+	if err := m.validateFabricInlineConnections(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,18 +100,18 @@ func (m *Fabric) validateCache(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Fabric) validateConnections(formats strfmt.Registry) error {
-	if swag.IsZero(m.Connections) { // not required
+func (m *Fabric) validateFabricInlineConnections(formats strfmt.Registry) error {
+	if swag.IsZero(m.FabricInlineConnections) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Connections); i++ {
-		if swag.IsZero(m.Connections[i]) { // not required
+	for i := 0; i < len(m.FabricInlineConnections); i++ {
+		if swag.IsZero(m.FabricInlineConnections[i]) { // not required
 			continue
 		}
 
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].Validate(formats); err != nil {
+		if m.FabricInlineConnections[i] != nil {
+			if err := m.FabricInlineConnections[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
 				}
@@ -153,7 +153,7 @@ func (m *Fabric) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateConnections(ctx, formats); err != nil {
+	if err := m.contextValidateFabricInlineConnections(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -199,12 +199,12 @@ func (m *Fabric) contextValidateCache(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *Fabric) contextValidateConnections(ctx context.Context, formats strfmt.Registry) error {
+func (m *Fabric) contextValidateFabricInlineConnections(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Connections); i++ {
+	for i := 0; i < len(m.FabricInlineConnections); i++ {
 
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].ContextValidate(ctx, formats); err != nil {
+		if m.FabricInlineConnections[i] != nil {
+			if err := m.FabricInlineConnections[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
 				}
@@ -219,7 +219,7 @@ func (m *Fabric) contextValidateConnections(ctx context.Context, formats strfmt.
 
 func (m *Fabric) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -258,16 +258,16 @@ func (m *Fabric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricCache Properties of Fibre Chanel fabric cache.
+// FabricInlineCache Properties of Fibre Chanel fabric cache.
 //
-// swagger:model FabricCache
-type FabricCache struct {
+// swagger:model fabric_inline_cache
+type FabricInlineCache struct {
 
 	// The age of the Fibre Channel fabric data cache retrieved. If the FC fabric data cache has not been fully updated for a newly discovered fabric, or a fabric that has been re-discovered after being purged, a value for this property will not be retrieved. The value is in ISO 8601 duration format.
 	//
 	// Example: PT3M30S
 	// Read Only: true
-	Age string `json:"age,omitempty"`
+	Age *string `json:"age,omitempty"`
 
 	// A boolean that indicates if the retrieved data is current relative to the `cache.maximum_age` value of the request. A value of `true` indicates that the data is no older than the requested maximum age. A value of `false` indicates that the data is older than the requested maximum age; if more current data is required, the caller should wait for some time for the cache update to complete and query the data again.
 	//
@@ -281,8 +281,8 @@ type FabricCache struct {
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
 }
 
-// Validate validates this fabric cache
-func (m *FabricCache) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline cache
+func (m *FabricInlineCache) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUpdateTime(formats); err != nil {
@@ -295,7 +295,7 @@ func (m *FabricCache) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricCache) validateUpdateTime(formats strfmt.Registry) error {
+func (m *FabricInlineCache) validateUpdateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.UpdateTime) { // not required
 		return nil
 	}
@@ -307,8 +307,8 @@ func (m *FabricCache) validateUpdateTime(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric cache based on the context it is used
-func (m *FabricCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline cache based on the context it is used
+func (m *FabricInlineCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAge(ctx, formats); err != nil {
@@ -329,16 +329,16 @@ func (m *FabricCache) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FabricCache) contextValidateAge(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineCache) contextValidateAge(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cache"+"."+"age", "body", string(m.Age)); err != nil {
+	if err := validate.ReadOnly(ctx, "cache"+"."+"age", "body", m.Age); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FabricCache) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineCache) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cache"+"."+"is_current", "body", m.IsCurrent); err != nil {
 		return err
@@ -347,7 +347,7 @@ func (m *FabricCache) contextValidateIsCurrent(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FabricCache) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineCache) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cache"+"."+"update_time", "body", m.UpdateTime); err != nil {
 		return err
@@ -357,7 +357,7 @@ func (m *FabricCache) contextValidateUpdateTime(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FabricCache) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineCache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -365,8 +365,8 @@ func (m *FabricCache) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricCache) UnmarshalBinary(b []byte) error {
-	var res FabricCache
+func (m *FabricInlineCache) UnmarshalBinary(b []byte) error {
+	var res FabricInlineCache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -374,20 +374,20 @@ func (m *FabricCache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricConnectionsItems0 A connection between a cluster node Fibre Channel (FC) port and an FC switch port.
+// FabricInlineConnectionsInlineArrayItem A connection between a cluster node Fibre Channel (FC) port and an FC switch port.
 //
-// swagger:model FabricConnectionsItems0
-type FabricConnectionsItems0 struct {
+// swagger:model fabric_inline_connections_inline_array_item
+type FabricInlineConnectionsInlineArrayItem struct {
 
 	// cluster port
-	ClusterPort *FabricConnectionsItems0ClusterPort `json:"cluster_port,omitempty"`
+	ClusterPort *FabricInlineConnectionsInlineArrayItemInlineClusterPort `json:"cluster_port,omitempty"`
 
 	// switch
-	Switch *FabricConnectionsItems0Switch `json:"switch,omitempty"`
+	Switch *FabricInlineConnectionsInlineArrayItemInlineSwitch `json:"switch,omitempty"`
 }
 
-// Validate validates this fabric connections items0
-func (m *FabricConnectionsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item
+func (m *FabricInlineConnectionsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateClusterPort(formats); err != nil {
@@ -404,7 +404,7 @@ func (m *FabricConnectionsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricConnectionsItems0) validateClusterPort(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItem) validateClusterPort(formats strfmt.Registry) error {
 	if swag.IsZero(m.ClusterPort) { // not required
 		return nil
 	}
@@ -421,7 +421,7 @@ func (m *FabricConnectionsItems0) validateClusterPort(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *FabricConnectionsItems0) validateSwitch(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItem) validateSwitch(formats strfmt.Registry) error {
 	if swag.IsZero(m.Switch) { // not required
 		return nil
 	}
@@ -438,8 +438,8 @@ func (m *FabricConnectionsItems0) validateSwitch(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 based on the context it is used
-func (m *FabricConnectionsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateClusterPort(ctx, formats); err != nil {
@@ -456,7 +456,7 @@ func (m *FabricConnectionsItems0) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FabricConnectionsItems0) contextValidateClusterPort(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItem) contextValidateClusterPort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ClusterPort != nil {
 		if err := m.ClusterPort.ContextValidate(ctx, formats); err != nil {
@@ -470,7 +470,7 @@ func (m *FabricConnectionsItems0) contextValidateClusterPort(ctx context.Context
 	return nil
 }
 
-func (m *FabricConnectionsItems0) contextValidateSwitch(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItem) contextValidateSwitch(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Switch != nil {
 		if err := m.Switch.ContextValidate(ctx, formats); err != nil {
@@ -485,7 +485,7 @@ func (m *FabricConnectionsItems0) contextValidateSwitch(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -493,8 +493,8 @@ func (m *FabricConnectionsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0
+func (m *FabricInlineConnectionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -502,36 +502,36 @@ func (m *FabricConnectionsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricConnectionsItems0ClusterPort The cluster Fibre Channel (FC) port that connects the FC fabric.
+// FabricInlineConnectionsInlineArrayItemInlineClusterPort The cluster Fibre Channel (FC) port that connects the FC fabric.
 //
-// swagger:model FabricConnectionsItems0ClusterPort
-type FabricConnectionsItems0ClusterPort struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_cluster_port
+type FabricInlineConnectionsInlineArrayItemInlineClusterPort struct {
 
 	// links
-	Links *FabricConnectionsItems0ClusterPortLinks `json:"_links,omitempty"`
+	Links *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks `json:"_links,omitempty"`
 
 	// The name of the cluster Fibre Channel port.
 	//
 	// Example: 0a
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *FabricConnectionsItems0ClusterPortNode `json:"node,omitempty"`
+	Node *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode `json:"node,omitempty"`
 
 	// The unique identifier of the cluster Fibre Channel port.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The world wide port name (WWPN) of the cluster Fibre Channel port.
 	//
 	// Example: 50:0a:11:22:33:44:55:66
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this fabric connections items0 cluster port
-func (m *FabricConnectionsItems0ClusterPort) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline cluster port
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -548,7 +548,7 @@ func (m *FabricConnectionsItems0ClusterPort) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPort) validateLinks(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -565,7 +565,7 @@ func (m *FabricConnectionsItems0ClusterPort) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPort) validateNode(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -582,8 +582,8 @@ func (m *FabricConnectionsItems0ClusterPort) validateNode(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 cluster port based on the context it is used
-func (m *FabricConnectionsItems0ClusterPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline cluster port based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -604,7 +604,7 @@ func (m *FabricConnectionsItems0ClusterPort) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -618,7 +618,7 @@ func (m *FabricConnectionsItems0ClusterPort) contextValidateLinks(ctx context.Co
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -632,9 +632,9 @@ func (m *FabricConnectionsItems0ClusterPort) contextValidateNode(ctx context.Con
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cluster_port"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "cluster_port"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -642,7 +642,7 @@ func (m *FabricConnectionsItems0ClusterPort) contextValidateWwpn(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPort) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -650,8 +650,8 @@ func (m *FabricConnectionsItems0ClusterPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPort) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0ClusterPort
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPort) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineClusterPort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -659,17 +659,17 @@ func (m *FabricConnectionsItems0ClusterPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricConnectionsItems0ClusterPortLinks fabric connections items0 cluster port links
+// FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks fabric inline connections inline array item inline cluster port inline links
 //
-// swagger:model FabricConnectionsItems0ClusterPortLinks
-type FabricConnectionsItems0ClusterPortLinks struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_cluster_port_inline__links
+type FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fabric connections items0 cluster port links
-func (m *FabricConnectionsItems0ClusterPortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline cluster port inline links
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -682,7 +682,7 @@ func (m *FabricConnectionsItems0ClusterPortLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -699,8 +699,8 @@ func (m *FabricConnectionsItems0ClusterPortLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 cluster port links based on the context it is used
-func (m *FabricConnectionsItems0ClusterPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline cluster port inline links based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *FabricConnectionsItems0ClusterPortLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -728,7 +728,7 @@ func (m *FabricConnectionsItems0ClusterPortLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPortLinks) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -736,8 +736,8 @@ func (m *FabricConnectionsItems0ClusterPortLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPortLinks) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0ClusterPortLinks
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -745,25 +745,25 @@ func (m *FabricConnectionsItems0ClusterPortLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// FabricConnectionsItems0ClusterPortNode The node on which the cluster Fibre Channel port is located.
+// FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode The node on which the cluster Fibre Channel port is located.
 //
-// swagger:model FabricConnectionsItems0ClusterPortNode
-type FabricConnectionsItems0ClusterPortNode struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_cluster_port_inline_node
+type FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode struct {
 
 	// The name of the node on which the cluster Fibre Channel port is located.
 	//
 	// Example: node1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this fabric connections items0 cluster port node
-func (m *FabricConnectionsItems0ClusterPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline cluster port inline node
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 cluster port node based on the context it is used
-func (m *FabricConnectionsItems0ClusterPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline cluster port inline node based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -776,9 +776,9 @@ func (m *FabricConnectionsItems0ClusterPortNode) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *FabricConnectionsItems0ClusterPortNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cluster_port"+"."+"node"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "cluster_port"+"."+"node"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -786,7 +786,7 @@ func (m *FabricConnectionsItems0ClusterPortNode) contextValidateName(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPortNode) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -794,8 +794,8 @@ func (m *FabricConnectionsItems0ClusterPortNode) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0ClusterPortNode) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0ClusterPortNode
+func (m *FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineClusterPortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -803,26 +803,26 @@ func (m *FabricConnectionsItems0ClusterPortNode) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// FabricConnectionsItems0Switch The Fibre Channel switch to which the cluster node port is connected.
+// FabricInlineConnectionsInlineArrayItemInlineSwitch The Fibre Channel switch to which the cluster node port is connected.
 //
-// swagger:model FabricConnectionsItems0Switch
-type FabricConnectionsItems0Switch struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_switch
+type FabricInlineConnectionsInlineArrayItemInlineSwitch struct {
 
 	// links
-	Links *FabricConnectionsItems0SwitchLinks `json:"_links,omitempty"`
+	Links *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks `json:"_links,omitempty"`
 
 	// port
-	Port *FabricConnectionsItems0SwitchPort `json:"port,omitempty"`
+	Port *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort `json:"port,omitempty"`
 
 	// The world-wide name (WWN) of the Fibre Channel switch to which the cluster node port is attached.
 	//
 	// Example: 10:00:b1:b2:b3:b4:b4:b6
 	// Read Only: true
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this fabric connections items0 switch
-func (m *FabricConnectionsItems0Switch) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline switch
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -839,7 +839,7 @@ func (m *FabricConnectionsItems0Switch) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *FabricConnectionsItems0Switch) validateLinks(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -856,7 +856,7 @@ func (m *FabricConnectionsItems0Switch) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *FabricConnectionsItems0Switch) validatePort(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -873,8 +873,8 @@ func (m *FabricConnectionsItems0Switch) validatePort(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 switch based on the context it is used
-func (m *FabricConnectionsItems0Switch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline switch based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -895,7 +895,7 @@ func (m *FabricConnectionsItems0Switch) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *FabricConnectionsItems0Switch) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -909,7 +909,7 @@ func (m *FabricConnectionsItems0Switch) contextValidateLinks(ctx context.Context
 	return nil
 }
 
-func (m *FabricConnectionsItems0Switch) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -923,9 +923,9 @@ func (m *FabricConnectionsItems0Switch) contextValidatePort(ctx context.Context,
 	return nil
 }
 
-func (m *FabricConnectionsItems0Switch) contextValidateWwn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) contextValidateWwn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "switch"+"."+"wwn", "body", string(m.Wwn)); err != nil {
+	if err := validate.ReadOnly(ctx, "switch"+"."+"wwn", "body", m.Wwn); err != nil {
 		return err
 	}
 
@@ -933,7 +933,7 @@ func (m *FabricConnectionsItems0Switch) contextValidateWwn(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0Switch) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -941,8 +941,8 @@ func (m *FabricConnectionsItems0Switch) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0Switch) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0Switch
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitch) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineSwitch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -950,17 +950,17 @@ func (m *FabricConnectionsItems0Switch) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricConnectionsItems0SwitchLinks fabric connections items0 switch links
+// FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks fabric inline connections inline array item inline switch inline links
 //
-// swagger:model FabricConnectionsItems0SwitchLinks
-type FabricConnectionsItems0SwitchLinks struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_switch_inline__links
+type FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fabric connections items0 switch links
-func (m *FabricConnectionsItems0SwitchLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline switch inline links
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -973,7 +973,7 @@ func (m *FabricConnectionsItems0SwitchLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *FabricConnectionsItems0SwitchLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -990,8 +990,8 @@ func (m *FabricConnectionsItems0SwitchLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 switch links based on the context it is used
-func (m *FabricConnectionsItems0SwitchLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline switch inline links based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1004,7 +1004,7 @@ func (m *FabricConnectionsItems0SwitchLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *FabricConnectionsItems0SwitchLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1019,7 +1019,7 @@ func (m *FabricConnectionsItems0SwitchLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0SwitchLinks) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1027,8 +1027,8 @@ func (m *FabricConnectionsItems0SwitchLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0SwitchLinks) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0SwitchLinks
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineSwitchInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1036,25 +1036,25 @@ func (m *FabricConnectionsItems0SwitchLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricConnectionsItems0SwitchPort The port of the Fibre Channel switch to which the cluster node port is connected.
+// FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort The port of the Fibre Channel switch to which the cluster node port is connected.
 //
-// swagger:model FabricConnectionsItems0SwitchPort
-type FabricConnectionsItems0SwitchPort struct {
+// swagger:model fabric_inline_connections_inline_array_item_inline_switch_inline_port
+type FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort struct {
 
 	// The world wide port name (WWPN) of the Fibre Channel switch port.
 	//
 	// Example: 50:0a:a1:a2:a3:a4:a5:a6
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this fabric connections items0 switch port
-func (m *FabricConnectionsItems0SwitchPort) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline connections inline array item inline switch inline port
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric connections items0 switch port based on the context it is used
-func (m *FabricConnectionsItems0SwitchPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline connections inline array item inline switch inline port based on the context it is used
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateWwpn(ctx, formats); err != nil {
@@ -1067,9 +1067,9 @@ func (m *FabricConnectionsItems0SwitchPort) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *FabricConnectionsItems0SwitchPort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "switch"+"."+"port"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "switch"+"."+"port"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -1077,7 +1077,7 @@ func (m *FabricConnectionsItems0SwitchPort) contextValidateWwpn(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *FabricConnectionsItems0SwitchPort) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1085,8 +1085,8 @@ func (m *FabricConnectionsItems0SwitchPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricConnectionsItems0SwitchPort) UnmarshalBinary(b []byte) error {
-	var res FabricConnectionsItems0SwitchPort
+func (m *FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort) UnmarshalBinary(b []byte) error {
+	var res FabricInlineConnectionsInlineArrayItemInlineSwitchInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1094,17 +1094,17 @@ func (m *FabricConnectionsItems0SwitchPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricLinks fabric links
+// FabricInlineLinks fabric inline links
 //
-// swagger:model FabricLinks
-type FabricLinks struct {
+// swagger:model fabric_inline__links
+type FabricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fabric links
-func (m *FabricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline links
+func (m *FabricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1117,7 +1117,7 @@ func (m *FabricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FabricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1134,8 +1134,8 @@ func (m *FabricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric links based on the context it is used
-func (m *FabricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline links based on the context it is used
+func (m *FabricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1148,7 +1148,7 @@ func (m *FabricLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FabricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1163,7 +1163,7 @@ func (m *FabricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *FabricLinks) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1171,8 +1171,8 @@ func (m *FabricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricLinks) UnmarshalBinary(b []byte) error {
-	var res FabricLinks
+func (m *FabricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FabricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1180,25 +1180,25 @@ func (m *FabricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricZoneset The active Fibre Channel zoneset in the fabric.
+// FabricInlineZoneset The active Fibre Channel zoneset in the fabric.
 //
-// swagger:model FabricZoneset
-type FabricZoneset struct {
+// swagger:model fabric_inline_zoneset
+type FabricInlineZoneset struct {
 
 	// The name of the Fibre Channel zoneset.
 	//
 	// Example: zoneset1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this fabric zoneset
-func (m *FabricZoneset) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric inline zoneset
+func (m *FabricInlineZoneset) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric zoneset based on the context it is used
-func (m *FabricZoneset) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric inline zoneset based on the context it is used
+func (m *FabricInlineZoneset) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -1211,9 +1211,9 @@ func (m *FabricZoneset) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *FabricZoneset) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricInlineZoneset) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "zoneset"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "zoneset"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1221,7 +1221,7 @@ func (m *FabricZoneset) contextValidateName(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *FabricZoneset) MarshalBinary() ([]byte, error) {
+func (m *FabricInlineZoneset) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1229,8 +1229,8 @@ func (m *FabricZoneset) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricZoneset) UnmarshalBinary(b []byte) error {
-	var res FabricZoneset
+func (m *FabricInlineZoneset) UnmarshalBinary(b []byte) error {
+	var res FabricInlineZoneset
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

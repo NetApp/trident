@@ -22,35 +22,38 @@ import (
 type KerberosInterface struct {
 
 	// links
-	Links *KerberosInterfaceLinks `json:"_links,omitempty"`
+	Links *KerberosInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// Specifies if Kerberos is enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// encryption types
 	// Read Only: true
-	EncryptionTypes []string `json:"encryption_types,omitempty"`
+	EncryptionTypes []*string `json:"encryption_types,omitempty"`
 
 	// interface
-	Interface *KerberosInterfaceInterface `json:"interface,omitempty"`
+	Interface *KerberosInterfaceInlineInterface `json:"interface,omitempty"`
 
 	// Load keytab from URI
-	KeytabURI string `json:"keytab_uri,omitempty"`
+	KeytabURI *string `json:"keytab_uri,omitempty"`
+
+	// Specifies the machine account to create in Active Directory.
+	MachineAccount *string `json:"machine_account,omitempty"`
 
 	// Organizational unit
-	OrganizationalUnit string `json:"organizational_unit,omitempty"`
+	OrganizationalUnit *string `json:"organizational_unit,omitempty"`
 
 	// Account creation password
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// Service principal name. Valid in PATCH.
-	Spn string `json:"spn,omitempty"`
+	Spn *string `json:"spn,omitempty"`
 
 	// svm
-	Svm *KerberosInterfaceSvm `json:"svm,omitempty"`
+	Svm *KerberosInterfaceInlineSvm `json:"svm,omitempty"`
 
 	// Account creation user name
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this kerberos interface
@@ -121,9 +124,12 @@ func (m *KerberosInterface) validateEncryptionTypes(formats strfmt.Registry) err
 	}
 
 	for i := 0; i < len(m.EncryptionTypes); i++ {
+		if swag.IsZero(m.EncryptionTypes[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateEncryptionTypesItemsEnum("encryption_types"+"."+strconv.Itoa(i), "body", m.EncryptionTypes[i]); err != nil {
+		if err := m.validateEncryptionTypesItemsEnum("encryption_types"+"."+strconv.Itoa(i), "body", *m.EncryptionTypes[i]); err != nil {
 			return err
 		}
 
@@ -208,13 +214,13 @@ func (m *KerberosInterface) contextValidateLinks(ctx context.Context, formats st
 
 func (m *KerberosInterface) contextValidateEncryptionTypes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "encryption_types", "body", []string(m.EncryptionTypes)); err != nil {
+	if err := validate.ReadOnly(ctx, "encryption_types", "body", []*string(m.EncryptionTypes)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.EncryptionTypes); i++ {
 
-		if err := validate.ReadOnly(ctx, "encryption_types"+"."+strconv.Itoa(i), "body", string(m.EncryptionTypes[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "encryption_types"+"."+strconv.Itoa(i), "body", m.EncryptionTypes[i]); err != nil {
 			return err
 		}
 
@@ -269,30 +275,30 @@ func (m *KerberosInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceInterface Network interface
+// KerberosInterfaceInlineInterface Network interface
 //
-// swagger:model KerberosInterfaceInterface
-type KerberosInterfaceInterface struct {
+// swagger:model kerberos_interface_inline_interface
+type KerberosInterfaceInlineInterface struct {
 
 	// links
-	Links *KerberosInterfaceInterfaceLinks `json:"_links,omitempty"`
+	Links *KerberosInterfaceInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *KerberosInterfaceInterfaceIP `json:"ip,omitempty"`
+	IP *KerberosInterfaceInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this kerberos interface interface
-func (m *KerberosInterfaceInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline interface
+func (m *KerberosInterfaceInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -309,7 +315,7 @@ func (m *KerberosInterfaceInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosInterfaceInterface) validateLinks(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -326,7 +332,7 @@ func (m *KerberosInterfaceInterface) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *KerberosInterfaceInterface) validateIP(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -343,8 +349,8 @@ func (m *KerberosInterfaceInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos interface interface based on the context it is used
-func (m *KerberosInterfaceInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline interface based on the context it is used
+func (m *KerberosInterfaceInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -361,7 +367,7 @@ func (m *KerberosInterfaceInterface) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *KerberosInterfaceInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -375,7 +381,7 @@ func (m *KerberosInterfaceInterface) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *KerberosInterfaceInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -390,7 +396,7 @@ func (m *KerberosInterfaceInterface) contextValidateIP(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceInterface) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -398,8 +404,8 @@ func (m *KerberosInterfaceInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceInterface) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceInterface
+func (m *KerberosInterfaceInlineInterface) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -407,17 +413,17 @@ func (m *KerberosInterfaceInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceInterfaceIP IP information
+// KerberosInterfaceInlineInterfaceInlineIP IP information
 //
-// swagger:model KerberosInterfaceInterfaceIP
-type KerberosInterfaceInterfaceIP struct {
+// swagger:model kerberos_interface_inline_interface_inline_ip
+type KerberosInterfaceInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this kerberos interface interface IP
-func (m *KerberosInterfaceInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline interface inline ip
+func (m *KerberosInterfaceInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -430,23 +436,25 @@ func (m *KerberosInterfaceInterfaceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosInterfaceInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this kerberos interface interface IP based on the context it is used
-func (m *KerberosInterfaceInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline interface inline ip based on the context it is used
+func (m *KerberosInterfaceInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -459,20 +467,22 @@ func (m *KerberosInterfaceInterfaceIP) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *KerberosInterfaceInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -480,8 +490,8 @@ func (m *KerberosInterfaceInterfaceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceInterfaceIP
+func (m *KerberosInterfaceInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -489,17 +499,17 @@ func (m *KerberosInterfaceInterfaceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceInterfaceLinks kerberos interface interface links
+// KerberosInterfaceInlineInterfaceInlineLinks kerberos interface inline interface inline links
 //
-// swagger:model KerberosInterfaceInterfaceLinks
-type KerberosInterfaceInterfaceLinks struct {
+// swagger:model kerberos_interface_inline_interface_inline__links
+type KerberosInterfaceInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos interface interface links
-func (m *KerberosInterfaceInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline interface inline links
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -512,7 +522,7 @@ func (m *KerberosInterfaceInterfaceLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *KerberosInterfaceInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -529,8 +539,8 @@ func (m *KerberosInterfaceInterfaceLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this kerberos interface interface links based on the context it is used
-func (m *KerberosInterfaceInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline interface inline links based on the context it is used
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -543,7 +553,7 @@ func (m *KerberosInterfaceInterfaceLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *KerberosInterfaceInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -558,7 +568,7 @@ func (m *KerberosInterfaceInterfaceLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -566,8 +576,8 @@ func (m *KerberosInterfaceInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceInterfaceLinks
+func (m *KerberosInterfaceInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -575,17 +585,17 @@ func (m *KerberosInterfaceInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceLinks kerberos interface links
+// KerberosInterfaceInlineLinks kerberos interface inline links
 //
-// swagger:model KerberosInterfaceLinks
-type KerberosInterfaceLinks struct {
+// swagger:model kerberos_interface_inline__links
+type KerberosInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos interface links
-func (m *KerberosInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline links
+func (m *KerberosInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -598,7 +608,7 @@ func (m *KerberosInterfaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -615,8 +625,8 @@ func (m *KerberosInterfaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos interface links based on the context it is used
-func (m *KerberosInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline links based on the context it is used
+func (m *KerberosInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -629,7 +639,7 @@ func (m *KerberosInterfaceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *KerberosInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -644,7 +654,7 @@ func (m *KerberosInterfaceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -652,8 +662,8 @@ func (m *KerberosInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceLinks
+func (m *KerberosInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -661,27 +671,27 @@ func (m *KerberosInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceSvm kerberos interface svm
+// KerberosInterfaceInlineSvm kerberos interface inline svm
 //
-// swagger:model KerberosInterfaceSvm
-type KerberosInterfaceSvm struct {
+// swagger:model kerberos_interface_inline_svm
+type KerberosInterfaceInlineSvm struct {
 
 	// links
-	Links *KerberosInterfaceSvmLinks `json:"_links,omitempty"`
+	Links *KerberosInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this kerberos interface svm
-func (m *KerberosInterfaceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline svm
+func (m *KerberosInterfaceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -694,7 +704,7 @@ func (m *KerberosInterfaceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosInterfaceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -711,8 +721,8 @@ func (m *KerberosInterfaceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos interface svm based on the context it is used
-func (m *KerberosInterfaceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline svm based on the context it is used
+func (m *KerberosInterfaceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -725,7 +735,7 @@ func (m *KerberosInterfaceSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *KerberosInterfaceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -740,7 +750,7 @@ func (m *KerberosInterfaceSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceSvm) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -748,8 +758,8 @@ func (m *KerberosInterfaceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceSvm) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceSvm
+func (m *KerberosInterfaceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -757,17 +767,17 @@ func (m *KerberosInterfaceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosInterfaceSvmLinks kerberos interface svm links
+// KerberosInterfaceInlineSvmInlineLinks kerberos interface inline svm inline links
 //
-// swagger:model KerberosInterfaceSvmLinks
-type KerberosInterfaceSvmLinks struct {
+// swagger:model kerberos_interface_inline_svm_inline__links
+type KerberosInterfaceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos interface svm links
-func (m *KerberosInterfaceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos interface inline svm inline links
+func (m *KerberosInterfaceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -780,7 +790,7 @@ func (m *KerberosInterfaceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosInterfaceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -797,8 +807,8 @@ func (m *KerberosInterfaceSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this kerberos interface svm links based on the context it is used
-func (m *KerberosInterfaceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos interface inline svm inline links based on the context it is used
+func (m *KerberosInterfaceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -811,7 +821,7 @@ func (m *KerberosInterfaceSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *KerberosInterfaceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosInterfaceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -826,7 +836,7 @@ func (m *KerberosInterfaceSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosInterfaceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosInterfaceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -834,8 +844,8 @@ func (m *KerberosInterfaceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosInterfaceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosInterfaceSvmLinks
+func (m *KerberosInterfaceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosInterfaceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

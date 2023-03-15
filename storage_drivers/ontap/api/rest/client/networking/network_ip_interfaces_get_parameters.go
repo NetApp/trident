@@ -66,199 +66,199 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Filter by ddns_enabled
 	*/
-	DDNSEnabledQueryParameter *bool
+	DdnsEnabled *bool
 
 	/* DNSZone.
 
 	   Filter by dns_zone
 	*/
-	DNSZoneQueryParameter *string
+	DNSZone *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IPAddress.
 
 	   Filter by ip.address
 	*/
-	IPAddressQueryParameter *string
+	IPAddress *string
 
 	/* IPFamily.
 
 	   Filter by ip.family
 	*/
-	IPFamilyQueryParameter *string
+	IPFamily *string
 
 	/* IPNetmask.
 
 	   Filter by ip.netmask
 	*/
-	IPNetmaskQueryParameter *string
+	IPNetmask *string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* LocationAutoRevert.
 
 	   Filter by location.auto_revert
 	*/
-	LocationAutoRevertQueryParameter *bool
+	LocationAutoRevert *bool
 
 	/* LocationFailover.
 
 	   Filter by location.failover
 	*/
-	LocationFailoverQueryParameter *string
+	LocationFailover *string
 
 	/* LocationHomeNodeName.
 
 	   Filter by location.home_node.name
 	*/
-	LocationHomeNodeNameQueryParameter *string
+	LocationHomeNodeName *string
 
 	/* LocationHomeNodeUUID.
 
 	   Filter by location.home_node.uuid
 	*/
-	LocationHomeNodeUUIDQueryParameter *string
+	LocationHomeNodeUUID *string
 
 	/* LocationHomePortName.
 
 	   Filter by location.home_port.name
 	*/
-	LocationHomePortNameQueryParameter *string
+	LocationHomePortName *string
 
 	/* LocationHomePortNodeName.
 
 	   Filter by location.home_port.node.name
 	*/
-	LocationHomePortNodeNameQueryParameter *string
+	LocationHomePortNodeName *string
 
 	/* LocationHomePortUUID.
 
 	   Filter by location.home_port.uuid
 	*/
-	LocationHomePortUUIDQueryParameter *string
+	LocationHomePortUUID *string
 
 	/* LocationIsHome.
 
 	   Filter by location.is_home
 	*/
-	LocationIsHomeQueryParameter *bool
+	LocationIsHome *bool
 
 	/* LocationNodeName.
 
 	   Filter by location.node.name
 	*/
-	LocationNodeNameQueryParameter *string
+	LocationNodeName *string
 
 	/* LocationNodeUUID.
 
 	   Filter by location.node.uuid
 	*/
-	LocationNodeUUIDQueryParameter *string
+	LocationNodeUUID *string
 
 	/* LocationPortName.
 
 	   Filter by location.port.name
 	*/
-	LocationPortNameQueryParameter *string
+	LocationPortName *string
 
 	/* LocationPortNodeName.
 
 	   Filter by location.port.node.name
 	*/
-	LocationPortNodeNameQueryParameter *string
+	LocationPortNodeName *string
 
 	/* LocationPortUUID.
 
 	   Filter by location.port.uuid
 	*/
-	LocationPortUUIDQueryParameter *string
+	LocationPortUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProbePort.
 
 	   Filter by probe_port
 	*/
-	ProbePortQueryParameter *int64
+	ProbePort *int64
 
 	/* RdmaProtocols.
 
 	   Filter by rdma_protocols
 	*/
-	RdmaProtocolsQueryParameter *string
+	RdmaProtocols *string
 
 	/* ReturnRecords.
 
@@ -266,7 +266,7 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -274,103 +274,103 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* ServicePolicyName.
 
 	   Filter by service_policy.name
 	*/
-	ServicePolicyNameQueryParameter *string
+	ServicePolicyName *string
 
 	/* ServicePolicyUUID.
 
 	   Filter by service_policy.uuid
 	*/
-	ServicePolicyUUIDQueryParameter *string
+	ServicePolicyUUID *string
 
 	/* Services.
 
 	   Filter by services
 	*/
-	ServicesQueryParameter *string
+	Services *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* SubnetName.
 
 	   Filter by subnet.name
 	*/
-	SubnetNameQueryParameter *string
+	SubnetName *string
 
 	/* SubnetUUID.
 
 	   Filter by subnet.uuid
 	*/
-	SubnetUUIDQueryParameter *string
+	SubnetUUID *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* Vip.
 
 	   Filter by vip
 	*/
-	VIPQueryParameter *bool
+	Vip *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -390,14 +390,14 @@ func (o *NetworkIPInterfacesGetParams) WithDefaults() *NetworkIPInterfacesGetPar
 // All values with no default are reset to their zero value.
 func (o *NetworkIPInterfacesGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPInterfacesGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -439,565 +439,565 @@ func (o *NetworkIPInterfacesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDDNSEnabledQueryParameter adds the ddnsEnabled to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithDDNSEnabledQueryParameter(ddnsEnabled *bool) *NetworkIPInterfacesGetParams {
-	o.SetDDNSEnabledQueryParameter(ddnsEnabled)
+// WithDdnsEnabled adds the ddnsEnabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithDdnsEnabled(ddnsEnabled *bool) *NetworkIPInterfacesGetParams {
+	o.SetDdnsEnabled(ddnsEnabled)
 	return o
 }
 
-// SetDDNSEnabledQueryParameter adds the ddnsEnabled to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetDDNSEnabledQueryParameter(ddnsEnabled *bool) {
-	o.DDNSEnabledQueryParameter = ddnsEnabled
+// SetDdnsEnabled adds the ddnsEnabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetDdnsEnabled(ddnsEnabled *bool) {
+	o.DdnsEnabled = ddnsEnabled
 }
 
-// WithDNSZoneQueryParameter adds the dNSZone to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithDNSZoneQueryParameter(dNSZone *string) *NetworkIPInterfacesGetParams {
-	o.SetDNSZoneQueryParameter(dNSZone)
+// WithDNSZone adds the dNSZone to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithDNSZone(dNSZone *string) *NetworkIPInterfacesGetParams {
+	o.SetDNSZone(dNSZone)
 	return o
 }
 
-// SetDNSZoneQueryParameter adds the dnsZone to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetDNSZoneQueryParameter(dNSZone *string) {
-	o.DNSZoneQueryParameter = dNSZone
+// SetDNSZone adds the dnsZone to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetDNSZone(dNSZone *string) {
+	o.DNSZone = dNSZone
 }
 
-// WithEnabledQueryParameter adds the enabled to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithEnabledQueryParameter(enabled *bool) *NetworkIPInterfacesGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithEnabled(enabled *bool) *NetworkIPInterfacesGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPInterfacesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithFields(fields []string) *NetworkIPInterfacesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIPAddressQueryParameter adds the iPAddress to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPAddressQueryParameter(iPAddress *string) *NetworkIPInterfacesGetParams {
-	o.SetIPAddressQueryParameter(iPAddress)
+// WithIPAddress adds the iPAddress to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPAddress(iPAddress *string) *NetworkIPInterfacesGetParams {
+	o.SetIPAddress(iPAddress)
 	return o
 }
 
-// SetIPAddressQueryParameter adds the ipAddress to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPAddressQueryParameter(iPAddress *string) {
-	o.IPAddressQueryParameter = iPAddress
+// SetIPAddress adds the ipAddress to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetIPAddress(iPAddress *string) {
+	o.IPAddress = iPAddress
 }
 
-// WithIPFamilyQueryParameter adds the iPFamily to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPFamilyQueryParameter(iPFamily *string) *NetworkIPInterfacesGetParams {
-	o.SetIPFamilyQueryParameter(iPFamily)
+// WithIPFamily adds the iPFamily to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPFamily(iPFamily *string) *NetworkIPInterfacesGetParams {
+	o.SetIPFamily(iPFamily)
 	return o
 }
 
-// SetIPFamilyQueryParameter adds the ipFamily to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPFamilyQueryParameter(iPFamily *string) {
-	o.IPFamilyQueryParameter = iPFamily
+// SetIPFamily adds the ipFamily to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetIPFamily(iPFamily *string) {
+	o.IPFamily = iPFamily
 }
 
-// WithIPNetmaskQueryParameter adds the iPNetmask to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPNetmaskQueryParameter(iPNetmask *string) *NetworkIPInterfacesGetParams {
-	o.SetIPNetmaskQueryParameter(iPNetmask)
+// WithIPNetmask adds the iPNetmask to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPNetmask(iPNetmask *string) *NetworkIPInterfacesGetParams {
+	o.SetIPNetmask(iPNetmask)
 	return o
 }
 
-// SetIPNetmaskQueryParameter adds the ipNetmask to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPNetmaskQueryParameter(iPNetmask *string) {
-	o.IPNetmaskQueryParameter = iPNetmask
+// SetIPNetmask adds the ipNetmask to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetIPNetmask(iPNetmask *string) {
+	o.IPNetmask = iPNetmask
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *NetworkIPInterfacesGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIpspaceName(ipspaceName *string) *NetworkIPInterfacesGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIpspaceUUID(ipspaceUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithLocationAutoRevertQueryParameter adds the locationAutoRevert to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationAutoRevertQueryParameter(locationAutoRevert *bool) *NetworkIPInterfacesGetParams {
-	o.SetLocationAutoRevertQueryParameter(locationAutoRevert)
+// WithLocationAutoRevert adds the locationAutoRevert to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationAutoRevert(locationAutoRevert *bool) *NetworkIPInterfacesGetParams {
+	o.SetLocationAutoRevert(locationAutoRevert)
 	return o
 }
 
-// SetLocationAutoRevertQueryParameter adds the locationAutoRevert to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationAutoRevertQueryParameter(locationAutoRevert *bool) {
-	o.LocationAutoRevertQueryParameter = locationAutoRevert
+// SetLocationAutoRevert adds the locationAutoRevert to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationAutoRevert(locationAutoRevert *bool) {
+	o.LocationAutoRevert = locationAutoRevert
 }
 
-// WithLocationFailoverQueryParameter adds the locationFailover to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationFailoverQueryParameter(locationFailover *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationFailoverQueryParameter(locationFailover)
+// WithLocationFailover adds the locationFailover to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationFailover(locationFailover *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationFailover(locationFailover)
 	return o
 }
 
-// SetLocationFailoverQueryParameter adds the locationFailover to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationFailoverQueryParameter(locationFailover *string) {
-	o.LocationFailoverQueryParameter = locationFailover
+// SetLocationFailover adds the locationFailover to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationFailover(locationFailover *string) {
+	o.LocationFailover = locationFailover
 }
 
-// WithLocationHomeNodeNameQueryParameter adds the locationHomeNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationHomeNodeNameQueryParameter(locationHomeNodeName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationHomeNodeNameQueryParameter(locationHomeNodeName)
+// WithLocationHomeNodeName adds the locationHomeNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationHomeNodeName(locationHomeNodeName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationHomeNodeName(locationHomeNodeName)
 	return o
 }
 
-// SetLocationHomeNodeNameQueryParameter adds the locationHomeNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationHomeNodeNameQueryParameter(locationHomeNodeName *string) {
-	o.LocationHomeNodeNameQueryParameter = locationHomeNodeName
+// SetLocationHomeNodeName adds the locationHomeNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationHomeNodeName(locationHomeNodeName *string) {
+	o.LocationHomeNodeName = locationHomeNodeName
 }
 
-// WithLocationHomeNodeUUIDQueryParameter adds the locationHomeNodeUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID)
+// WithLocationHomeNodeUUID adds the locationHomeNodeUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationHomeNodeUUID(locationHomeNodeUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationHomeNodeUUID(locationHomeNodeUUID)
 	return o
 }
 
-// SetLocationHomeNodeUUIDQueryParameter adds the locationHomeNodeUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID *string) {
-	o.LocationHomeNodeUUIDQueryParameter = locationHomeNodeUUID
+// SetLocationHomeNodeUUID adds the locationHomeNodeUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationHomeNodeUUID(locationHomeNodeUUID *string) {
+	o.LocationHomeNodeUUID = locationHomeNodeUUID
 }
 
-// WithLocationHomePortNameQueryParameter adds the locationHomePortName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationHomePortNameQueryParameter(locationHomePortName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationHomePortNameQueryParameter(locationHomePortName)
+// WithLocationHomePortName adds the locationHomePortName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationHomePortName(locationHomePortName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationHomePortName(locationHomePortName)
 	return o
 }
 
-// SetLocationHomePortNameQueryParameter adds the locationHomePortName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationHomePortNameQueryParameter(locationHomePortName *string) {
-	o.LocationHomePortNameQueryParameter = locationHomePortName
+// SetLocationHomePortName adds the locationHomePortName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationHomePortName(locationHomePortName *string) {
+	o.LocationHomePortName = locationHomePortName
 }
 
-// WithLocationHomePortNodeNameQueryParameter adds the locationHomePortNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationHomePortNodeNameQueryParameter(locationHomePortNodeName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationHomePortNodeNameQueryParameter(locationHomePortNodeName)
+// WithLocationHomePortNodeName adds the locationHomePortNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationHomePortNodeName(locationHomePortNodeName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationHomePortNodeName(locationHomePortNodeName)
 	return o
 }
 
-// SetLocationHomePortNodeNameQueryParameter adds the locationHomePortNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationHomePortNodeNameQueryParameter(locationHomePortNodeName *string) {
-	o.LocationHomePortNodeNameQueryParameter = locationHomePortNodeName
+// SetLocationHomePortNodeName adds the locationHomePortNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationHomePortNodeName(locationHomePortNodeName *string) {
+	o.LocationHomePortNodeName = locationHomePortNodeName
 }
 
-// WithLocationHomePortUUIDQueryParameter adds the locationHomePortUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationHomePortUUIDQueryParameter(locationHomePortUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationHomePortUUIDQueryParameter(locationHomePortUUID)
+// WithLocationHomePortUUID adds the locationHomePortUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationHomePortUUID(locationHomePortUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationHomePortUUID(locationHomePortUUID)
 	return o
 }
 
-// SetLocationHomePortUUIDQueryParameter adds the locationHomePortUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationHomePortUUIDQueryParameter(locationHomePortUUID *string) {
-	o.LocationHomePortUUIDQueryParameter = locationHomePortUUID
+// SetLocationHomePortUUID adds the locationHomePortUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationHomePortUUID(locationHomePortUUID *string) {
+	o.LocationHomePortUUID = locationHomePortUUID
 }
 
-// WithLocationIsHomeQueryParameter adds the locationIsHome to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationIsHomeQueryParameter(locationIsHome *bool) *NetworkIPInterfacesGetParams {
-	o.SetLocationIsHomeQueryParameter(locationIsHome)
+// WithLocationIsHome adds the locationIsHome to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationIsHome(locationIsHome *bool) *NetworkIPInterfacesGetParams {
+	o.SetLocationIsHome(locationIsHome)
 	return o
 }
 
-// SetLocationIsHomeQueryParameter adds the locationIsHome to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationIsHomeQueryParameter(locationIsHome *bool) {
-	o.LocationIsHomeQueryParameter = locationIsHome
+// SetLocationIsHome adds the locationIsHome to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationIsHome(locationIsHome *bool) {
+	o.LocationIsHome = locationIsHome
 }
 
-// WithLocationNodeNameQueryParameter adds the locationNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationNodeNameQueryParameter(locationNodeName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationNodeNameQueryParameter(locationNodeName)
+// WithLocationNodeName adds the locationNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationNodeName(locationNodeName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationNodeName(locationNodeName)
 	return o
 }
 
-// SetLocationNodeNameQueryParameter adds the locationNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationNodeNameQueryParameter(locationNodeName *string) {
-	o.LocationNodeNameQueryParameter = locationNodeName
+// SetLocationNodeName adds the locationNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationNodeName(locationNodeName *string) {
+	o.LocationNodeName = locationNodeName
 }
 
-// WithLocationNodeUUIDQueryParameter adds the locationNodeUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationNodeUUIDQueryParameter(locationNodeUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationNodeUUIDQueryParameter(locationNodeUUID)
+// WithLocationNodeUUID adds the locationNodeUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationNodeUUID(locationNodeUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationNodeUUID(locationNodeUUID)
 	return o
 }
 
-// SetLocationNodeUUIDQueryParameter adds the locationNodeUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationNodeUUIDQueryParameter(locationNodeUUID *string) {
-	o.LocationNodeUUIDQueryParameter = locationNodeUUID
+// SetLocationNodeUUID adds the locationNodeUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationNodeUUID(locationNodeUUID *string) {
+	o.LocationNodeUUID = locationNodeUUID
 }
 
-// WithLocationPortNameQueryParameter adds the locationPortName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationPortNameQueryParameter(locationPortName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationPortNameQueryParameter(locationPortName)
+// WithLocationPortName adds the locationPortName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationPortName(locationPortName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationPortName(locationPortName)
 	return o
 }
 
-// SetLocationPortNameQueryParameter adds the locationPortName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationPortNameQueryParameter(locationPortName *string) {
-	o.LocationPortNameQueryParameter = locationPortName
+// SetLocationPortName adds the locationPortName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationPortName(locationPortName *string) {
+	o.LocationPortName = locationPortName
 }
 
-// WithLocationPortNodeNameQueryParameter adds the locationPortNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationPortNodeNameQueryParameter(locationPortNodeName *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationPortNodeNameQueryParameter(locationPortNodeName)
+// WithLocationPortNodeName adds the locationPortNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationPortNodeName(locationPortNodeName *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationPortNodeName(locationPortNodeName)
 	return o
 }
 
-// SetLocationPortNodeNameQueryParameter adds the locationPortNodeName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationPortNodeNameQueryParameter(locationPortNodeName *string) {
-	o.LocationPortNodeNameQueryParameter = locationPortNodeName
+// SetLocationPortNodeName adds the locationPortNodeName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationPortNodeName(locationPortNodeName *string) {
+	o.LocationPortNodeName = locationPortNodeName
 }
 
-// WithLocationPortUUIDQueryParameter adds the locationPortUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithLocationPortUUIDQueryParameter(locationPortUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetLocationPortUUIDQueryParameter(locationPortUUID)
+// WithLocationPortUUID adds the locationPortUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithLocationPortUUID(locationPortUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetLocationPortUUID(locationPortUUID)
 	return o
 }
 
-// SetLocationPortUUIDQueryParameter adds the locationPortUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetLocationPortUUIDQueryParameter(locationPortUUID *string) {
-	o.LocationPortUUIDQueryParameter = locationPortUUID
+// SetLocationPortUUID adds the locationPortUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetLocationPortUUID(locationPortUUID *string) {
+	o.LocationPortUUID = locationPortUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPInterfacesGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPInterfacesGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NetworkIPInterfacesGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMetricDuration adds the metricDuration to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricDuration(metricDuration *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMetricDuration adds the metricDuration to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NetworkIPInterfacesGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricStatus adds the metricStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricStatus(metricStatus *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricStatus adds the metricStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NetworkIPInterfacesGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricThroughputRead adds the metricThroughputRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricThroughputRead adds the metricThroughputRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NetworkIPInterfacesGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputTotal adds the metricThroughputTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NetworkIPInterfacesGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputWrite adds the metricThroughputWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NetworkIPInterfacesGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricTimestamp adds the metricTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricTimestamp(metricTimestamp *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricTimestamp adds the metricTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithNameQueryParameter adds the name to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithNameQueryParameter(name *string) *NetworkIPInterfacesGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithName(name *string) *NetworkIPInterfacesGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPInterfacesGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithOrderBy(orderBy []string) *NetworkIPInterfacesGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProbePortQueryParameter adds the probePort to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithProbePortQueryParameter(probePort *int64) *NetworkIPInterfacesGetParams {
-	o.SetProbePortQueryParameter(probePort)
+// WithProbePort adds the probePort to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithProbePort(probePort *int64) *NetworkIPInterfacesGetParams {
+	o.SetProbePort(probePort)
 	return o
 }
 
-// SetProbePortQueryParameter adds the probePort to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetProbePortQueryParameter(probePort *int64) {
-	o.ProbePortQueryParameter = probePort
+// SetProbePort adds the probePort to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetProbePort(probePort *int64) {
+	o.ProbePort = probePort
 }
 
-// WithRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithRdmaProtocolsQueryParameter(rdmaProtocols *string) *NetworkIPInterfacesGetParams {
-	o.SetRdmaProtocolsQueryParameter(rdmaProtocols)
+// WithRdmaProtocols adds the rdmaProtocols to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRdmaProtocols(rdmaProtocols *string) *NetworkIPInterfacesGetParams {
+	o.SetRdmaProtocols(rdmaProtocols)
 	return o
 }
 
-// SetRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetRdmaProtocolsQueryParameter(rdmaProtocols *string) {
-	o.RdmaProtocolsQueryParameter = rdmaProtocols
+// SetRdmaProtocols adds the rdmaProtocols to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRdmaProtocols(rdmaProtocols *string) {
+	o.RdmaProtocols = rdmaProtocols
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPInterfacesGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPInterfacesGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPInterfacesGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPInterfacesGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithScopeQueryParameter(scope *string) *NetworkIPInterfacesGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithScope(scope *string) *NetworkIPInterfacesGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithServicePolicyNameQueryParameter adds the servicePolicyName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithServicePolicyNameQueryParameter(servicePolicyName *string) *NetworkIPInterfacesGetParams {
-	o.SetServicePolicyNameQueryParameter(servicePolicyName)
+// WithServicePolicyName adds the servicePolicyName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithServicePolicyName(servicePolicyName *string) *NetworkIPInterfacesGetParams {
+	o.SetServicePolicyName(servicePolicyName)
 	return o
 }
 
-// SetServicePolicyNameQueryParameter adds the servicePolicyName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetServicePolicyNameQueryParameter(servicePolicyName *string) {
-	o.ServicePolicyNameQueryParameter = servicePolicyName
+// SetServicePolicyName adds the servicePolicyName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetServicePolicyName(servicePolicyName *string) {
+	o.ServicePolicyName = servicePolicyName
 }
 
-// WithServicePolicyUUIDQueryParameter adds the servicePolicyUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithServicePolicyUUIDQueryParameter(servicePolicyUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetServicePolicyUUIDQueryParameter(servicePolicyUUID)
+// WithServicePolicyUUID adds the servicePolicyUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithServicePolicyUUID(servicePolicyUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetServicePolicyUUID(servicePolicyUUID)
 	return o
 }
 
-// SetServicePolicyUUIDQueryParameter adds the servicePolicyUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetServicePolicyUUIDQueryParameter(servicePolicyUUID *string) {
-	o.ServicePolicyUUIDQueryParameter = servicePolicyUUID
+// SetServicePolicyUUID adds the servicePolicyUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetServicePolicyUUID(servicePolicyUUID *string) {
+	o.ServicePolicyUUID = servicePolicyUUID
 }
 
-// WithServicesQueryParameter adds the services to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithServicesQueryParameter(services *string) *NetworkIPInterfacesGetParams {
-	o.SetServicesQueryParameter(services)
+// WithServices adds the services to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithServices(services *string) *NetworkIPInterfacesGetParams {
+	o.SetServices(services)
 	return o
 }
 
-// SetServicesQueryParameter adds the services to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetServicesQueryParameter(services *string) {
-	o.ServicesQueryParameter = services
+// SetServices adds the services to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetServices(services *string) {
+	o.Services = services
 }
 
-// WithStateQueryParameter adds the state to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStateQueryParameter(state *string) *NetworkIPInterfacesGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithState(state *string) *NetworkIPInterfacesGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NetworkIPInterfacesGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsStatus(statisticsStatus *string) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NetworkIPInterfacesGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NetworkIPInterfacesGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NetworkIPInterfacesGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NetworkIPInterfacesGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithSubnetNameQueryParameter adds the subnetName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithSubnetNameQueryParameter(subnetName *string) *NetworkIPInterfacesGetParams {
-	o.SetSubnetNameQueryParameter(subnetName)
+// WithSubnetName adds the subnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSubnetName(subnetName *string) *NetworkIPInterfacesGetParams {
+	o.SetSubnetName(subnetName)
 	return o
 }
 
-// SetSubnetNameQueryParameter adds the subnetName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetSubnetNameQueryParameter(subnetName *string) {
-	o.SubnetNameQueryParameter = subnetName
+// SetSubnetName adds the subnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSubnetName(subnetName *string) {
+	o.SubnetName = subnetName
 }
 
-// WithSubnetUUIDQueryParameter adds the subnetUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithSubnetUUIDQueryParameter(subnetUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetSubnetUUIDQueryParameter(subnetUUID)
+// WithSubnetUUID adds the subnetUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSubnetUUID(subnetUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetSubnetUUID(subnetUUID)
 	return o
 }
 
-// SetSubnetUUIDQueryParameter adds the subnetUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetSubnetUUIDQueryParameter(subnetUUID *string) {
-	o.SubnetUUIDQueryParameter = subnetUUID
+// SetSubnetUUID adds the subnetUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSubnetUUID(subnetUUID *string) {
+	o.SubnetUUID = subnetUUID
 }
 
-// WithSVMNameQueryParameter adds the svmName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithSVMNameQueryParameter(svmName *string) *NetworkIPInterfacesGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSvmName(svmName *string) *NetworkIPInterfacesGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NetworkIPInterfacesGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSvmUUID(svmUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithUUIDQueryParameter(uuid *string) *NetworkIPInterfacesGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithUUID(uuid *string) *NetworkIPInterfacesGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVIPQueryParameter adds the vip to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithVIPQueryParameter(vip *bool) *NetworkIPInterfacesGetParams {
-	o.SetVIPQueryParameter(vip)
+// WithVip adds the vip to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithVip(vip *bool) *NetworkIPInterfacesGetParams {
+	o.SetVip(vip)
 	return o
 }
 
-// SetVIPQueryParameter adds the vip to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetVIPQueryParameter(vip *bool) {
-	o.VIPQueryParameter = vip
+// SetVip adds the vip to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetVip(vip *bool) {
+	o.Vip = vip
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1008,13 +1008,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.DDNSEnabledQueryParameter != nil {
+	if o.DdnsEnabled != nil {
 
 		// query param ddns_enabled
 		var qrDdnsEnabled bool
 
-		if o.DDNSEnabledQueryParameter != nil {
-			qrDdnsEnabled = *o.DDNSEnabledQueryParameter
+		if o.DdnsEnabled != nil {
+			qrDdnsEnabled = *o.DdnsEnabled
 		}
 		qDdnsEnabled := swag.FormatBool(qrDdnsEnabled)
 		if qDdnsEnabled != "" {
@@ -1025,13 +1025,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.DNSZoneQueryParameter != nil {
+	if o.DNSZone != nil {
 
 		// query param dns_zone
 		var qrDNSZone string
 
-		if o.DNSZoneQueryParameter != nil {
-			qrDNSZone = *o.DNSZoneQueryParameter
+		if o.DNSZone != nil {
+			qrDNSZone = *o.DNSZone
 		}
 		qDNSZone := qrDNSZone
 		if qDNSZone != "" {
@@ -1042,13 +1042,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -1059,7 +1059,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1070,13 +1070,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IPAddressQueryParameter != nil {
+	if o.IPAddress != nil {
 
 		// query param ip.address
 		var qrIPAddress string
 
-		if o.IPAddressQueryParameter != nil {
-			qrIPAddress = *o.IPAddressQueryParameter
+		if o.IPAddress != nil {
+			qrIPAddress = *o.IPAddress
 		}
 		qIPAddress := qrIPAddress
 		if qIPAddress != "" {
@@ -1087,13 +1087,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IPFamilyQueryParameter != nil {
+	if o.IPFamily != nil {
 
 		// query param ip.family
 		var qrIPFamily string
 
-		if o.IPFamilyQueryParameter != nil {
-			qrIPFamily = *o.IPFamilyQueryParameter
+		if o.IPFamily != nil {
+			qrIPFamily = *o.IPFamily
 		}
 		qIPFamily := qrIPFamily
 		if qIPFamily != "" {
@@ -1104,13 +1104,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IPNetmaskQueryParameter != nil {
+	if o.IPNetmask != nil {
 
 		// query param ip.netmask
 		var qrIPNetmask string
 
-		if o.IPNetmaskQueryParameter != nil {
-			qrIPNetmask = *o.IPNetmaskQueryParameter
+		if o.IPNetmask != nil {
+			qrIPNetmask = *o.IPNetmask
 		}
 		qIPNetmask := qrIPNetmask
 		if qIPNetmask != "" {
@@ -1121,13 +1121,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -1138,13 +1138,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -1155,13 +1155,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationAutoRevertQueryParameter != nil {
+	if o.LocationAutoRevert != nil {
 
 		// query param location.auto_revert
 		var qrLocationAutoRevert bool
 
-		if o.LocationAutoRevertQueryParameter != nil {
-			qrLocationAutoRevert = *o.LocationAutoRevertQueryParameter
+		if o.LocationAutoRevert != nil {
+			qrLocationAutoRevert = *o.LocationAutoRevert
 		}
 		qLocationAutoRevert := swag.FormatBool(qrLocationAutoRevert)
 		if qLocationAutoRevert != "" {
@@ -1172,13 +1172,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationFailoverQueryParameter != nil {
+	if o.LocationFailover != nil {
 
 		// query param location.failover
 		var qrLocationFailover string
 
-		if o.LocationFailoverQueryParameter != nil {
-			qrLocationFailover = *o.LocationFailoverQueryParameter
+		if o.LocationFailover != nil {
+			qrLocationFailover = *o.LocationFailover
 		}
 		qLocationFailover := qrLocationFailover
 		if qLocationFailover != "" {
@@ -1189,13 +1189,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationHomeNodeNameQueryParameter != nil {
+	if o.LocationHomeNodeName != nil {
 
 		// query param location.home_node.name
 		var qrLocationHomeNodeName string
 
-		if o.LocationHomeNodeNameQueryParameter != nil {
-			qrLocationHomeNodeName = *o.LocationHomeNodeNameQueryParameter
+		if o.LocationHomeNodeName != nil {
+			qrLocationHomeNodeName = *o.LocationHomeNodeName
 		}
 		qLocationHomeNodeName := qrLocationHomeNodeName
 		if qLocationHomeNodeName != "" {
@@ -1206,13 +1206,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationHomeNodeUUIDQueryParameter != nil {
+	if o.LocationHomeNodeUUID != nil {
 
 		// query param location.home_node.uuid
 		var qrLocationHomeNodeUUID string
 
-		if o.LocationHomeNodeUUIDQueryParameter != nil {
-			qrLocationHomeNodeUUID = *o.LocationHomeNodeUUIDQueryParameter
+		if o.LocationHomeNodeUUID != nil {
+			qrLocationHomeNodeUUID = *o.LocationHomeNodeUUID
 		}
 		qLocationHomeNodeUUID := qrLocationHomeNodeUUID
 		if qLocationHomeNodeUUID != "" {
@@ -1223,13 +1223,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationHomePortNameQueryParameter != nil {
+	if o.LocationHomePortName != nil {
 
 		// query param location.home_port.name
 		var qrLocationHomePortName string
 
-		if o.LocationHomePortNameQueryParameter != nil {
-			qrLocationHomePortName = *o.LocationHomePortNameQueryParameter
+		if o.LocationHomePortName != nil {
+			qrLocationHomePortName = *o.LocationHomePortName
 		}
 		qLocationHomePortName := qrLocationHomePortName
 		if qLocationHomePortName != "" {
@@ -1240,13 +1240,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationHomePortNodeNameQueryParameter != nil {
+	if o.LocationHomePortNodeName != nil {
 
 		// query param location.home_port.node.name
 		var qrLocationHomePortNodeName string
 
-		if o.LocationHomePortNodeNameQueryParameter != nil {
-			qrLocationHomePortNodeName = *o.LocationHomePortNodeNameQueryParameter
+		if o.LocationHomePortNodeName != nil {
+			qrLocationHomePortNodeName = *o.LocationHomePortNodeName
 		}
 		qLocationHomePortNodeName := qrLocationHomePortNodeName
 		if qLocationHomePortNodeName != "" {
@@ -1257,13 +1257,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationHomePortUUIDQueryParameter != nil {
+	if o.LocationHomePortUUID != nil {
 
 		// query param location.home_port.uuid
 		var qrLocationHomePortUUID string
 
-		if o.LocationHomePortUUIDQueryParameter != nil {
-			qrLocationHomePortUUID = *o.LocationHomePortUUIDQueryParameter
+		if o.LocationHomePortUUID != nil {
+			qrLocationHomePortUUID = *o.LocationHomePortUUID
 		}
 		qLocationHomePortUUID := qrLocationHomePortUUID
 		if qLocationHomePortUUID != "" {
@@ -1274,13 +1274,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationIsHomeQueryParameter != nil {
+	if o.LocationIsHome != nil {
 
 		// query param location.is_home
 		var qrLocationIsHome bool
 
-		if o.LocationIsHomeQueryParameter != nil {
-			qrLocationIsHome = *o.LocationIsHomeQueryParameter
+		if o.LocationIsHome != nil {
+			qrLocationIsHome = *o.LocationIsHome
 		}
 		qLocationIsHome := swag.FormatBool(qrLocationIsHome)
 		if qLocationIsHome != "" {
@@ -1291,13 +1291,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationNodeNameQueryParameter != nil {
+	if o.LocationNodeName != nil {
 
 		// query param location.node.name
 		var qrLocationNodeName string
 
-		if o.LocationNodeNameQueryParameter != nil {
-			qrLocationNodeName = *o.LocationNodeNameQueryParameter
+		if o.LocationNodeName != nil {
+			qrLocationNodeName = *o.LocationNodeName
 		}
 		qLocationNodeName := qrLocationNodeName
 		if qLocationNodeName != "" {
@@ -1308,13 +1308,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationNodeUUIDQueryParameter != nil {
+	if o.LocationNodeUUID != nil {
 
 		// query param location.node.uuid
 		var qrLocationNodeUUID string
 
-		if o.LocationNodeUUIDQueryParameter != nil {
-			qrLocationNodeUUID = *o.LocationNodeUUIDQueryParameter
+		if o.LocationNodeUUID != nil {
+			qrLocationNodeUUID = *o.LocationNodeUUID
 		}
 		qLocationNodeUUID := qrLocationNodeUUID
 		if qLocationNodeUUID != "" {
@@ -1325,13 +1325,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationPortNameQueryParameter != nil {
+	if o.LocationPortName != nil {
 
 		// query param location.port.name
 		var qrLocationPortName string
 
-		if o.LocationPortNameQueryParameter != nil {
-			qrLocationPortName = *o.LocationPortNameQueryParameter
+		if o.LocationPortName != nil {
+			qrLocationPortName = *o.LocationPortName
 		}
 		qLocationPortName := qrLocationPortName
 		if qLocationPortName != "" {
@@ -1342,13 +1342,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationPortNodeNameQueryParameter != nil {
+	if o.LocationPortNodeName != nil {
 
 		// query param location.port.node.name
 		var qrLocationPortNodeName string
 
-		if o.LocationPortNodeNameQueryParameter != nil {
-			qrLocationPortNodeName = *o.LocationPortNodeNameQueryParameter
+		if o.LocationPortNodeName != nil {
+			qrLocationPortNodeName = *o.LocationPortNodeName
 		}
 		qLocationPortNodeName := qrLocationPortNodeName
 		if qLocationPortNodeName != "" {
@@ -1359,13 +1359,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LocationPortUUIDQueryParameter != nil {
+	if o.LocationPortUUID != nil {
 
 		// query param location.port.uuid
 		var qrLocationPortUUID string
 
-		if o.LocationPortUUIDQueryParameter != nil {
-			qrLocationPortUUID = *o.LocationPortUUIDQueryParameter
+		if o.LocationPortUUID != nil {
+			qrLocationPortUUID = *o.LocationPortUUID
 		}
 		qLocationPortUUID := qrLocationPortUUID
 		if qLocationPortUUID != "" {
@@ -1376,13 +1376,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1393,13 +1393,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -1410,13 +1410,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -1427,13 +1427,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -1444,13 +1444,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -1461,13 +1461,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -1478,13 +1478,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -1495,13 +1495,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1512,7 +1512,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1523,13 +1523,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ProbePortQueryParameter != nil {
+	if o.ProbePort != nil {
 
 		// query param probe_port
 		var qrProbePort int64
 
-		if o.ProbePortQueryParameter != nil {
-			qrProbePort = *o.ProbePortQueryParameter
+		if o.ProbePort != nil {
+			qrProbePort = *o.ProbePort
 		}
 		qProbePort := swag.FormatInt64(qrProbePort)
 		if qProbePort != "" {
@@ -1540,13 +1540,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RdmaProtocolsQueryParameter != nil {
+	if o.RdmaProtocols != nil {
 
 		// query param rdma_protocols
 		var qrRdmaProtocols string
 
-		if o.RdmaProtocolsQueryParameter != nil {
-			qrRdmaProtocols = *o.RdmaProtocolsQueryParameter
+		if o.RdmaProtocols != nil {
+			qrRdmaProtocols = *o.RdmaProtocols
 		}
 		qRdmaProtocols := qrRdmaProtocols
 		if qRdmaProtocols != "" {
@@ -1557,13 +1557,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1574,13 +1574,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1591,13 +1591,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -1608,13 +1608,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ServicePolicyNameQueryParameter != nil {
+	if o.ServicePolicyName != nil {
 
 		// query param service_policy.name
 		var qrServicePolicyName string
 
-		if o.ServicePolicyNameQueryParameter != nil {
-			qrServicePolicyName = *o.ServicePolicyNameQueryParameter
+		if o.ServicePolicyName != nil {
+			qrServicePolicyName = *o.ServicePolicyName
 		}
 		qServicePolicyName := qrServicePolicyName
 		if qServicePolicyName != "" {
@@ -1625,13 +1625,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ServicePolicyUUIDQueryParameter != nil {
+	if o.ServicePolicyUUID != nil {
 
 		// query param service_policy.uuid
 		var qrServicePolicyUUID string
 
-		if o.ServicePolicyUUIDQueryParameter != nil {
-			qrServicePolicyUUID = *o.ServicePolicyUUIDQueryParameter
+		if o.ServicePolicyUUID != nil {
+			qrServicePolicyUUID = *o.ServicePolicyUUID
 		}
 		qServicePolicyUUID := qrServicePolicyUUID
 		if qServicePolicyUUID != "" {
@@ -1642,13 +1642,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ServicesQueryParameter != nil {
+	if o.Services != nil {
 
 		// query param services
 		var qrServices string
 
-		if o.ServicesQueryParameter != nil {
-			qrServices = *o.ServicesQueryParameter
+		if o.Services != nil {
+			qrServices = *o.Services
 		}
 		qServices := qrServices
 		if qServices != "" {
@@ -1659,13 +1659,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1676,13 +1676,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -1693,13 +1693,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -1710,13 +1710,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -1727,13 +1727,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -1744,13 +1744,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -1761,13 +1761,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SubnetNameQueryParameter != nil {
+	if o.SubnetName != nil {
 
 		// query param subnet.name
 		var qrSubnetName string
 
-		if o.SubnetNameQueryParameter != nil {
-			qrSubnetName = *o.SubnetNameQueryParameter
+		if o.SubnetName != nil {
+			qrSubnetName = *o.SubnetName
 		}
 		qSubnetName := qrSubnetName
 		if qSubnetName != "" {
@@ -1778,13 +1778,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SubnetUUIDQueryParameter != nil {
+	if o.SubnetUUID != nil {
 
 		// query param subnet.uuid
 		var qrSubnetUUID string
 
-		if o.SubnetUUIDQueryParameter != nil {
-			qrSubnetUUID = *o.SubnetUUIDQueryParameter
+		if o.SubnetUUID != nil {
+			qrSubnetUUID = *o.SubnetUUID
 		}
 		qSubnetUUID := qrSubnetUUID
 		if qSubnetUUID != "" {
@@ -1795,13 +1795,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1812,13 +1812,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1829,13 +1829,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1846,13 +1846,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.VIPQueryParameter != nil {
+	if o.Vip != nil {
 
 		// query param vip
 		var qrVip bool
 
-		if o.VIPQueryParameter != nil {
-			qrVip = *o.VIPQueryParameter
+		if o.Vip != nil {
+			qrVip = *o.Vip
 		}
 		qVip := swag.FormatBool(qrVip)
 		if qVip != "" {
@@ -1871,7 +1871,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamNetworkIPInterfacesGet binds the parameter fields
 func (o *NetworkIPInterfacesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1888,7 +1888,7 @@ func (o *NetworkIPInterfacesGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamNetworkIPInterfacesGet binds the parameter order_by
 func (o *NetworkIPInterfacesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

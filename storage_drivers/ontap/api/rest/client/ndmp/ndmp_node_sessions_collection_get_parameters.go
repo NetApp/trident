@@ -66,145 +66,145 @@ type NdmpNodeSessionsCollectionGetParams struct {
 
 	   Filter by backup_engine
 	*/
-	BackupEngineQueryParameter *string
+	BackupEngine *string
 
 	/* ClientAddress.
 
 	   Filter by client_address
 	*/
-	ClientAddressQueryParameter *string
+	ClientAddress *string
 
 	/* ClientPort.
 
 	   Filter by client_port
 	*/
-	ClientPortQueryParameter *int64
+	ClientPort *int64
 
 	/* DataBytesProcessed.
 
 	   Filter by data.bytes_processed
 	*/
-	DataBytesProcessedQueryParameter *int64
+	DataBytesProcessed *int64
 
 	/* DataConnectionAddress.
 
 	   Filter by data.connection.address
 	*/
-	DataConnectionAddressQueryParameter *string
+	DataConnectionAddress *string
 
 	/* DataConnectionPort.
 
 	   Filter by data.connection.port
 	*/
-	DataConnectionPortQueryParameter *int64
+	DataConnectionPort *int64
 
 	/* DataConnectionType.
 
 	   Filter by data.connection.type
 	*/
-	DataConnectionTypeQueryParameter *string
+	DataConnectionType *string
 
 	/* DataOperation.
 
 	   Filter by data.operation
 	*/
-	DataOperationQueryParameter *string
+	DataOperation *string
 
 	/* DataReason.
 
 	   Filter by data.reason
 	*/
-	DataReasonQueryParameter *string
+	DataReason *string
 
 	/* DataState.
 
 	   Filter by data.state
 	*/
-	DataStateQueryParameter *string
+	DataState *string
 
 	/* DataPath.
 
 	   Filter by data_path
 	*/
-	DataPathQueryParameter *string
+	DataPath *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *string
+	ID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MoverBytesMoved.
 
 	   Filter by mover.bytes_moved
 	*/
-	MoverBytesMovedQueryParameter *int64
+	MoverBytesMoved *int64
 
 	/* MoverConnectionAddress.
 
 	   Filter by mover.connection.address
 	*/
-	MoverConnectionAddressQueryParameter *string
+	MoverConnectionAddress *string
 
 	/* MoverConnectionPort.
 
 	   Filter by mover.connection.port
 	*/
-	MoverConnectionPortQueryParameter *int64
+	MoverConnectionPort *int64
 
 	/* MoverConnectionType.
 
 	   Filter by mover.connection.type
 	*/
-	MoverConnectionTypeQueryParameter *string
+	MoverConnectionType *string
 
 	/* MoverMode.
 
 	   Filter by mover.mode
 	*/
-	MoverModeQueryParameter *string
+	MoverMode *string
 
 	/* MoverReason.
 
 	   Filter by mover.reason
 	*/
-	MoverReasonQueryParameter *string
+	MoverReason *string
 
 	/* MoverState.
 
 	   Filter by mover.state
 	*/
-	MoverStateQueryParameter *string
+	MoverState *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -212,7 +212,7 @@ type NdmpNodeSessionsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -220,67 +220,67 @@ type NdmpNodeSessionsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScsiDeviceID.
 
 	   Filter by scsi.device_id
 	*/
-	ScsiDeviceIDQueryParameter *string
+	ScsiDeviceID *string
 
 	/* ScsiHostAdapter.
 
 	   Filter by scsi.host_adapter
 	*/
-	ScsiHostAdapterQueryParameter *int64
+	ScsiHostAdapter *int64
 
 	/* ScsiLunID.
 
 	   Filter by scsi.lun_id
 	*/
-	ScsiLunIDQueryParameter *int64
+	ScsiLunID *int64
 
 	/* ScsiTargetID.
 
 	   Filter by scsi.target_id
 	*/
-	ScsiTargetIDQueryParameter *int64
+	ScsiTargetID *int64
 
 	/* SourceAddress.
 
 	   Filter by source_address
 	*/
-	SourceAddressQueryParameter *string
+	SourceAddress *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TapeDevice.
 
 	   Filter by tape_device
 	*/
-	TapeDeviceQueryParameter *string
+	TapeDevice *string
 
 	/* TapeMode.
 
 	   Filter by tape_mode
 	*/
-	TapeModeQueryParameter *string
+	TapeMode *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -300,14 +300,14 @@ func (o *NdmpNodeSessionsCollectionGetParams) WithDefaults() *NdmpNodeSessionsCo
 // All values with no default are reset to their zero value.
 func (o *NdmpNodeSessionsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NdmpNodeSessionsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -349,400 +349,400 @@ func (o *NdmpNodeSessionsCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithBackupEngineQueryParameter adds the backupEngine to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithBackupEngineQueryParameter(backupEngine *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetBackupEngineQueryParameter(backupEngine)
+// WithBackupEngine adds the backupEngine to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithBackupEngine(backupEngine *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetBackupEngine(backupEngine)
 	return o
 }
 
-// SetBackupEngineQueryParameter adds the backupEngine to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetBackupEngineQueryParameter(backupEngine *string) {
-	o.BackupEngineQueryParameter = backupEngine
+// SetBackupEngine adds the backupEngine to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetBackupEngine(backupEngine *string) {
+	o.BackupEngine = backupEngine
 }
 
-// WithClientAddressQueryParameter adds the clientAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithClientAddressQueryParameter(clientAddress *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetClientAddressQueryParameter(clientAddress)
+// WithClientAddress adds the clientAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithClientAddress(clientAddress *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetClientAddress(clientAddress)
 	return o
 }
 
-// SetClientAddressQueryParameter adds the clientAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetClientAddressQueryParameter(clientAddress *string) {
-	o.ClientAddressQueryParameter = clientAddress
+// SetClientAddress adds the clientAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetClientAddress(clientAddress *string) {
+	o.ClientAddress = clientAddress
 }
 
-// WithClientPortQueryParameter adds the clientPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithClientPortQueryParameter(clientPort *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetClientPortQueryParameter(clientPort)
+// WithClientPort adds the clientPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithClientPort(clientPort *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetClientPort(clientPort)
 	return o
 }
 
-// SetClientPortQueryParameter adds the clientPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetClientPortQueryParameter(clientPort *int64) {
-	o.ClientPortQueryParameter = clientPort
+// SetClientPort adds the clientPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetClientPort(clientPort *int64) {
+	o.ClientPort = clientPort
 }
 
-// WithDataBytesProcessedQueryParameter adds the dataBytesProcessed to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataBytesProcessedQueryParameter(dataBytesProcessed *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataBytesProcessedQueryParameter(dataBytesProcessed)
+// WithDataBytesProcessed adds the dataBytesProcessed to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataBytesProcessed(dataBytesProcessed *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataBytesProcessed(dataBytesProcessed)
 	return o
 }
 
-// SetDataBytesProcessedQueryParameter adds the dataBytesProcessed to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataBytesProcessedQueryParameter(dataBytesProcessed *int64) {
-	o.DataBytesProcessedQueryParameter = dataBytesProcessed
+// SetDataBytesProcessed adds the dataBytesProcessed to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataBytesProcessed(dataBytesProcessed *int64) {
+	o.DataBytesProcessed = dataBytesProcessed
 }
 
-// WithDataConnectionAddressQueryParameter adds the dataConnectionAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionAddressQueryParameter(dataConnectionAddress *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataConnectionAddressQueryParameter(dataConnectionAddress)
+// WithDataConnectionAddress adds the dataConnectionAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionAddress(dataConnectionAddress *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataConnectionAddress(dataConnectionAddress)
 	return o
 }
 
-// SetDataConnectionAddressQueryParameter adds the dataConnectionAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionAddressQueryParameter(dataConnectionAddress *string) {
-	o.DataConnectionAddressQueryParameter = dataConnectionAddress
+// SetDataConnectionAddress adds the dataConnectionAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionAddress(dataConnectionAddress *string) {
+	o.DataConnectionAddress = dataConnectionAddress
 }
 
-// WithDataConnectionPortQueryParameter adds the dataConnectionPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionPortQueryParameter(dataConnectionPort *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataConnectionPortQueryParameter(dataConnectionPort)
+// WithDataConnectionPort adds the dataConnectionPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionPort(dataConnectionPort *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataConnectionPort(dataConnectionPort)
 	return o
 }
 
-// SetDataConnectionPortQueryParameter adds the dataConnectionPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionPortQueryParameter(dataConnectionPort *int64) {
-	o.DataConnectionPortQueryParameter = dataConnectionPort
+// SetDataConnectionPort adds the dataConnectionPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionPort(dataConnectionPort *int64) {
+	o.DataConnectionPort = dataConnectionPort
 }
 
-// WithDataConnectionTypeQueryParameter adds the dataConnectionType to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionTypeQueryParameter(dataConnectionType *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataConnectionTypeQueryParameter(dataConnectionType)
+// WithDataConnectionType adds the dataConnectionType to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataConnectionType(dataConnectionType *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataConnectionType(dataConnectionType)
 	return o
 }
 
-// SetDataConnectionTypeQueryParameter adds the dataConnectionType to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionTypeQueryParameter(dataConnectionType *string) {
-	o.DataConnectionTypeQueryParameter = dataConnectionType
+// SetDataConnectionType adds the dataConnectionType to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataConnectionType(dataConnectionType *string) {
+	o.DataConnectionType = dataConnectionType
 }
 
-// WithDataOperationQueryParameter adds the dataOperation to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataOperationQueryParameter(dataOperation *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataOperationQueryParameter(dataOperation)
+// WithDataOperation adds the dataOperation to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataOperation(dataOperation *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataOperation(dataOperation)
 	return o
 }
 
-// SetDataOperationQueryParameter adds the dataOperation to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataOperationQueryParameter(dataOperation *string) {
-	o.DataOperationQueryParameter = dataOperation
+// SetDataOperation adds the dataOperation to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataOperation(dataOperation *string) {
+	o.DataOperation = dataOperation
 }
 
-// WithDataReasonQueryParameter adds the dataReason to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataReasonQueryParameter(dataReason *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataReasonQueryParameter(dataReason)
+// WithDataReason adds the dataReason to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataReason(dataReason *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataReason(dataReason)
 	return o
 }
 
-// SetDataReasonQueryParameter adds the dataReason to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataReasonQueryParameter(dataReason *string) {
-	o.DataReasonQueryParameter = dataReason
+// SetDataReason adds the dataReason to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataReason(dataReason *string) {
+	o.DataReason = dataReason
 }
 
-// WithDataStateQueryParameter adds the dataState to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataStateQueryParameter(dataState *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataStateQueryParameter(dataState)
+// WithDataState adds the dataState to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataState(dataState *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataState(dataState)
 	return o
 }
 
-// SetDataStateQueryParameter adds the dataState to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataStateQueryParameter(dataState *string) {
-	o.DataStateQueryParameter = dataState
+// SetDataState adds the dataState to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataState(dataState *string) {
+	o.DataState = dataState
 }
 
-// WithDataPathQueryParameter adds the dataPath to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithDataPathQueryParameter(dataPath *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetDataPathQueryParameter(dataPath)
+// WithDataPath adds the dataPath to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithDataPath(dataPath *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetDataPath(dataPath)
 	return o
 }
 
-// SetDataPathQueryParameter adds the dataPath to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetDataPathQueryParameter(dataPath *string) {
-	o.DataPathQueryParameter = dataPath
+// SetDataPath adds the dataPath to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetDataPath(dataPath *string) {
+	o.DataPath = dataPath
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithFieldsQueryParameter(fields []string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithFields(fields []string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDQueryParameter adds the id to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithIDQueryParameter(id *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithID(id *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetIDQueryParameter(id *string) {
-	o.IDQueryParameter = id
+// SetID adds the id to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetID(id *string) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMaxRecords(maxRecords *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMoverBytesMovedQueryParameter adds the moverBytesMoved to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverBytesMovedQueryParameter(moverBytesMoved *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverBytesMovedQueryParameter(moverBytesMoved)
+// WithMoverBytesMoved adds the moverBytesMoved to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverBytesMoved(moverBytesMoved *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverBytesMoved(moverBytesMoved)
 	return o
 }
 
-// SetMoverBytesMovedQueryParameter adds the moverBytesMoved to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverBytesMovedQueryParameter(moverBytesMoved *int64) {
-	o.MoverBytesMovedQueryParameter = moverBytesMoved
+// SetMoverBytesMoved adds the moverBytesMoved to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverBytesMoved(moverBytesMoved *int64) {
+	o.MoverBytesMoved = moverBytesMoved
 }
 
-// WithMoverConnectionAddressQueryParameter adds the moverConnectionAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionAddressQueryParameter(moverConnectionAddress *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverConnectionAddressQueryParameter(moverConnectionAddress)
+// WithMoverConnectionAddress adds the moverConnectionAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionAddress(moverConnectionAddress *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverConnectionAddress(moverConnectionAddress)
 	return o
 }
 
-// SetMoverConnectionAddressQueryParameter adds the moverConnectionAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionAddressQueryParameter(moverConnectionAddress *string) {
-	o.MoverConnectionAddressQueryParameter = moverConnectionAddress
+// SetMoverConnectionAddress adds the moverConnectionAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionAddress(moverConnectionAddress *string) {
+	o.MoverConnectionAddress = moverConnectionAddress
 }
 
-// WithMoverConnectionPortQueryParameter adds the moverConnectionPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionPortQueryParameter(moverConnectionPort *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverConnectionPortQueryParameter(moverConnectionPort)
+// WithMoverConnectionPort adds the moverConnectionPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionPort(moverConnectionPort *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverConnectionPort(moverConnectionPort)
 	return o
 }
 
-// SetMoverConnectionPortQueryParameter adds the moverConnectionPort to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionPortQueryParameter(moverConnectionPort *int64) {
-	o.MoverConnectionPortQueryParameter = moverConnectionPort
+// SetMoverConnectionPort adds the moverConnectionPort to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionPort(moverConnectionPort *int64) {
+	o.MoverConnectionPort = moverConnectionPort
 }
 
-// WithMoverConnectionTypeQueryParameter adds the moverConnectionType to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionTypeQueryParameter(moverConnectionType *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverConnectionTypeQueryParameter(moverConnectionType)
+// WithMoverConnectionType adds the moverConnectionType to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverConnectionType(moverConnectionType *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverConnectionType(moverConnectionType)
 	return o
 }
 
-// SetMoverConnectionTypeQueryParameter adds the moverConnectionType to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionTypeQueryParameter(moverConnectionType *string) {
-	o.MoverConnectionTypeQueryParameter = moverConnectionType
+// SetMoverConnectionType adds the moverConnectionType to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverConnectionType(moverConnectionType *string) {
+	o.MoverConnectionType = moverConnectionType
 }
 
-// WithMoverModeQueryParameter adds the moverMode to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverModeQueryParameter(moverMode *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverModeQueryParameter(moverMode)
+// WithMoverMode adds the moverMode to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverMode(moverMode *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverMode(moverMode)
 	return o
 }
 
-// SetMoverModeQueryParameter adds the moverMode to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverModeQueryParameter(moverMode *string) {
-	o.MoverModeQueryParameter = moverMode
+// SetMoverMode adds the moverMode to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverMode(moverMode *string) {
+	o.MoverMode = moverMode
 }
 
-// WithMoverReasonQueryParameter adds the moverReason to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverReasonQueryParameter(moverReason *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverReasonQueryParameter(moverReason)
+// WithMoverReason adds the moverReason to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverReason(moverReason *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverReason(moverReason)
 	return o
 }
 
-// SetMoverReasonQueryParameter adds the moverReason to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverReasonQueryParameter(moverReason *string) {
-	o.MoverReasonQueryParameter = moverReason
+// SetMoverReason adds the moverReason to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverReason(moverReason *string) {
+	o.MoverReason = moverReason
 }
 
-// WithMoverStateQueryParameter adds the moverState to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithMoverStateQueryParameter(moverState *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetMoverStateQueryParameter(moverState)
+// WithMoverState adds the moverState to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithMoverState(moverState *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetMoverState(moverState)
 	return o
 }
 
-// SetMoverStateQueryParameter adds the moverState to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetMoverStateQueryParameter(moverState *string) {
-	o.MoverStateQueryParameter = moverState
+// SetMoverState adds the moverState to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetMoverState(moverState *string) {
+	o.MoverState = moverState
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithNodeName(nodeName *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithNodeUUID(nodeUUID *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithOrderBy(orderBy []string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NdmpNodeSessionsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithReturnRecords(returnRecords *bool) *NdmpNodeSessionsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScsiDeviceIDQueryParameter adds the scsiDeviceID to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithScsiDeviceIDQueryParameter(scsiDeviceID *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetScsiDeviceIDQueryParameter(scsiDeviceID)
+// WithScsiDeviceID adds the scsiDeviceID to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithScsiDeviceID(scsiDeviceID *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetScsiDeviceID(scsiDeviceID)
 	return o
 }
 
-// SetScsiDeviceIDQueryParameter adds the scsiDeviceId to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetScsiDeviceIDQueryParameter(scsiDeviceID *string) {
-	o.ScsiDeviceIDQueryParameter = scsiDeviceID
+// SetScsiDeviceID adds the scsiDeviceId to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetScsiDeviceID(scsiDeviceID *string) {
+	o.ScsiDeviceID = scsiDeviceID
 }
 
-// WithScsiHostAdapterQueryParameter adds the scsiHostAdapter to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithScsiHostAdapterQueryParameter(scsiHostAdapter *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetScsiHostAdapterQueryParameter(scsiHostAdapter)
+// WithScsiHostAdapter adds the scsiHostAdapter to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithScsiHostAdapter(scsiHostAdapter *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetScsiHostAdapter(scsiHostAdapter)
 	return o
 }
 
-// SetScsiHostAdapterQueryParameter adds the scsiHostAdapter to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetScsiHostAdapterQueryParameter(scsiHostAdapter *int64) {
-	o.ScsiHostAdapterQueryParameter = scsiHostAdapter
+// SetScsiHostAdapter adds the scsiHostAdapter to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetScsiHostAdapter(scsiHostAdapter *int64) {
+	o.ScsiHostAdapter = scsiHostAdapter
 }
 
-// WithScsiLunIDQueryParameter adds the scsiLunID to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithScsiLunIDQueryParameter(scsiLunID *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetScsiLunIDQueryParameter(scsiLunID)
+// WithScsiLunID adds the scsiLunID to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithScsiLunID(scsiLunID *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetScsiLunID(scsiLunID)
 	return o
 }
 
-// SetScsiLunIDQueryParameter adds the scsiLunId to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetScsiLunIDQueryParameter(scsiLunID *int64) {
-	o.ScsiLunIDQueryParameter = scsiLunID
+// SetScsiLunID adds the scsiLunId to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetScsiLunID(scsiLunID *int64) {
+	o.ScsiLunID = scsiLunID
 }
 
-// WithScsiTargetIDQueryParameter adds the scsiTargetID to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithScsiTargetIDQueryParameter(scsiTargetID *int64) *NdmpNodeSessionsCollectionGetParams {
-	o.SetScsiTargetIDQueryParameter(scsiTargetID)
+// WithScsiTargetID adds the scsiTargetID to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithScsiTargetID(scsiTargetID *int64) *NdmpNodeSessionsCollectionGetParams {
+	o.SetScsiTargetID(scsiTargetID)
 	return o
 }
 
-// SetScsiTargetIDQueryParameter adds the scsiTargetId to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetScsiTargetIDQueryParameter(scsiTargetID *int64) {
-	o.ScsiTargetIDQueryParameter = scsiTargetID
+// SetScsiTargetID adds the scsiTargetId to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetScsiTargetID(scsiTargetID *int64) {
+	o.ScsiTargetID = scsiTargetID
 }
 
-// WithSourceAddressQueryParameter adds the sourceAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithSourceAddressQueryParameter(sourceAddress *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetSourceAddressQueryParameter(sourceAddress)
+// WithSourceAddress adds the sourceAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithSourceAddress(sourceAddress *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetSourceAddress(sourceAddress)
 	return o
 }
 
-// SetSourceAddressQueryParameter adds the sourceAddress to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetSourceAddressQueryParameter(sourceAddress *string) {
-	o.SourceAddressQueryParameter = sourceAddress
+// SetSourceAddress adds the sourceAddress to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetSourceAddress(sourceAddress *string) {
+	o.SourceAddress = sourceAddress
 }
 
-// WithSVMNameQueryParameter adds the svmName to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithSvmName(svmName *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithSvmUUID(svmUUID *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTapeDeviceQueryParameter adds the tapeDevice to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithTapeDeviceQueryParameter(tapeDevice *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetTapeDeviceQueryParameter(tapeDevice)
+// WithTapeDevice adds the tapeDevice to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithTapeDevice(tapeDevice *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetTapeDevice(tapeDevice)
 	return o
 }
 
-// SetTapeDeviceQueryParameter adds the tapeDevice to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetTapeDeviceQueryParameter(tapeDevice *string) {
-	o.TapeDeviceQueryParameter = tapeDevice
+// SetTapeDevice adds the tapeDevice to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetTapeDevice(tapeDevice *string) {
+	o.TapeDevice = tapeDevice
 }
 
-// WithTapeModeQueryParameter adds the tapeMode to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithTapeModeQueryParameter(tapeMode *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetTapeModeQueryParameter(tapeMode)
+// WithTapeMode adds the tapeMode to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithTapeMode(tapeMode *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetTapeMode(tapeMode)
 	return o
 }
 
-// SetTapeModeQueryParameter adds the tapeMode to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetTapeModeQueryParameter(tapeMode *string) {
-	o.TapeModeQueryParameter = tapeMode
+// SetTapeMode adds the tapeMode to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetTapeMode(tapeMode *string) {
+	o.TapeMode = tapeMode
 }
 
-// WithUUIDQueryParameter adds the uuid to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) WithUUIDQueryParameter(uuid *string) *NdmpNodeSessionsCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) WithUUID(uuid *string) *NdmpNodeSessionsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the ndmp node sessions collection get params
-func (o *NdmpNodeSessionsCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the ndmp node sessions collection get params
+func (o *NdmpNodeSessionsCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -753,13 +753,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.BackupEngineQueryParameter != nil {
+	if o.BackupEngine != nil {
 
 		// query param backup_engine
 		var qrBackupEngine string
 
-		if o.BackupEngineQueryParameter != nil {
-			qrBackupEngine = *o.BackupEngineQueryParameter
+		if o.BackupEngine != nil {
+			qrBackupEngine = *o.BackupEngine
 		}
 		qBackupEngine := qrBackupEngine
 		if qBackupEngine != "" {
@@ -770,13 +770,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ClientAddressQueryParameter != nil {
+	if o.ClientAddress != nil {
 
 		// query param client_address
 		var qrClientAddress string
 
-		if o.ClientAddressQueryParameter != nil {
-			qrClientAddress = *o.ClientAddressQueryParameter
+		if o.ClientAddress != nil {
+			qrClientAddress = *o.ClientAddress
 		}
 		qClientAddress := qrClientAddress
 		if qClientAddress != "" {
@@ -787,13 +787,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ClientPortQueryParameter != nil {
+	if o.ClientPort != nil {
 
 		// query param client_port
 		var qrClientPort int64
 
-		if o.ClientPortQueryParameter != nil {
-			qrClientPort = *o.ClientPortQueryParameter
+		if o.ClientPort != nil {
+			qrClientPort = *o.ClientPort
 		}
 		qClientPort := swag.FormatInt64(qrClientPort)
 		if qClientPort != "" {
@@ -804,13 +804,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataBytesProcessedQueryParameter != nil {
+	if o.DataBytesProcessed != nil {
 
 		// query param data.bytes_processed
 		var qrDataBytesProcessed int64
 
-		if o.DataBytesProcessedQueryParameter != nil {
-			qrDataBytesProcessed = *o.DataBytesProcessedQueryParameter
+		if o.DataBytesProcessed != nil {
+			qrDataBytesProcessed = *o.DataBytesProcessed
 		}
 		qDataBytesProcessed := swag.FormatInt64(qrDataBytesProcessed)
 		if qDataBytesProcessed != "" {
@@ -821,13 +821,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataConnectionAddressQueryParameter != nil {
+	if o.DataConnectionAddress != nil {
 
 		// query param data.connection.address
 		var qrDataConnectionAddress string
 
-		if o.DataConnectionAddressQueryParameter != nil {
-			qrDataConnectionAddress = *o.DataConnectionAddressQueryParameter
+		if o.DataConnectionAddress != nil {
+			qrDataConnectionAddress = *o.DataConnectionAddress
 		}
 		qDataConnectionAddress := qrDataConnectionAddress
 		if qDataConnectionAddress != "" {
@@ -838,13 +838,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataConnectionPortQueryParameter != nil {
+	if o.DataConnectionPort != nil {
 
 		// query param data.connection.port
 		var qrDataConnectionPort int64
 
-		if o.DataConnectionPortQueryParameter != nil {
-			qrDataConnectionPort = *o.DataConnectionPortQueryParameter
+		if o.DataConnectionPort != nil {
+			qrDataConnectionPort = *o.DataConnectionPort
 		}
 		qDataConnectionPort := swag.FormatInt64(qrDataConnectionPort)
 		if qDataConnectionPort != "" {
@@ -855,13 +855,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataConnectionTypeQueryParameter != nil {
+	if o.DataConnectionType != nil {
 
 		// query param data.connection.type
 		var qrDataConnectionType string
 
-		if o.DataConnectionTypeQueryParameter != nil {
-			qrDataConnectionType = *o.DataConnectionTypeQueryParameter
+		if o.DataConnectionType != nil {
+			qrDataConnectionType = *o.DataConnectionType
 		}
 		qDataConnectionType := qrDataConnectionType
 		if qDataConnectionType != "" {
@@ -872,13 +872,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataOperationQueryParameter != nil {
+	if o.DataOperation != nil {
 
 		// query param data.operation
 		var qrDataOperation string
 
-		if o.DataOperationQueryParameter != nil {
-			qrDataOperation = *o.DataOperationQueryParameter
+		if o.DataOperation != nil {
+			qrDataOperation = *o.DataOperation
 		}
 		qDataOperation := qrDataOperation
 		if qDataOperation != "" {
@@ -889,13 +889,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataReasonQueryParameter != nil {
+	if o.DataReason != nil {
 
 		// query param data.reason
 		var qrDataReason string
 
-		if o.DataReasonQueryParameter != nil {
-			qrDataReason = *o.DataReasonQueryParameter
+		if o.DataReason != nil {
+			qrDataReason = *o.DataReason
 		}
 		qDataReason := qrDataReason
 		if qDataReason != "" {
@@ -906,13 +906,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataStateQueryParameter != nil {
+	if o.DataState != nil {
 
 		// query param data.state
 		var qrDataState string
 
-		if o.DataStateQueryParameter != nil {
-			qrDataState = *o.DataStateQueryParameter
+		if o.DataState != nil {
+			qrDataState = *o.DataState
 		}
 		qDataState := qrDataState
 		if qDataState != "" {
@@ -923,13 +923,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DataPathQueryParameter != nil {
+	if o.DataPath != nil {
 
 		// query param data_path
 		var qrDataPath string
 
-		if o.DataPathQueryParameter != nil {
-			qrDataPath = *o.DataPathQueryParameter
+		if o.DataPath != nil {
+			qrDataPath = *o.DataPath
 		}
 		qDataPath := qrDataPath
 		if qDataPath != "" {
@@ -940,7 +940,7 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -951,13 +951,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID string
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := qrID
 		if qID != "" {
@@ -968,13 +968,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -985,13 +985,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverBytesMovedQueryParameter != nil {
+	if o.MoverBytesMoved != nil {
 
 		// query param mover.bytes_moved
 		var qrMoverBytesMoved int64
 
-		if o.MoverBytesMovedQueryParameter != nil {
-			qrMoverBytesMoved = *o.MoverBytesMovedQueryParameter
+		if o.MoverBytesMoved != nil {
+			qrMoverBytesMoved = *o.MoverBytesMoved
 		}
 		qMoverBytesMoved := swag.FormatInt64(qrMoverBytesMoved)
 		if qMoverBytesMoved != "" {
@@ -1002,13 +1002,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverConnectionAddressQueryParameter != nil {
+	if o.MoverConnectionAddress != nil {
 
 		// query param mover.connection.address
 		var qrMoverConnectionAddress string
 
-		if o.MoverConnectionAddressQueryParameter != nil {
-			qrMoverConnectionAddress = *o.MoverConnectionAddressQueryParameter
+		if o.MoverConnectionAddress != nil {
+			qrMoverConnectionAddress = *o.MoverConnectionAddress
 		}
 		qMoverConnectionAddress := qrMoverConnectionAddress
 		if qMoverConnectionAddress != "" {
@@ -1019,13 +1019,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverConnectionPortQueryParameter != nil {
+	if o.MoverConnectionPort != nil {
 
 		// query param mover.connection.port
 		var qrMoverConnectionPort int64
 
-		if o.MoverConnectionPortQueryParameter != nil {
-			qrMoverConnectionPort = *o.MoverConnectionPortQueryParameter
+		if o.MoverConnectionPort != nil {
+			qrMoverConnectionPort = *o.MoverConnectionPort
 		}
 		qMoverConnectionPort := swag.FormatInt64(qrMoverConnectionPort)
 		if qMoverConnectionPort != "" {
@@ -1036,13 +1036,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverConnectionTypeQueryParameter != nil {
+	if o.MoverConnectionType != nil {
 
 		// query param mover.connection.type
 		var qrMoverConnectionType string
 
-		if o.MoverConnectionTypeQueryParameter != nil {
-			qrMoverConnectionType = *o.MoverConnectionTypeQueryParameter
+		if o.MoverConnectionType != nil {
+			qrMoverConnectionType = *o.MoverConnectionType
 		}
 		qMoverConnectionType := qrMoverConnectionType
 		if qMoverConnectionType != "" {
@@ -1053,13 +1053,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverModeQueryParameter != nil {
+	if o.MoverMode != nil {
 
 		// query param mover.mode
 		var qrMoverMode string
 
-		if o.MoverModeQueryParameter != nil {
-			qrMoverMode = *o.MoverModeQueryParameter
+		if o.MoverMode != nil {
+			qrMoverMode = *o.MoverMode
 		}
 		qMoverMode := qrMoverMode
 		if qMoverMode != "" {
@@ -1070,13 +1070,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverReasonQueryParameter != nil {
+	if o.MoverReason != nil {
 
 		// query param mover.reason
 		var qrMoverReason string
 
-		if o.MoverReasonQueryParameter != nil {
-			qrMoverReason = *o.MoverReasonQueryParameter
+		if o.MoverReason != nil {
+			qrMoverReason = *o.MoverReason
 		}
 		qMoverReason := qrMoverReason
 		if qMoverReason != "" {
@@ -1087,13 +1087,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MoverStateQueryParameter != nil {
+	if o.MoverState != nil {
 
 		// query param mover.state
 		var qrMoverState string
 
-		if o.MoverStateQueryParameter != nil {
-			qrMoverState = *o.MoverStateQueryParameter
+		if o.MoverState != nil {
+			qrMoverState = *o.MoverState
 		}
 		qMoverState := qrMoverState
 		if qMoverState != "" {
@@ -1104,13 +1104,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -1121,13 +1121,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1138,7 +1138,7 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1149,13 +1149,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1166,13 +1166,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1183,13 +1183,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScsiDeviceIDQueryParameter != nil {
+	if o.ScsiDeviceID != nil {
 
 		// query param scsi.device_id
 		var qrScsiDeviceID string
 
-		if o.ScsiDeviceIDQueryParameter != nil {
-			qrScsiDeviceID = *o.ScsiDeviceIDQueryParameter
+		if o.ScsiDeviceID != nil {
+			qrScsiDeviceID = *o.ScsiDeviceID
 		}
 		qScsiDeviceID := qrScsiDeviceID
 		if qScsiDeviceID != "" {
@@ -1200,13 +1200,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScsiHostAdapterQueryParameter != nil {
+	if o.ScsiHostAdapter != nil {
 
 		// query param scsi.host_adapter
 		var qrScsiHostAdapter int64
 
-		if o.ScsiHostAdapterQueryParameter != nil {
-			qrScsiHostAdapter = *o.ScsiHostAdapterQueryParameter
+		if o.ScsiHostAdapter != nil {
+			qrScsiHostAdapter = *o.ScsiHostAdapter
 		}
 		qScsiHostAdapter := swag.FormatInt64(qrScsiHostAdapter)
 		if qScsiHostAdapter != "" {
@@ -1217,13 +1217,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScsiLunIDQueryParameter != nil {
+	if o.ScsiLunID != nil {
 
 		// query param scsi.lun_id
 		var qrScsiLunID int64
 
-		if o.ScsiLunIDQueryParameter != nil {
-			qrScsiLunID = *o.ScsiLunIDQueryParameter
+		if o.ScsiLunID != nil {
+			qrScsiLunID = *o.ScsiLunID
 		}
 		qScsiLunID := swag.FormatInt64(qrScsiLunID)
 		if qScsiLunID != "" {
@@ -1234,13 +1234,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScsiTargetIDQueryParameter != nil {
+	if o.ScsiTargetID != nil {
 
 		// query param scsi.target_id
 		var qrScsiTargetID int64
 
-		if o.ScsiTargetIDQueryParameter != nil {
-			qrScsiTargetID = *o.ScsiTargetIDQueryParameter
+		if o.ScsiTargetID != nil {
+			qrScsiTargetID = *o.ScsiTargetID
 		}
 		qScsiTargetID := swag.FormatInt64(qrScsiTargetID)
 		if qScsiTargetID != "" {
@@ -1251,13 +1251,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SourceAddressQueryParameter != nil {
+	if o.SourceAddress != nil {
 
 		// query param source_address
 		var qrSourceAddress string
 
-		if o.SourceAddressQueryParameter != nil {
-			qrSourceAddress = *o.SourceAddressQueryParameter
+		if o.SourceAddress != nil {
+			qrSourceAddress = *o.SourceAddress
 		}
 		qSourceAddress := qrSourceAddress
 		if qSourceAddress != "" {
@@ -1268,13 +1268,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1285,13 +1285,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1302,13 +1302,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.TapeDeviceQueryParameter != nil {
+	if o.TapeDevice != nil {
 
 		// query param tape_device
 		var qrTapeDevice string
 
-		if o.TapeDeviceQueryParameter != nil {
-			qrTapeDevice = *o.TapeDeviceQueryParameter
+		if o.TapeDevice != nil {
+			qrTapeDevice = *o.TapeDevice
 		}
 		qTapeDevice := qrTapeDevice
 		if qTapeDevice != "" {
@@ -1319,13 +1319,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.TapeModeQueryParameter != nil {
+	if o.TapeMode != nil {
 
 		// query param tape_mode
 		var qrTapeMode string
 
-		if o.TapeModeQueryParameter != nil {
-			qrTapeMode = *o.TapeModeQueryParameter
+		if o.TapeMode != nil {
+			qrTapeMode = *o.TapeMode
 		}
 		qTapeMode := qrTapeMode
 		if qTapeMode != "" {
@@ -1336,13 +1336,13 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1361,7 +1361,7 @@ func (o *NdmpNodeSessionsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamNdmpNodeSessionsCollectionGet binds the parameter fields
 func (o *NdmpNodeSessionsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1378,7 +1378,7 @@ func (o *NdmpNodeSessionsCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamNdmpNodeSessionsCollectionGet binds the parameter order_by
 func (o *NdmpNodeSessionsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

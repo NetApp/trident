@@ -21,11 +21,11 @@ import (
 type EmsMessage struct {
 
 	// links
-	Links *EmsMessageLinks `json:"_links,omitempty"`
+	Links *EmsMessageInlineLinks `json:"_links,omitempty"`
 
 	// Corrective action
 	// Read Only: true
-	CorrectiveAction string `json:"corrective_action,omitempty"`
+	CorrectiveAction *string `json:"corrective_action,omitempty"`
 
 	// Is deprecated?
 	// Example: true
@@ -34,24 +34,24 @@ type EmsMessage struct {
 
 	// Description of the event.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// Name of the event.
 	// Example: callhome.spares.low
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Severity
 	// Example: error
 	// Read Only: true
 	// Enum: [emergency alert error notice informational debug]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 
 	// SNMP trap type
 	// Example: standard
 	// Read Only: true
 	// Enum: [standard built_in severity_based]
-	SnmpTrapType string `json:"snmp_trap_type,omitempty"`
+	SnmpTrapType *string `json:"snmp_trap_type,omitempty"`
 }
 
 // Validate validates this ems message
@@ -182,7 +182,7 @@ func (m *EmsMessage) validateSeverity(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
@@ -248,7 +248,7 @@ func (m *EmsMessage) validateSnmpTrapType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSnmpTrapTypeEnum("snmp_trap_type", "body", m.SnmpTrapType); err != nil {
+	if err := m.validateSnmpTrapTypeEnum("snmp_trap_type", "body", *m.SnmpTrapType); err != nil {
 		return err
 	}
 
@@ -309,7 +309,7 @@ func (m *EmsMessage) contextValidateLinks(ctx context.Context, formats strfmt.Re
 
 func (m *EmsMessage) contextValidateCorrectiveAction(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "corrective_action", "body", string(m.CorrectiveAction)); err != nil {
+	if err := validate.ReadOnly(ctx, "corrective_action", "body", m.CorrectiveAction); err != nil {
 		return err
 	}
 
@@ -327,7 +327,7 @@ func (m *EmsMessage) contextValidateDeprecated(ctx context.Context, formats strf
 
 func (m *EmsMessage) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -336,7 +336,7 @@ func (m *EmsMessage) contextValidateDescription(ctx context.Context, formats str
 
 func (m *EmsMessage) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -345,7 +345,7 @@ func (m *EmsMessage) contextValidateName(ctx context.Context, formats strfmt.Reg
 
 func (m *EmsMessage) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "severity", "body", string(m.Severity)); err != nil {
+	if err := validate.ReadOnly(ctx, "severity", "body", m.Severity); err != nil {
 		return err
 	}
 
@@ -354,7 +354,7 @@ func (m *EmsMessage) contextValidateSeverity(ctx context.Context, formats strfmt
 
 func (m *EmsMessage) contextValidateSnmpTrapType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snmp_trap_type", "body", string(m.SnmpTrapType)); err != nil {
+	if err := validate.ReadOnly(ctx, "snmp_trap_type", "body", m.SnmpTrapType); err != nil {
 		return err
 	}
 
@@ -379,17 +379,17 @@ func (m *EmsMessage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsMessageLinks ems message links
+// EmsMessageInlineLinks ems message inline links
 //
-// swagger:model EmsMessageLinks
-type EmsMessageLinks struct {
+// swagger:model ems_message_inline__links
+type EmsMessageInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems message links
-func (m *EmsMessageLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems message inline links
+func (m *EmsMessageInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -402,7 +402,7 @@ func (m *EmsMessageLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsMessageLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsMessageInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -419,8 +419,8 @@ func (m *EmsMessageLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems message links based on the context it is used
-func (m *EmsMessageLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems message inline links based on the context it is used
+func (m *EmsMessageInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -433,7 +433,7 @@ func (m *EmsMessageLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *EmsMessageLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -448,7 +448,7 @@ func (m *EmsMessageLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *EmsMessageLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsMessageInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -456,8 +456,8 @@ func (m *EmsMessageLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsMessageLinks) UnmarshalBinary(b []byte) error {
-	var res EmsMessageLinks
+func (m *EmsMessageInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsMessageInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -73,7 +73,7 @@ type ShelfModifyParams struct {
 
 	   Shelf UID
 	*/
-	UIDPathParameter string
+	UID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *ShelfModifyParams) SetInfo(info *models.Shelf) {
 	o.Info = info
 }
 
-// WithUIDPathParameter adds the uid to the shelf modify params
-func (o *ShelfModifyParams) WithUIDPathParameter(uid string) *ShelfModifyParams {
-	o.SetUIDPathParameter(uid)
+// WithUID adds the uid to the shelf modify params
+func (o *ShelfModifyParams) WithUID(uid string) *ShelfModifyParams {
+	o.SetUID(uid)
 	return o
 }
 
-// SetUIDPathParameter adds the uid to the shelf modify params
-func (o *ShelfModifyParams) SetUIDPathParameter(uid string) {
-	o.UIDPathParameter = uid
+// SetUID adds the uid to the shelf modify params
+func (o *ShelfModifyParams) SetUID(uid string) {
+	o.UID = uid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *ShelfModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param uid
-	if err := r.SetPathParam("uid", o.UIDPathParameter); err != nil {
+	if err := r.SetPathParam("uid", o.UID); err != nil {
 		return err
 	}
 

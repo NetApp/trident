@@ -52,6 +52,11 @@ VolumeCreateAccepted describes a response with status code 202, with default hea
 Accepted
 */
 type VolumeCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *VolumeCreateAccepted) GetPayload() *models.JobLinkResponse {
 }
 
 func (o *VolumeCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 
@@ -146,6 +158,8 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 918524 | Volume minimum autosize must be less than or equal to the current volume size. |
 | 2621706 | The specified \"svm.uuid\" and \"svm.name\" do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either \"svm.name\" or \"svm.uuid\" must be supplied. |
+| 13109258 | Cannot enable granular data on volume \"name\" in Vserver \"svm.name\". This setting can only be enabled on FlexGroups. |
+| 13109260 | Failed to enable granular data on the volume. |
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |

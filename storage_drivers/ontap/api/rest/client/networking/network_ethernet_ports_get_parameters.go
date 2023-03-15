@@ -66,253 +66,253 @@ type NetworkEthernetPortsGetParams struct {
 
 	   Filter by broadcast_domain.ipspace.name
 	*/
-	BroadcastDomainIPspaceNameQueryParameter *string
+	BroadcastDomainIpspaceName *string
 
 	/* BroadcastDomainName.
 
 	   Filter by broadcast_domain.name
 	*/
-	BroadcastDomainNameQueryParameter *string
+	BroadcastDomainName *string
 
 	/* BroadcastDomainUUID.
 
 	   Filter by broadcast_domain.uuid
 	*/
-	BroadcastDomainUUIDQueryParameter *string
+	BroadcastDomainUUID *string
 
 	/* DiscoveredDevicesCapabilities.
 
 	   Filter by discovered_devices.capabilities
 	*/
-	DiscoveredDevicesCapabilitiesQueryParameter *string
+	DiscoveredDevicesCapabilities *string
 
 	/* DiscoveredDevicesChassisID.
 
 	   Filter by discovered_devices.chassis_id
 	*/
-	DiscoveredDevicesChassisIDQueryParameter *string
+	DiscoveredDevicesChassisID *string
 
 	/* DiscoveredDevicesIPAddresses.
 
 	   Filter by discovered_devices.ip_addresses
 	*/
-	DiscoveredDevicesIPAddressesQueryParameter *string
+	DiscoveredDevicesIPAddresses *string
 
 	/* DiscoveredDevicesName.
 
 	   Filter by discovered_devices.name
 	*/
-	DiscoveredDevicesNameQueryParameter *string
+	DiscoveredDevicesName *string
 
 	/* DiscoveredDevicesPlatform.
 
 	   Filter by discovered_devices.platform
 	*/
-	DiscoveredDevicesPlatformQueryParameter *string
+	DiscoveredDevicesPlatform *string
 
 	/* DiscoveredDevicesProtocol.
 
 	   Filter by discovered_devices.protocol
 	*/
-	DiscoveredDevicesProtocolQueryParameter *string
+	DiscoveredDevicesProtocol *string
 
 	/* DiscoveredDevicesRemainingHoldTime.
 
 	   Filter by discovered_devices.remaining_hold_time
 	*/
-	DiscoveredDevicesRemainingHoldTimeQueryParameter *int64
+	DiscoveredDevicesRemainingHoldTime *int64
 
 	/* DiscoveredDevicesRemotePort.
 
 	   Filter by discovered_devices.remote_port
 	*/
-	DiscoveredDevicesRemotePortQueryParameter *string
+	DiscoveredDevicesRemotePort *string
 
 	/* DiscoveredDevicesSystemName.
 
 	   Filter by discovered_devices.system_name
 	*/
-	DiscoveredDevicesSystemNameQueryParameter *string
+	DiscoveredDevicesSystemName *string
 
 	/* DiscoveredDevicesVersion.
 
 	   Filter by discovered_devices.version
 	*/
-	DiscoveredDevicesVersionQueryParameter *string
+	DiscoveredDevicesVersion *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceCount.
 
 	   Filter by interface_count
 	*/
-	InterfaceCountQueryParameter *int64
+	InterfaceCount *int64
 
 	/* LagActivePortsName.
 
 	   Filter by lag.active_ports.name
 	*/
-	LagActivePortsNameQueryParameter *string
+	LagActivePortsName *string
 
 	/* LagActivePortsNodeName.
 
 	   Filter by lag.active_ports.node.name
 	*/
-	LagActivePortsNodeNameQueryParameter *string
+	LagActivePortsNodeName *string
 
 	/* LagActivePortsUUID.
 
 	   Filter by lag.active_ports.uuid
 	*/
-	LagActivePortsUUIDQueryParameter *string
+	LagActivePortsUUID *string
 
 	/* LagDistributionPolicy.
 
 	   Filter by lag.distribution_policy
 	*/
-	LagDistributionPolicyQueryParameter *string
+	LagDistributionPolicy *string
 
 	/* LagMemberPortsName.
 
 	   Filter by lag.member_ports.name
 	*/
-	LagMemberPortsNameQueryParameter *string
+	LagMemberPortsName *string
 
 	/* LagMemberPortsNodeName.
 
 	   Filter by lag.member_ports.node.name
 	*/
-	LagMemberPortsNodeNameQueryParameter *string
+	LagMemberPortsNodeName *string
 
 	/* LagMemberPortsUUID.
 
 	   Filter by lag.member_ports.uuid
 	*/
-	LagMemberPortsUUIDQueryParameter *string
+	LagMemberPortsUUID *string
 
 	/* LagMode.
 
 	   Filter by lag.mode
 	*/
-	LagModeQueryParameter *string
+	LagMode *string
 
 	/* MacAddress.
 
 	   Filter by mac_address
 	*/
-	MacAddressQueryParameter *string
+	MacAddress *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Mtu.
 
 	   Filter by mtu
 	*/
-	MtuQueryParameter *int64
+	Mtu *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* RdmaProtocols.
 
 	   Filter by rdma_protocols
 	*/
-	RdmaProtocolsQueryParameter *string
+	RdmaProtocols *string
 
 	/* Reachability.
 
 	   Filter by reachability
 	*/
-	ReachabilityQueryParameter *string
+	Reachability *string
 
 	/* ReachableBroadcastDomainsIpspaceName.
 
 	   Filter by reachable_broadcast_domains.ipspace.name
 	*/
-	ReachableBroadcastDomainsIPspaceNameQueryParameter *string
+	ReachableBroadcastDomainsIpspaceName *string
 
 	/* ReachableBroadcastDomainsName.
 
 	   Filter by reachable_broadcast_domains.name
 	*/
-	ReachableBroadcastDomainsNameQueryParameter *string
+	ReachableBroadcastDomainsName *string
 
 	/* ReachableBroadcastDomainsUUID.
 
 	   Filter by reachable_broadcast_domains.uuid
 	*/
-	ReachableBroadcastDomainsUUIDQueryParameter *string
+	ReachableBroadcastDomainsUUID *string
 
 	/* ReturnRecords.
 
@@ -320,7 +320,7 @@ type NetworkEthernetPortsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -328,133 +328,133 @@ type NetworkEthernetPortsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Speed.
 
 	   Filter by speed
 	*/
-	SpeedQueryParameter *int64
+	Speed *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatisticsDeviceLinkDownCountRaw.
 
 	   Filter by statistics.device.link_down_count_raw
 	*/
-	StatisticsDeviceLinkDownCountRawQueryParameter *int64
+	StatisticsDeviceLinkDownCountRaw *int64
 
 	/* StatisticsDeviceReceiveRawDiscards.
 
 	   Filter by statistics.device.receive_raw.discards
 	*/
-	StatisticsDeviceReceiveRawDiscardsQueryParameter *int64
+	StatisticsDeviceReceiveRawDiscards *int64
 
 	/* StatisticsDeviceReceiveRawErrors.
 
 	   Filter by statistics.device.receive_raw.errors
 	*/
-	StatisticsDeviceReceiveRawErrorsQueryParameter *int64
+	StatisticsDeviceReceiveRawErrors *int64
 
 	/* StatisticsDeviceReceiveRawPackets.
 
 	   Filter by statistics.device.receive_raw.packets
 	*/
-	StatisticsDeviceReceiveRawPacketsQueryParameter *int64
+	StatisticsDeviceReceiveRawPackets *int64
 
 	/* StatisticsDeviceTimestamp.
 
 	   Filter by statistics.device.timestamp
 	*/
-	StatisticsDeviceTimestampQueryParameter *string
+	StatisticsDeviceTimestamp *string
 
 	/* StatisticsDeviceTransmitRawDiscards.
 
 	   Filter by statistics.device.transmit_raw.discards
 	*/
-	StatisticsDeviceTransmitRawDiscardsQueryParameter *int64
+	StatisticsDeviceTransmitRawDiscards *int64
 
 	/* StatisticsDeviceTransmitRawErrors.
 
 	   Filter by statistics.device.transmit_raw.errors
 	*/
-	StatisticsDeviceTransmitRawErrorsQueryParameter *int64
+	StatisticsDeviceTransmitRawErrors *int64
 
 	/* StatisticsDeviceTransmitRawPackets.
 
 	   Filter by statistics.device.transmit_raw.packets
 	*/
-	StatisticsDeviceTransmitRawPacketsQueryParameter *int64
+	StatisticsDeviceTransmitRawPackets *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VlanBasePortName.
 
 	   Filter by vlan.base_port.name
 	*/
-	VlanBasePortNameQueryParameter *string
+	VlanBasePortName *string
 
 	/* VlanBasePortNodeName.
 
 	   Filter by vlan.base_port.node.name
 	*/
-	VlanBasePortNodeNameQueryParameter *string
+	VlanBasePortNodeName *string
 
 	/* VlanBasePortUUID.
 
 	   Filter by vlan.base_port.uuid
 	*/
-	VlanBasePortUUIDQueryParameter *string
+	VlanBasePortUUID *string
 
 	/* VlanTag.
 
 	   Filter by vlan.tag
 	*/
-	VlanTagQueryParameter *int64
+	VlanTag *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -474,14 +474,14 @@ func (o *NetworkEthernetPortsGetParams) WithDefaults() *NetworkEthernetPortsGetP
 // All values with no default are reset to their zero value.
 func (o *NetworkEthernetPortsGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkEthernetPortsGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -523,719 +523,719 @@ func (o *NetworkEthernetPortsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBroadcastDomainIPspaceNameQueryParameter adds the broadcastDomainIpspaceName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainIPspaceNameQueryParameter(broadcastDomainIpspaceName *string) *NetworkEthernetPortsGetParams {
-	o.SetBroadcastDomainIPspaceNameQueryParameter(broadcastDomainIpspaceName)
+// WithBroadcastDomainIpspaceName adds the broadcastDomainIpspaceName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainIpspaceName(broadcastDomainIpspaceName *string) *NetworkEthernetPortsGetParams {
+	o.SetBroadcastDomainIpspaceName(broadcastDomainIpspaceName)
 	return o
 }
 
-// SetBroadcastDomainIPspaceNameQueryParameter adds the broadcastDomainIpspaceName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainIPspaceNameQueryParameter(broadcastDomainIpspaceName *string) {
-	o.BroadcastDomainIPspaceNameQueryParameter = broadcastDomainIpspaceName
+// SetBroadcastDomainIpspaceName adds the broadcastDomainIpspaceName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainIpspaceName(broadcastDomainIpspaceName *string) {
+	o.BroadcastDomainIpspaceName = broadcastDomainIpspaceName
 }
 
-// WithBroadcastDomainNameQueryParameter adds the broadcastDomainName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainNameQueryParameter(broadcastDomainName *string) *NetworkEthernetPortsGetParams {
-	o.SetBroadcastDomainNameQueryParameter(broadcastDomainName)
+// WithBroadcastDomainName adds the broadcastDomainName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainName(broadcastDomainName *string) *NetworkEthernetPortsGetParams {
+	o.SetBroadcastDomainName(broadcastDomainName)
 	return o
 }
 
-// SetBroadcastDomainNameQueryParameter adds the broadcastDomainName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainNameQueryParameter(broadcastDomainName *string) {
-	o.BroadcastDomainNameQueryParameter = broadcastDomainName
+// SetBroadcastDomainName adds the broadcastDomainName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainName(broadcastDomainName *string) {
+	o.BroadcastDomainName = broadcastDomainName
 }
 
-// WithBroadcastDomainUUIDQueryParameter adds the broadcastDomainUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainUUIDQueryParameter(broadcastDomainUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetBroadcastDomainUUIDQueryParameter(broadcastDomainUUID)
+// WithBroadcastDomainUUID adds the broadcastDomainUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithBroadcastDomainUUID(broadcastDomainUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetBroadcastDomainUUID(broadcastDomainUUID)
 	return o
 }
 
-// SetBroadcastDomainUUIDQueryParameter adds the broadcastDomainUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainUUIDQueryParameter(broadcastDomainUUID *string) {
-	o.BroadcastDomainUUIDQueryParameter = broadcastDomainUUID
+// SetBroadcastDomainUUID adds the broadcastDomainUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainUUID(broadcastDomainUUID *string) {
+	o.BroadcastDomainUUID = broadcastDomainUUID
 }
 
-// WithDiscoveredDevicesCapabilitiesQueryParameter adds the discoveredDevicesCapabilities to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities)
+// WithDiscoveredDevicesCapabilities adds the discoveredDevicesCapabilities to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesCapabilities(discoveredDevicesCapabilities *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesCapabilities(discoveredDevicesCapabilities)
 	return o
 }
 
-// SetDiscoveredDevicesCapabilitiesQueryParameter adds the discoveredDevicesCapabilities to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities *string) {
-	o.DiscoveredDevicesCapabilitiesQueryParameter = discoveredDevicesCapabilities
+// SetDiscoveredDevicesCapabilities adds the discoveredDevicesCapabilities to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesCapabilities(discoveredDevicesCapabilities *string) {
+	o.DiscoveredDevicesCapabilities = discoveredDevicesCapabilities
 }
 
-// WithDiscoveredDevicesChassisIDQueryParameter adds the discoveredDevicesChassisID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID)
+// WithDiscoveredDevicesChassisID adds the discoveredDevicesChassisID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesChassisID(discoveredDevicesChassisID *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesChassisID(discoveredDevicesChassisID)
 	return o
 }
 
-// SetDiscoveredDevicesChassisIDQueryParameter adds the discoveredDevicesChassisId to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID *string) {
-	o.DiscoveredDevicesChassisIDQueryParameter = discoveredDevicesChassisID
+// SetDiscoveredDevicesChassisID adds the discoveredDevicesChassisId to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesChassisID(discoveredDevicesChassisID *string) {
+	o.DiscoveredDevicesChassisID = discoveredDevicesChassisID
 }
 
-// WithDiscoveredDevicesIPAddressesQueryParameter adds the discoveredDevicesIPAddresses to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses)
+// WithDiscoveredDevicesIPAddresses adds the discoveredDevicesIPAddresses to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesIPAddresses(discoveredDevicesIPAddresses *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesIPAddresses(discoveredDevicesIPAddresses)
 	return o
 }
 
-// SetDiscoveredDevicesIPAddressesQueryParameter adds the discoveredDevicesIpAddresses to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses *string) {
-	o.DiscoveredDevicesIPAddressesQueryParameter = discoveredDevicesIPAddresses
+// SetDiscoveredDevicesIPAddresses adds the discoveredDevicesIpAddresses to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesIPAddresses(discoveredDevicesIPAddresses *string) {
+	o.DiscoveredDevicesIPAddresses = discoveredDevicesIPAddresses
 }
 
-// WithDiscoveredDevicesNameQueryParameter adds the discoveredDevicesName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesNameQueryParameter(discoveredDevicesName *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesNameQueryParameter(discoveredDevicesName)
+// WithDiscoveredDevicesName adds the discoveredDevicesName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesName(discoveredDevicesName *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesName(discoveredDevicesName)
 	return o
 }
 
-// SetDiscoveredDevicesNameQueryParameter adds the discoveredDevicesName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesNameQueryParameter(discoveredDevicesName *string) {
-	o.DiscoveredDevicesNameQueryParameter = discoveredDevicesName
+// SetDiscoveredDevicesName adds the discoveredDevicesName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesName(discoveredDevicesName *string) {
+	o.DiscoveredDevicesName = discoveredDevicesName
 }
 
-// WithDiscoveredDevicesPlatformQueryParameter adds the discoveredDevicesPlatform to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform)
+// WithDiscoveredDevicesPlatform adds the discoveredDevicesPlatform to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesPlatform(discoveredDevicesPlatform *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesPlatform(discoveredDevicesPlatform)
 	return o
 }
 
-// SetDiscoveredDevicesPlatformQueryParameter adds the discoveredDevicesPlatform to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform *string) {
-	o.DiscoveredDevicesPlatformQueryParameter = discoveredDevicesPlatform
+// SetDiscoveredDevicesPlatform adds the discoveredDevicesPlatform to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesPlatform(discoveredDevicesPlatform *string) {
+	o.DiscoveredDevicesPlatform = discoveredDevicesPlatform
 }
 
-// WithDiscoveredDevicesProtocolQueryParameter adds the discoveredDevicesProtocol to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol)
+// WithDiscoveredDevicesProtocol adds the discoveredDevicesProtocol to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesProtocol(discoveredDevicesProtocol *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesProtocol(discoveredDevicesProtocol)
 	return o
 }
 
-// SetDiscoveredDevicesProtocolQueryParameter adds the discoveredDevicesProtocol to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol *string) {
-	o.DiscoveredDevicesProtocolQueryParameter = discoveredDevicesProtocol
+// SetDiscoveredDevicesProtocol adds the discoveredDevicesProtocol to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesProtocol(discoveredDevicesProtocol *string) {
+	o.DiscoveredDevicesProtocol = discoveredDevicesProtocol
 }
 
-// WithDiscoveredDevicesRemainingHoldTimeQueryParameter adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime *int64) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime)
+// WithDiscoveredDevicesRemainingHoldTime adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemainingHoldTime(discoveredDevicesRemainingHoldTime *int64) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesRemainingHoldTime(discoveredDevicesRemainingHoldTime)
 	return o
 }
 
-// SetDiscoveredDevicesRemainingHoldTimeQueryParameter adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime *int64) {
-	o.DiscoveredDevicesRemainingHoldTimeQueryParameter = discoveredDevicesRemainingHoldTime
+// SetDiscoveredDevicesRemainingHoldTime adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemainingHoldTime(discoveredDevicesRemainingHoldTime *int64) {
+	o.DiscoveredDevicesRemainingHoldTime = discoveredDevicesRemainingHoldTime
 }
 
-// WithDiscoveredDevicesRemotePortQueryParameter adds the discoveredDevicesRemotePort to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort)
+// WithDiscoveredDevicesRemotePort adds the discoveredDevicesRemotePort to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemotePort(discoveredDevicesRemotePort *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesRemotePort(discoveredDevicesRemotePort)
 	return o
 }
 
-// SetDiscoveredDevicesRemotePortQueryParameter adds the discoveredDevicesRemotePort to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort *string) {
-	o.DiscoveredDevicesRemotePortQueryParameter = discoveredDevicesRemotePort
+// SetDiscoveredDevicesRemotePort adds the discoveredDevicesRemotePort to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemotePort(discoveredDevicesRemotePort *string) {
+	o.DiscoveredDevicesRemotePort = discoveredDevicesRemotePort
 }
 
-// WithDiscoveredDevicesSystemNameQueryParameter adds the discoveredDevicesSystemName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName)
+// WithDiscoveredDevicesSystemName adds the discoveredDevicesSystemName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesSystemName(discoveredDevicesSystemName *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesSystemName(discoveredDevicesSystemName)
 	return o
 }
 
-// SetDiscoveredDevicesSystemNameQueryParameter adds the discoveredDevicesSystemName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName *string) {
-	o.DiscoveredDevicesSystemNameQueryParameter = discoveredDevicesSystemName
+// SetDiscoveredDevicesSystemName adds the discoveredDevicesSystemName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesSystemName(discoveredDevicesSystemName *string) {
+	o.DiscoveredDevicesSystemName = discoveredDevicesSystemName
 }
 
-// WithDiscoveredDevicesVersionQueryParameter adds the discoveredDevicesVersion to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion *string) *NetworkEthernetPortsGetParams {
-	o.SetDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion)
+// WithDiscoveredDevicesVersion adds the discoveredDevicesVersion to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesVersion(discoveredDevicesVersion *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesVersion(discoveredDevicesVersion)
 	return o
 }
 
-// SetDiscoveredDevicesVersionQueryParameter adds the discoveredDevicesVersion to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion *string) {
-	o.DiscoveredDevicesVersionQueryParameter = discoveredDevicesVersion
+// SetDiscoveredDevicesVersion adds the discoveredDevicesVersion to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesVersion(discoveredDevicesVersion *string) {
+	o.DiscoveredDevicesVersion = discoveredDevicesVersion
 }
 
-// WithEnabledQueryParameter adds the enabled to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithEnabledQueryParameter(enabled *bool) *NetworkEthernetPortsGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithEnabled(enabled *bool) *NetworkEthernetPortsGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithFieldsQueryParameter(fields []string) *NetworkEthernetPortsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithFields(fields []string) *NetworkEthernetPortsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceCountQueryParameter adds the interfaceCount to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithInterfaceCountQueryParameter(interfaceCount *int64) *NetworkEthernetPortsGetParams {
-	o.SetInterfaceCountQueryParameter(interfaceCount)
+// WithInterfaceCount adds the interfaceCount to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithInterfaceCount(interfaceCount *int64) *NetworkEthernetPortsGetParams {
+	o.SetInterfaceCount(interfaceCount)
 	return o
 }
 
-// SetInterfaceCountQueryParameter adds the interfaceCount to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetInterfaceCountQueryParameter(interfaceCount *int64) {
-	o.InterfaceCountQueryParameter = interfaceCount
+// SetInterfaceCount adds the interfaceCount to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetInterfaceCount(interfaceCount *int64) {
+	o.InterfaceCount = interfaceCount
 }
 
-// WithLagActivePortsNameQueryParameter adds the lagActivePortsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagActivePortsNameQueryParameter(lagActivePortsName *string) *NetworkEthernetPortsGetParams {
-	o.SetLagActivePortsNameQueryParameter(lagActivePortsName)
+// WithLagActivePortsName adds the lagActivePortsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagActivePortsName(lagActivePortsName *string) *NetworkEthernetPortsGetParams {
+	o.SetLagActivePortsName(lagActivePortsName)
 	return o
 }
 
-// SetLagActivePortsNameQueryParameter adds the lagActivePortsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagActivePortsNameQueryParameter(lagActivePortsName *string) {
-	o.LagActivePortsNameQueryParameter = lagActivePortsName
+// SetLagActivePortsName adds the lagActivePortsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagActivePortsName(lagActivePortsName *string) {
+	o.LagActivePortsName = lagActivePortsName
 }
 
-// WithLagActivePortsNodeNameQueryParameter adds the lagActivePortsNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagActivePortsNodeNameQueryParameter(lagActivePortsNodeName *string) *NetworkEthernetPortsGetParams {
-	o.SetLagActivePortsNodeNameQueryParameter(lagActivePortsNodeName)
+// WithLagActivePortsNodeName adds the lagActivePortsNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagActivePortsNodeName(lagActivePortsNodeName *string) *NetworkEthernetPortsGetParams {
+	o.SetLagActivePortsNodeName(lagActivePortsNodeName)
 	return o
 }
 
-// SetLagActivePortsNodeNameQueryParameter adds the lagActivePortsNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagActivePortsNodeNameQueryParameter(lagActivePortsNodeName *string) {
-	o.LagActivePortsNodeNameQueryParameter = lagActivePortsNodeName
+// SetLagActivePortsNodeName adds the lagActivePortsNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagActivePortsNodeName(lagActivePortsNodeName *string) {
+	o.LagActivePortsNodeName = lagActivePortsNodeName
 }
 
-// WithLagActivePortsUUIDQueryParameter adds the lagActivePortsUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagActivePortsUUIDQueryParameter(lagActivePortsUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetLagActivePortsUUIDQueryParameter(lagActivePortsUUID)
+// WithLagActivePortsUUID adds the lagActivePortsUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagActivePortsUUID(lagActivePortsUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetLagActivePortsUUID(lagActivePortsUUID)
 	return o
 }
 
-// SetLagActivePortsUUIDQueryParameter adds the lagActivePortsUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagActivePortsUUIDQueryParameter(lagActivePortsUUID *string) {
-	o.LagActivePortsUUIDQueryParameter = lagActivePortsUUID
+// SetLagActivePortsUUID adds the lagActivePortsUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagActivePortsUUID(lagActivePortsUUID *string) {
+	o.LagActivePortsUUID = lagActivePortsUUID
 }
 
-// WithLagDistributionPolicyQueryParameter adds the lagDistributionPolicy to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagDistributionPolicyQueryParameter(lagDistributionPolicy *string) *NetworkEthernetPortsGetParams {
-	o.SetLagDistributionPolicyQueryParameter(lagDistributionPolicy)
+// WithLagDistributionPolicy adds the lagDistributionPolicy to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagDistributionPolicy(lagDistributionPolicy *string) *NetworkEthernetPortsGetParams {
+	o.SetLagDistributionPolicy(lagDistributionPolicy)
 	return o
 }
 
-// SetLagDistributionPolicyQueryParameter adds the lagDistributionPolicy to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagDistributionPolicyQueryParameter(lagDistributionPolicy *string) {
-	o.LagDistributionPolicyQueryParameter = lagDistributionPolicy
+// SetLagDistributionPolicy adds the lagDistributionPolicy to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagDistributionPolicy(lagDistributionPolicy *string) {
+	o.LagDistributionPolicy = lagDistributionPolicy
 }
 
-// WithLagMemberPortsNameQueryParameter adds the lagMemberPortsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsNameQueryParameter(lagMemberPortsName *string) *NetworkEthernetPortsGetParams {
-	o.SetLagMemberPortsNameQueryParameter(lagMemberPortsName)
+// WithLagMemberPortsName adds the lagMemberPortsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsName(lagMemberPortsName *string) *NetworkEthernetPortsGetParams {
+	o.SetLagMemberPortsName(lagMemberPortsName)
 	return o
 }
 
-// SetLagMemberPortsNameQueryParameter adds the lagMemberPortsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsNameQueryParameter(lagMemberPortsName *string) {
-	o.LagMemberPortsNameQueryParameter = lagMemberPortsName
+// SetLagMemberPortsName adds the lagMemberPortsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsName(lagMemberPortsName *string) {
+	o.LagMemberPortsName = lagMemberPortsName
 }
 
-// WithLagMemberPortsNodeNameQueryParameter adds the lagMemberPortsNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsNodeNameQueryParameter(lagMemberPortsNodeName *string) *NetworkEthernetPortsGetParams {
-	o.SetLagMemberPortsNodeNameQueryParameter(lagMemberPortsNodeName)
+// WithLagMemberPortsNodeName adds the lagMemberPortsNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsNodeName(lagMemberPortsNodeName *string) *NetworkEthernetPortsGetParams {
+	o.SetLagMemberPortsNodeName(lagMemberPortsNodeName)
 	return o
 }
 
-// SetLagMemberPortsNodeNameQueryParameter adds the lagMemberPortsNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsNodeNameQueryParameter(lagMemberPortsNodeName *string) {
-	o.LagMemberPortsNodeNameQueryParameter = lagMemberPortsNodeName
+// SetLagMemberPortsNodeName adds the lagMemberPortsNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsNodeName(lagMemberPortsNodeName *string) {
+	o.LagMemberPortsNodeName = lagMemberPortsNodeName
 }
 
-// WithLagMemberPortsUUIDQueryParameter adds the lagMemberPortsUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsUUIDQueryParameter(lagMemberPortsUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetLagMemberPortsUUIDQueryParameter(lagMemberPortsUUID)
+// WithLagMemberPortsUUID adds the lagMemberPortsUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagMemberPortsUUID(lagMemberPortsUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetLagMemberPortsUUID(lagMemberPortsUUID)
 	return o
 }
 
-// SetLagMemberPortsUUIDQueryParameter adds the lagMemberPortsUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsUUIDQueryParameter(lagMemberPortsUUID *string) {
-	o.LagMemberPortsUUIDQueryParameter = lagMemberPortsUUID
+// SetLagMemberPortsUUID adds the lagMemberPortsUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagMemberPortsUUID(lagMemberPortsUUID *string) {
+	o.LagMemberPortsUUID = lagMemberPortsUUID
 }
 
-// WithLagModeQueryParameter adds the lagMode to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithLagModeQueryParameter(lagMode *string) *NetworkEthernetPortsGetParams {
-	o.SetLagModeQueryParameter(lagMode)
+// WithLagMode adds the lagMode to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithLagMode(lagMode *string) *NetworkEthernetPortsGetParams {
+	o.SetLagMode(lagMode)
 	return o
 }
 
-// SetLagModeQueryParameter adds the lagMode to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetLagModeQueryParameter(lagMode *string) {
-	o.LagModeQueryParameter = lagMode
+// SetLagMode adds the lagMode to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetLagMode(lagMode *string) {
+	o.LagMode = lagMode
 }
 
-// WithMacAddressQueryParameter adds the macAddress to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMacAddressQueryParameter(macAddress *string) *NetworkEthernetPortsGetParams {
-	o.SetMacAddressQueryParameter(macAddress)
+// WithMacAddress adds the macAddress to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMacAddress(macAddress *string) *NetworkEthernetPortsGetParams {
+	o.SetMacAddress(macAddress)
 	return o
 }
 
-// SetMacAddressQueryParameter adds the macAddress to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMacAddressQueryParameter(macAddress *string) {
-	o.MacAddressQueryParameter = macAddress
+// SetMacAddress adds the macAddress to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMacAddress(macAddress *string) {
+	o.MacAddress = macAddress
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkEthernetPortsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMaxRecords(maxRecords *int64) *NetworkEthernetPortsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NetworkEthernetPortsGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMetricDuration adds the metricDuration to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricDuration(metricDuration *string) *NetworkEthernetPortsGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMetricDuration adds the metricDuration to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NetworkEthernetPortsGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricStatus adds the metricStatus to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricStatus(metricStatus *string) *NetworkEthernetPortsGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricStatus adds the metricStatus to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NetworkEthernetPortsGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricThroughputRead adds the metricThroughputRead to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *NetworkEthernetPortsGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricThroughputRead adds the metricThroughputRead to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NetworkEthernetPortsGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *NetworkEthernetPortsGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputTotal adds the metricThroughputTotal to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NetworkEthernetPortsGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *NetworkEthernetPortsGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputWrite adds the metricThroughputWrite to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NetworkEthernetPortsGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricTimestamp adds the metricTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMetricTimestamp(metricTimestamp *string) *NetworkEthernetPortsGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricTimestamp adds the metricTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithMtuQueryParameter adds the mtu to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithMtuQueryParameter(mtu *int64) *NetworkEthernetPortsGetParams {
-	o.SetMtuQueryParameter(mtu)
+// WithMtu adds the mtu to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithMtu(mtu *int64) *NetworkEthernetPortsGetParams {
+	o.SetMtu(mtu)
 	return o
 }
 
-// SetMtuQueryParameter adds the mtu to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetMtuQueryParameter(mtu *int64) {
-	o.MtuQueryParameter = mtu
+// SetMtu adds the mtu to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetMtu(mtu *int64) {
+	o.Mtu = mtu
 }
 
-// WithNameQueryParameter adds the name to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithNameQueryParameter(name *string) *NetworkEthernetPortsGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithName(name *string) *NetworkEthernetPortsGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithNodeNameQueryParameter(nodeName *string) *NetworkEthernetPortsGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithNodeName(nodeName *string) *NetworkEthernetPortsGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithNodeUUID(nodeUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkEthernetPortsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithOrderBy(orderBy []string) *NetworkEthernetPortsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithRdmaProtocolsQueryParameter(rdmaProtocols *string) *NetworkEthernetPortsGetParams {
-	o.SetRdmaProtocolsQueryParameter(rdmaProtocols)
+// WithRdmaProtocols adds the rdmaProtocols to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithRdmaProtocols(rdmaProtocols *string) *NetworkEthernetPortsGetParams {
+	o.SetRdmaProtocols(rdmaProtocols)
 	return o
 }
 
-// SetRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetRdmaProtocolsQueryParameter(rdmaProtocols *string) {
-	o.RdmaProtocolsQueryParameter = rdmaProtocols
+// SetRdmaProtocols adds the rdmaProtocols to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetRdmaProtocols(rdmaProtocols *string) {
+	o.RdmaProtocols = rdmaProtocols
 }
 
-// WithReachabilityQueryParameter adds the reachability to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReachabilityQueryParameter(reachability *string) *NetworkEthernetPortsGetParams {
-	o.SetReachabilityQueryParameter(reachability)
+// WithReachability adds the reachability to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReachability(reachability *string) *NetworkEthernetPortsGetParams {
+	o.SetReachability(reachability)
 	return o
 }
 
-// SetReachabilityQueryParameter adds the reachability to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReachabilityQueryParameter(reachability *string) {
-	o.ReachabilityQueryParameter = reachability
+// SetReachability adds the reachability to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReachability(reachability *string) {
+	o.Reachability = reachability
 }
 
-// WithReachableBroadcastDomainsIPspaceNameQueryParameter adds the reachableBroadcastDomainsIpspaceName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsIPspaceNameQueryParameter(reachableBroadcastDomainsIpspaceName *string) *NetworkEthernetPortsGetParams {
-	o.SetReachableBroadcastDomainsIPspaceNameQueryParameter(reachableBroadcastDomainsIpspaceName)
+// WithReachableBroadcastDomainsIpspaceName adds the reachableBroadcastDomainsIpspaceName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsIpspaceName(reachableBroadcastDomainsIpspaceName *string) *NetworkEthernetPortsGetParams {
+	o.SetReachableBroadcastDomainsIpspaceName(reachableBroadcastDomainsIpspaceName)
 	return o
 }
 
-// SetReachableBroadcastDomainsIPspaceNameQueryParameter adds the reachableBroadcastDomainsIpspaceName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsIPspaceNameQueryParameter(reachableBroadcastDomainsIpspaceName *string) {
-	o.ReachableBroadcastDomainsIPspaceNameQueryParameter = reachableBroadcastDomainsIpspaceName
+// SetReachableBroadcastDomainsIpspaceName adds the reachableBroadcastDomainsIpspaceName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsIpspaceName(reachableBroadcastDomainsIpspaceName *string) {
+	o.ReachableBroadcastDomainsIpspaceName = reachableBroadcastDomainsIpspaceName
 }
 
-// WithReachableBroadcastDomainsNameQueryParameter adds the reachableBroadcastDomainsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsNameQueryParameter(reachableBroadcastDomainsName *string) *NetworkEthernetPortsGetParams {
-	o.SetReachableBroadcastDomainsNameQueryParameter(reachableBroadcastDomainsName)
+// WithReachableBroadcastDomainsName adds the reachableBroadcastDomainsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsName(reachableBroadcastDomainsName *string) *NetworkEthernetPortsGetParams {
+	o.SetReachableBroadcastDomainsName(reachableBroadcastDomainsName)
 	return o
 }
 
-// SetReachableBroadcastDomainsNameQueryParameter adds the reachableBroadcastDomainsName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsNameQueryParameter(reachableBroadcastDomainsName *string) {
-	o.ReachableBroadcastDomainsNameQueryParameter = reachableBroadcastDomainsName
+// SetReachableBroadcastDomainsName adds the reachableBroadcastDomainsName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsName(reachableBroadcastDomainsName *string) {
+	o.ReachableBroadcastDomainsName = reachableBroadcastDomainsName
 }
 
-// WithReachableBroadcastDomainsUUIDQueryParameter adds the reachableBroadcastDomainsUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsUUIDQueryParameter(reachableBroadcastDomainsUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetReachableBroadcastDomainsUUIDQueryParameter(reachableBroadcastDomainsUUID)
+// WithReachableBroadcastDomainsUUID adds the reachableBroadcastDomainsUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReachableBroadcastDomainsUUID(reachableBroadcastDomainsUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetReachableBroadcastDomainsUUID(reachableBroadcastDomainsUUID)
 	return o
 }
 
-// SetReachableBroadcastDomainsUUIDQueryParameter adds the reachableBroadcastDomainsUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsUUIDQueryParameter(reachableBroadcastDomainsUUID *string) {
-	o.ReachableBroadcastDomainsUUIDQueryParameter = reachableBroadcastDomainsUUID
+// SetReachableBroadcastDomainsUUID adds the reachableBroadcastDomainsUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReachableBroadcastDomainsUUID(reachableBroadcastDomainsUUID *string) {
+	o.ReachableBroadcastDomainsUUID = reachableBroadcastDomainsUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkEthernetPortsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReturnRecords(returnRecords *bool) *NetworkEthernetPortsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkEthernetPortsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkEthernetPortsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSpeedQueryParameter adds the speed to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithSpeedQueryParameter(speed *int64) *NetworkEthernetPortsGetParams {
-	o.SetSpeedQueryParameter(speed)
+// WithSpeed adds the speed to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithSpeed(speed *int64) *NetworkEthernetPortsGetParams {
+	o.SetSpeed(speed)
 	return o
 }
 
-// SetSpeedQueryParameter adds the speed to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetSpeedQueryParameter(speed *int64) {
-	o.SpeedQueryParameter = speed
+// SetSpeed adds the speed to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetSpeed(speed *int64) {
+	o.Speed = speed
 }
 
-// WithStateQueryParameter adds the state to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStateQueryParameter(state *string) *NetworkEthernetPortsGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithState(state *string) *NetworkEthernetPortsGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatisticsDeviceLinkDownCountRawQueryParameter adds the statisticsDeviceLinkDownCountRaw to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceLinkDownCountRawQueryParameter(statisticsDeviceLinkDownCountRaw *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceLinkDownCountRawQueryParameter(statisticsDeviceLinkDownCountRaw)
+// WithStatisticsDeviceLinkDownCountRaw adds the statisticsDeviceLinkDownCountRaw to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceLinkDownCountRaw(statisticsDeviceLinkDownCountRaw *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceLinkDownCountRaw(statisticsDeviceLinkDownCountRaw)
 	return o
 }
 
-// SetStatisticsDeviceLinkDownCountRawQueryParameter adds the statisticsDeviceLinkDownCountRaw to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceLinkDownCountRawQueryParameter(statisticsDeviceLinkDownCountRaw *int64) {
-	o.StatisticsDeviceLinkDownCountRawQueryParameter = statisticsDeviceLinkDownCountRaw
+// SetStatisticsDeviceLinkDownCountRaw adds the statisticsDeviceLinkDownCountRaw to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceLinkDownCountRaw(statisticsDeviceLinkDownCountRaw *int64) {
+	o.StatisticsDeviceLinkDownCountRaw = statisticsDeviceLinkDownCountRaw
 }
 
-// WithStatisticsDeviceReceiveRawDiscardsQueryParameter adds the statisticsDeviceReceiveRawDiscards to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawDiscardsQueryParameter(statisticsDeviceReceiveRawDiscards *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceReceiveRawDiscardsQueryParameter(statisticsDeviceReceiveRawDiscards)
+// WithStatisticsDeviceReceiveRawDiscards adds the statisticsDeviceReceiveRawDiscards to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawDiscards(statisticsDeviceReceiveRawDiscards *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceReceiveRawDiscards(statisticsDeviceReceiveRawDiscards)
 	return o
 }
 
-// SetStatisticsDeviceReceiveRawDiscardsQueryParameter adds the statisticsDeviceReceiveRawDiscards to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawDiscardsQueryParameter(statisticsDeviceReceiveRawDiscards *int64) {
-	o.StatisticsDeviceReceiveRawDiscardsQueryParameter = statisticsDeviceReceiveRawDiscards
+// SetStatisticsDeviceReceiveRawDiscards adds the statisticsDeviceReceiveRawDiscards to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawDiscards(statisticsDeviceReceiveRawDiscards *int64) {
+	o.StatisticsDeviceReceiveRawDiscards = statisticsDeviceReceiveRawDiscards
 }
 
-// WithStatisticsDeviceReceiveRawErrorsQueryParameter adds the statisticsDeviceReceiveRawErrors to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawErrorsQueryParameter(statisticsDeviceReceiveRawErrors *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceReceiveRawErrorsQueryParameter(statisticsDeviceReceiveRawErrors)
+// WithStatisticsDeviceReceiveRawErrors adds the statisticsDeviceReceiveRawErrors to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawErrors(statisticsDeviceReceiveRawErrors *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceReceiveRawErrors(statisticsDeviceReceiveRawErrors)
 	return o
 }
 
-// SetStatisticsDeviceReceiveRawErrorsQueryParameter adds the statisticsDeviceReceiveRawErrors to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawErrorsQueryParameter(statisticsDeviceReceiveRawErrors *int64) {
-	o.StatisticsDeviceReceiveRawErrorsQueryParameter = statisticsDeviceReceiveRawErrors
+// SetStatisticsDeviceReceiveRawErrors adds the statisticsDeviceReceiveRawErrors to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawErrors(statisticsDeviceReceiveRawErrors *int64) {
+	o.StatisticsDeviceReceiveRawErrors = statisticsDeviceReceiveRawErrors
 }
 
-// WithStatisticsDeviceReceiveRawPacketsQueryParameter adds the statisticsDeviceReceiveRawPackets to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawPacketsQueryParameter(statisticsDeviceReceiveRawPackets *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceReceiveRawPacketsQueryParameter(statisticsDeviceReceiveRawPackets)
+// WithStatisticsDeviceReceiveRawPackets adds the statisticsDeviceReceiveRawPackets to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceReceiveRawPackets(statisticsDeviceReceiveRawPackets *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceReceiveRawPackets(statisticsDeviceReceiveRawPackets)
 	return o
 }
 
-// SetStatisticsDeviceReceiveRawPacketsQueryParameter adds the statisticsDeviceReceiveRawPackets to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawPacketsQueryParameter(statisticsDeviceReceiveRawPackets *int64) {
-	o.StatisticsDeviceReceiveRawPacketsQueryParameter = statisticsDeviceReceiveRawPackets
+// SetStatisticsDeviceReceiveRawPackets adds the statisticsDeviceReceiveRawPackets to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceReceiveRawPackets(statisticsDeviceReceiveRawPackets *int64) {
+	o.StatisticsDeviceReceiveRawPackets = statisticsDeviceReceiveRawPackets
 }
 
-// WithStatisticsDeviceTimestampQueryParameter adds the statisticsDeviceTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTimestampQueryParameter(statisticsDeviceTimestamp *string) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceTimestampQueryParameter(statisticsDeviceTimestamp)
+// WithStatisticsDeviceTimestamp adds the statisticsDeviceTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTimestamp(statisticsDeviceTimestamp *string) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceTimestamp(statisticsDeviceTimestamp)
 	return o
 }
 
-// SetStatisticsDeviceTimestampQueryParameter adds the statisticsDeviceTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTimestampQueryParameter(statisticsDeviceTimestamp *string) {
-	o.StatisticsDeviceTimestampQueryParameter = statisticsDeviceTimestamp
+// SetStatisticsDeviceTimestamp adds the statisticsDeviceTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTimestamp(statisticsDeviceTimestamp *string) {
+	o.StatisticsDeviceTimestamp = statisticsDeviceTimestamp
 }
 
-// WithStatisticsDeviceTransmitRawDiscardsQueryParameter adds the statisticsDeviceTransmitRawDiscards to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawDiscardsQueryParameter(statisticsDeviceTransmitRawDiscards *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceTransmitRawDiscardsQueryParameter(statisticsDeviceTransmitRawDiscards)
+// WithStatisticsDeviceTransmitRawDiscards adds the statisticsDeviceTransmitRawDiscards to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawDiscards(statisticsDeviceTransmitRawDiscards *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceTransmitRawDiscards(statisticsDeviceTransmitRawDiscards)
 	return o
 }
 
-// SetStatisticsDeviceTransmitRawDiscardsQueryParameter adds the statisticsDeviceTransmitRawDiscards to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawDiscardsQueryParameter(statisticsDeviceTransmitRawDiscards *int64) {
-	o.StatisticsDeviceTransmitRawDiscardsQueryParameter = statisticsDeviceTransmitRawDiscards
+// SetStatisticsDeviceTransmitRawDiscards adds the statisticsDeviceTransmitRawDiscards to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawDiscards(statisticsDeviceTransmitRawDiscards *int64) {
+	o.StatisticsDeviceTransmitRawDiscards = statisticsDeviceTransmitRawDiscards
 }
 
-// WithStatisticsDeviceTransmitRawErrorsQueryParameter adds the statisticsDeviceTransmitRawErrors to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawErrorsQueryParameter(statisticsDeviceTransmitRawErrors *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceTransmitRawErrorsQueryParameter(statisticsDeviceTransmitRawErrors)
+// WithStatisticsDeviceTransmitRawErrors adds the statisticsDeviceTransmitRawErrors to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawErrors(statisticsDeviceTransmitRawErrors *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceTransmitRawErrors(statisticsDeviceTransmitRawErrors)
 	return o
 }
 
-// SetStatisticsDeviceTransmitRawErrorsQueryParameter adds the statisticsDeviceTransmitRawErrors to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawErrorsQueryParameter(statisticsDeviceTransmitRawErrors *int64) {
-	o.StatisticsDeviceTransmitRawErrorsQueryParameter = statisticsDeviceTransmitRawErrors
+// SetStatisticsDeviceTransmitRawErrors adds the statisticsDeviceTransmitRawErrors to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawErrors(statisticsDeviceTransmitRawErrors *int64) {
+	o.StatisticsDeviceTransmitRawErrors = statisticsDeviceTransmitRawErrors
 }
 
-// WithStatisticsDeviceTransmitRawPacketsQueryParameter adds the statisticsDeviceTransmitRawPackets to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawPacketsQueryParameter(statisticsDeviceTransmitRawPackets *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsDeviceTransmitRawPacketsQueryParameter(statisticsDeviceTransmitRawPackets)
+// WithStatisticsDeviceTransmitRawPackets adds the statisticsDeviceTransmitRawPackets to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsDeviceTransmitRawPackets(statisticsDeviceTransmitRawPackets *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsDeviceTransmitRawPackets(statisticsDeviceTransmitRawPackets)
 	return o
 }
 
-// SetStatisticsDeviceTransmitRawPacketsQueryParameter adds the statisticsDeviceTransmitRawPackets to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawPacketsQueryParameter(statisticsDeviceTransmitRawPackets *int64) {
-	o.StatisticsDeviceTransmitRawPacketsQueryParameter = statisticsDeviceTransmitRawPackets
+// SetStatisticsDeviceTransmitRawPackets adds the statisticsDeviceTransmitRawPackets to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsDeviceTransmitRawPackets(statisticsDeviceTransmitRawPackets *int64) {
+	o.StatisticsDeviceTransmitRawPackets = statisticsDeviceTransmitRawPackets
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsStatus(statisticsStatus *string) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NetworkEthernetPortsGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *NetworkEthernetPortsGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithTypeQueryParameter adds the typeVar to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithTypeQueryParameter(typeVar *string) *NetworkEthernetPortsGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithType(typeVar *string) *NetworkEthernetPortsGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithUUIDQueryParameter(uuid *string) *NetworkEthernetPortsGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithUUID(uuid *string) *NetworkEthernetPortsGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVlanBasePortNameQueryParameter adds the vlanBasePortName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithVlanBasePortNameQueryParameter(vlanBasePortName *string) *NetworkEthernetPortsGetParams {
-	o.SetVlanBasePortNameQueryParameter(vlanBasePortName)
+// WithVlanBasePortName adds the vlanBasePortName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithVlanBasePortName(vlanBasePortName *string) *NetworkEthernetPortsGetParams {
+	o.SetVlanBasePortName(vlanBasePortName)
 	return o
 }
 
-// SetVlanBasePortNameQueryParameter adds the vlanBasePortName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetVlanBasePortNameQueryParameter(vlanBasePortName *string) {
-	o.VlanBasePortNameQueryParameter = vlanBasePortName
+// SetVlanBasePortName adds the vlanBasePortName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetVlanBasePortName(vlanBasePortName *string) {
+	o.VlanBasePortName = vlanBasePortName
 }
 
-// WithVlanBasePortNodeNameQueryParameter adds the vlanBasePortNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithVlanBasePortNodeNameQueryParameter(vlanBasePortNodeName *string) *NetworkEthernetPortsGetParams {
-	o.SetVlanBasePortNodeNameQueryParameter(vlanBasePortNodeName)
+// WithVlanBasePortNodeName adds the vlanBasePortNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithVlanBasePortNodeName(vlanBasePortNodeName *string) *NetworkEthernetPortsGetParams {
+	o.SetVlanBasePortNodeName(vlanBasePortNodeName)
 	return o
 }
 
-// SetVlanBasePortNodeNameQueryParameter adds the vlanBasePortNodeName to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetVlanBasePortNodeNameQueryParameter(vlanBasePortNodeName *string) {
-	o.VlanBasePortNodeNameQueryParameter = vlanBasePortNodeName
+// SetVlanBasePortNodeName adds the vlanBasePortNodeName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetVlanBasePortNodeName(vlanBasePortNodeName *string) {
+	o.VlanBasePortNodeName = vlanBasePortNodeName
 }
 
-// WithVlanBasePortUUIDQueryParameter adds the vlanBasePortUUID to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithVlanBasePortUUIDQueryParameter(vlanBasePortUUID *string) *NetworkEthernetPortsGetParams {
-	o.SetVlanBasePortUUIDQueryParameter(vlanBasePortUUID)
+// WithVlanBasePortUUID adds the vlanBasePortUUID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithVlanBasePortUUID(vlanBasePortUUID *string) *NetworkEthernetPortsGetParams {
+	o.SetVlanBasePortUUID(vlanBasePortUUID)
 	return o
 }
 
-// SetVlanBasePortUUIDQueryParameter adds the vlanBasePortUuid to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetVlanBasePortUUIDQueryParameter(vlanBasePortUUID *string) {
-	o.VlanBasePortUUIDQueryParameter = vlanBasePortUUID
+// SetVlanBasePortUUID adds the vlanBasePortUuid to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetVlanBasePortUUID(vlanBasePortUUID *string) {
+	o.VlanBasePortUUID = vlanBasePortUUID
 }
 
-// WithVlanTagQueryParameter adds the vlanTag to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) WithVlanTagQueryParameter(vlanTag *int64) *NetworkEthernetPortsGetParams {
-	o.SetVlanTagQueryParameter(vlanTag)
+// WithVlanTag adds the vlanTag to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithVlanTag(vlanTag *int64) *NetworkEthernetPortsGetParams {
+	o.SetVlanTag(vlanTag)
 	return o
 }
 
-// SetVlanTagQueryParameter adds the vlanTag to the network ethernet ports get params
-func (o *NetworkEthernetPortsGetParams) SetVlanTagQueryParameter(vlanTag *int64) {
-	o.VlanTagQueryParameter = vlanTag
+// SetVlanTag adds the vlanTag to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetVlanTag(vlanTag *int64) {
+	o.VlanTag = vlanTag
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1246,13 +1246,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.BroadcastDomainIPspaceNameQueryParameter != nil {
+	if o.BroadcastDomainIpspaceName != nil {
 
 		// query param broadcast_domain.ipspace.name
 		var qrBroadcastDomainIpspaceName string
 
-		if o.BroadcastDomainIPspaceNameQueryParameter != nil {
-			qrBroadcastDomainIpspaceName = *o.BroadcastDomainIPspaceNameQueryParameter
+		if o.BroadcastDomainIpspaceName != nil {
+			qrBroadcastDomainIpspaceName = *o.BroadcastDomainIpspaceName
 		}
 		qBroadcastDomainIpspaceName := qrBroadcastDomainIpspaceName
 		if qBroadcastDomainIpspaceName != "" {
@@ -1263,13 +1263,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.BroadcastDomainNameQueryParameter != nil {
+	if o.BroadcastDomainName != nil {
 
 		// query param broadcast_domain.name
 		var qrBroadcastDomainName string
 
-		if o.BroadcastDomainNameQueryParameter != nil {
-			qrBroadcastDomainName = *o.BroadcastDomainNameQueryParameter
+		if o.BroadcastDomainName != nil {
+			qrBroadcastDomainName = *o.BroadcastDomainName
 		}
 		qBroadcastDomainName := qrBroadcastDomainName
 		if qBroadcastDomainName != "" {
@@ -1280,13 +1280,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.BroadcastDomainUUIDQueryParameter != nil {
+	if o.BroadcastDomainUUID != nil {
 
 		// query param broadcast_domain.uuid
 		var qrBroadcastDomainUUID string
 
-		if o.BroadcastDomainUUIDQueryParameter != nil {
-			qrBroadcastDomainUUID = *o.BroadcastDomainUUIDQueryParameter
+		if o.BroadcastDomainUUID != nil {
+			qrBroadcastDomainUUID = *o.BroadcastDomainUUID
 		}
 		qBroadcastDomainUUID := qrBroadcastDomainUUID
 		if qBroadcastDomainUUID != "" {
@@ -1297,13 +1297,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesCapabilitiesQueryParameter != nil {
+	if o.DiscoveredDevicesCapabilities != nil {
 
 		// query param discovered_devices.capabilities
 		var qrDiscoveredDevicesCapabilities string
 
-		if o.DiscoveredDevicesCapabilitiesQueryParameter != nil {
-			qrDiscoveredDevicesCapabilities = *o.DiscoveredDevicesCapabilitiesQueryParameter
+		if o.DiscoveredDevicesCapabilities != nil {
+			qrDiscoveredDevicesCapabilities = *o.DiscoveredDevicesCapabilities
 		}
 		qDiscoveredDevicesCapabilities := qrDiscoveredDevicesCapabilities
 		if qDiscoveredDevicesCapabilities != "" {
@@ -1314,13 +1314,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesChassisIDQueryParameter != nil {
+	if o.DiscoveredDevicesChassisID != nil {
 
 		// query param discovered_devices.chassis_id
 		var qrDiscoveredDevicesChassisID string
 
-		if o.DiscoveredDevicesChassisIDQueryParameter != nil {
-			qrDiscoveredDevicesChassisID = *o.DiscoveredDevicesChassisIDQueryParameter
+		if o.DiscoveredDevicesChassisID != nil {
+			qrDiscoveredDevicesChassisID = *o.DiscoveredDevicesChassisID
 		}
 		qDiscoveredDevicesChassisID := qrDiscoveredDevicesChassisID
 		if qDiscoveredDevicesChassisID != "" {
@@ -1331,13 +1331,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesIPAddressesQueryParameter != nil {
+	if o.DiscoveredDevicesIPAddresses != nil {
 
 		// query param discovered_devices.ip_addresses
 		var qrDiscoveredDevicesIPAddresses string
 
-		if o.DiscoveredDevicesIPAddressesQueryParameter != nil {
-			qrDiscoveredDevicesIPAddresses = *o.DiscoveredDevicesIPAddressesQueryParameter
+		if o.DiscoveredDevicesIPAddresses != nil {
+			qrDiscoveredDevicesIPAddresses = *o.DiscoveredDevicesIPAddresses
 		}
 		qDiscoveredDevicesIPAddresses := qrDiscoveredDevicesIPAddresses
 		if qDiscoveredDevicesIPAddresses != "" {
@@ -1348,13 +1348,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesNameQueryParameter != nil {
+	if o.DiscoveredDevicesName != nil {
 
 		// query param discovered_devices.name
 		var qrDiscoveredDevicesName string
 
-		if o.DiscoveredDevicesNameQueryParameter != nil {
-			qrDiscoveredDevicesName = *o.DiscoveredDevicesNameQueryParameter
+		if o.DiscoveredDevicesName != nil {
+			qrDiscoveredDevicesName = *o.DiscoveredDevicesName
 		}
 		qDiscoveredDevicesName := qrDiscoveredDevicesName
 		if qDiscoveredDevicesName != "" {
@@ -1365,13 +1365,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesPlatformQueryParameter != nil {
+	if o.DiscoveredDevicesPlatform != nil {
 
 		// query param discovered_devices.platform
 		var qrDiscoveredDevicesPlatform string
 
-		if o.DiscoveredDevicesPlatformQueryParameter != nil {
-			qrDiscoveredDevicesPlatform = *o.DiscoveredDevicesPlatformQueryParameter
+		if o.DiscoveredDevicesPlatform != nil {
+			qrDiscoveredDevicesPlatform = *o.DiscoveredDevicesPlatform
 		}
 		qDiscoveredDevicesPlatform := qrDiscoveredDevicesPlatform
 		if qDiscoveredDevicesPlatform != "" {
@@ -1382,13 +1382,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesProtocolQueryParameter != nil {
+	if o.DiscoveredDevicesProtocol != nil {
 
 		// query param discovered_devices.protocol
 		var qrDiscoveredDevicesProtocol string
 
-		if o.DiscoveredDevicesProtocolQueryParameter != nil {
-			qrDiscoveredDevicesProtocol = *o.DiscoveredDevicesProtocolQueryParameter
+		if o.DiscoveredDevicesProtocol != nil {
+			qrDiscoveredDevicesProtocol = *o.DiscoveredDevicesProtocol
 		}
 		qDiscoveredDevicesProtocol := qrDiscoveredDevicesProtocol
 		if qDiscoveredDevicesProtocol != "" {
@@ -1399,13 +1399,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesRemainingHoldTimeQueryParameter != nil {
+	if o.DiscoveredDevicesRemainingHoldTime != nil {
 
 		// query param discovered_devices.remaining_hold_time
 		var qrDiscoveredDevicesRemainingHoldTime int64
 
-		if o.DiscoveredDevicesRemainingHoldTimeQueryParameter != nil {
-			qrDiscoveredDevicesRemainingHoldTime = *o.DiscoveredDevicesRemainingHoldTimeQueryParameter
+		if o.DiscoveredDevicesRemainingHoldTime != nil {
+			qrDiscoveredDevicesRemainingHoldTime = *o.DiscoveredDevicesRemainingHoldTime
 		}
 		qDiscoveredDevicesRemainingHoldTime := swag.FormatInt64(qrDiscoveredDevicesRemainingHoldTime)
 		if qDiscoveredDevicesRemainingHoldTime != "" {
@@ -1416,13 +1416,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesRemotePortQueryParameter != nil {
+	if o.DiscoveredDevicesRemotePort != nil {
 
 		// query param discovered_devices.remote_port
 		var qrDiscoveredDevicesRemotePort string
 
-		if o.DiscoveredDevicesRemotePortQueryParameter != nil {
-			qrDiscoveredDevicesRemotePort = *o.DiscoveredDevicesRemotePortQueryParameter
+		if o.DiscoveredDevicesRemotePort != nil {
+			qrDiscoveredDevicesRemotePort = *o.DiscoveredDevicesRemotePort
 		}
 		qDiscoveredDevicesRemotePort := qrDiscoveredDevicesRemotePort
 		if qDiscoveredDevicesRemotePort != "" {
@@ -1433,13 +1433,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesSystemNameQueryParameter != nil {
+	if o.DiscoveredDevicesSystemName != nil {
 
 		// query param discovered_devices.system_name
 		var qrDiscoveredDevicesSystemName string
 
-		if o.DiscoveredDevicesSystemNameQueryParameter != nil {
-			qrDiscoveredDevicesSystemName = *o.DiscoveredDevicesSystemNameQueryParameter
+		if o.DiscoveredDevicesSystemName != nil {
+			qrDiscoveredDevicesSystemName = *o.DiscoveredDevicesSystemName
 		}
 		qDiscoveredDevicesSystemName := qrDiscoveredDevicesSystemName
 		if qDiscoveredDevicesSystemName != "" {
@@ -1450,13 +1450,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredDevicesVersionQueryParameter != nil {
+	if o.DiscoveredDevicesVersion != nil {
 
 		// query param discovered_devices.version
 		var qrDiscoveredDevicesVersion string
 
-		if o.DiscoveredDevicesVersionQueryParameter != nil {
-			qrDiscoveredDevicesVersion = *o.DiscoveredDevicesVersionQueryParameter
+		if o.DiscoveredDevicesVersion != nil {
+			qrDiscoveredDevicesVersion = *o.DiscoveredDevicesVersion
 		}
 		qDiscoveredDevicesVersion := qrDiscoveredDevicesVersion
 		if qDiscoveredDevicesVersion != "" {
@@ -1467,13 +1467,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -1484,7 +1484,7 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1495,13 +1495,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceCountQueryParameter != nil {
+	if o.InterfaceCount != nil {
 
 		// query param interface_count
 		var qrInterfaceCount int64
 
-		if o.InterfaceCountQueryParameter != nil {
-			qrInterfaceCount = *o.InterfaceCountQueryParameter
+		if o.InterfaceCount != nil {
+			qrInterfaceCount = *o.InterfaceCount
 		}
 		qInterfaceCount := swag.FormatInt64(qrInterfaceCount)
 		if qInterfaceCount != "" {
@@ -1512,13 +1512,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagActivePortsNameQueryParameter != nil {
+	if o.LagActivePortsName != nil {
 
 		// query param lag.active_ports.name
 		var qrLagActivePortsName string
 
-		if o.LagActivePortsNameQueryParameter != nil {
-			qrLagActivePortsName = *o.LagActivePortsNameQueryParameter
+		if o.LagActivePortsName != nil {
+			qrLagActivePortsName = *o.LagActivePortsName
 		}
 		qLagActivePortsName := qrLagActivePortsName
 		if qLagActivePortsName != "" {
@@ -1529,13 +1529,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagActivePortsNodeNameQueryParameter != nil {
+	if o.LagActivePortsNodeName != nil {
 
 		// query param lag.active_ports.node.name
 		var qrLagActivePortsNodeName string
 
-		if o.LagActivePortsNodeNameQueryParameter != nil {
-			qrLagActivePortsNodeName = *o.LagActivePortsNodeNameQueryParameter
+		if o.LagActivePortsNodeName != nil {
+			qrLagActivePortsNodeName = *o.LagActivePortsNodeName
 		}
 		qLagActivePortsNodeName := qrLagActivePortsNodeName
 		if qLagActivePortsNodeName != "" {
@@ -1546,13 +1546,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagActivePortsUUIDQueryParameter != nil {
+	if o.LagActivePortsUUID != nil {
 
 		// query param lag.active_ports.uuid
 		var qrLagActivePortsUUID string
 
-		if o.LagActivePortsUUIDQueryParameter != nil {
-			qrLagActivePortsUUID = *o.LagActivePortsUUIDQueryParameter
+		if o.LagActivePortsUUID != nil {
+			qrLagActivePortsUUID = *o.LagActivePortsUUID
 		}
 		qLagActivePortsUUID := qrLagActivePortsUUID
 		if qLagActivePortsUUID != "" {
@@ -1563,13 +1563,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagDistributionPolicyQueryParameter != nil {
+	if o.LagDistributionPolicy != nil {
 
 		// query param lag.distribution_policy
 		var qrLagDistributionPolicy string
 
-		if o.LagDistributionPolicyQueryParameter != nil {
-			qrLagDistributionPolicy = *o.LagDistributionPolicyQueryParameter
+		if o.LagDistributionPolicy != nil {
+			qrLagDistributionPolicy = *o.LagDistributionPolicy
 		}
 		qLagDistributionPolicy := qrLagDistributionPolicy
 		if qLagDistributionPolicy != "" {
@@ -1580,13 +1580,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagMemberPortsNameQueryParameter != nil {
+	if o.LagMemberPortsName != nil {
 
 		// query param lag.member_ports.name
 		var qrLagMemberPortsName string
 
-		if o.LagMemberPortsNameQueryParameter != nil {
-			qrLagMemberPortsName = *o.LagMemberPortsNameQueryParameter
+		if o.LagMemberPortsName != nil {
+			qrLagMemberPortsName = *o.LagMemberPortsName
 		}
 		qLagMemberPortsName := qrLagMemberPortsName
 		if qLagMemberPortsName != "" {
@@ -1597,13 +1597,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagMemberPortsNodeNameQueryParameter != nil {
+	if o.LagMemberPortsNodeName != nil {
 
 		// query param lag.member_ports.node.name
 		var qrLagMemberPortsNodeName string
 
-		if o.LagMemberPortsNodeNameQueryParameter != nil {
-			qrLagMemberPortsNodeName = *o.LagMemberPortsNodeNameQueryParameter
+		if o.LagMemberPortsNodeName != nil {
+			qrLagMemberPortsNodeName = *o.LagMemberPortsNodeName
 		}
 		qLagMemberPortsNodeName := qrLagMemberPortsNodeName
 		if qLagMemberPortsNodeName != "" {
@@ -1614,13 +1614,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagMemberPortsUUIDQueryParameter != nil {
+	if o.LagMemberPortsUUID != nil {
 
 		// query param lag.member_ports.uuid
 		var qrLagMemberPortsUUID string
 
-		if o.LagMemberPortsUUIDQueryParameter != nil {
-			qrLagMemberPortsUUID = *o.LagMemberPortsUUIDQueryParameter
+		if o.LagMemberPortsUUID != nil {
+			qrLagMemberPortsUUID = *o.LagMemberPortsUUID
 		}
 		qLagMemberPortsUUID := qrLagMemberPortsUUID
 		if qLagMemberPortsUUID != "" {
@@ -1631,13 +1631,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.LagModeQueryParameter != nil {
+	if o.LagMode != nil {
 
 		// query param lag.mode
 		var qrLagMode string
 
-		if o.LagModeQueryParameter != nil {
-			qrLagMode = *o.LagModeQueryParameter
+		if o.LagMode != nil {
+			qrLagMode = *o.LagMode
 		}
 		qLagMode := qrLagMode
 		if qLagMode != "" {
@@ -1648,13 +1648,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MacAddressQueryParameter != nil {
+	if o.MacAddress != nil {
 
 		// query param mac_address
 		var qrMacAddress string
 
-		if o.MacAddressQueryParameter != nil {
-			qrMacAddress = *o.MacAddressQueryParameter
+		if o.MacAddress != nil {
+			qrMacAddress = *o.MacAddress
 		}
 		qMacAddress := qrMacAddress
 		if qMacAddress != "" {
@@ -1665,13 +1665,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1682,13 +1682,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -1699,13 +1699,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -1716,13 +1716,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -1733,13 +1733,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -1750,13 +1750,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -1767,13 +1767,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -1784,13 +1784,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MtuQueryParameter != nil {
+	if o.Mtu != nil {
 
 		// query param mtu
 		var qrMtu int64
 
-		if o.MtuQueryParameter != nil {
-			qrMtu = *o.MtuQueryParameter
+		if o.Mtu != nil {
+			qrMtu = *o.Mtu
 		}
 		qMtu := swag.FormatInt64(qrMtu)
 		if qMtu != "" {
@@ -1801,13 +1801,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1818,13 +1818,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -1835,13 +1835,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1852,7 +1852,7 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1863,13 +1863,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RdmaProtocolsQueryParameter != nil {
+	if o.RdmaProtocols != nil {
 
 		// query param rdma_protocols
 		var qrRdmaProtocols string
 
-		if o.RdmaProtocolsQueryParameter != nil {
-			qrRdmaProtocols = *o.RdmaProtocolsQueryParameter
+		if o.RdmaProtocols != nil {
+			qrRdmaProtocols = *o.RdmaProtocols
 		}
 		qRdmaProtocols := qrRdmaProtocols
 		if qRdmaProtocols != "" {
@@ -1880,13 +1880,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReachabilityQueryParameter != nil {
+	if o.Reachability != nil {
 
 		// query param reachability
 		var qrReachability string
 
-		if o.ReachabilityQueryParameter != nil {
-			qrReachability = *o.ReachabilityQueryParameter
+		if o.Reachability != nil {
+			qrReachability = *o.Reachability
 		}
 		qReachability := qrReachability
 		if qReachability != "" {
@@ -1897,13 +1897,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReachableBroadcastDomainsIPspaceNameQueryParameter != nil {
+	if o.ReachableBroadcastDomainsIpspaceName != nil {
 
 		// query param reachable_broadcast_domains.ipspace.name
 		var qrReachableBroadcastDomainsIpspaceName string
 
-		if o.ReachableBroadcastDomainsIPspaceNameQueryParameter != nil {
-			qrReachableBroadcastDomainsIpspaceName = *o.ReachableBroadcastDomainsIPspaceNameQueryParameter
+		if o.ReachableBroadcastDomainsIpspaceName != nil {
+			qrReachableBroadcastDomainsIpspaceName = *o.ReachableBroadcastDomainsIpspaceName
 		}
 		qReachableBroadcastDomainsIpspaceName := qrReachableBroadcastDomainsIpspaceName
 		if qReachableBroadcastDomainsIpspaceName != "" {
@@ -1914,13 +1914,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReachableBroadcastDomainsNameQueryParameter != nil {
+	if o.ReachableBroadcastDomainsName != nil {
 
 		// query param reachable_broadcast_domains.name
 		var qrReachableBroadcastDomainsName string
 
-		if o.ReachableBroadcastDomainsNameQueryParameter != nil {
-			qrReachableBroadcastDomainsName = *o.ReachableBroadcastDomainsNameQueryParameter
+		if o.ReachableBroadcastDomainsName != nil {
+			qrReachableBroadcastDomainsName = *o.ReachableBroadcastDomainsName
 		}
 		qReachableBroadcastDomainsName := qrReachableBroadcastDomainsName
 		if qReachableBroadcastDomainsName != "" {
@@ -1931,13 +1931,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReachableBroadcastDomainsUUIDQueryParameter != nil {
+	if o.ReachableBroadcastDomainsUUID != nil {
 
 		// query param reachable_broadcast_domains.uuid
 		var qrReachableBroadcastDomainsUUID string
 
-		if o.ReachableBroadcastDomainsUUIDQueryParameter != nil {
-			qrReachableBroadcastDomainsUUID = *o.ReachableBroadcastDomainsUUIDQueryParameter
+		if o.ReachableBroadcastDomainsUUID != nil {
+			qrReachableBroadcastDomainsUUID = *o.ReachableBroadcastDomainsUUID
 		}
 		qReachableBroadcastDomainsUUID := qrReachableBroadcastDomainsUUID
 		if qReachableBroadcastDomainsUUID != "" {
@@ -1948,13 +1948,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1965,13 +1965,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1982,13 +1982,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SpeedQueryParameter != nil {
+	if o.Speed != nil {
 
 		// query param speed
 		var qrSpeed int64
 
-		if o.SpeedQueryParameter != nil {
-			qrSpeed = *o.SpeedQueryParameter
+		if o.Speed != nil {
+			qrSpeed = *o.Speed
 		}
 		qSpeed := swag.FormatInt64(qrSpeed)
 		if qSpeed != "" {
@@ -1999,13 +1999,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -2016,13 +2016,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceLinkDownCountRawQueryParameter != nil {
+	if o.StatisticsDeviceLinkDownCountRaw != nil {
 
 		// query param statistics.device.link_down_count_raw
 		var qrStatisticsDeviceLinkDownCountRaw int64
 
-		if o.StatisticsDeviceLinkDownCountRawQueryParameter != nil {
-			qrStatisticsDeviceLinkDownCountRaw = *o.StatisticsDeviceLinkDownCountRawQueryParameter
+		if o.StatisticsDeviceLinkDownCountRaw != nil {
+			qrStatisticsDeviceLinkDownCountRaw = *o.StatisticsDeviceLinkDownCountRaw
 		}
 		qStatisticsDeviceLinkDownCountRaw := swag.FormatInt64(qrStatisticsDeviceLinkDownCountRaw)
 		if qStatisticsDeviceLinkDownCountRaw != "" {
@@ -2033,13 +2033,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceReceiveRawDiscardsQueryParameter != nil {
+	if o.StatisticsDeviceReceiveRawDiscards != nil {
 
 		// query param statistics.device.receive_raw.discards
 		var qrStatisticsDeviceReceiveRawDiscards int64
 
-		if o.StatisticsDeviceReceiveRawDiscardsQueryParameter != nil {
-			qrStatisticsDeviceReceiveRawDiscards = *o.StatisticsDeviceReceiveRawDiscardsQueryParameter
+		if o.StatisticsDeviceReceiveRawDiscards != nil {
+			qrStatisticsDeviceReceiveRawDiscards = *o.StatisticsDeviceReceiveRawDiscards
 		}
 		qStatisticsDeviceReceiveRawDiscards := swag.FormatInt64(qrStatisticsDeviceReceiveRawDiscards)
 		if qStatisticsDeviceReceiveRawDiscards != "" {
@@ -2050,13 +2050,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceReceiveRawErrorsQueryParameter != nil {
+	if o.StatisticsDeviceReceiveRawErrors != nil {
 
 		// query param statistics.device.receive_raw.errors
 		var qrStatisticsDeviceReceiveRawErrors int64
 
-		if o.StatisticsDeviceReceiveRawErrorsQueryParameter != nil {
-			qrStatisticsDeviceReceiveRawErrors = *o.StatisticsDeviceReceiveRawErrorsQueryParameter
+		if o.StatisticsDeviceReceiveRawErrors != nil {
+			qrStatisticsDeviceReceiveRawErrors = *o.StatisticsDeviceReceiveRawErrors
 		}
 		qStatisticsDeviceReceiveRawErrors := swag.FormatInt64(qrStatisticsDeviceReceiveRawErrors)
 		if qStatisticsDeviceReceiveRawErrors != "" {
@@ -2067,13 +2067,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceReceiveRawPacketsQueryParameter != nil {
+	if o.StatisticsDeviceReceiveRawPackets != nil {
 
 		// query param statistics.device.receive_raw.packets
 		var qrStatisticsDeviceReceiveRawPackets int64
 
-		if o.StatisticsDeviceReceiveRawPacketsQueryParameter != nil {
-			qrStatisticsDeviceReceiveRawPackets = *o.StatisticsDeviceReceiveRawPacketsQueryParameter
+		if o.StatisticsDeviceReceiveRawPackets != nil {
+			qrStatisticsDeviceReceiveRawPackets = *o.StatisticsDeviceReceiveRawPackets
 		}
 		qStatisticsDeviceReceiveRawPackets := swag.FormatInt64(qrStatisticsDeviceReceiveRawPackets)
 		if qStatisticsDeviceReceiveRawPackets != "" {
@@ -2084,13 +2084,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceTimestampQueryParameter != nil {
+	if o.StatisticsDeviceTimestamp != nil {
 
 		// query param statistics.device.timestamp
 		var qrStatisticsDeviceTimestamp string
 
-		if o.StatisticsDeviceTimestampQueryParameter != nil {
-			qrStatisticsDeviceTimestamp = *o.StatisticsDeviceTimestampQueryParameter
+		if o.StatisticsDeviceTimestamp != nil {
+			qrStatisticsDeviceTimestamp = *o.StatisticsDeviceTimestamp
 		}
 		qStatisticsDeviceTimestamp := qrStatisticsDeviceTimestamp
 		if qStatisticsDeviceTimestamp != "" {
@@ -2101,13 +2101,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceTransmitRawDiscardsQueryParameter != nil {
+	if o.StatisticsDeviceTransmitRawDiscards != nil {
 
 		// query param statistics.device.transmit_raw.discards
 		var qrStatisticsDeviceTransmitRawDiscards int64
 
-		if o.StatisticsDeviceTransmitRawDiscardsQueryParameter != nil {
-			qrStatisticsDeviceTransmitRawDiscards = *o.StatisticsDeviceTransmitRawDiscardsQueryParameter
+		if o.StatisticsDeviceTransmitRawDiscards != nil {
+			qrStatisticsDeviceTransmitRawDiscards = *o.StatisticsDeviceTransmitRawDiscards
 		}
 		qStatisticsDeviceTransmitRawDiscards := swag.FormatInt64(qrStatisticsDeviceTransmitRawDiscards)
 		if qStatisticsDeviceTransmitRawDiscards != "" {
@@ -2118,13 +2118,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceTransmitRawErrorsQueryParameter != nil {
+	if o.StatisticsDeviceTransmitRawErrors != nil {
 
 		// query param statistics.device.transmit_raw.errors
 		var qrStatisticsDeviceTransmitRawErrors int64
 
-		if o.StatisticsDeviceTransmitRawErrorsQueryParameter != nil {
-			qrStatisticsDeviceTransmitRawErrors = *o.StatisticsDeviceTransmitRawErrorsQueryParameter
+		if o.StatisticsDeviceTransmitRawErrors != nil {
+			qrStatisticsDeviceTransmitRawErrors = *o.StatisticsDeviceTransmitRawErrors
 		}
 		qStatisticsDeviceTransmitRawErrors := swag.FormatInt64(qrStatisticsDeviceTransmitRawErrors)
 		if qStatisticsDeviceTransmitRawErrors != "" {
@@ -2135,13 +2135,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsDeviceTransmitRawPacketsQueryParameter != nil {
+	if o.StatisticsDeviceTransmitRawPackets != nil {
 
 		// query param statistics.device.transmit_raw.packets
 		var qrStatisticsDeviceTransmitRawPackets int64
 
-		if o.StatisticsDeviceTransmitRawPacketsQueryParameter != nil {
-			qrStatisticsDeviceTransmitRawPackets = *o.StatisticsDeviceTransmitRawPacketsQueryParameter
+		if o.StatisticsDeviceTransmitRawPackets != nil {
+			qrStatisticsDeviceTransmitRawPackets = *o.StatisticsDeviceTransmitRawPackets
 		}
 		qStatisticsDeviceTransmitRawPackets := swag.FormatInt64(qrStatisticsDeviceTransmitRawPackets)
 		if qStatisticsDeviceTransmitRawPackets != "" {
@@ -2152,13 +2152,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -2169,13 +2169,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -2186,13 +2186,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -2203,13 +2203,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -2220,13 +2220,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -2237,13 +2237,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -2254,13 +2254,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -2271,13 +2271,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VlanBasePortNameQueryParameter != nil {
+	if o.VlanBasePortName != nil {
 
 		// query param vlan.base_port.name
 		var qrVlanBasePortName string
 
-		if o.VlanBasePortNameQueryParameter != nil {
-			qrVlanBasePortName = *o.VlanBasePortNameQueryParameter
+		if o.VlanBasePortName != nil {
+			qrVlanBasePortName = *o.VlanBasePortName
 		}
 		qVlanBasePortName := qrVlanBasePortName
 		if qVlanBasePortName != "" {
@@ -2288,13 +2288,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VlanBasePortNodeNameQueryParameter != nil {
+	if o.VlanBasePortNodeName != nil {
 
 		// query param vlan.base_port.node.name
 		var qrVlanBasePortNodeName string
 
-		if o.VlanBasePortNodeNameQueryParameter != nil {
-			qrVlanBasePortNodeName = *o.VlanBasePortNodeNameQueryParameter
+		if o.VlanBasePortNodeName != nil {
+			qrVlanBasePortNodeName = *o.VlanBasePortNodeName
 		}
 		qVlanBasePortNodeName := qrVlanBasePortNodeName
 		if qVlanBasePortNodeName != "" {
@@ -2305,13 +2305,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VlanBasePortUUIDQueryParameter != nil {
+	if o.VlanBasePortUUID != nil {
 
 		// query param vlan.base_port.uuid
 		var qrVlanBasePortUUID string
 
-		if o.VlanBasePortUUIDQueryParameter != nil {
-			qrVlanBasePortUUID = *o.VlanBasePortUUIDQueryParameter
+		if o.VlanBasePortUUID != nil {
+			qrVlanBasePortUUID = *o.VlanBasePortUUID
 		}
 		qVlanBasePortUUID := qrVlanBasePortUUID
 		if qVlanBasePortUUID != "" {
@@ -2322,13 +2322,13 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VlanTagQueryParameter != nil {
+	if o.VlanTag != nil {
 
 		// query param vlan.tag
 		var qrVlanTag int64
 
-		if o.VlanTagQueryParameter != nil {
-			qrVlanTag = *o.VlanTagQueryParameter
+		if o.VlanTag != nil {
+			qrVlanTag = *o.VlanTag
 		}
 		qVlanTag := swag.FormatInt64(qrVlanTag)
 		if qVlanTag != "" {
@@ -2347,7 +2347,7 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamNetworkEthernetPortsGet binds the parameter fields
 func (o *NetworkEthernetPortsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2364,7 +2364,7 @@ func (o *NetworkEthernetPortsGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamNetworkEthernetPortsGet binds the parameter order_by
 func (o *NetworkEthernetPortsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

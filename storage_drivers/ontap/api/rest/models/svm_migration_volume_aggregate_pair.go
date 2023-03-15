@@ -19,10 +19,10 @@ import (
 type SvmMigrationVolumeAggregatePair struct {
 
 	// aggregate
-	Aggregate *SvmMigrationVolumeAggregatePairAggregate `json:"aggregate,omitempty"`
+	Aggregate *SvmMigrationVolumeAggregatePairInlineAggregate `json:"aggregate,omitempty"`
 
 	// volume
-	Volume *SvmMigrationVolumeAggregatePairVolume `json:"volume,omitempty"`
+	Volume *SvmMigrationVolumeAggregatePairInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this svm migration volume aggregate pair
@@ -141,25 +141,25 @@ func (m *SvmMigrationVolumeAggregatePair) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationVolumeAggregatePairAggregate Aggregate to use for volume creation.
+// SvmMigrationVolumeAggregatePairInlineAggregate Aggregate to use for volume creation.
 //
-// swagger:model SvmMigrationVolumeAggregatePairAggregate
-type SvmMigrationVolumeAggregatePairAggregate struct {
+// swagger:model svm_migration_volume_aggregate_pair_inline_aggregate
+type SvmMigrationVolumeAggregatePairInlineAggregate struct {
 
 	// links
-	Links *SvmMigrationVolumeAggregatePairAggregateLinks `json:"_links,omitempty"`
+	Links *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration volume aggregate pair aggregate
-func (m *SvmMigrationVolumeAggregatePairAggregate) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration volume aggregate pair inline aggregate
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -172,7 +172,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairAggregate) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -189,8 +189,8 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) validateLinks(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this svm migration volume aggregate pair aggregate based on the context it is used
-func (m *SvmMigrationVolumeAggregatePairAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration volume aggregate pair inline aggregate based on the context it is used
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -203,7 +203,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) contextValidateLinks(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairAggregate) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -226,8 +226,8 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairAggregate) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationVolumeAggregatePairAggregate
+func (m *SvmMigrationVolumeAggregatePairInlineAggregate) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationVolumeAggregatePairInlineAggregate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -235,17 +235,17 @@ func (m *SvmMigrationVolumeAggregatePairAggregate) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// SvmMigrationVolumeAggregatePairAggregateLinks svm migration volume aggregate pair aggregate links
+// SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks svm migration volume aggregate pair inline aggregate inline links
 //
-// swagger:model SvmMigrationVolumeAggregatePairAggregateLinks
-type SvmMigrationVolumeAggregatePairAggregateLinks struct {
+// swagger:model svm_migration_volume_aggregate_pair_inline_aggregate_inline__links
+type SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration volume aggregate pair aggregate links
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration volume aggregate pair inline aggregate inline links
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -258,7 +258,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) Validate(formats strfmt.
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -275,8 +275,8 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) validateSelf(formats str
 	return nil
 }
 
-// ContextValidate validate this svm migration volume aggregate pair aggregate links based on the context it is used
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration volume aggregate pair inline aggregate inline links based on the context it is used
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -289,7 +289,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -304,7 +304,7 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) contextValidateSelf(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -312,8 +312,8 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairAggregateLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationVolumeAggregatePairAggregateLinks
+func (m *SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationVolumeAggregatePairInlineAggregateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -321,25 +321,25 @@ func (m *SvmMigrationVolumeAggregatePairAggregateLinks) UnmarshalBinary(b []byte
 	return nil
 }
 
-// SvmMigrationVolumeAggregatePairVolume Property indicating the source volume.
+// SvmMigrationVolumeAggregatePairInlineVolume Property indicating the source volume.
 //
-// swagger:model SvmMigrationVolumeAggregatePairVolume
-type SvmMigrationVolumeAggregatePairVolume struct {
+// swagger:model svm_migration_volume_aggregate_pair_inline_volume
+type SvmMigrationVolumeAggregatePairInlineVolume struct {
 
 	// links
-	Links *SvmMigrationVolumeAggregatePairVolumeLinks `json:"_links,omitempty"`
+	Links *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration volume aggregate pair volume
-func (m *SvmMigrationVolumeAggregatePairVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration volume aggregate pair inline volume
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -352,7 +352,7 @@ func (m *SvmMigrationVolumeAggregatePairVolume) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -369,8 +369,8 @@ func (m *SvmMigrationVolumeAggregatePairVolume) validateLinks(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this svm migration volume aggregate pair volume based on the context it is used
-func (m *SvmMigrationVolumeAggregatePairVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration volume aggregate pair inline volume based on the context it is used
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *SvmMigrationVolumeAggregatePairVolume) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *SvmMigrationVolumeAggregatePairVolume) contextValidateLinks(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairVolume) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -406,8 +406,8 @@ func (m *SvmMigrationVolumeAggregatePairVolume) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairVolume) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationVolumeAggregatePairVolume
+func (m *SvmMigrationVolumeAggregatePairInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationVolumeAggregatePairInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -415,17 +415,17 @@ func (m *SvmMigrationVolumeAggregatePairVolume) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// SvmMigrationVolumeAggregatePairVolumeLinks svm migration volume aggregate pair volume links
+// SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks svm migration volume aggregate pair inline volume inline links
 //
-// swagger:model SvmMigrationVolumeAggregatePairVolumeLinks
-type SvmMigrationVolumeAggregatePairVolumeLinks struct {
+// swagger:model svm_migration_volume_aggregate_pair_inline_volume_inline__links
+type SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration volume aggregate pair volume links
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration volume aggregate pair inline volume inline links
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -438,7 +438,7 @@ func (m *SvmMigrationVolumeAggregatePairVolumeLinks) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -455,8 +455,8 @@ func (m *SvmMigrationVolumeAggregatePairVolumeLinks) validateSelf(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this svm migration volume aggregate pair volume links based on the context it is used
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration volume aggregate pair inline volume inline links based on the context it is used
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -469,7 +469,7 @@ func (m *SvmMigrationVolumeAggregatePairVolumeLinks) ContextValidate(ctx context
 	return nil
 }
 
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -484,7 +484,7 @@ func (m *SvmMigrationVolumeAggregatePairVolumeLinks) contextValidateSelf(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -492,8 +492,8 @@ func (m *SvmMigrationVolumeAggregatePairVolumeLinks) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationVolumeAggregatePairVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationVolumeAggregatePairVolumeLinks
+func (m *SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationVolumeAggregatePairInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

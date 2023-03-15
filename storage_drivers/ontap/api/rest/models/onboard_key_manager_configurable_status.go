@@ -19,14 +19,14 @@ type OnboardKeyManagerConfigurableStatus struct {
 
 	// Code corresponding to the status message. Returns a 0 if the Onboard Key Manager can be configured in the cluster.
 	// Example: 65537300
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Reason that Onboard Key Manager cannot be configured in the cluster.
 	// Example: No platform support for volume encryption in following nodes - node1, node2.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Set to true if the Onboard Key Manager can be configured in the cluster.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
 // Validate validates this onboard key manager configurable status

@@ -52,6 +52,11 @@ SnapmirrorRelationshipCreateAccepted describes a response with status code 202, 
 Accepted
 */
 type SnapmirrorRelationshipCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -94,6 +99,13 @@ func (o *SnapmirrorRelationshipCreateAccepted) GetPayload() *models.JobLinkRespo
 
 func (o *SnapmirrorRelationshipCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.JobLinkResponse)
 
 	// response payload
@@ -124,6 +136,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 1115548 | Access token is malformed. |
 | 1115549 | Internal error. Failed to validate access token. |
 | 6619637 | Relationship with specified destination volume already exists. |
+| 6619699 | Schedule not found. |
 | 6620374 | Internal error. Failed to get SVM information. |
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
 | 6621834 | Object store configuration does not exist for specified vserver. |
@@ -211,6 +224,9 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13304080 | Specified UUID and name do not match. |
 | 13304082 | Specified properties are mutually exclusive. |
 | 13304083 | The specified property is not supported because all nodes in the cluster are not capable of supporting the property.<private> |
+| 13304098 | This SnapMirror policy is not supported for SnapMirror relationhips with SnapLock volumes. |
+| 13304099 | SnapLock Compliance Clock is not running on all nodes in the destination cluster. |
+| 13304108 | Schedule not found in the Administrative SVM or the SVM for the relationship. |
 */
 type SnapmirrorRelationshipCreateDefault struct {
 	_statusCode int

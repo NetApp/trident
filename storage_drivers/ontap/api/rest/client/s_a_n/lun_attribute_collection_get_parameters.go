@@ -66,32 +66,32 @@ type LunAttributeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LunUUID.
 
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -99,7 +99,7 @@ type LunAttributeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -107,13 +107,13 @@ type LunAttributeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Value.
 
 	   Filter by value
 	*/
-	ValueQueryParameter *string
+	Value *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,14 +133,14 @@ func (o *LunAttributeCollectionGetParams) WithDefaults() *LunAttributeCollection
 // All values with no default are reset to their zero value.
 func (o *LunAttributeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LunAttributeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -182,92 +182,92 @@ func (o *LunAttributeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithFieldsQueryParameter(fields []string) *LunAttributeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithFields(fields []string) *LunAttributeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithLunUUIDPathParameter(lunUUID string) *LunAttributeCollectionGetParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithLunUUID(lunUUID string) *LunAttributeCollectionGetParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LunAttributeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithMaxRecords(maxRecords *int64) *LunAttributeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithNameQueryParameter(name *string) *LunAttributeCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithName(name *string) *LunAttributeCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LunAttributeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithOrderBy(orderBy []string) *LunAttributeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunAttributeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithReturnRecords(returnRecords *bool) *LunAttributeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LunAttributeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LunAttributeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithValueQueryParameter adds the value to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) WithValueQueryParameter(value *string) *LunAttributeCollectionGetParams {
-	o.SetValueQueryParameter(value)
+// WithValue adds the value to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) WithValue(value *string) *LunAttributeCollectionGetParams {
+	o.SetValue(value)
 	return o
 }
 
-// SetValueQueryParameter adds the value to the lun attribute collection get params
-func (o *LunAttributeCollectionGetParams) SetValueQueryParameter(value *string) {
-	o.ValueQueryParameter = value
+// SetValue adds the value to the lun attribute collection get params
+func (o *LunAttributeCollectionGetParams) SetValue(value *string) {
+	o.Value = value
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -278,7 +278,7 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -290,17 +290,17 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -311,13 +311,13 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -328,7 +328,7 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -339,13 +339,13 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -356,13 +356,13 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -373,13 +373,13 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ValueQueryParameter != nil {
+	if o.Value != nil {
 
 		// query param value
 		var qrValue string
 
-		if o.ValueQueryParameter != nil {
-			qrValue = *o.ValueQueryParameter
+		if o.Value != nil {
+			qrValue = *o.Value
 		}
 		qValue := qrValue
 		if qValue != "" {
@@ -398,7 +398,7 @@ func (o *LunAttributeCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamLunAttributeCollectionGet binds the parameter fields
 func (o *LunAttributeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -415,7 +415,7 @@ func (o *LunAttributeCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamLunAttributeCollectionGet binds the parameter order_by
 func (o *LunAttributeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,16 +66,16 @@ type VscanScannerPoolGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -130,37 +130,37 @@ func (o *VscanScannerPoolGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) WithFieldsQueryParameter(fields []string) *VscanScannerPoolGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) WithFields(fields []string) *VscanScannerPoolGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) WithNamePathParameter(name string) *VscanScannerPoolGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) WithName(name string) *VscanScannerPoolGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanScannerPoolGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) WithSvmUUID(svmUUID string) *VscanScannerPoolGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan scanner pool get params
-func (o *VscanScannerPoolGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan scanner pool get params
+func (o *VscanScannerPoolGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -171,7 +171,7 @@ func (o *VscanScannerPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -183,12 +183,12 @@ func (o *VscanScannerPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (o *VscanScannerPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamVscanScannerPoolGet binds the parameter fields
 func (o *VscanScannerPoolGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

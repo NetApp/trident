@@ -20,13 +20,14 @@ import (
 type LoginMessagesResponse struct {
 
 	// links
-	Links *LoginMessagesResponseLinks `json:"_links,omitempty"`
+	Links *LoginMessagesResponseInlineLinks `json:"_links,omitempty"`
+
+	// login messages response inline records
+	LoginMessagesResponseInlineRecords []*LoginMessages `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*LoginMessages `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this login messages response
@@ -37,7 +38,7 @@ func (m *LoginMessagesResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateLoginMessagesResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *LoginMessagesResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LoginMessagesResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *LoginMessagesResponse) validateLoginMessagesResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.LoginMessagesResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.LoginMessagesResponseInlineRecords); i++ {
+		if swag.IsZero(m.LoginMessagesResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.LoginMessagesResponseInlineRecords[i] != nil {
+			if err := m.LoginMessagesResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *LoginMessagesResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateLoginMessagesResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *LoginMessagesResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *LoginMessagesResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesResponse) contextValidateLoginMessagesResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.LoginMessagesResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.LoginMessagesResponseInlineRecords[i] != nil {
+			if err := m.LoginMessagesResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *LoginMessagesResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LoginMessagesResponseLinks login messages response links
+// LoginMessagesResponseInlineLinks login messages response inline links
 //
-// swagger:model LoginMessagesResponseLinks
-type LoginMessagesResponseLinks struct {
+// swagger:model login_messages_response_inline__links
+type LoginMessagesResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type LoginMessagesResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this login messages response links
-func (m *LoginMessagesResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this login messages response inline links
+func (m *LoginMessagesResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *LoginMessagesResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LoginMessagesResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *LoginMessagesResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *LoginMessagesResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *LoginMessagesResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LoginMessagesResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *LoginMessagesResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this login messages response links based on the context it is used
-func (m *LoginMessagesResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this login messages response inline links based on the context it is used
+func (m *LoginMessagesResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *LoginMessagesResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *LoginMessagesResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *LoginMessagesResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *LoginMessagesResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *LoginMessagesResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *LoginMessagesResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *LoginMessagesResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *LoginMessagesResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LoginMessagesResponseLinks) UnmarshalBinary(b []byte) error {
-	var res LoginMessagesResponseLinks
+func (m *LoginMessagesResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LoginMessagesResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

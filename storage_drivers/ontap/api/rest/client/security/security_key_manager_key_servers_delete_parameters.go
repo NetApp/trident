@@ -67,19 +67,19 @@ type SecurityKeyManagerKeyServersDeleteParams struct {
 	   Set the force flag to "true" to bypass out of quorum checks when removing a primary key server.
 
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* Server.
 
 	   Primary key server configured in the external key manager.
 	*/
-	ServerPathParameter string
+	Server string
 
 	/* UUID.
 
 	   External key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -99,11 +99,11 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) WithDefaults() *SecurityKeyMa
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerKeyServersDeleteParams) SetDefaults() {
 	var (
-		forceQueryParameterDefault = bool(false)
+		forceDefault = bool(false)
 	)
 
 	val := SecurityKeyManagerKeyServersDeleteParams{
-		ForceQueryParameter: &forceQueryParameterDefault,
+		Force: &forceDefault,
 	}
 
 	val.timeout = o.timeout
@@ -145,37 +145,37 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithForceQueryParameter adds the force to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) WithForceQueryParameter(force *bool) *SecurityKeyManagerKeyServersDeleteParams {
-	o.SetForceQueryParameter(force)
+// WithForce adds the force to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) WithForce(force *bool) *SecurityKeyManagerKeyServersDeleteParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetForce adds the force to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) SetForce(force *bool) {
+	o.Force = force
 }
 
-// WithServerPathParameter adds the server to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) WithServerPathParameter(server string) *SecurityKeyManagerKeyServersDeleteParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) WithServer(server string) *SecurityKeyManagerKeyServersDeleteParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) SetServer(server string) {
+	o.Server = server
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerKeyServersDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) WithUUID(uuid string) *SecurityKeyManagerKeyServersDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager key servers delete params
-func (o *SecurityKeyManagerKeyServersDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,13 +186,13 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.ForceQueryParameter != nil {
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -204,12 +204,12 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

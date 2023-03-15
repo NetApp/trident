@@ -66,25 +66,25 @@ type EmsFilterCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type EmsFilterCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,43 +100,43 @@ type EmsFilterCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* RulesIndex.
 
 	   Filter by rules.index
 	*/
-	RulesIndexQueryParameter *int64
+	RulesIndex *int64
 
 	/* RulesMessageCriteriaNamePattern.
 
 	   Filter by rules.message_criteria.name_pattern
 	*/
-	RulesMessageCriteriaNamePatternQueryParameter *string
+	RulesMessageCriteriaNamePattern *string
 
 	/* RulesMessageCriteriaSeverities.
 
 	   Filter by rules.message_criteria.severities
 	*/
-	RulesMessageCriteriaSeveritiesQueryParameter *string
+	RulesMessageCriteriaSeverities *string
 
 	/* RulesMessageCriteriaSnmpTrapTypes.
 
 	   Filter by rules.message_criteria.snmp_trap_types
 	*/
-	RulesMessageCriteriaSnmpTrapTypesQueryParameter *string
+	RulesMessageCriteriaSnmpTrapTypes *string
 
 	/* RulesType.
 
 	   Filter by rules.type
 	*/
-	RulesTypeQueryParameter *string
+	RulesType *string
 
 	/* SystemDefined.
 
 	   Filter by system_defined
 	*/
-	SystemDefinedQueryParameter *bool
+	SystemDefined *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *EmsFilterCollectionGetParams) WithDefaults() *EmsFilterCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *EmsFilterCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := EmsFilterCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *EmsFilterCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithFieldsQueryParameter(fields []string) *EmsFilterCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithFields(fields []string) *EmsFilterCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *EmsFilterCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithMaxRecords(maxRecords *int64) *EmsFilterCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithNameQueryParameter(name *string) *EmsFilterCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithName(name *string) *EmsFilterCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *EmsFilterCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithOrderBy(orderBy []string) *EmsFilterCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *EmsFilterCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithReturnRecords(returnRecords *bool) *EmsFilterCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *EmsFilterCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *EmsFilterCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithRulesIndexQueryParameter adds the rulesIndex to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithRulesIndexQueryParameter(rulesIndex *int64) *EmsFilterCollectionGetParams {
-	o.SetRulesIndexQueryParameter(rulesIndex)
+// WithRulesIndex adds the rulesIndex to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesIndex(rulesIndex *int64) *EmsFilterCollectionGetParams {
+	o.SetRulesIndex(rulesIndex)
 	return o
 }
 
-// SetRulesIndexQueryParameter adds the rulesIndex to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetRulesIndexQueryParameter(rulesIndex *int64) {
-	o.RulesIndexQueryParameter = rulesIndex
+// SetRulesIndex adds the rulesIndex to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesIndex(rulesIndex *int64) {
+	o.RulesIndex = rulesIndex
 }
 
-// WithRulesMessageCriteriaNamePatternQueryParameter adds the rulesMessageCriteriaNamePattern to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaNamePatternQueryParameter(rulesMessageCriteriaNamePattern *string) *EmsFilterCollectionGetParams {
-	o.SetRulesMessageCriteriaNamePatternQueryParameter(rulesMessageCriteriaNamePattern)
+// WithRulesMessageCriteriaNamePattern adds the rulesMessageCriteriaNamePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaNamePattern(rulesMessageCriteriaNamePattern *string) *EmsFilterCollectionGetParams {
+	o.SetRulesMessageCriteriaNamePattern(rulesMessageCriteriaNamePattern)
 	return o
 }
 
-// SetRulesMessageCriteriaNamePatternQueryParameter adds the rulesMessageCriteriaNamePattern to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaNamePatternQueryParameter(rulesMessageCriteriaNamePattern *string) {
-	o.RulesMessageCriteriaNamePatternQueryParameter = rulesMessageCriteriaNamePattern
+// SetRulesMessageCriteriaNamePattern adds the rulesMessageCriteriaNamePattern to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaNamePattern(rulesMessageCriteriaNamePattern *string) {
+	o.RulesMessageCriteriaNamePattern = rulesMessageCriteriaNamePattern
 }
 
-// WithRulesMessageCriteriaSeveritiesQueryParameter adds the rulesMessageCriteriaSeverities to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaSeveritiesQueryParameter(rulesMessageCriteriaSeverities *string) *EmsFilterCollectionGetParams {
-	o.SetRulesMessageCriteriaSeveritiesQueryParameter(rulesMessageCriteriaSeverities)
+// WithRulesMessageCriteriaSeverities adds the rulesMessageCriteriaSeverities to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaSeverities(rulesMessageCriteriaSeverities *string) *EmsFilterCollectionGetParams {
+	o.SetRulesMessageCriteriaSeverities(rulesMessageCriteriaSeverities)
 	return o
 }
 
-// SetRulesMessageCriteriaSeveritiesQueryParameter adds the rulesMessageCriteriaSeverities to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaSeveritiesQueryParameter(rulesMessageCriteriaSeverities *string) {
-	o.RulesMessageCriteriaSeveritiesQueryParameter = rulesMessageCriteriaSeverities
+// SetRulesMessageCriteriaSeverities adds the rulesMessageCriteriaSeverities to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaSeverities(rulesMessageCriteriaSeverities *string) {
+	o.RulesMessageCriteriaSeverities = rulesMessageCriteriaSeverities
 }
 
-// WithRulesMessageCriteriaSnmpTrapTypesQueryParameter adds the rulesMessageCriteriaSnmpTrapTypes to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaSnmpTrapTypesQueryParameter(rulesMessageCriteriaSnmpTrapTypes *string) *EmsFilterCollectionGetParams {
-	o.SetRulesMessageCriteriaSnmpTrapTypesQueryParameter(rulesMessageCriteriaSnmpTrapTypes)
+// WithRulesMessageCriteriaSnmpTrapTypes adds the rulesMessageCriteriaSnmpTrapTypes to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesMessageCriteriaSnmpTrapTypes(rulesMessageCriteriaSnmpTrapTypes *string) *EmsFilterCollectionGetParams {
+	o.SetRulesMessageCriteriaSnmpTrapTypes(rulesMessageCriteriaSnmpTrapTypes)
 	return o
 }
 
-// SetRulesMessageCriteriaSnmpTrapTypesQueryParameter adds the rulesMessageCriteriaSnmpTrapTypes to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaSnmpTrapTypesQueryParameter(rulesMessageCriteriaSnmpTrapTypes *string) {
-	o.RulesMessageCriteriaSnmpTrapTypesQueryParameter = rulesMessageCriteriaSnmpTrapTypes
+// SetRulesMessageCriteriaSnmpTrapTypes adds the rulesMessageCriteriaSnmpTrapTypes to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesMessageCriteriaSnmpTrapTypes(rulesMessageCriteriaSnmpTrapTypes *string) {
+	o.RulesMessageCriteriaSnmpTrapTypes = rulesMessageCriteriaSnmpTrapTypes
 }
 
-// WithRulesTypeQueryParameter adds the rulesType to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithRulesTypeQueryParameter(rulesType *string) *EmsFilterCollectionGetParams {
-	o.SetRulesTypeQueryParameter(rulesType)
+// WithRulesType adds the rulesType to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithRulesType(rulesType *string) *EmsFilterCollectionGetParams {
+	o.SetRulesType(rulesType)
 	return o
 }
 
-// SetRulesTypeQueryParameter adds the rulesType to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetRulesTypeQueryParameter(rulesType *string) {
-	o.RulesTypeQueryParameter = rulesType
+// SetRulesType adds the rulesType to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetRulesType(rulesType *string) {
+	o.RulesType = rulesType
 }
 
-// WithSystemDefinedQueryParameter adds the systemDefined to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) WithSystemDefinedQueryParameter(systemDefined *bool) *EmsFilterCollectionGetParams {
-	o.SetSystemDefinedQueryParameter(systemDefined)
+// WithSystemDefined adds the systemDefined to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithSystemDefined(systemDefined *bool) *EmsFilterCollectionGetParams {
+	o.SetSystemDefined(systemDefined)
 	return o
 }
 
-// SetSystemDefinedQueryParameter adds the systemDefined to the ems filter collection get params
-func (o *EmsFilterCollectionGetParams) SetSystemDefinedQueryParameter(systemDefined *bool) {
-	o.SystemDefinedQueryParameter = systemDefined
+// SetSystemDefined adds the systemDefined to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetSystemDefined(systemDefined *bool) {
+	o.SystemDefined = systemDefined
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,7 +345,7 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -373,13 +373,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -390,7 +390,7 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +401,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -418,13 +418,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -435,13 +435,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RulesIndexQueryParameter != nil {
+	if o.RulesIndex != nil {
 
 		// query param rules.index
 		var qrRulesIndex int64
 
-		if o.RulesIndexQueryParameter != nil {
-			qrRulesIndex = *o.RulesIndexQueryParameter
+		if o.RulesIndex != nil {
+			qrRulesIndex = *o.RulesIndex
 		}
 		qRulesIndex := swag.FormatInt64(qrRulesIndex)
 		if qRulesIndex != "" {
@@ -452,13 +452,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RulesMessageCriteriaNamePatternQueryParameter != nil {
+	if o.RulesMessageCriteriaNamePattern != nil {
 
 		// query param rules.message_criteria.name_pattern
 		var qrRulesMessageCriteriaNamePattern string
 
-		if o.RulesMessageCriteriaNamePatternQueryParameter != nil {
-			qrRulesMessageCriteriaNamePattern = *o.RulesMessageCriteriaNamePatternQueryParameter
+		if o.RulesMessageCriteriaNamePattern != nil {
+			qrRulesMessageCriteriaNamePattern = *o.RulesMessageCriteriaNamePattern
 		}
 		qRulesMessageCriteriaNamePattern := qrRulesMessageCriteriaNamePattern
 		if qRulesMessageCriteriaNamePattern != "" {
@@ -469,13 +469,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RulesMessageCriteriaSeveritiesQueryParameter != nil {
+	if o.RulesMessageCriteriaSeverities != nil {
 
 		// query param rules.message_criteria.severities
 		var qrRulesMessageCriteriaSeverities string
 
-		if o.RulesMessageCriteriaSeveritiesQueryParameter != nil {
-			qrRulesMessageCriteriaSeverities = *o.RulesMessageCriteriaSeveritiesQueryParameter
+		if o.RulesMessageCriteriaSeverities != nil {
+			qrRulesMessageCriteriaSeverities = *o.RulesMessageCriteriaSeverities
 		}
 		qRulesMessageCriteriaSeverities := qrRulesMessageCriteriaSeverities
 		if qRulesMessageCriteriaSeverities != "" {
@@ -486,13 +486,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RulesMessageCriteriaSnmpTrapTypesQueryParameter != nil {
+	if o.RulesMessageCriteriaSnmpTrapTypes != nil {
 
 		// query param rules.message_criteria.snmp_trap_types
 		var qrRulesMessageCriteriaSnmpTrapTypes string
 
-		if o.RulesMessageCriteriaSnmpTrapTypesQueryParameter != nil {
-			qrRulesMessageCriteriaSnmpTrapTypes = *o.RulesMessageCriteriaSnmpTrapTypesQueryParameter
+		if o.RulesMessageCriteriaSnmpTrapTypes != nil {
+			qrRulesMessageCriteriaSnmpTrapTypes = *o.RulesMessageCriteriaSnmpTrapTypes
 		}
 		qRulesMessageCriteriaSnmpTrapTypes := qrRulesMessageCriteriaSnmpTrapTypes
 		if qRulesMessageCriteriaSnmpTrapTypes != "" {
@@ -503,13 +503,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RulesTypeQueryParameter != nil {
+	if o.RulesType != nil {
 
 		// query param rules.type
 		var qrRulesType string
 
-		if o.RulesTypeQueryParameter != nil {
-			qrRulesType = *o.RulesTypeQueryParameter
+		if o.RulesType != nil {
+			qrRulesType = *o.RulesType
 		}
 		qRulesType := qrRulesType
 		if qRulesType != "" {
@@ -520,13 +520,13 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SystemDefinedQueryParameter != nil {
+	if o.SystemDefined != nil {
 
 		// query param system_defined
 		var qrSystemDefined bool
 
-		if o.SystemDefinedQueryParameter != nil {
-			qrSystemDefined = *o.SystemDefinedQueryParameter
+		if o.SystemDefined != nil {
+			qrSystemDefined = *o.SystemDefined
 		}
 		qSystemDefined := swag.FormatBool(qrSystemDefined)
 		if qSystemDefined != "" {
@@ -545,7 +545,7 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamEmsFilterCollectionGet binds the parameter fields
 func (o *EmsFilterCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *EmsFilterCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamEmsFilterCollectionGet binds the parameter order_by
 func (o *EmsFilterCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

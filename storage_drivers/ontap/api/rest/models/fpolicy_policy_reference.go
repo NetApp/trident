@@ -25,7 +25,7 @@ type FpolicyPolicyReference struct {
 
 	// The name of the FPolicy Policy name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this fpolicy policy reference
@@ -93,7 +93,7 @@ func (m *FpolicyPolicyReference) contextValidateLinks(ctx context.Context, forma
 
 func (m *FpolicyPolicyReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 

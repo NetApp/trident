@@ -27,7 +27,7 @@ type PoolHealth struct {
 	// The state of the shared storage pool.
 	// Read Only: true
 	// Enum: [normal degraded creating deleting reassigning growing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Indicates why the storage pool is unhealthy. This property is not returned for healthy storage pools.
 	// Read Only: true
@@ -141,7 +141,7 @@ func (m *PoolHealth) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -198,7 +198,7 @@ func (m *PoolHealth) contextValidateIsHealthy(ctx context.Context, formats strfm
 
 func (m *PoolHealth) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 

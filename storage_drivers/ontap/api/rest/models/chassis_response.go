@@ -20,13 +20,14 @@ import (
 type ChassisResponse struct {
 
 	// links
-	Links *ChassisResponseLinks `json:"_links,omitempty"`
+	Links *ChassisResponseInlineLinks `json:"_links,omitempty"`
+
+	// chassis response inline records
+	ChassisResponseInlineRecords []*Chassis `json:"records,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Chassis `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this chassis response
@@ -37,7 +38,7 @@ func (m *ChassisResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateChassisResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ChassisResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ChassisResponse) validateChassisResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChassisResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ChassisResponseInlineRecords); i++ {
+		if swag.IsZero(m.ChassisResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ChassisResponseInlineRecords[i] != nil {
+			if err := m.ChassisResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ChassisResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateChassisResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ChassisResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ChassisResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisResponse) contextValidateChassisResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ChassisResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ChassisResponseInlineRecords[i] != nil {
+			if err := m.ChassisResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ChassisResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisResponseLinks chassis response links
+// ChassisResponseInlineLinks chassis response inline links
 //
-// swagger:model ChassisResponseLinks
-type ChassisResponseLinks struct {
+// swagger:model chassis_response_inline__links
+type ChassisResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ChassisResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this chassis response links
-func (m *ChassisResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis response inline links
+func (m *ChassisResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ChassisResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ChassisResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ChassisResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ChassisResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ChassisResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis response links based on the context it is used
-func (m *ChassisResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis response inline links based on the context it is used
+func (m *ChassisResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ChassisResponseLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ChassisResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ChassisResponseLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ChassisResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ChassisResponseLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ChassisResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ChassisResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ChassisResponseLinks
+func (m *ChassisResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ChassisResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

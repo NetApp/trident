@@ -62,113 +62,101 @@ SnapmirrorPoliciesGetParams contains all the parameters to send to the API endpo
 */
 type SnapmirrorPoliciesGetParams struct {
 
-	/* ArchiveAfterDays.
-
-	   Filter by archive.after_days
-	*/
-	ArchiveAfterDaysQueryParameter *int64
-
-	/* ArchiveEnabled.
-
-	   Filter by archive.enabled
-	*/
-	ArchiveEnabledQueryParameter *bool
-
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* CopyAllSourceSnapshots.
 
 	   Filter by copy_all_source_snapshots
 	*/
-	CopyAllSourceSnapshotsQueryParameter *bool
+	CopyAllSourceSnapshots *bool
 
 	/* CopyLatestSourceSnapshot.
 
 	   Filter by copy_latest_source_snapshot
 	*/
-	CopyLatestSourceSnapshotQueryParameter *bool
+	CopyLatestSourceSnapshot *bool
 
 	/* CreateSnapshotOnSource.
 
 	   Filter by create_snapshot_on_source
 	*/
-	CreateSnapshotOnSourceQueryParameter *bool
+	CreateSnapshotOnSource *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IdentityPreservation.
 
 	   Filter by identity_preservation
 	*/
-	IdentityPreservationQueryParameter *string
+	IdentityPreservation *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NetworkCompressionEnabled.
 
 	   Filter by network_compression_enabled
 	*/
-	NetworkCompressionEnabledQueryParameter *bool
+	NetworkCompressionEnabled *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* RetentionCount.
 
 	   Filter by retention.count
 	*/
-	RetentionCountQueryParameter *int64
+	RetentionCount *int64
 
 	/* RetentionCreationScheduleName.
 
 	   Filter by retention.creation_schedule.name
 	*/
-	RetentionCreationScheduleNameQueryParameter *string
+	RetentionCreationScheduleName *string
 
 	/* RetentionCreationScheduleUUID.
 
 	   Filter by retention.creation_schedule.uuid
 	*/
-	RetentionCreationScheduleUUIDQueryParameter *string
+	RetentionCreationScheduleUUID *string
 
 	/* RetentionLabel.
 
 	   Filter by retention.label
 	*/
-	RetentionLabelQueryParameter *string
+	RetentionLabel *string
 
 	/* RetentionPeriod.
 
 	   Filter by retention.period
 	*/
-	RetentionPeriodQueryParameter *string
+	RetentionPeriod *string
 
 	/* RetentionPrefix.
 
 	   Filter by retention.prefix
 	*/
-	RetentionPrefixQueryParameter *string
+	RetentionPrefix *string
 
 	/* ReturnRecords.
 
@@ -176,7 +164,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -184,85 +172,79 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Rpo.
 
 	   Filter by rpo
 	*/
-	RpoQueryParameter *int64
+	Rpo *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
-
-	/* SnapshotLockMode.
-
-	   Filter by snapshot_lock_mode
-	*/
-	SnapshotLockModeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* SyncCommonSnapshotScheduleName.
 
 	   Filter by sync_common_snapshot_schedule.name
 	*/
-	SyncCommonSnapshotScheduleNameQueryParameter *string
+	SyncCommonSnapshotScheduleName *string
 
 	/* SyncCommonSnapshotScheduleUUID.
 
 	   Filter by sync_common_snapshot_schedule.uuid
 	*/
-	SyncCommonSnapshotScheduleUUIDQueryParameter *string
+	SyncCommonSnapshotScheduleUUID *string
 
 	/* SyncType.
 
 	   Filter by sync_type
 	*/
-	SyncTypeQueryParameter *string
+	SyncType *string
 
 	/* Throttle.
 
 	   Filter by throttle
 	*/
-	ThrottleQueryParameter *int64
+	Throttle *int64
 
 	/* TransferScheduleName.
 
 	   Filter by transfer_schedule.name
 	*/
-	TransferScheduleNameQueryParameter *string
+	TransferScheduleName *string
 
 	/* TransferScheduleUUID.
 
 	   Filter by transfer_schedule.uuid
 	*/
-	TransferScheduleUUIDQueryParameter *string
+	TransferScheduleUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -282,14 +264,14 @@ func (o *SnapmirrorPoliciesGetParams) WithDefaults() *SnapmirrorPoliciesGetParam
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorPoliciesGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnapmirrorPoliciesGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -331,367 +313,334 @@ func (o *SnapmirrorPoliciesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithArchiveAfterDaysQueryParameter adds the archiveAfterDays to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithArchiveAfterDaysQueryParameter(archiveAfterDays *int64) *SnapmirrorPoliciesGetParams {
-	o.SetArchiveAfterDaysQueryParameter(archiveAfterDays)
+// WithComment adds the comment to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithComment(comment *string) *SnapmirrorPoliciesGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetArchiveAfterDaysQueryParameter adds the archiveAfterDays to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetArchiveAfterDaysQueryParameter(archiveAfterDays *int64) {
-	o.ArchiveAfterDaysQueryParameter = archiveAfterDays
+// SetComment adds the comment to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithArchiveEnabledQueryParameter adds the archiveEnabled to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithArchiveEnabledQueryParameter(archiveEnabled *bool) *SnapmirrorPoliciesGetParams {
-	o.SetArchiveEnabledQueryParameter(archiveEnabled)
+// WithCopyAllSourceSnapshots adds the copyAllSourceSnapshots to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCopyAllSourceSnapshots(copyAllSourceSnapshots *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCopyAllSourceSnapshots(copyAllSourceSnapshots)
 	return o
 }
 
-// SetArchiveEnabledQueryParameter adds the archiveEnabled to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetArchiveEnabledQueryParameter(archiveEnabled *bool) {
-	o.ArchiveEnabledQueryParameter = archiveEnabled
+// SetCopyAllSourceSnapshots adds the copyAllSourceSnapshots to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCopyAllSourceSnapshots(copyAllSourceSnapshots *bool) {
+	o.CopyAllSourceSnapshots = copyAllSourceSnapshots
 }
 
-// WithCommentQueryParameter adds the comment to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithCommentQueryParameter(comment *string) *SnapmirrorPoliciesGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithCopyLatestSourceSnapshot adds the copyLatestSourceSnapshot to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCopyLatestSourceSnapshot(copyLatestSourceSnapshot *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCopyLatestSourceSnapshot(copyLatestSourceSnapshot)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetCopyLatestSourceSnapshot adds the copyLatestSourceSnapshot to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCopyLatestSourceSnapshot(copyLatestSourceSnapshot *bool) {
+	o.CopyLatestSourceSnapshot = copyLatestSourceSnapshot
 }
 
-// WithCopyAllSourceSnapshotsQueryParameter adds the copyAllSourceSnapshots to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots *bool) *SnapmirrorPoliciesGetParams {
-	o.SetCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots)
+// WithCreateSnapshotOnSource adds the createSnapshotOnSource to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCreateSnapshotOnSource(createSnapshotOnSource *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCreateSnapshotOnSource(createSnapshotOnSource)
 	return o
 }
 
-// SetCopyAllSourceSnapshotsQueryParameter adds the copyAllSourceSnapshots to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots *bool) {
-	o.CopyAllSourceSnapshotsQueryParameter = copyAllSourceSnapshots
+// SetCreateSnapshotOnSource adds the createSnapshotOnSource to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCreateSnapshotOnSource(createSnapshotOnSource *bool) {
+	o.CreateSnapshotOnSource = createSnapshotOnSource
 }
 
-// WithCopyLatestSourceSnapshotQueryParameter adds the copyLatestSourceSnapshot to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot *bool) *SnapmirrorPoliciesGetParams {
-	o.SetCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot)
+// WithFields adds the fields to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithFields(fields []string) *SnapmirrorPoliciesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetCopyLatestSourceSnapshotQueryParameter adds the copyLatestSourceSnapshot to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot *bool) {
-	o.CopyLatestSourceSnapshotQueryParameter = copyLatestSourceSnapshot
+// SetFields adds the fields to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithCreateSnapshotOnSourceQueryParameter adds the createSnapshotOnSource to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource *bool) *SnapmirrorPoliciesGetParams {
-	o.SetCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource)
+// WithIdentityPreservation adds the identityPreservation to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithIdentityPreservation(identityPreservation *string) *SnapmirrorPoliciesGetParams {
+	o.SetIdentityPreservation(identityPreservation)
 	return o
 }
 
-// SetCreateSnapshotOnSourceQueryParameter adds the createSnapshotOnSource to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource *bool) {
-	o.CreateSnapshotOnSourceQueryParameter = createSnapshotOnSource
+// SetIdentityPreservation adds the identityPreservation to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetIdentityPreservation(identityPreservation *string) {
+	o.IdentityPreservation = identityPreservation
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorPoliciesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithMaxRecords adds the maxRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorPoliciesGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetMaxRecords adds the maxRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithIdentityPreservationQueryParameter adds the identityPreservation to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithIdentityPreservationQueryParameter(identityPreservation *string) *SnapmirrorPoliciesGetParams {
-	o.SetIdentityPreservationQueryParameter(identityPreservation)
+// WithName adds the name to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithName(name *string) *SnapmirrorPoliciesGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetIdentityPreservationQueryParameter adds the identityPreservation to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetIdentityPreservationQueryParameter(identityPreservation *string) {
-	o.IdentityPreservationQueryParameter = identityPreservation
+// SetName adds the name to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapmirrorPoliciesGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithNetworkCompressionEnabled adds the networkCompressionEnabled to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithNetworkCompressionEnabled(networkCompressionEnabled *bool) *SnapmirrorPoliciesGetParams {
+	o.SetNetworkCompressionEnabled(networkCompressionEnabled)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetNetworkCompressionEnabled adds the networkCompressionEnabled to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetNetworkCompressionEnabled(networkCompressionEnabled *bool) {
+	o.NetworkCompressionEnabled = networkCompressionEnabled
 }
 
-// WithNameQueryParameter adds the name to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithNameQueryParameter(name *string) *SnapmirrorPoliciesGetParams {
-	o.SetNameQueryParameter(name)
+// WithOrderBy adds the orderBy to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithOrderBy(orderBy []string) *SnapmirrorPoliciesGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetOrderBy adds the orderBy to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithNetworkCompressionEnabledQueryParameter adds the networkCompressionEnabled to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithNetworkCompressionEnabledQueryParameter(networkCompressionEnabled *bool) *SnapmirrorPoliciesGetParams {
-	o.SetNetworkCompressionEnabledQueryParameter(networkCompressionEnabled)
+// WithRetentionCount adds the retentionCount to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionCount(retentionCount *int64) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionCount(retentionCount)
 	return o
 }
 
-// SetNetworkCompressionEnabledQueryParameter adds the networkCompressionEnabled to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetNetworkCompressionEnabledQueryParameter(networkCompressionEnabled *bool) {
-	o.NetworkCompressionEnabledQueryParameter = networkCompressionEnabled
+// SetRetentionCount adds the retentionCount to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionCount(retentionCount *int64) {
+	o.RetentionCount = retentionCount
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithOrderByQueryParameter(orderBy []string) *SnapmirrorPoliciesGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithRetentionCreationScheduleName adds the retentionCreationScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionCreationScheduleName(retentionCreationScheduleName *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionCreationScheduleName(retentionCreationScheduleName)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetRetentionCreationScheduleName adds the retentionCreationScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionCreationScheduleName(retentionCreationScheduleName *string) {
+	o.RetentionCreationScheduleName = retentionCreationScheduleName
 }
 
-// WithRetentionCountQueryParameter adds the retentionCount to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionCountQueryParameter(retentionCount *int64) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionCountQueryParameter(retentionCount)
+// WithRetentionCreationScheduleUUID adds the retentionCreationScheduleUUID to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionCreationScheduleUUID(retentionCreationScheduleUUID *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionCreationScheduleUUID(retentionCreationScheduleUUID)
 	return o
 }
 
-// SetRetentionCountQueryParameter adds the retentionCount to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionCountQueryParameter(retentionCount *int64) {
-	o.RetentionCountQueryParameter = retentionCount
+// SetRetentionCreationScheduleUUID adds the retentionCreationScheduleUuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionCreationScheduleUUID(retentionCreationScheduleUUID *string) {
+	o.RetentionCreationScheduleUUID = retentionCreationScheduleUUID
 }
 
-// WithRetentionCreationScheduleNameQueryParameter adds the retentionCreationScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionCreationScheduleNameQueryParameter(retentionCreationScheduleName *string) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionCreationScheduleNameQueryParameter(retentionCreationScheduleName)
+// WithRetentionLabel adds the retentionLabel to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionLabel(retentionLabel *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionLabel(retentionLabel)
 	return o
 }
 
-// SetRetentionCreationScheduleNameQueryParameter adds the retentionCreationScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionCreationScheduleNameQueryParameter(retentionCreationScheduleName *string) {
-	o.RetentionCreationScheduleNameQueryParameter = retentionCreationScheduleName
+// SetRetentionLabel adds the retentionLabel to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionLabel(retentionLabel *string) {
+	o.RetentionLabel = retentionLabel
 }
 
-// WithRetentionCreationScheduleUUIDQueryParameter adds the retentionCreationScheduleUUID to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionCreationScheduleUUIDQueryParameter(retentionCreationScheduleUUID *string) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionCreationScheduleUUIDQueryParameter(retentionCreationScheduleUUID)
+// WithRetentionPeriod adds the retentionPeriod to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionPeriod(retentionPeriod *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionPeriod(retentionPeriod)
 	return o
 }
 
-// SetRetentionCreationScheduleUUIDQueryParameter adds the retentionCreationScheduleUuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionCreationScheduleUUIDQueryParameter(retentionCreationScheduleUUID *string) {
-	o.RetentionCreationScheduleUUIDQueryParameter = retentionCreationScheduleUUID
+// SetRetentionPeriod adds the retentionPeriod to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionPeriod(retentionPeriod *string) {
+	o.RetentionPeriod = retentionPeriod
 }
 
-// WithRetentionLabelQueryParameter adds the retentionLabel to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionLabelQueryParameter(retentionLabel *string) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionLabelQueryParameter(retentionLabel)
+// WithRetentionPrefix adds the retentionPrefix to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionPrefix(retentionPrefix *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionPrefix(retentionPrefix)
 	return o
 }
 
-// SetRetentionLabelQueryParameter adds the retentionLabel to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionLabelQueryParameter(retentionLabel *string) {
-	o.RetentionLabelQueryParameter = retentionLabel
+// SetRetentionPrefix adds the retentionPrefix to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionPrefix(retentionPrefix *string) {
+	o.RetentionPrefix = retentionPrefix
 }
 
-// WithRetentionPeriodQueryParameter adds the retentionPeriod to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionPeriodQueryParameter(retentionPeriod *string) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionPeriodQueryParameter(retentionPeriod)
+// WithReturnRecords adds the returnRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithReturnRecords(returnRecords *bool) *SnapmirrorPoliciesGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetRetentionPeriodQueryParameter adds the retentionPeriod to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionPeriodQueryParameter(retentionPeriod *string) {
-	o.RetentionPeriodQueryParameter = retentionPeriod
+// SetReturnRecords adds the returnRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithRetentionPrefixQueryParameter adds the retentionPrefix to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionPrefixQueryParameter(retentionPrefix *string) *SnapmirrorPoliciesGetParams {
-	o.SetRetentionPrefixQueryParameter(retentionPrefix)
+// WithReturnTimeout adds the returnTimeout to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorPoliciesGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetRetentionPrefixQueryParameter adds the retentionPrefix to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionPrefixQueryParameter(retentionPrefix *string) {
-	o.RetentionPrefixQueryParameter = retentionPrefix
+// SetReturnTimeout adds the returnTimeout to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorPoliciesGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithRpo adds the rpo to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRpo(rpo *int64) *SnapmirrorPoliciesGetParams {
+	o.SetRpo(rpo)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetRpo adds the rpo to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRpo(rpo *int64) {
+	o.Rpo = rpo
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorPoliciesGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithScope adds the scope to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithScope(scope *string) *SnapmirrorPoliciesGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetScope adds the scope to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithRpoQueryParameter adds the rpo to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRpoQueryParameter(rpo *int64) *SnapmirrorPoliciesGetParams {
-	o.SetRpoQueryParameter(rpo)
+// WithSvmName adds the svmName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSvmName(svmName *string) *SnapmirrorPoliciesGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetRpoQueryParameter adds the rpo to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRpoQueryParameter(rpo *int64) {
-	o.RpoQueryParameter = rpo
+// SetSvmName adds the svmName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithScopeQueryParameter adds the scope to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithScopeQueryParameter(scope *string) *SnapmirrorPoliciesGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithSvmUUID adds the svmUUID to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSvmUUID(svmUUID *string) *SnapmirrorPoliciesGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetSvmUUID adds the svmUuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithSnapshotLockModeQueryParameter adds the snapshotLockMode to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSnapshotLockModeQueryParameter(snapshotLockMode *string) *SnapmirrorPoliciesGetParams {
-	o.SetSnapshotLockModeQueryParameter(snapshotLockMode)
+// WithSyncCommonSnapshotScheduleName adds the syncCommonSnapshotScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSyncCommonSnapshotScheduleName(syncCommonSnapshotScheduleName *string) *SnapmirrorPoliciesGetParams {
+	o.SetSyncCommonSnapshotScheduleName(syncCommonSnapshotScheduleName)
 	return o
 }
 
-// SetSnapshotLockModeQueryParameter adds the snapshotLockMode to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSnapshotLockModeQueryParameter(snapshotLockMode *string) {
-	o.SnapshotLockModeQueryParameter = snapshotLockMode
+// SetSyncCommonSnapshotScheduleName adds the syncCommonSnapshotScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSyncCommonSnapshotScheduleName(syncCommonSnapshotScheduleName *string) {
+	o.SyncCommonSnapshotScheduleName = syncCommonSnapshotScheduleName
 }
 
-// WithSVMNameQueryParameter adds the svmName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSVMNameQueryParameter(svmName *string) *SnapmirrorPoliciesGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSyncCommonSnapshotScheduleUUID adds the syncCommonSnapshotScheduleUUID to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSyncCommonSnapshotScheduleUUID(syncCommonSnapshotScheduleUUID *string) *SnapmirrorPoliciesGetParams {
+	o.SetSyncCommonSnapshotScheduleUUID(syncCommonSnapshotScheduleUUID)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSyncCommonSnapshotScheduleUUID adds the syncCommonSnapshotScheduleUuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSyncCommonSnapshotScheduleUUID(syncCommonSnapshotScheduleUUID *string) {
+	o.SyncCommonSnapshotScheduleUUID = syncCommonSnapshotScheduleUUID
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SnapmirrorPoliciesGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSyncType adds the syncType to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSyncType(syncType *string) *SnapmirrorPoliciesGetParams {
+	o.SetSyncType(syncType)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSyncType adds the syncType to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSyncType(syncType *string) {
+	o.SyncType = syncType
 }
 
-// WithSyncCommonSnapshotScheduleNameQueryParameter adds the syncCommonSnapshotScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSyncCommonSnapshotScheduleNameQueryParameter(syncCommonSnapshotScheduleName *string) *SnapmirrorPoliciesGetParams {
-	o.SetSyncCommonSnapshotScheduleNameQueryParameter(syncCommonSnapshotScheduleName)
+// WithThrottle adds the throttle to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithThrottle(throttle *int64) *SnapmirrorPoliciesGetParams {
+	o.SetThrottle(throttle)
 	return o
 }
 
-// SetSyncCommonSnapshotScheduleNameQueryParameter adds the syncCommonSnapshotScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSyncCommonSnapshotScheduleNameQueryParameter(syncCommonSnapshotScheduleName *string) {
-	o.SyncCommonSnapshotScheduleNameQueryParameter = syncCommonSnapshotScheduleName
+// SetThrottle adds the throttle to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetThrottle(throttle *int64) {
+	o.Throttle = throttle
 }
 
-// WithSyncCommonSnapshotScheduleUUIDQueryParameter adds the syncCommonSnapshotScheduleUUID to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSyncCommonSnapshotScheduleUUIDQueryParameter(syncCommonSnapshotScheduleUUID *string) *SnapmirrorPoliciesGetParams {
-	o.SetSyncCommonSnapshotScheduleUUIDQueryParameter(syncCommonSnapshotScheduleUUID)
+// WithTransferScheduleName adds the transferScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithTransferScheduleName(transferScheduleName *string) *SnapmirrorPoliciesGetParams {
+	o.SetTransferScheduleName(transferScheduleName)
 	return o
 }
 
-// SetSyncCommonSnapshotScheduleUUIDQueryParameter adds the syncCommonSnapshotScheduleUuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSyncCommonSnapshotScheduleUUIDQueryParameter(syncCommonSnapshotScheduleUUID *string) {
-	o.SyncCommonSnapshotScheduleUUIDQueryParameter = syncCommonSnapshotScheduleUUID
+// SetTransferScheduleName adds the transferScheduleName to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetTransferScheduleName(transferScheduleName *string) {
+	o.TransferScheduleName = transferScheduleName
 }
 
-// WithSyncTypeQueryParameter adds the syncType to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithSyncTypeQueryParameter(syncType *string) *SnapmirrorPoliciesGetParams {
-	o.SetSyncTypeQueryParameter(syncType)
+// WithTransferScheduleUUID adds the transferScheduleUUID to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithTransferScheduleUUID(transferScheduleUUID *string) *SnapmirrorPoliciesGetParams {
+	o.SetTransferScheduleUUID(transferScheduleUUID)
 	return o
 }
 
-// SetSyncTypeQueryParameter adds the syncType to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetSyncTypeQueryParameter(syncType *string) {
-	o.SyncTypeQueryParameter = syncType
+// SetTransferScheduleUUID adds the transferScheduleUuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetTransferScheduleUUID(transferScheduleUUID *string) {
+	o.TransferScheduleUUID = transferScheduleUUID
 }
 
-// WithThrottleQueryParameter adds the throttle to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithThrottleQueryParameter(throttle *int64) *SnapmirrorPoliciesGetParams {
-	o.SetThrottleQueryParameter(throttle)
+// WithType adds the typeVar to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithType(typeVar *string) *SnapmirrorPoliciesGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetThrottleQueryParameter adds the throttle to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetThrottleQueryParameter(throttle *int64) {
-	o.ThrottleQueryParameter = throttle
+// SetType adds the type to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithTransferScheduleNameQueryParameter adds the transferScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithTransferScheduleNameQueryParameter(transferScheduleName *string) *SnapmirrorPoliciesGetParams {
-	o.SetTransferScheduleNameQueryParameter(transferScheduleName)
+// WithUUID adds the uuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithUUID(uuid *string) *SnapmirrorPoliciesGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetTransferScheduleNameQueryParameter adds the transferScheduleName to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetTransferScheduleNameQueryParameter(transferScheduleName *string) {
-	o.TransferScheduleNameQueryParameter = transferScheduleName
-}
-
-// WithTransferScheduleUUIDQueryParameter adds the transferScheduleUUID to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithTransferScheduleUUIDQueryParameter(transferScheduleUUID *string) *SnapmirrorPoliciesGetParams {
-	o.SetTransferScheduleUUIDQueryParameter(transferScheduleUUID)
-	return o
-}
-
-// SetTransferScheduleUUIDQueryParameter adds the transferScheduleUuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetTransferScheduleUUIDQueryParameter(transferScheduleUUID *string) {
-	o.TransferScheduleUUIDQueryParameter = transferScheduleUUID
-}
-
-// WithTypeQueryParameter adds the typeVar to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithTypeQueryParameter(typeVar *string) *SnapmirrorPoliciesGetParams {
-	o.SetTypeQueryParameter(typeVar)
-	return o
-}
-
-// SetTypeQueryParameter adds the type to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
-}
-
-// WithUUIDQueryParameter adds the uuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithUUIDQueryParameter(uuid *string) *SnapmirrorPoliciesGetParams {
-	o.SetUUIDQueryParameter(uuid)
-	return o
-}
-
-// SetUUIDQueryParameter adds the uuid to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -702,47 +651,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.ArchiveAfterDaysQueryParameter != nil {
-
-		// query param archive.after_days
-		var qrArchiveAfterDays int64
-
-		if o.ArchiveAfterDaysQueryParameter != nil {
-			qrArchiveAfterDays = *o.ArchiveAfterDaysQueryParameter
-		}
-		qArchiveAfterDays := swag.FormatInt64(qrArchiveAfterDays)
-		if qArchiveAfterDays != "" {
-
-			if err := r.SetQueryParam("archive.after_days", qArchiveAfterDays); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ArchiveEnabledQueryParameter != nil {
-
-		// query param archive.enabled
-		var qrArchiveEnabled bool
-
-		if o.ArchiveEnabledQueryParameter != nil {
-			qrArchiveEnabled = *o.ArchiveEnabledQueryParameter
-		}
-		qArchiveEnabled := swag.FormatBool(qrArchiveEnabled)
-		if qArchiveEnabled != "" {
-
-			if err := r.SetQueryParam("archive.enabled", qArchiveEnabled); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -753,13 +668,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CopyAllSourceSnapshotsQueryParameter != nil {
+	if o.CopyAllSourceSnapshots != nil {
 
 		// query param copy_all_source_snapshots
 		var qrCopyAllSourceSnapshots bool
 
-		if o.CopyAllSourceSnapshotsQueryParameter != nil {
-			qrCopyAllSourceSnapshots = *o.CopyAllSourceSnapshotsQueryParameter
+		if o.CopyAllSourceSnapshots != nil {
+			qrCopyAllSourceSnapshots = *o.CopyAllSourceSnapshots
 		}
 		qCopyAllSourceSnapshots := swag.FormatBool(qrCopyAllSourceSnapshots)
 		if qCopyAllSourceSnapshots != "" {
@@ -770,13 +685,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CopyLatestSourceSnapshotQueryParameter != nil {
+	if o.CopyLatestSourceSnapshot != nil {
 
 		// query param copy_latest_source_snapshot
 		var qrCopyLatestSourceSnapshot bool
 
-		if o.CopyLatestSourceSnapshotQueryParameter != nil {
-			qrCopyLatestSourceSnapshot = *o.CopyLatestSourceSnapshotQueryParameter
+		if o.CopyLatestSourceSnapshot != nil {
+			qrCopyLatestSourceSnapshot = *o.CopyLatestSourceSnapshot
 		}
 		qCopyLatestSourceSnapshot := swag.FormatBool(qrCopyLatestSourceSnapshot)
 		if qCopyLatestSourceSnapshot != "" {
@@ -787,13 +702,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CreateSnapshotOnSourceQueryParameter != nil {
+	if o.CreateSnapshotOnSource != nil {
 
 		// query param create_snapshot_on_source
 		var qrCreateSnapshotOnSource bool
 
-		if o.CreateSnapshotOnSourceQueryParameter != nil {
-			qrCreateSnapshotOnSource = *o.CreateSnapshotOnSourceQueryParameter
+		if o.CreateSnapshotOnSource != nil {
+			qrCreateSnapshotOnSource = *o.CreateSnapshotOnSource
 		}
 		qCreateSnapshotOnSource := swag.FormatBool(qrCreateSnapshotOnSource)
 		if qCreateSnapshotOnSource != "" {
@@ -804,7 +719,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -815,13 +730,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IdentityPreservationQueryParameter != nil {
+	if o.IdentityPreservation != nil {
 
 		// query param identity_preservation
 		var qrIdentityPreservation string
 
-		if o.IdentityPreservationQueryParameter != nil {
-			qrIdentityPreservation = *o.IdentityPreservationQueryParameter
+		if o.IdentityPreservation != nil {
+			qrIdentityPreservation = *o.IdentityPreservation
 		}
 		qIdentityPreservation := qrIdentityPreservation
 		if qIdentityPreservation != "" {
@@ -832,13 +747,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -849,13 +764,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -866,13 +781,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NetworkCompressionEnabledQueryParameter != nil {
+	if o.NetworkCompressionEnabled != nil {
 
 		// query param network_compression_enabled
 		var qrNetworkCompressionEnabled bool
 
-		if o.NetworkCompressionEnabledQueryParameter != nil {
-			qrNetworkCompressionEnabled = *o.NetworkCompressionEnabledQueryParameter
+		if o.NetworkCompressionEnabled != nil {
+			qrNetworkCompressionEnabled = *o.NetworkCompressionEnabled
 		}
 		qNetworkCompressionEnabled := swag.FormatBool(qrNetworkCompressionEnabled)
 		if qNetworkCompressionEnabled != "" {
@@ -883,7 +798,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -894,13 +809,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionCountQueryParameter != nil {
+	if o.RetentionCount != nil {
 
 		// query param retention.count
 		var qrRetentionCount int64
 
-		if o.RetentionCountQueryParameter != nil {
-			qrRetentionCount = *o.RetentionCountQueryParameter
+		if o.RetentionCount != nil {
+			qrRetentionCount = *o.RetentionCount
 		}
 		qRetentionCount := swag.FormatInt64(qrRetentionCount)
 		if qRetentionCount != "" {
@@ -911,13 +826,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionCreationScheduleNameQueryParameter != nil {
+	if o.RetentionCreationScheduleName != nil {
 
 		// query param retention.creation_schedule.name
 		var qrRetentionCreationScheduleName string
 
-		if o.RetentionCreationScheduleNameQueryParameter != nil {
-			qrRetentionCreationScheduleName = *o.RetentionCreationScheduleNameQueryParameter
+		if o.RetentionCreationScheduleName != nil {
+			qrRetentionCreationScheduleName = *o.RetentionCreationScheduleName
 		}
 		qRetentionCreationScheduleName := qrRetentionCreationScheduleName
 		if qRetentionCreationScheduleName != "" {
@@ -928,13 +843,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionCreationScheduleUUIDQueryParameter != nil {
+	if o.RetentionCreationScheduleUUID != nil {
 
 		// query param retention.creation_schedule.uuid
 		var qrRetentionCreationScheduleUUID string
 
-		if o.RetentionCreationScheduleUUIDQueryParameter != nil {
-			qrRetentionCreationScheduleUUID = *o.RetentionCreationScheduleUUIDQueryParameter
+		if o.RetentionCreationScheduleUUID != nil {
+			qrRetentionCreationScheduleUUID = *o.RetentionCreationScheduleUUID
 		}
 		qRetentionCreationScheduleUUID := qrRetentionCreationScheduleUUID
 		if qRetentionCreationScheduleUUID != "" {
@@ -945,13 +860,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionLabelQueryParameter != nil {
+	if o.RetentionLabel != nil {
 
 		// query param retention.label
 		var qrRetentionLabel string
 
-		if o.RetentionLabelQueryParameter != nil {
-			qrRetentionLabel = *o.RetentionLabelQueryParameter
+		if o.RetentionLabel != nil {
+			qrRetentionLabel = *o.RetentionLabel
 		}
 		qRetentionLabel := qrRetentionLabel
 		if qRetentionLabel != "" {
@@ -962,13 +877,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionPeriodQueryParameter != nil {
+	if o.RetentionPeriod != nil {
 
 		// query param retention.period
 		var qrRetentionPeriod string
 
-		if o.RetentionPeriodQueryParameter != nil {
-			qrRetentionPeriod = *o.RetentionPeriodQueryParameter
+		if o.RetentionPeriod != nil {
+			qrRetentionPeriod = *o.RetentionPeriod
 		}
 		qRetentionPeriod := qrRetentionPeriod
 		if qRetentionPeriod != "" {
@@ -979,13 +894,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RetentionPrefixQueryParameter != nil {
+	if o.RetentionPrefix != nil {
 
 		// query param retention.prefix
 		var qrRetentionPrefix string
 
-		if o.RetentionPrefixQueryParameter != nil {
-			qrRetentionPrefix = *o.RetentionPrefixQueryParameter
+		if o.RetentionPrefix != nil {
+			qrRetentionPrefix = *o.RetentionPrefix
 		}
 		qRetentionPrefix := qrRetentionPrefix
 		if qRetentionPrefix != "" {
@@ -996,13 +911,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1013,13 +928,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1030,13 +945,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RpoQueryParameter != nil {
+	if o.Rpo != nil {
 
 		// query param rpo
 		var qrRpo int64
 
-		if o.RpoQueryParameter != nil {
-			qrRpo = *o.RpoQueryParameter
+		if o.Rpo != nil {
+			qrRpo = *o.Rpo
 		}
 		qRpo := swag.FormatInt64(qrRpo)
 		if qRpo != "" {
@@ -1047,13 +962,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -1064,30 +979,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SnapshotLockModeQueryParameter != nil {
-
-		// query param snapshot_lock_mode
-		var qrSnapshotLockMode string
-
-		if o.SnapshotLockModeQueryParameter != nil {
-			qrSnapshotLockMode = *o.SnapshotLockModeQueryParameter
-		}
-		qSnapshotLockMode := qrSnapshotLockMode
-		if qSnapshotLockMode != "" {
-
-			if err := r.SetQueryParam("snapshot_lock_mode", qSnapshotLockMode); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1098,13 +996,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1115,13 +1013,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SyncCommonSnapshotScheduleNameQueryParameter != nil {
+	if o.SyncCommonSnapshotScheduleName != nil {
 
 		// query param sync_common_snapshot_schedule.name
 		var qrSyncCommonSnapshotScheduleName string
 
-		if o.SyncCommonSnapshotScheduleNameQueryParameter != nil {
-			qrSyncCommonSnapshotScheduleName = *o.SyncCommonSnapshotScheduleNameQueryParameter
+		if o.SyncCommonSnapshotScheduleName != nil {
+			qrSyncCommonSnapshotScheduleName = *o.SyncCommonSnapshotScheduleName
 		}
 		qSyncCommonSnapshotScheduleName := qrSyncCommonSnapshotScheduleName
 		if qSyncCommonSnapshotScheduleName != "" {
@@ -1132,13 +1030,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SyncCommonSnapshotScheduleUUIDQueryParameter != nil {
+	if o.SyncCommonSnapshotScheduleUUID != nil {
 
 		// query param sync_common_snapshot_schedule.uuid
 		var qrSyncCommonSnapshotScheduleUUID string
 
-		if o.SyncCommonSnapshotScheduleUUIDQueryParameter != nil {
-			qrSyncCommonSnapshotScheduleUUID = *o.SyncCommonSnapshotScheduleUUIDQueryParameter
+		if o.SyncCommonSnapshotScheduleUUID != nil {
+			qrSyncCommonSnapshotScheduleUUID = *o.SyncCommonSnapshotScheduleUUID
 		}
 		qSyncCommonSnapshotScheduleUUID := qrSyncCommonSnapshotScheduleUUID
 		if qSyncCommonSnapshotScheduleUUID != "" {
@@ -1149,13 +1047,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SyncTypeQueryParameter != nil {
+	if o.SyncType != nil {
 
 		// query param sync_type
 		var qrSyncType string
 
-		if o.SyncTypeQueryParameter != nil {
-			qrSyncType = *o.SyncTypeQueryParameter
+		if o.SyncType != nil {
+			qrSyncType = *o.SyncType
 		}
 		qSyncType := qrSyncType
 		if qSyncType != "" {
@@ -1166,13 +1064,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ThrottleQueryParameter != nil {
+	if o.Throttle != nil {
 
 		// query param throttle
 		var qrThrottle int64
 
-		if o.ThrottleQueryParameter != nil {
-			qrThrottle = *o.ThrottleQueryParameter
+		if o.Throttle != nil {
+			qrThrottle = *o.Throttle
 		}
 		qThrottle := swag.FormatInt64(qrThrottle)
 		if qThrottle != "" {
@@ -1183,13 +1081,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TransferScheduleNameQueryParameter != nil {
+	if o.TransferScheduleName != nil {
 
 		// query param transfer_schedule.name
 		var qrTransferScheduleName string
 
-		if o.TransferScheduleNameQueryParameter != nil {
-			qrTransferScheduleName = *o.TransferScheduleNameQueryParameter
+		if o.TransferScheduleName != nil {
+			qrTransferScheduleName = *o.TransferScheduleName
 		}
 		qTransferScheduleName := qrTransferScheduleName
 		if qTransferScheduleName != "" {
@@ -1200,13 +1098,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TransferScheduleUUIDQueryParameter != nil {
+	if o.TransferScheduleUUID != nil {
 
 		// query param transfer_schedule.uuid
 		var qrTransferScheduleUUID string
 
-		if o.TransferScheduleUUIDQueryParameter != nil {
-			qrTransferScheduleUUID = *o.TransferScheduleUUIDQueryParameter
+		if o.TransferScheduleUUID != nil {
+			qrTransferScheduleUUID = *o.TransferScheduleUUID
 		}
 		qTransferScheduleUUID := qrTransferScheduleUUID
 		if qTransferScheduleUUID != "" {
@@ -1217,13 +1115,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1234,13 +1132,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1259,7 +1157,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSnapmirrorPoliciesGet binds the parameter fields
 func (o *SnapmirrorPoliciesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1276,7 +1174,7 @@ func (o *SnapmirrorPoliciesGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamSnapmirrorPoliciesGet binds the parameter order_by
 func (o *SnapmirrorPoliciesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

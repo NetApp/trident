@@ -66,181 +66,181 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Filter by auto_delete
 	*/
-	AutoDeleteQueryParameter *bool
+	AutoDelete *bool
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LocationNamespace.
 
 	   Filter by location.namespace
 	*/
-	LocationNamespaceQueryParameter *string
+	LocationNamespace *string
 
 	/* LocationNodeName.
 
 	   Filter by location.node.name
 	*/
-	LocationNodeNameQueryParameter *string
+	LocationNodeName *string
 
 	/* LocationNodeUUID.
 
 	   Filter by location.node.uuid
 	*/
-	LocationNodeUUIDQueryParameter *string
+	LocationNodeUUID *string
 
 	/* LocationQtreeID.
 
 	   Filter by location.qtree.id
 	*/
-	LocationQtreeIDQueryParameter *int64
+	LocationQtreeID *int64
 
 	/* LocationQtreeName.
 
 	   Filter by location.qtree.name
 	*/
-	LocationQtreeNameQueryParameter *string
+	LocationQtreeName *string
 
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
 	*/
-	LocationVolumeNameQueryParameter *string
+	LocationVolumeName *string
 
 	/* LocationVolumeUUID.
 
 	   Filter by location.volume.uuid
 	*/
-	LocationVolumeUUIDQueryParameter *string
+	LocationVolumeUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OsType.
 
 	   Filter by os_type
 	*/
-	OsTypeQueryParameter *string
+	OsType *string
 
 	/* ReturnRecords.
 
@@ -248,7 +248,7 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -256,181 +256,181 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SpaceBlockSize.
 
 	   Filter by space.block_size
 	*/
-	SpaceBlockSizeQueryParameter *int64
+	SpaceBlockSize *int64
 
 	/* SpaceGuaranteeRequested.
 
 	   Filter by space.guarantee.requested
 	*/
-	SpaceGuaranteeRequestedQueryParameter *bool
+	SpaceGuaranteeRequested *bool
 
 	/* SpaceGuaranteeReserved.
 
 	   Filter by space.guarantee.reserved
 	*/
-	SpaceGuaranteeReservedQueryParameter *bool
+	SpaceGuaranteeReserved *bool
 
 	/* SpaceSize.
 
 	   Filter by space.size
 	*/
-	SpaceSizeQueryParameter *int64
+	SpaceSize *int64
 
 	/* SpaceUsed.
 
 	   Filter by space.used
 	*/
-	SpaceUsedQueryParameter *int64
+	SpaceUsed *int64
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* StatusContainerState.
 
 	   Filter by status.container_state
 	*/
-	StatusContainerStateQueryParameter *string
+	StatusContainerState *string
 
 	/* StatusMapped.
 
 	   Filter by status.mapped
 	*/
-	StatusMappedQueryParameter *bool
+	StatusMapped *bool
 
 	/* StatusReadOnly.
 
 	   Filter by status.read_only
 	*/
-	StatusReadOnlyQueryParameter *bool
+	StatusReadOnly *bool
 
 	/* StatusState.
 
 	   Filter by status.state
 	*/
-	StatusStateQueryParameter *string
+	StatusState *string
 
 	/* SubsystemMapAnagrpid.
 
 	   Filter by subsystem_map.anagrpid
 	*/
-	SubsystemMapAnagrpIDQueryParameter *string
+	SubsystemMapAnagrpid *string
 
 	/* SubsystemMapNsid.
 
 	   Filter by subsystem_map.nsid
 	*/
-	SubsystemMapNsIDQueryParameter *string
+	SubsystemMapNsid *string
 
 	/* SubsystemMapSubsystemName.
 
 	   Filter by subsystem_map.subsystem.name
 	*/
-	SubsystemMapSubsystemNameQueryParameter *string
+	SubsystemMapSubsystemName *string
 
 	/* SubsystemMapSubsystemUUID.
 
 	   Filter by subsystem_map.subsystem.uuid
 	*/
-	SubsystemMapSubsystemUUIDQueryParameter *string
+	SubsystemMapSubsystemUUID *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -450,14 +450,14 @@ func (o *NvmeNamespaceCollectionGetParams) WithDefaults() *NvmeNamespaceCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeNamespaceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeNamespaceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -499,675 +499,675 @@ func (o *NvmeNamespaceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAutoDeleteQueryParameter adds the autoDelete to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithAutoDeleteQueryParameter(autoDelete *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetAutoDeleteQueryParameter(autoDelete)
+// WithAutoDelete adds the autoDelete to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithAutoDelete(autoDelete *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetAutoDelete(autoDelete)
 	return o
 }
 
-// SetAutoDeleteQueryParameter adds the autoDelete to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetAutoDeleteQueryParameter(autoDelete *bool) {
-	o.AutoDeleteQueryParameter = autoDelete
+// SetAutoDelete adds the autoDelete to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetAutoDelete(autoDelete *bool) {
+	o.AutoDelete = autoDelete
 }
 
-// WithCommentQueryParameter adds the comment to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithCommentQueryParameter(comment *string) *NvmeNamespaceCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithComment(comment *string) *NvmeNamespaceCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *NvmeNamespaceCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithCreateTime(createTime *string) *NvmeNamespaceCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithEnabledQueryParameter adds the enabled to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithEnabled(enabled *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeNamespaceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithFields(fields []string) *NvmeNamespaceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLocationNamespaceQueryParameter adds the locationNamespace to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationNamespaceQueryParameter(locationNamespace *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationNamespaceQueryParameter(locationNamespace)
+// WithLocationNamespace adds the locationNamespace to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationNamespace(locationNamespace *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationNamespace(locationNamespace)
 	return o
 }
 
-// SetLocationNamespaceQueryParameter adds the locationNamespace to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationNamespaceQueryParameter(locationNamespace *string) {
-	o.LocationNamespaceQueryParameter = locationNamespace
+// SetLocationNamespace adds the locationNamespace to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationNamespace(locationNamespace *string) {
+	o.LocationNamespace = locationNamespace
 }
 
-// WithLocationNodeNameQueryParameter adds the locationNodeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeNameQueryParameter(locationNodeName *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationNodeNameQueryParameter(locationNodeName)
+// WithLocationNodeName adds the locationNodeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeName(locationNodeName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationNodeName(locationNodeName)
 	return o
 }
 
-// SetLocationNodeNameQueryParameter adds the locationNodeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeNameQueryParameter(locationNodeName *string) {
-	o.LocationNodeNameQueryParameter = locationNodeName
+// SetLocationNodeName adds the locationNodeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeName(locationNodeName *string) {
+	o.LocationNodeName = locationNodeName
 }
 
-// WithLocationNodeUUIDQueryParameter adds the locationNodeUUID to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeUUIDQueryParameter(locationNodeUUID *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationNodeUUIDQueryParameter(locationNodeUUID)
+// WithLocationNodeUUID adds the locationNodeUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeUUID(locationNodeUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationNodeUUID(locationNodeUUID)
 	return o
 }
 
-// SetLocationNodeUUIDQueryParameter adds the locationNodeUuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeUUIDQueryParameter(locationNodeUUID *string) {
-	o.LocationNodeUUIDQueryParameter = locationNodeUUID
+// SetLocationNodeUUID adds the locationNodeUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeUUID(locationNodeUUID *string) {
+	o.LocationNodeUUID = locationNodeUUID
 }
 
-// WithLocationQtreeIDQueryParameter adds the locationQtreeID to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationQtreeIDQueryParameter(locationQtreeID *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationQtreeIDQueryParameter(locationQtreeID)
+// WithLocationQtreeID adds the locationQtreeID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationQtreeID(locationQtreeID *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationQtreeID(locationQtreeID)
 	return o
 }
 
-// SetLocationQtreeIDQueryParameter adds the locationQtreeId to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationQtreeIDQueryParameter(locationQtreeID *int64) {
-	o.LocationQtreeIDQueryParameter = locationQtreeID
+// SetLocationQtreeID adds the locationQtreeId to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationQtreeID(locationQtreeID *int64) {
+	o.LocationQtreeID = locationQtreeID
 }
 
-// WithLocationQtreeNameQueryParameter adds the locationQtreeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationQtreeNameQueryParameter(locationQtreeName *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationQtreeNameQueryParameter(locationQtreeName)
+// WithLocationQtreeName adds the locationQtreeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationQtreeName(locationQtreeName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationQtreeName(locationQtreeName)
 	return o
 }
 
-// SetLocationQtreeNameQueryParameter adds the locationQtreeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationQtreeNameQueryParameter(locationQtreeName *string) {
-	o.LocationQtreeNameQueryParameter = locationQtreeName
+// SetLocationQtreeName adds the locationQtreeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationQtreeName(locationQtreeName *string) {
+	o.LocationQtreeName = locationQtreeName
 }
 
-// WithLocationVolumeNameQueryParameter adds the locationVolumeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationVolumeNameQueryParameter(locationVolumeName *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationVolumeNameQueryParameter(locationVolumeName)
+// WithLocationVolumeName adds the locationVolumeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationVolumeName(locationVolumeName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationVolumeName(locationVolumeName)
 	return o
 }
 
-// SetLocationVolumeNameQueryParameter adds the locationVolumeName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationVolumeNameQueryParameter(locationVolumeName *string) {
-	o.LocationVolumeNameQueryParameter = locationVolumeName
+// SetLocationVolumeName adds the locationVolumeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationVolumeName(locationVolumeName *string) {
+	o.LocationVolumeName = locationVolumeName
 }
 
-// WithLocationVolumeUUIDQueryParameter adds the locationVolumeUUID to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithLocationVolumeUUIDQueryParameter(locationVolumeUUID *string) *NvmeNamespaceCollectionGetParams {
-	o.SetLocationVolumeUUIDQueryParameter(locationVolumeUUID)
+// WithLocationVolumeUUID adds the locationVolumeUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationVolumeUUID(locationVolumeUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationVolumeUUID(locationVolumeUUID)
 	return o
 }
 
-// SetLocationVolumeUUIDQueryParameter adds the locationVolumeUuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetLocationVolumeUUIDQueryParameter(locationVolumeUUID *string) {
-	o.LocationVolumeUUIDQueryParameter = locationVolumeUUID
+// SetLocationVolumeUUID adds the locationVolumeUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationVolumeUUID(locationVolumeUUID *string) {
+	o.LocationVolumeUUID = locationVolumeUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMetricDuration adds the metricDuration to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricDuration(metricDuration *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMetricDuration adds the metricDuration to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithMetricIopsOther adds the metricIopsOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetMetricIopsOther adds the metricIopsOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithMetricIopsRead adds the metricIopsRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetMetricIopsRead adds the metricIopsRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithMetricIopsTotal adds the metricIopsTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetMetricIopsTotal adds the metricIopsTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithMetricIopsWrite adds the metricIopsWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetMetricIopsWrite adds the metricIopsWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithMetricLatencyOther adds the metricLatencyOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetMetricLatencyOther adds the metricLatencyOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithMetricLatencyRead adds the metricLatencyRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetMetricLatencyRead adds the metricLatencyRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetMetricLatencyTotal adds the metricLatencyTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetMetricLatencyWrite adds the metricLatencyWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricStatus adds the metricStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricStatus(metricStatus *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricStatus adds the metricStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricThroughputRead adds the metricThroughputRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricThroughputRead adds the metricThroughputRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputTotal adds the metricThroughputTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputWrite adds the metricThroughputWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NvmeNamespaceCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricTimestamp adds the metricTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricTimestamp adds the metricTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithNameQueryParameter adds the name to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithNameQueryParameter(name *string) *NvmeNamespaceCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithName(name *string) *NvmeNamespaceCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeNamespaceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithOrderBy(orderBy []string) *NvmeNamespaceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOsTypeQueryParameter adds the osType to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithOsTypeQueryParameter(osType *string) *NvmeNamespaceCollectionGetParams {
-	o.SetOsTypeQueryParameter(osType)
+// WithOsType adds the osType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithOsType(osType *string) *NvmeNamespaceCollectionGetParams {
+	o.SetOsType(osType)
 	return o
 }
 
-// SetOsTypeQueryParameter adds the osType to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetOsTypeQueryParameter(osType *string) {
-	o.OsTypeQueryParameter = osType
+// SetOsType adds the osType to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetOsType(osType *string) {
+	o.OsType = osType
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSpaceBlockSizeQueryParameter adds the spaceBlockSize to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSpaceBlockSizeQueryParameter(spaceBlockSize *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetSpaceBlockSizeQueryParameter(spaceBlockSize)
+// WithSpaceBlockSize adds the spaceBlockSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceBlockSize(spaceBlockSize *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceBlockSize(spaceBlockSize)
 	return o
 }
 
-// SetSpaceBlockSizeQueryParameter adds the spaceBlockSize to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSpaceBlockSizeQueryParameter(spaceBlockSize *int64) {
-	o.SpaceBlockSizeQueryParameter = spaceBlockSize
+// SetSpaceBlockSize adds the spaceBlockSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceBlockSize(spaceBlockSize *int64) {
+	o.SpaceBlockSize = spaceBlockSize
 }
 
-// WithSpaceGuaranteeRequestedQueryParameter adds the spaceGuaranteeRequested to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested)
+// WithSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceGuaranteeRequested(spaceGuaranteeRequested)
 	return o
 }
 
-// SetSpaceGuaranteeRequestedQueryParameter adds the spaceGuaranteeRequested to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested *bool) {
-	o.SpaceGuaranteeRequestedQueryParameter = spaceGuaranteeRequested
+// SetSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) {
+	o.SpaceGuaranteeRequested = spaceGuaranteeRequested
 }
 
-// WithSpaceGuaranteeReservedQueryParameter adds the spaceGuaranteeReserved to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved)
+// WithSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceGuaranteeReserved(spaceGuaranteeReserved)
 	return o
 }
 
-// SetSpaceGuaranteeReservedQueryParameter adds the spaceGuaranteeReserved to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved *bool) {
-	o.SpaceGuaranteeReservedQueryParameter = spaceGuaranteeReserved
+// SetSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) {
+	o.SpaceGuaranteeReserved = spaceGuaranteeReserved
 }
 
-// WithSpaceSizeQueryParameter adds the spaceSize to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSpaceSizeQueryParameter(spaceSize *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetSpaceSizeQueryParameter(spaceSize)
+// WithSpaceSize adds the spaceSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceSize(spaceSize *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceSize(spaceSize)
 	return o
 }
 
-// SetSpaceSizeQueryParameter adds the spaceSize to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSpaceSizeQueryParameter(spaceSize *int64) {
-	o.SpaceSizeQueryParameter = spaceSize
+// SetSpaceSize adds the spaceSize to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceSize(spaceSize *int64) {
+	o.SpaceSize = spaceSize
 }
 
-// WithSpaceUsedQueryParameter adds the spaceUsed to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetSpaceUsedQueryParameter(spaceUsed)
+// WithSpaceUsed adds the spaceUsed to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSpaceUsed(spaceUsed *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetSpaceUsed(spaceUsed)
 	return o
 }
 
-// SetSpaceUsedQueryParameter adds the spaceUsed to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSpaceUsedQueryParameter(spaceUsed *int64) {
-	o.SpaceUsedQueryParameter = spaceUsed
+// SetSpaceUsed adds the spaceUsed to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSpaceUsed(spaceUsed *int64) {
+	o.SpaceUsed = spaceUsed
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NvmeNamespaceCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithStatusContainerStateQueryParameter adds the statusContainerState to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatusContainerStateQueryParameter(statusContainerState *string) *NvmeNamespaceCollectionGetParams {
-	o.SetStatusContainerStateQueryParameter(statusContainerState)
+// WithStatusContainerState adds the statusContainerState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatusContainerState(statusContainerState *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatusContainerState(statusContainerState)
 	return o
 }
 
-// SetStatusContainerStateQueryParameter adds the statusContainerState to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatusContainerStateQueryParameter(statusContainerState *string) {
-	o.StatusContainerStateQueryParameter = statusContainerState
+// SetStatusContainerState adds the statusContainerState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatusContainerState(statusContainerState *string) {
+	o.StatusContainerState = statusContainerState
 }
 
-// WithStatusMappedQueryParameter adds the statusMapped to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatusMappedQueryParameter(statusMapped *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetStatusMappedQueryParameter(statusMapped)
+// WithStatusMapped adds the statusMapped to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatusMapped(statusMapped *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetStatusMapped(statusMapped)
 	return o
 }
 
-// SetStatusMappedQueryParameter adds the statusMapped to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatusMappedQueryParameter(statusMapped *bool) {
-	o.StatusMappedQueryParameter = statusMapped
+// SetStatusMapped adds the statusMapped to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatusMapped(statusMapped *bool) {
+	o.StatusMapped = statusMapped
 }
 
-// WithStatusReadOnlyQueryParameter adds the statusReadOnly to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatusReadOnlyQueryParameter(statusReadOnly *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetStatusReadOnlyQueryParameter(statusReadOnly)
+// WithStatusReadOnly adds the statusReadOnly to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatusReadOnly(statusReadOnly *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetStatusReadOnly(statusReadOnly)
 	return o
 }
 
-// SetStatusReadOnlyQueryParameter adds the statusReadOnly to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatusReadOnlyQueryParameter(statusReadOnly *bool) {
-	o.StatusReadOnlyQueryParameter = statusReadOnly
+// SetStatusReadOnly adds the statusReadOnly to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatusReadOnly(statusReadOnly *bool) {
+	o.StatusReadOnly = statusReadOnly
 }
 
-// WithStatusStateQueryParameter adds the statusState to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithStatusStateQueryParameter(statusState *string) *NvmeNamespaceCollectionGetParams {
-	o.SetStatusStateQueryParameter(statusState)
+// WithStatusState adds the statusState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatusState(statusState *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatusState(statusState)
 	return o
 }
 
-// SetStatusStateQueryParameter adds the statusState to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetStatusStateQueryParameter(statusState *string) {
-	o.StatusStateQueryParameter = statusState
+// SetStatusState adds the statusState to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatusState(statusState *string) {
+	o.StatusState = statusState
 }
 
-// WithSubsystemMapAnagrpIDQueryParameter adds the subsystemMapAnagrpid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapAnagrpIDQueryParameter(subsystemMapAnagrpid *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSubsystemMapAnagrpIDQueryParameter(subsystemMapAnagrpid)
+// WithSubsystemMapAnagrpid adds the subsystemMapAnagrpid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapAnagrpid(subsystemMapAnagrpid *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapAnagrpid(subsystemMapAnagrpid)
 	return o
 }
 
-// SetSubsystemMapAnagrpIDQueryParameter adds the subsystemMapAnagrpid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapAnagrpIDQueryParameter(subsystemMapAnagrpid *string) {
-	o.SubsystemMapAnagrpIDQueryParameter = subsystemMapAnagrpid
+// SetSubsystemMapAnagrpid adds the subsystemMapAnagrpid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapAnagrpid(subsystemMapAnagrpid *string) {
+	o.SubsystemMapAnagrpid = subsystemMapAnagrpid
 }
 
-// WithSubsystemMapNsIDQueryParameter adds the subsystemMapNsid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapNsIDQueryParameter(subsystemMapNsid *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSubsystemMapNsIDQueryParameter(subsystemMapNsid)
+// WithSubsystemMapNsid adds the subsystemMapNsid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapNsid(subsystemMapNsid *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapNsid(subsystemMapNsid)
 	return o
 }
 
-// SetSubsystemMapNsIDQueryParameter adds the subsystemMapNsid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapNsIDQueryParameter(subsystemMapNsid *string) {
-	o.SubsystemMapNsIDQueryParameter = subsystemMapNsid
+// SetSubsystemMapNsid adds the subsystemMapNsid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapNsid(subsystemMapNsid *string) {
+	o.SubsystemMapNsid = subsystemMapNsid
 }
 
-// WithSubsystemMapSubsystemNameQueryParameter adds the subsystemMapSubsystemName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemNameQueryParameter(subsystemMapSubsystemName *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSubsystemMapSubsystemNameQueryParameter(subsystemMapSubsystemName)
+// WithSubsystemMapSubsystemName adds the subsystemMapSubsystemName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemName(subsystemMapSubsystemName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemName(subsystemMapSubsystemName)
 	return o
 }
 
-// SetSubsystemMapSubsystemNameQueryParameter adds the subsystemMapSubsystemName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemNameQueryParameter(subsystemMapSubsystemName *string) {
-	o.SubsystemMapSubsystemNameQueryParameter = subsystemMapSubsystemName
+// SetSubsystemMapSubsystemName adds the subsystemMapSubsystemName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemName(subsystemMapSubsystemName *string) {
+	o.SubsystemMapSubsystemName = subsystemMapSubsystemName
 }
 
-// WithSubsystemMapSubsystemUUIDQueryParameter adds the subsystemMapSubsystemUUID to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemUUIDQueryParameter(subsystemMapSubsystemUUID *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSubsystemMapSubsystemUUIDQueryParameter(subsystemMapSubsystemUUID)
+// WithSubsystemMapSubsystemUUID adds the subsystemMapSubsystemUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemUUID(subsystemMapSubsystemUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemUUID(subsystemMapSubsystemUUID)
 	return o
 }
 
-// SetSubsystemMapSubsystemUUIDQueryParameter adds the subsystemMapSubsystemUuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemUUIDQueryParameter(subsystemMapSubsystemUUID *string) {
-	o.SubsystemMapSubsystemUUIDQueryParameter = subsystemMapSubsystemUUID
+// SetSubsystemMapSubsystemUUID adds the subsystemMapSubsystemUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemUUID(subsystemMapSubsystemUUID *string) {
+	o.SubsystemMapSubsystemUUID = subsystemMapSubsystemUUID
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSvmName(svmName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NvmeNamespaceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSvmUUID(svmUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithUUIDQueryParameter(uuid *string) *NvmeNamespaceCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithUUID(uuid *string) *NvmeNamespaceCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1178,13 +1178,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.AutoDeleteQueryParameter != nil {
+	if o.AutoDelete != nil {
 
 		// query param auto_delete
 		var qrAutoDelete bool
 
-		if o.AutoDeleteQueryParameter != nil {
-			qrAutoDelete = *o.AutoDeleteQueryParameter
+		if o.AutoDelete != nil {
+			qrAutoDelete = *o.AutoDelete
 		}
 		qAutoDelete := swag.FormatBool(qrAutoDelete)
 		if qAutoDelete != "" {
@@ -1195,13 +1195,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -1212,13 +1212,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -1229,13 +1229,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -1246,7 +1246,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1257,13 +1257,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationNamespaceQueryParameter != nil {
+	if o.LocationNamespace != nil {
 
 		// query param location.namespace
 		var qrLocationNamespace string
 
-		if o.LocationNamespaceQueryParameter != nil {
-			qrLocationNamespace = *o.LocationNamespaceQueryParameter
+		if o.LocationNamespace != nil {
+			qrLocationNamespace = *o.LocationNamespace
 		}
 		qLocationNamespace := qrLocationNamespace
 		if qLocationNamespace != "" {
@@ -1274,13 +1274,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationNodeNameQueryParameter != nil {
+	if o.LocationNodeName != nil {
 
 		// query param location.node.name
 		var qrLocationNodeName string
 
-		if o.LocationNodeNameQueryParameter != nil {
-			qrLocationNodeName = *o.LocationNodeNameQueryParameter
+		if o.LocationNodeName != nil {
+			qrLocationNodeName = *o.LocationNodeName
 		}
 		qLocationNodeName := qrLocationNodeName
 		if qLocationNodeName != "" {
@@ -1291,13 +1291,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationNodeUUIDQueryParameter != nil {
+	if o.LocationNodeUUID != nil {
 
 		// query param location.node.uuid
 		var qrLocationNodeUUID string
 
-		if o.LocationNodeUUIDQueryParameter != nil {
-			qrLocationNodeUUID = *o.LocationNodeUUIDQueryParameter
+		if o.LocationNodeUUID != nil {
+			qrLocationNodeUUID = *o.LocationNodeUUID
 		}
 		qLocationNodeUUID := qrLocationNodeUUID
 		if qLocationNodeUUID != "" {
@@ -1308,13 +1308,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationQtreeIDQueryParameter != nil {
+	if o.LocationQtreeID != nil {
 
 		// query param location.qtree.id
 		var qrLocationQtreeID int64
 
-		if o.LocationQtreeIDQueryParameter != nil {
-			qrLocationQtreeID = *o.LocationQtreeIDQueryParameter
+		if o.LocationQtreeID != nil {
+			qrLocationQtreeID = *o.LocationQtreeID
 		}
 		qLocationQtreeID := swag.FormatInt64(qrLocationQtreeID)
 		if qLocationQtreeID != "" {
@@ -1325,13 +1325,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationQtreeNameQueryParameter != nil {
+	if o.LocationQtreeName != nil {
 
 		// query param location.qtree.name
 		var qrLocationQtreeName string
 
-		if o.LocationQtreeNameQueryParameter != nil {
-			qrLocationQtreeName = *o.LocationQtreeNameQueryParameter
+		if o.LocationQtreeName != nil {
+			qrLocationQtreeName = *o.LocationQtreeName
 		}
 		qLocationQtreeName := qrLocationQtreeName
 		if qLocationQtreeName != "" {
@@ -1342,13 +1342,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationVolumeNameQueryParameter != nil {
+	if o.LocationVolumeName != nil {
 
 		// query param location.volume.name
 		var qrLocationVolumeName string
 
-		if o.LocationVolumeNameQueryParameter != nil {
-			qrLocationVolumeName = *o.LocationVolumeNameQueryParameter
+		if o.LocationVolumeName != nil {
+			qrLocationVolumeName = *o.LocationVolumeName
 		}
 		qLocationVolumeName := qrLocationVolumeName
 		if qLocationVolumeName != "" {
@@ -1359,13 +1359,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LocationVolumeUUIDQueryParameter != nil {
+	if o.LocationVolumeUUID != nil {
 
 		// query param location.volume.uuid
 		var qrLocationVolumeUUID string
 
-		if o.LocationVolumeUUIDQueryParameter != nil {
-			qrLocationVolumeUUID = *o.LocationVolumeUUIDQueryParameter
+		if o.LocationVolumeUUID != nil {
+			qrLocationVolumeUUID = *o.LocationVolumeUUID
 		}
 		qLocationVolumeUUID := qrLocationVolumeUUID
 		if qLocationVolumeUUID != "" {
@@ -1376,13 +1376,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1393,13 +1393,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -1410,13 +1410,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -1427,13 +1427,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -1444,13 +1444,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -1461,13 +1461,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -1478,13 +1478,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -1495,13 +1495,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -1512,13 +1512,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -1529,13 +1529,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -1546,13 +1546,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -1563,13 +1563,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -1580,13 +1580,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -1597,13 +1597,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -1614,13 +1614,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -1631,13 +1631,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1648,7 +1648,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1659,13 +1659,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OsTypeQueryParameter != nil {
+	if o.OsType != nil {
 
 		// query param os_type
 		var qrOsType string
 
-		if o.OsTypeQueryParameter != nil {
-			qrOsType = *o.OsTypeQueryParameter
+		if o.OsType != nil {
+			qrOsType = *o.OsType
 		}
 		qOsType := qrOsType
 		if qOsType != "" {
@@ -1676,13 +1676,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1693,13 +1693,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1710,13 +1710,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SpaceBlockSizeQueryParameter != nil {
+	if o.SpaceBlockSize != nil {
 
 		// query param space.block_size
 		var qrSpaceBlockSize int64
 
-		if o.SpaceBlockSizeQueryParameter != nil {
-			qrSpaceBlockSize = *o.SpaceBlockSizeQueryParameter
+		if o.SpaceBlockSize != nil {
+			qrSpaceBlockSize = *o.SpaceBlockSize
 		}
 		qSpaceBlockSize := swag.FormatInt64(qrSpaceBlockSize)
 		if qSpaceBlockSize != "" {
@@ -1727,13 +1727,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SpaceGuaranteeRequestedQueryParameter != nil {
+	if o.SpaceGuaranteeRequested != nil {
 
 		// query param space.guarantee.requested
 		var qrSpaceGuaranteeRequested bool
 
-		if o.SpaceGuaranteeRequestedQueryParameter != nil {
-			qrSpaceGuaranteeRequested = *o.SpaceGuaranteeRequestedQueryParameter
+		if o.SpaceGuaranteeRequested != nil {
+			qrSpaceGuaranteeRequested = *o.SpaceGuaranteeRequested
 		}
 		qSpaceGuaranteeRequested := swag.FormatBool(qrSpaceGuaranteeRequested)
 		if qSpaceGuaranteeRequested != "" {
@@ -1744,13 +1744,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SpaceGuaranteeReservedQueryParameter != nil {
+	if o.SpaceGuaranteeReserved != nil {
 
 		// query param space.guarantee.reserved
 		var qrSpaceGuaranteeReserved bool
 
-		if o.SpaceGuaranteeReservedQueryParameter != nil {
-			qrSpaceGuaranteeReserved = *o.SpaceGuaranteeReservedQueryParameter
+		if o.SpaceGuaranteeReserved != nil {
+			qrSpaceGuaranteeReserved = *o.SpaceGuaranteeReserved
 		}
 		qSpaceGuaranteeReserved := swag.FormatBool(qrSpaceGuaranteeReserved)
 		if qSpaceGuaranteeReserved != "" {
@@ -1761,13 +1761,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SpaceSizeQueryParameter != nil {
+	if o.SpaceSize != nil {
 
 		// query param space.size
 		var qrSpaceSize int64
 
-		if o.SpaceSizeQueryParameter != nil {
-			qrSpaceSize = *o.SpaceSizeQueryParameter
+		if o.SpaceSize != nil {
+			qrSpaceSize = *o.SpaceSize
 		}
 		qSpaceSize := swag.FormatInt64(qrSpaceSize)
 		if qSpaceSize != "" {
@@ -1778,13 +1778,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SpaceUsedQueryParameter != nil {
+	if o.SpaceUsed != nil {
 
 		// query param space.used
 		var qrSpaceUsed int64
 
-		if o.SpaceUsedQueryParameter != nil {
-			qrSpaceUsed = *o.SpaceUsedQueryParameter
+		if o.SpaceUsed != nil {
+			qrSpaceUsed = *o.SpaceUsed
 		}
 		qSpaceUsed := swag.FormatInt64(qrSpaceUsed)
 		if qSpaceUsed != "" {
@@ -1795,13 +1795,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -1812,13 +1812,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -1829,13 +1829,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -1846,13 +1846,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -1863,13 +1863,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -1880,13 +1880,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -1897,13 +1897,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -1914,13 +1914,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -1931,13 +1931,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -1948,13 +1948,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -1965,13 +1965,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -1982,13 +1982,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -1999,13 +1999,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -2016,13 +2016,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatusContainerStateQueryParameter != nil {
+	if o.StatusContainerState != nil {
 
 		// query param status.container_state
 		var qrStatusContainerState string
 
-		if o.StatusContainerStateQueryParameter != nil {
-			qrStatusContainerState = *o.StatusContainerStateQueryParameter
+		if o.StatusContainerState != nil {
+			qrStatusContainerState = *o.StatusContainerState
 		}
 		qStatusContainerState := qrStatusContainerState
 		if qStatusContainerState != "" {
@@ -2033,13 +2033,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatusMappedQueryParameter != nil {
+	if o.StatusMapped != nil {
 
 		// query param status.mapped
 		var qrStatusMapped bool
 
-		if o.StatusMappedQueryParameter != nil {
-			qrStatusMapped = *o.StatusMappedQueryParameter
+		if o.StatusMapped != nil {
+			qrStatusMapped = *o.StatusMapped
 		}
 		qStatusMapped := swag.FormatBool(qrStatusMapped)
 		if qStatusMapped != "" {
@@ -2050,13 +2050,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatusReadOnlyQueryParameter != nil {
+	if o.StatusReadOnly != nil {
 
 		// query param status.read_only
 		var qrStatusReadOnly bool
 
-		if o.StatusReadOnlyQueryParameter != nil {
-			qrStatusReadOnly = *o.StatusReadOnlyQueryParameter
+		if o.StatusReadOnly != nil {
+			qrStatusReadOnly = *o.StatusReadOnly
 		}
 		qStatusReadOnly := swag.FormatBool(qrStatusReadOnly)
 		if qStatusReadOnly != "" {
@@ -2067,13 +2067,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StatusStateQueryParameter != nil {
+	if o.StatusState != nil {
 
 		// query param status.state
 		var qrStatusState string
 
-		if o.StatusStateQueryParameter != nil {
-			qrStatusState = *o.StatusStateQueryParameter
+		if o.StatusState != nil {
+			qrStatusState = *o.StatusState
 		}
 		qStatusState := qrStatusState
 		if qStatusState != "" {
@@ -2084,13 +2084,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapAnagrpIDQueryParameter != nil {
+	if o.SubsystemMapAnagrpid != nil {
 
 		// query param subsystem_map.anagrpid
 		var qrSubsystemMapAnagrpid string
 
-		if o.SubsystemMapAnagrpIDQueryParameter != nil {
-			qrSubsystemMapAnagrpid = *o.SubsystemMapAnagrpIDQueryParameter
+		if o.SubsystemMapAnagrpid != nil {
+			qrSubsystemMapAnagrpid = *o.SubsystemMapAnagrpid
 		}
 		qSubsystemMapAnagrpid := qrSubsystemMapAnagrpid
 		if qSubsystemMapAnagrpid != "" {
@@ -2101,13 +2101,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapNsIDQueryParameter != nil {
+	if o.SubsystemMapNsid != nil {
 
 		// query param subsystem_map.nsid
 		var qrSubsystemMapNsid string
 
-		if o.SubsystemMapNsIDQueryParameter != nil {
-			qrSubsystemMapNsid = *o.SubsystemMapNsIDQueryParameter
+		if o.SubsystemMapNsid != nil {
+			qrSubsystemMapNsid = *o.SubsystemMapNsid
 		}
 		qSubsystemMapNsid := qrSubsystemMapNsid
 		if qSubsystemMapNsid != "" {
@@ -2118,13 +2118,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapSubsystemNameQueryParameter != nil {
+	if o.SubsystemMapSubsystemName != nil {
 
 		// query param subsystem_map.subsystem.name
 		var qrSubsystemMapSubsystemName string
 
-		if o.SubsystemMapSubsystemNameQueryParameter != nil {
-			qrSubsystemMapSubsystemName = *o.SubsystemMapSubsystemNameQueryParameter
+		if o.SubsystemMapSubsystemName != nil {
+			qrSubsystemMapSubsystemName = *o.SubsystemMapSubsystemName
 		}
 		qSubsystemMapSubsystemName := qrSubsystemMapSubsystemName
 		if qSubsystemMapSubsystemName != "" {
@@ -2135,13 +2135,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapSubsystemUUIDQueryParameter != nil {
+	if o.SubsystemMapSubsystemUUID != nil {
 
 		// query param subsystem_map.subsystem.uuid
 		var qrSubsystemMapSubsystemUUID string
 
-		if o.SubsystemMapSubsystemUUIDQueryParameter != nil {
-			qrSubsystemMapSubsystemUUID = *o.SubsystemMapSubsystemUUIDQueryParameter
+		if o.SubsystemMapSubsystemUUID != nil {
+			qrSubsystemMapSubsystemUUID = *o.SubsystemMapSubsystemUUID
 		}
 		qSubsystemMapSubsystemUUID := qrSubsystemMapSubsystemUUID
 		if qSubsystemMapSubsystemUUID != "" {
@@ -2152,13 +2152,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -2169,13 +2169,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -2186,13 +2186,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -2211,7 +2211,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeNamespaceCollectionGet binds the parameter fields
 func (o *NvmeNamespaceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2228,7 +2228,7 @@ func (o *NvmeNamespaceCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamNvmeNamespaceCollectionGet binds the parameter order_by
 func (o *NvmeNamespaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

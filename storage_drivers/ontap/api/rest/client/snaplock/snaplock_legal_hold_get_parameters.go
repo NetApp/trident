@@ -66,13 +66,19 @@ type SnaplockLegalHoldGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
+	   Operation ID.
+	*/
+	ID string
+
+	/* LitigationID.
+
 	   Litigation ID
 	*/
-	IDPathParameter string
+	LitigationID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +133,37 @@ func (o *SnaplockLegalHoldGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLegalHoldGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) WithFields(fields []string) *SnaplockLegalHoldGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) WithIDPathParameter(id string) *SnaplockLegalHoldGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) WithID(id string) *SnaplockLegalHoldGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) SetID(id string) {
+	o.ID = id
+}
+
+// WithLitigationID adds the litigationID to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) WithLitigationID(litigationID string) *SnaplockLegalHoldGetParams {
+	o.SetLitigationID(litigationID)
+	return o
+}
+
+// SetLitigationID adds the litigationId to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) SetLitigationID(litigationID string) {
+	o.LitigationID = litigationID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +174,7 @@ func (o *SnaplockLegalHoldGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +186,12 @@ func (o *SnaplockLegalHoldGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
+		return err
+	}
+
+	// path param litigation.id
+	if err := r.SetPathParam("litigation.id", o.LitigationID); err != nil {
 		return err
 	}
 
@@ -181,7 +203,7 @@ func (o *SnaplockLegalHoldGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamSnaplockLegalHoldGet binds the parameter fields
 func (o *SnaplockLegalHoldGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,19 +66,19 @@ type SnaplockFilePrivilegedDeleteParams struct {
 
 	   Path of the file in the form "/\<dirpath\>/\<filename\>"
 	*/
-	PathPathParameter string
+	Path string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *SnaplockFilePrivilegedDeleteParams) WithDefaults() *SnaplockFilePrivile
 // All values with no default are reset to their zero value.
 func (o *SnaplockFilePrivilegedDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnaplockFilePrivilegedDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *SnaplockFilePrivilegedDeleteParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithPathPathParameter adds the path to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) WithPathPathParameter(path string) *SnaplockFilePrivilegedDeleteParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) WithPath(path string) *SnaplockFilePrivilegedDeleteParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockFilePrivilegedDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) WithReturnTimeout(returnTimeout *int64) *SnaplockFilePrivilegedDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnaplockFilePrivilegedDeleteParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) WithVolumeUUID(volumeUUID string) *SnaplockFilePrivilegedDeleteParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snaplock file privileged delete params
-func (o *SnaplockFilePrivilegedDeleteParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snaplock file privileged delete params
+func (o *SnaplockFilePrivilegedDeleteParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,17 +186,17 @@ func (o *SnaplockFilePrivilegedDeleteParams) WriteToRequest(r runtime.ClientRequ
 	var res []error
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -208,7 +208,7 @@ func (o *SnaplockFilePrivilegedDeleteParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

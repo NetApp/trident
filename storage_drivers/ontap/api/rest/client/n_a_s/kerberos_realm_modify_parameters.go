@@ -73,13 +73,13 @@ type KerberosRealmModifyParams struct {
 
 	   Kerberos realm
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *KerberosRealmModifyParams) SetInfo(info *models.KerberosRealm) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the kerberos realm modify params
-func (o *KerberosRealmModifyParams) WithNamePathParameter(name string) *KerberosRealmModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the kerberos realm modify params
+func (o *KerberosRealmModifyParams) WithName(name string) *KerberosRealmModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the kerberos realm modify params
-func (o *KerberosRealmModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the kerberos realm modify params
+func (o *KerberosRealmModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the kerberos realm modify params
-func (o *KerberosRealmModifyParams) WithSVMUUIDPathParameter(svmUUID string) *KerberosRealmModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the kerberos realm modify params
+func (o *KerberosRealmModifyParams) WithSvmUUID(svmUUID string) *KerberosRealmModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the kerberos realm modify params
-func (o *KerberosRealmModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the kerberos realm modify params
+func (o *KerberosRealmModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *KerberosRealmModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -23,23 +23,23 @@ type FirmwareUpdateProgressState struct {
 	// attempts
 	// Example: 3
 	// Read Only: true
-	Attempts int64 `json:"attempts,omitempty"`
+	Attempts *int64 `json:"attempts,omitempty"`
 
 	// Code corresponding to the status message.
 	// Example: 2228325
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Error message returned when a cluster firmware update job fails.
 	// Example: Cannot open local staging ZIP file disk_firmware.zip
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// status
 	// Read Only: true
 	// Enum: [idle working complete failed waiting_to_retry]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// worker node
-	WorkerNode *FirmwareUpdateProgressStateWorkerNode `json:"worker_node,omitempty"`
+	WorkerNode *FirmwareUpdateProgressStateInlineWorkerNode `json:"worker_node,omitempty"`
 }
 
 // Validate validates this firmware update progress state
@@ -139,7 +139,7 @@ func (m *FirmwareUpdateProgressState) validateStatus(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -187,7 +187,7 @@ func (m *FirmwareUpdateProgressState) ContextValidate(ctx context.Context, forma
 
 func (m *FirmwareUpdateProgressState) contextValidateAttempts(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "attempts", "body", int64(m.Attempts)); err != nil {
+	if err := validate.ReadOnly(ctx, "attempts", "body", m.Attempts); err != nil {
 		return err
 	}
 
@@ -196,7 +196,7 @@ func (m *FirmwareUpdateProgressState) contextValidateAttempts(ctx context.Contex
 
 func (m *FirmwareUpdateProgressState) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -235,25 +235,25 @@ func (m *FirmwareUpdateProgressState) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareUpdateProgressStateWorkerNode firmware update progress state worker node
+// FirmwareUpdateProgressStateInlineWorkerNode firmware update progress state inline worker node
 //
-// swagger:model FirmwareUpdateProgressStateWorkerNode
-type FirmwareUpdateProgressStateWorkerNode struct {
+// swagger:model firmware_update_progress_state_inline_worker_node
+type FirmwareUpdateProgressStateInlineWorkerNode struct {
 
 	// links
-	Links *FirmwareUpdateProgressStateWorkerNodeLinks `json:"_links,omitempty"`
+	Links *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this firmware update progress state worker node
-func (m *FirmwareUpdateProgressStateWorkerNode) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware update progress state inline worker node
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -266,7 +266,7 @@ func (m *FirmwareUpdateProgressStateWorkerNode) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *FirmwareUpdateProgressStateWorkerNode) validateLinks(formats strfmt.Registry) error {
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -283,8 +283,8 @@ func (m *FirmwareUpdateProgressStateWorkerNode) validateLinks(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this firmware update progress state worker node based on the context it is used
-func (m *FirmwareUpdateProgressStateWorkerNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware update progress state inline worker node based on the context it is used
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -297,7 +297,7 @@ func (m *FirmwareUpdateProgressStateWorkerNode) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *FirmwareUpdateProgressStateWorkerNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -312,7 +312,7 @@ func (m *FirmwareUpdateProgressStateWorkerNode) contextValidateLinks(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareUpdateProgressStateWorkerNode) MarshalBinary() ([]byte, error) {
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -320,8 +320,8 @@ func (m *FirmwareUpdateProgressStateWorkerNode) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareUpdateProgressStateWorkerNode) UnmarshalBinary(b []byte) error {
-	var res FirmwareUpdateProgressStateWorkerNode
+func (m *FirmwareUpdateProgressStateInlineWorkerNode) UnmarshalBinary(b []byte) error {
+	var res FirmwareUpdateProgressStateInlineWorkerNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -329,17 +329,17 @@ func (m *FirmwareUpdateProgressStateWorkerNode) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// FirmwareUpdateProgressStateWorkerNodeLinks firmware update progress state worker node links
+// FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks firmware update progress state inline worker node inline links
 //
-// swagger:model FirmwareUpdateProgressStateWorkerNodeLinks
-type FirmwareUpdateProgressStateWorkerNodeLinks struct {
+// swagger:model firmware_update_progress_state_inline_worker_node_inline__links
+type FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this firmware update progress state worker node links
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware update progress state inline worker node inline links
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -352,7 +352,7 @@ func (m *FirmwareUpdateProgressStateWorkerNodeLinks) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -369,8 +369,8 @@ func (m *FirmwareUpdateProgressStateWorkerNodeLinks) validateSelf(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this firmware update progress state worker node links based on the context it is used
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware update progress state inline worker node inline links based on the context it is used
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *FirmwareUpdateProgressStateWorkerNodeLinks) ContextValidate(ctx context
 	return nil
 }
 
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *FirmwareUpdateProgressStateWorkerNodeLinks) contextValidateSelf(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -406,8 +406,8 @@ func (m *FirmwareUpdateProgressStateWorkerNodeLinks) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareUpdateProgressStateWorkerNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FirmwareUpdateProgressStateWorkerNodeLinks
+func (m *FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FirmwareUpdateProgressStateInlineWorkerNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

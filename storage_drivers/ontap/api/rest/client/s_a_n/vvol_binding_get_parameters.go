@@ -66,21 +66,21 @@ type VvolBindingGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ProtocolEndpointUUID.
 
 	   The unique identifier of the class `protocol_endpoint` LUN.
 
 	*/
-	ProtocolEndpointUUIDPathParameter string
+	ProtocolEndpointUUID string
 
 	/* VvolUUID.
 
 	   The unique identifier of the class `vvol` LUN.
 
 	*/
-	VvolUUIDPathParameter string
+	VvolUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *VvolBindingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the vvol binding get params
-func (o *VvolBindingGetParams) WithFieldsQueryParameter(fields []string) *VvolBindingGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vvol binding get params
+func (o *VvolBindingGetParams) WithFields(fields []string) *VvolBindingGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vvol binding get params
-func (o *VvolBindingGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vvol binding get params
+func (o *VvolBindingGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithProtocolEndpointUUIDPathParameter adds the protocolEndpointUUID to the vvol binding get params
-func (o *VvolBindingGetParams) WithProtocolEndpointUUIDPathParameter(protocolEndpointUUID string) *VvolBindingGetParams {
-	o.SetProtocolEndpointUUIDPathParameter(protocolEndpointUUID)
+// WithProtocolEndpointUUID adds the protocolEndpointUUID to the vvol binding get params
+func (o *VvolBindingGetParams) WithProtocolEndpointUUID(protocolEndpointUUID string) *VvolBindingGetParams {
+	o.SetProtocolEndpointUUID(protocolEndpointUUID)
 	return o
 }
 
-// SetProtocolEndpointUUIDPathParameter adds the protocolEndpointUuid to the vvol binding get params
-func (o *VvolBindingGetParams) SetProtocolEndpointUUIDPathParameter(protocolEndpointUUID string) {
-	o.ProtocolEndpointUUIDPathParameter = protocolEndpointUUID
+// SetProtocolEndpointUUID adds the protocolEndpointUuid to the vvol binding get params
+func (o *VvolBindingGetParams) SetProtocolEndpointUUID(protocolEndpointUUID string) {
+	o.ProtocolEndpointUUID = protocolEndpointUUID
 }
 
-// WithVvolUUIDPathParameter adds the vvolUUID to the vvol binding get params
-func (o *VvolBindingGetParams) WithVvolUUIDPathParameter(vvolUUID string) *VvolBindingGetParams {
-	o.SetVvolUUIDPathParameter(vvolUUID)
+// WithVvolUUID adds the vvolUUID to the vvol binding get params
+func (o *VvolBindingGetParams) WithVvolUUID(vvolUUID string) *VvolBindingGetParams {
+	o.SetVvolUUID(vvolUUID)
 	return o
 }
 
-// SetVvolUUIDPathParameter adds the vvolUuid to the vvol binding get params
-func (o *VvolBindingGetParams) SetVvolUUIDPathParameter(vvolUUID string) {
-	o.VvolUUIDPathParameter = vvolUUID
+// SetVvolUUID adds the vvolUuid to the vvol binding get params
+func (o *VvolBindingGetParams) SetVvolUUID(vvolUUID string) {
+	o.VvolUUID = vvolUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *VvolBindingGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *VvolBindingGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param protocol_endpoint.uuid
-	if err := r.SetPathParam("protocol_endpoint.uuid", o.ProtocolEndpointUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("protocol_endpoint.uuid", o.ProtocolEndpointUUID); err != nil {
 		return err
 	}
 
 	// path param vvol.uuid
-	if err := r.SetPathParam("vvol.uuid", o.VvolUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("vvol.uuid", o.VvolUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *VvolBindingGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamVvolBindingGet binds the parameter fields
 func (o *VvolBindingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

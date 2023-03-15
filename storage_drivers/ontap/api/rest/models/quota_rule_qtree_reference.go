@@ -20,16 +20,16 @@ import (
 type QuotaRuleQtreeReference struct {
 
 	// links
-	Links *QuotaRuleQtreeReferenceLinks `json:"_links,omitempty"`
+	Links *QuotaRuleQtreeReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The unique identifier for a qtree.
 	// Example: 1
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// The name of the qtree.
 	// Example: qt1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this quota rule qtree reference
@@ -97,7 +97,7 @@ func (m *QuotaRuleQtreeReference) contextValidateLinks(ctx context.Context, form
 
 func (m *QuotaRuleQtreeReference) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -122,17 +122,17 @@ func (m *QuotaRuleQtreeReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaRuleQtreeReferenceLinks quota rule qtree reference links
+// QuotaRuleQtreeReferenceInlineLinks quota rule qtree reference inline links
 //
-// swagger:model QuotaRuleQtreeReferenceLinks
-type QuotaRuleQtreeReferenceLinks struct {
+// swagger:model quota_rule_qtree_reference_inline__links
+type QuotaRuleQtreeReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota rule qtree reference links
-func (m *QuotaRuleQtreeReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota rule qtree reference inline links
+func (m *QuotaRuleQtreeReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -145,7 +145,7 @@ func (m *QuotaRuleQtreeReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaRuleQtreeReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaRuleQtreeReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -162,8 +162,8 @@ func (m *QuotaRuleQtreeReferenceLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this quota rule qtree reference links based on the context it is used
-func (m *QuotaRuleQtreeReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota rule qtree reference inline links based on the context it is used
+func (m *QuotaRuleQtreeReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *QuotaRuleQtreeReferenceLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *QuotaRuleQtreeReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaRuleQtreeReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -191,7 +191,7 @@ func (m *QuotaRuleQtreeReferenceLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaRuleQtreeReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaRuleQtreeReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -199,8 +199,8 @@ func (m *QuotaRuleQtreeReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaRuleQtreeReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaRuleQtreeReferenceLinks
+func (m *QuotaRuleQtreeReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaRuleQtreeReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

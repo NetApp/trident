@@ -68,7 +68,7 @@ type IgroupInitiatorModifyParams struct {
 	   The unique identifier of the initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* Info.
 
@@ -82,7 +82,7 @@ type IgroupInitiatorModifyParams struct {
 	   The initiator name.
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -137,15 +137,15 @@ func (o *IgroupInitiatorModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup initiator modify params
-func (o *IgroupInitiatorModifyParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupInitiatorModifyParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup initiator modify params
+func (o *IgroupInitiatorModifyParams) WithIgroupUUID(igroupUUID string) *IgroupInitiatorModifyParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup initiator modify params
-func (o *IgroupInitiatorModifyParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup initiator modify params
+func (o *IgroupInitiatorModifyParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
 // WithInfo adds the info to the igroup initiator modify params
@@ -159,15 +159,15 @@ func (o *IgroupInitiatorModifyParams) SetInfo(info *models.IgroupInitiator) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the igroup initiator modify params
-func (o *IgroupInitiatorModifyParams) WithNamePathParameter(name string) *IgroupInitiatorModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the igroup initiator modify params
+func (o *IgroupInitiatorModifyParams) WithName(name string) *IgroupInitiatorModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the igroup initiator modify params
-func (o *IgroupInitiatorModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the igroup initiator modify params
+func (o *IgroupInitiatorModifyParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -179,7 +179,7 @@ func (o *IgroupInitiatorModifyParams) WriteToRequest(r runtime.ClientRequest, re
 	var res []error
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -189,7 +189,7 @@ func (o *IgroupInitiatorModifyParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

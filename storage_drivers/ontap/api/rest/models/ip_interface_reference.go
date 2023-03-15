@@ -19,20 +19,20 @@ import (
 type IPInterfaceReference struct {
 
 	// links
-	Links *IPInterfaceReferenceLinks `json:"_links,omitempty"`
+	Links *IPInterfaceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *IPInterfaceReferenceIP `json:"ip,omitempty"`
+	IP *IPInterfaceReferenceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ip interface reference
@@ -151,17 +151,17 @@ func (m *IPInterfaceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceReferenceIP IP information
+// IPInterfaceReferenceInlineIP IP information
 //
-// swagger:model IPInterfaceReferenceIP
-type IPInterfaceReferenceIP struct {
+// swagger:model ip_interface_reference_inline_ip
+type IPInterfaceReferenceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this IP interface reference IP
-func (m *IPInterfaceReferenceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface reference inline ip
+func (m *IPInterfaceReferenceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -174,23 +174,25 @@ func (m *IPInterfaceReferenceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceReferenceIP) validateAddress(formats strfmt.Registry) error {
+func (m *IPInterfaceReferenceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this IP interface reference IP based on the context it is used
-func (m *IPInterfaceReferenceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface reference inline ip based on the context it is used
+func (m *IPInterfaceReferenceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -203,20 +205,22 @@ func (m *IPInterfaceReferenceIP) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IPInterfaceReferenceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceReferenceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceReferenceIP) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceReferenceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -224,8 +228,8 @@ func (m *IPInterfaceReferenceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceReferenceIP) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceReferenceIP
+func (m *IPInterfaceReferenceInlineIP) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceReferenceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -233,17 +237,17 @@ func (m *IPInterfaceReferenceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceReferenceLinks IP interface reference links
+// IPInterfaceReferenceInlineLinks ip interface reference inline links
 //
-// swagger:model IPInterfaceReferenceLinks
-type IPInterfaceReferenceLinks struct {
+// swagger:model ip_interface_reference_inline__links
+type IPInterfaceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface reference links
-func (m *IPInterfaceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface reference inline links
+func (m *IPInterfaceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -256,7 +260,7 @@ func (m *IPInterfaceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -273,8 +277,8 @@ func (m *IPInterfaceReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this IP interface reference links based on the context it is used
-func (m *IPInterfaceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface reference inline links based on the context it is used
+func (m *IPInterfaceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -287,7 +291,7 @@ func (m *IPInterfaceReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *IPInterfaceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -302,7 +306,7 @@ func (m *IPInterfaceReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -310,8 +314,8 @@ func (m *IPInterfaceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceReferenceLinks
+func (m *IPInterfaceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

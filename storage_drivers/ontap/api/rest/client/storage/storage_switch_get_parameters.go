@@ -66,10 +66,10 @@ type StorageSwitchGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *StorageSwitchGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the storage switch get params
-func (o *StorageSwitchGetParams) WithFieldsQueryParameter(fields []string) *StorageSwitchGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage switch get params
+func (o *StorageSwitchGetParams) WithFields(fields []string) *StorageSwitchGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage switch get params
-func (o *StorageSwitchGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage switch get params
+func (o *StorageSwitchGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the storage switch get params
-func (o *StorageSwitchGetParams) WithNamePathParameter(name string) *StorageSwitchGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the storage switch get params
+func (o *StorageSwitchGetParams) WithName(name string) *StorageSwitchGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the storage switch get params
-func (o *StorageSwitchGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the storage switch get params
+func (o *StorageSwitchGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *StorageSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *StorageSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *StorageSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamStorageSwitchGet binds the parameter fields
 func (o *StorageSwitchGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,13 +66,13 @@ type ClientLockGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Lock ID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ClientLockGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the client lock get params
-func (o *ClientLockGetParams) WithFieldsQueryParameter(fields []string) *ClientLockGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the client lock get params
+func (o *ClientLockGetParams) WithFields(fields []string) *ClientLockGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the client lock get params
-func (o *ClientLockGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the client lock get params
+func (o *ClientLockGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the client lock get params
-func (o *ClientLockGetParams) WithUUIDPathParameter(uuid string) *ClientLockGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the client lock get params
+func (o *ClientLockGetParams) WithUUID(uuid string) *ClientLockGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the client lock get params
-func (o *ClientLockGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the client lock get params
+func (o *ClientLockGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ClientLockGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ClientLockGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ClientLockGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamClientLockGet binds the parameter fields
 func (o *ClientLockGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

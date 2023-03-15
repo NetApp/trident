@@ -74,20 +74,20 @@ type S3UserModifyParams struct {
 
 	   User name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* RegenerateKeys.
 
 	   Specifies whether or not to regenerate the user keys.
 
 	*/
-	RegenerateKeysQueryParameter *bool
+	RegenerateKeys *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -107,11 +107,11 @@ func (o *S3UserModifyParams) WithDefaults() *S3UserModifyParams {
 // All values with no default are reset to their zero value.
 func (o *S3UserModifyParams) SetDefaults() {
 	var (
-		regenerateKeysQueryParameterDefault = bool(false)
+		regenerateKeysDefault = bool(false)
 	)
 
 	val := S3UserModifyParams{
-		RegenerateKeysQueryParameter: &regenerateKeysQueryParameterDefault,
+		RegenerateKeys: &regenerateKeysDefault,
 	}
 
 	val.timeout = o.timeout
@@ -164,37 +164,37 @@ func (o *S3UserModifyParams) SetInfo(info *models.S3User) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the s3 user modify params
-func (o *S3UserModifyParams) WithNamePathParameter(name string) *S3UserModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the s3 user modify params
+func (o *S3UserModifyParams) WithName(name string) *S3UserModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the s3 user modify params
-func (o *S3UserModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the s3 user modify params
+func (o *S3UserModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithRegenerateKeysQueryParameter adds the regenerateKeys to the s3 user modify params
-func (o *S3UserModifyParams) WithRegenerateKeysQueryParameter(regenerateKeys *bool) *S3UserModifyParams {
-	o.SetRegenerateKeysQueryParameter(regenerateKeys)
+// WithRegenerateKeys adds the regenerateKeys to the s3 user modify params
+func (o *S3UserModifyParams) WithRegenerateKeys(regenerateKeys *bool) *S3UserModifyParams {
+	o.SetRegenerateKeys(regenerateKeys)
 	return o
 }
 
-// SetRegenerateKeysQueryParameter adds the regenerateKeys to the s3 user modify params
-func (o *S3UserModifyParams) SetRegenerateKeysQueryParameter(regenerateKeys *bool) {
-	o.RegenerateKeysQueryParameter = regenerateKeys
+// SetRegenerateKeys adds the regenerateKeys to the s3 user modify params
+func (o *S3UserModifyParams) SetRegenerateKeys(regenerateKeys *bool) {
+	o.RegenerateKeys = regenerateKeys
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 user modify params
-func (o *S3UserModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3UserModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 user modify params
+func (o *S3UserModifyParams) WithSvmUUID(svmUUID string) *S3UserModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 user modify params
-func (o *S3UserModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 user modify params
+func (o *S3UserModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -211,17 +211,17 @@ func (o *S3UserModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.RegenerateKeysQueryParameter != nil {
+	if o.RegenerateKeys != nil {
 
 		// query param regenerate_keys
 		var qrRegenerateKeys bool
 
-		if o.RegenerateKeysQueryParameter != nil {
-			qrRegenerateKeys = *o.RegenerateKeysQueryParameter
+		if o.RegenerateKeys != nil {
+			qrRegenerateKeys = *o.RegenerateKeys
 		}
 		qRegenerateKeys := swag.FormatBool(qrRegenerateKeys)
 		if qRegenerateKeys != "" {
@@ -233,7 +233,7 @@ func (o *S3UserModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

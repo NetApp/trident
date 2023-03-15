@@ -19,11 +19,11 @@ import (
 type SecurityKeyManagerReference struct {
 
 	// links
-	Links *SecurityKeyManagerReferenceLinks `json:"_links,omitempty"`
+	Links *SecurityKeyManagerReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Key manager UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563434
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this security key manager reference
@@ -103,17 +103,17 @@ func (m *SecurityKeyManagerReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerReferenceLinks security key manager reference links
+// SecurityKeyManagerReferenceInlineLinks security key manager reference inline links
 //
-// swagger:model SecurityKeyManagerReferenceLinks
-type SecurityKeyManagerReferenceLinks struct {
+// swagger:model security_key_manager_reference_inline__links
+type SecurityKeyManagerReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security key manager reference links
-func (m *SecurityKeyManagerReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager reference inline links
+func (m *SecurityKeyManagerReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *SecurityKeyManagerReferenceLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SecurityKeyManagerReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *SecurityKeyManagerReferenceLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this security key manager reference links based on the context it is used
-func (m *SecurityKeyManagerReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager reference inline links based on the context it is used
+func (m *SecurityKeyManagerReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *SecurityKeyManagerReferenceLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SecurityKeyManagerReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *SecurityKeyManagerReferenceLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *SecurityKeyManagerReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerReferenceLinks
+func (m *SecurityKeyManagerReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

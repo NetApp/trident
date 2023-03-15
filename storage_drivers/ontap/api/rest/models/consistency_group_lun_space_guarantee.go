@@ -24,7 +24,7 @@ type ConsistencyGroupLunSpaceGuarantee struct {
 	// Reports if the LUN is space guaranteed.<br/>
 	// If _true_, a space guarantee is requested and the containing volume and aggregate support the request. If _false_, a space guarantee is not requested or a space guarantee is requested and either the containing volume or aggregate do not support the request.
 	//
-	Reserved bool `json:"reserved,omitempty"`
+	Reserved *bool `json:"reserved,omitempty"`
 }
 
 // Validate validates this consistency group lun space guarantee

@@ -23,12 +23,12 @@ type ConsistencyGroupReplicationRelationship struct {
 
 	// Indicates whether or not this consistency group is the source for replication.
 	//
-	IsSource bool `json:"is_source,omitempty"`
+	IsSource *bool `json:"is_source,omitempty"`
 
 	// The unique identifier of the SnapMirror relationship.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group replication relationship

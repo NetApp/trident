@@ -66,25 +66,31 @@ type CifsDomainPreferredDcGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Fqdn.
 
 	   Fully Qualified Domain Name
 	*/
-	FqdnPathParameter string
+	Fqdn string
+
+	/* NeedStatus.
+
+	   Retrieves the status of the specified preferred DC.
+	*/
+	NeedStatus *bool
 
 	/* ServerIP.
 
 	   Domain Controller IP address
 	*/
-	ServerIPPathParameter string
+	ServerIP string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -103,7 +109,18 @@ func (o *CifsDomainPreferredDcGetParams) WithDefaults() *CifsDomainPreferredDcGe
 //
 // All values with no default are reset to their zero value.
 func (o *CifsDomainPreferredDcGetParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		needStatusDefault = bool(false)
+	)
+
+	val := CifsDomainPreferredDcGetParams{
+		NeedStatus: &needStatusDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the cifs domain preferred dc get params
@@ -139,48 +156,59 @@ func (o *CifsDomainPreferredDcGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) WithFieldsQueryParameter(fields []string) *CifsDomainPreferredDcGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) WithFields(fields []string) *CifsDomainPreferredDcGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFqdnPathParameter adds the fqdn to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) WithFqdnPathParameter(fqdn string) *CifsDomainPreferredDcGetParams {
-	o.SetFqdnPathParameter(fqdn)
+// WithFqdn adds the fqdn to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) WithFqdn(fqdn string) *CifsDomainPreferredDcGetParams {
+	o.SetFqdn(fqdn)
 	return o
 }
 
-// SetFqdnPathParameter adds the fqdn to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) SetFqdnPathParameter(fqdn string) {
-	o.FqdnPathParameter = fqdn
+// SetFqdn adds the fqdn to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) SetFqdn(fqdn string) {
+	o.Fqdn = fqdn
 }
 
-// WithServerIPPathParameter adds the serverIP to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) WithServerIPPathParameter(serverIP string) *CifsDomainPreferredDcGetParams {
-	o.SetServerIPPathParameter(serverIP)
+// WithNeedStatus adds the needStatus to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) WithNeedStatus(needStatus *bool) *CifsDomainPreferredDcGetParams {
+	o.SetNeedStatus(needStatus)
 	return o
 }
 
-// SetServerIPPathParameter adds the serverIp to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) SetServerIPPathParameter(serverIP string) {
-	o.ServerIPPathParameter = serverIP
+// SetNeedStatus adds the needStatus to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) SetNeedStatus(needStatus *bool) {
+	o.NeedStatus = needStatus
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsDomainPreferredDcGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithServerIP adds the serverIP to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) WithServerIP(serverIP string) *CifsDomainPreferredDcGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs domain preferred dc get params
-func (o *CifsDomainPreferredDcGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetServerIP adds the serverIp to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) SetServerIP(serverIP string) {
+	o.ServerIP = serverIP
+}
+
+// WithSvmUUID adds the svmUUID to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) WithSvmUUID(svmUUID string) *CifsDomainPreferredDcGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the cifs domain preferred dc get params
+func (o *CifsDomainPreferredDcGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +219,7 @@ func (o *CifsDomainPreferredDcGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +231,34 @@ func (o *CifsDomainPreferredDcGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param fqdn
-	if err := r.SetPathParam("fqdn", o.FqdnPathParameter); err != nil {
+	if err := r.SetPathParam("fqdn", o.Fqdn); err != nil {
 		return err
 	}
 
+	if o.NeedStatus != nil {
+
+		// query param need_status
+		var qrNeedStatus bool
+
+		if o.NeedStatus != nil {
+			qrNeedStatus = *o.NeedStatus
+		}
+		qNeedStatus := swag.FormatBool(qrNeedStatus)
+		if qNeedStatus != "" {
+
+			if err := r.SetQueryParam("need_status", qNeedStatus); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param server_ip
-	if err := r.SetPathParam("server_ip", o.ServerIPPathParameter); err != nil {
+	if err := r.SetPathParam("server_ip", o.ServerIP); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -225,7 +270,7 @@ func (o *CifsDomainPreferredDcGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCifsDomainPreferredDcGet binds the parameter fields
 func (o *CifsDomainPreferredDcGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

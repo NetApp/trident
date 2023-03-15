@@ -68,7 +68,7 @@ type QtreeModifyParams struct {
 
 	   Qtree ID
 	*/
-	IDPathParameter string
+	ID string
 
 	/* Info.
 
@@ -81,13 +81,13 @@ type QtreeModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -107,11 +107,11 @@ func (o *QtreeModifyParams) WithDefaults() *QtreeModifyParams {
 // All values with no default are reset to their zero value.
 func (o *QtreeModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := QtreeModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -153,15 +153,15 @@ func (o *QtreeModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the qtree modify params
-func (o *QtreeModifyParams) WithIDPathParameter(id string) *QtreeModifyParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the qtree modify params
+func (o *QtreeModifyParams) WithID(id string) *QtreeModifyParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the qtree modify params
-func (o *QtreeModifyParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the qtree modify params
+func (o *QtreeModifyParams) SetID(id string) {
+	o.ID = id
 }
 
 // WithInfo adds the info to the qtree modify params
@@ -175,26 +175,26 @@ func (o *QtreeModifyParams) SetInfo(info *models.Qtree) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the qtree modify params
-func (o *QtreeModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QtreeModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the qtree modify params
+func (o *QtreeModifyParams) WithReturnTimeout(returnTimeout *int64) *QtreeModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the qtree modify params
-func (o *QtreeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the qtree modify params
+func (o *QtreeModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the qtree modify params
-func (o *QtreeModifyParams) WithVolumeUUIDPathParameter(volumeUUID string) *QtreeModifyParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the qtree modify params
+func (o *QtreeModifyParams) WithVolumeUUID(volumeUUID string) *QtreeModifyParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the qtree modify params
-func (o *QtreeModifyParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the qtree modify params
+func (o *QtreeModifyParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -206,7 +206,7 @@ func (o *QtreeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -215,13 +215,13 @@ func (o *QtreeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -233,7 +233,7 @@ func (o *QtreeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

@@ -66,13 +66,13 @@ type IPSubnetGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   IP subnet UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *IPSubnetGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ip subnet get params
-func (o *IPSubnetGetParams) WithFieldsQueryParameter(fields []string) *IPSubnetGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ip subnet get params
+func (o *IPSubnetGetParams) WithFields(fields []string) *IPSubnetGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ip subnet get params
-func (o *IPSubnetGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ip subnet get params
+func (o *IPSubnetGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the ip subnet get params
-func (o *IPSubnetGetParams) WithUUIDPathParameter(uuid string) *IPSubnetGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ip subnet get params
+func (o *IPSubnetGetParams) WithUUID(uuid string) *IPSubnetGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ip subnet get params
-func (o *IPSubnetGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ip subnet get params
+func (o *IPSubnetGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *IPSubnetGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *IPSubnetGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *IPSubnetGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamIPSubnetGet binds the parameter fields
 func (o *IPSubnetGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

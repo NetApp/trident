@@ -66,19 +66,19 @@ type NdmpPasswordGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* User.
 
 	   User name
 	*/
-	UserPathParameter string
+	User string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *NdmpPasswordGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp password get params
-func (o *NdmpPasswordGetParams) WithFieldsQueryParameter(fields []string) *NdmpPasswordGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp password get params
+func (o *NdmpPasswordGetParams) WithFields(fields []string) *NdmpPasswordGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp password get params
-func (o *NdmpPasswordGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp password get params
+func (o *NdmpPasswordGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the ndmp password get params
-func (o *NdmpPasswordGetParams) WithSVMUUIDPathParameter(svmUUID string) *NdmpPasswordGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ndmp password get params
+func (o *NdmpPasswordGetParams) WithSvmUUID(svmUUID string) *NdmpPasswordGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the ndmp password get params
-func (o *NdmpPasswordGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ndmp password get params
+func (o *NdmpPasswordGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUserPathParameter adds the user to the ndmp password get params
-func (o *NdmpPasswordGetParams) WithUserPathParameter(user string) *NdmpPasswordGetParams {
-	o.SetUserPathParameter(user)
+// WithUser adds the user to the ndmp password get params
+func (o *NdmpPasswordGetParams) WithUser(user string) *NdmpPasswordGetParams {
+	o.SetUser(user)
 	return o
 }
 
-// SetUserPathParameter adds the user to the ndmp password get params
-func (o *NdmpPasswordGetParams) SetUserPathParameter(user string) {
-	o.UserPathParameter = user
+// SetUser adds the user to the ndmp password get params
+func (o *NdmpPasswordGetParams) SetUser(user string) {
+	o.User = user
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *NdmpPasswordGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *NdmpPasswordGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param user
-	if err := r.SetPathParam("user", o.UserPathParameter); err != nil {
+	if err := r.SetPathParam("user", o.User); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *NdmpPasswordGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamNdmpPasswordGet binds the parameter fields
 func (o *NdmpPasswordGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

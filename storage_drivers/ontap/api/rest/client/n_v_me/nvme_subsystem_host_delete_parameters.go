@@ -66,14 +66,14 @@ type NvmeSubsystemHostDeleteParams struct {
 	   The NVMe qualified name (NQN) used to identify the NVMe subsystem host.
 
 	*/
-	NqnPathParameter string
+	Nqn string
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *NvmeSubsystemHostDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNqnPathParameter adds the nqn to the nvme subsystem host delete params
-func (o *NvmeSubsystemHostDeleteParams) WithNqnPathParameter(nqn string) *NvmeSubsystemHostDeleteParams {
-	o.SetNqnPathParameter(nqn)
+// WithNqn adds the nqn to the nvme subsystem host delete params
+func (o *NvmeSubsystemHostDeleteParams) WithNqn(nqn string) *NvmeSubsystemHostDeleteParams {
+	o.SetNqn(nqn)
 	return o
 }
 
-// SetNqnPathParameter adds the nqn to the nvme subsystem host delete params
-func (o *NvmeSubsystemHostDeleteParams) SetNqnPathParameter(nqn string) {
-	o.NqnPathParameter = nqn
+// SetNqn adds the nqn to the nvme subsystem host delete params
+func (o *NvmeSubsystemHostDeleteParams) SetNqn(nqn string) {
+	o.Nqn = nqn
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem host delete params
-func (o *NvmeSubsystemHostDeleteParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemHostDeleteParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem host delete params
+func (o *NvmeSubsystemHostDeleteParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemHostDeleteParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem host delete params
-func (o *NvmeSubsystemHostDeleteParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem host delete params
+func (o *NvmeSubsystemHostDeleteParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -159,12 +159,12 @@ func (o *NvmeSubsystemHostDeleteParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param nqn
-	if err := r.SetPathParam("nqn", o.NqnPathParameter); err != nil {
+	if err := r.SetPathParam("nqn", o.Nqn); err != nil {
 		return err
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 

@@ -66,19 +66,19 @@ type CounterRowGetParams struct {
 
 	   Counter table name.
 	*/
-	CounterTableNamePathParameter string
+	CounterTableName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Unique row identifier.
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CounterRowGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCounterTableNamePathParameter adds the counterTableName to the counter row get params
-func (o *CounterRowGetParams) WithCounterTableNamePathParameter(counterTableName string) *CounterRowGetParams {
-	o.SetCounterTableNamePathParameter(counterTableName)
+// WithCounterTableName adds the counterTableName to the counter row get params
+func (o *CounterRowGetParams) WithCounterTableName(counterTableName string) *CounterRowGetParams {
+	o.SetCounterTableName(counterTableName)
 	return o
 }
 
-// SetCounterTableNamePathParameter adds the counterTableName to the counter row get params
-func (o *CounterRowGetParams) SetCounterTableNamePathParameter(counterTableName string) {
-	o.CounterTableNamePathParameter = counterTableName
+// SetCounterTableName adds the counterTableName to the counter row get params
+func (o *CounterRowGetParams) SetCounterTableName(counterTableName string) {
+	o.CounterTableName = counterTableName
 }
 
-// WithFieldsQueryParameter adds the fields to the counter row get params
-func (o *CounterRowGetParams) WithFieldsQueryParameter(fields []string) *CounterRowGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the counter row get params
+func (o *CounterRowGetParams) WithFields(fields []string) *CounterRowGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the counter row get params
-func (o *CounterRowGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the counter row get params
+func (o *CounterRowGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the counter row get params
-func (o *CounterRowGetParams) WithIDPathParameter(id string) *CounterRowGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the counter row get params
+func (o *CounterRowGetParams) WithID(id string) *CounterRowGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the counter row get params
-func (o *CounterRowGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the counter row get params
+func (o *CounterRowGetParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *CounterRowGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param counter_table.name
-	if err := r.SetPathParam("counter_table.name", o.CounterTableNamePathParameter); err != nil {
+	if err := r.SetPathParam("counter_table.name", o.CounterTableName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *CounterRowGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CounterRowGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamCounterRowGet binds the parameter fields
 func (o *CounterRowGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -22,12 +22,12 @@ type AutosupportConnectivityIssue struct {
 	// Error code
 	// Example: 53149746
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message
 	// Example: SMTP connectivity check failed for destination: mailhost. Error: Could not resolve host - 'mailhost'
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this autosupport connectivity issue
@@ -55,7 +55,7 @@ func (m *AutosupportConnectivityIssue) ContextValidate(ctx context.Context, form
 
 func (m *AutosupportConnectivityIssue) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (m *AutosupportConnectivityIssue) contextValidateCode(ctx context.Context, 
 
 func (m *AutosupportConnectivityIssue) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 

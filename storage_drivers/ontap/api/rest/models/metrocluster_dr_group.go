@@ -23,18 +23,18 @@ type MetroclusterDrGroup struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// dr pairs
-	DrPairs []*DrPair `json:"dr_pairs,omitempty"`
-
 	// DR Group ID
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
+
+	// metrocluster dr group inline dr pairs
+	MetroclusterDrGroupInlineDrPairs []*DrPair `json:"dr_pairs,omitempty"`
 
 	// List of Port specifications.
-	MccipPorts []*MetroclusterDrGroupMccipPortsItems0 `json:"mccip_ports,omitempty"`
+	MetroclusterDrGroupInlineMccipPorts []*MetroclusterDrGroupInlineMccipPortsInlineArrayItem `json:"mccip_ports,omitempty"`
 
 	// partner cluster
-	PartnerCluster *MetroclusterDrGroupPartnerCluster `json:"partner_cluster,omitempty"`
+	PartnerCluster *MetroclusterDrGroupInlinePartnerCluster `json:"partner_cluster,omitempty"`
 }
 
 // Validate validates this metrocluster dr group
@@ -45,11 +45,11 @@ func (m *MetroclusterDrGroup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateDrPairs(formats); err != nil {
+	if err := m.validateMetroclusterDrGroupInlineDrPairs(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateMccipPorts(formats); err != nil {
+	if err := m.validateMetroclusterDrGroupInlineMccipPorts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -80,18 +80,18 @@ func (m *MetroclusterDrGroup) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterDrGroup) validateDrPairs(formats strfmt.Registry) error {
-	if swag.IsZero(m.DrPairs) { // not required
+func (m *MetroclusterDrGroup) validateMetroclusterDrGroupInlineDrPairs(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterDrGroupInlineDrPairs) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.DrPairs); i++ {
-		if swag.IsZero(m.DrPairs[i]) { // not required
+	for i := 0; i < len(m.MetroclusterDrGroupInlineDrPairs); i++ {
+		if swag.IsZero(m.MetroclusterDrGroupInlineDrPairs[i]) { // not required
 			continue
 		}
 
-		if m.DrPairs[i] != nil {
-			if err := m.DrPairs[i].Validate(formats); err != nil {
+		if m.MetroclusterDrGroupInlineDrPairs[i] != nil {
+			if err := m.MetroclusterDrGroupInlineDrPairs[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
 				}
@@ -104,18 +104,18 @@ func (m *MetroclusterDrGroup) validateDrPairs(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterDrGroup) validateMccipPorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.MccipPorts) { // not required
+func (m *MetroclusterDrGroup) validateMetroclusterDrGroupInlineMccipPorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterDrGroupInlineMccipPorts) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.MccipPorts); i++ {
-		if swag.IsZero(m.MccipPorts[i]) { // not required
+	for i := 0; i < len(m.MetroclusterDrGroupInlineMccipPorts); i++ {
+		if swag.IsZero(m.MetroclusterDrGroupInlineMccipPorts[i]) { // not required
 			continue
 		}
 
-		if m.MccipPorts[i] != nil {
-			if err := m.MccipPorts[i].Validate(formats); err != nil {
+		if m.MetroclusterDrGroupInlineMccipPorts[i] != nil {
+			if err := m.MetroclusterDrGroupInlineMccipPorts[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
 				}
@@ -153,15 +153,15 @@ func (m *MetroclusterDrGroup) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateDrPairs(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMccipPorts(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterDrGroupInlineDrPairs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetroclusterDrGroupInlineMccipPorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -189,12 +189,21 @@ func (m *MetroclusterDrGroup) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *MetroclusterDrGroup) contextValidateDrPairs(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.DrPairs); i++ {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
+		return err
+	}
 
-		if m.DrPairs[i] != nil {
-			if err := m.DrPairs[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *MetroclusterDrGroup) contextValidateMetroclusterDrGroupInlineDrPairs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.MetroclusterDrGroupInlineDrPairs); i++ {
+
+		if m.MetroclusterDrGroupInlineDrPairs[i] != nil {
+			if err := m.MetroclusterDrGroupInlineDrPairs[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
 				}
@@ -207,21 +216,12 @@ func (m *MetroclusterDrGroup) contextValidateDrPairs(ctx context.Context, format
 	return nil
 }
 
-func (m *MetroclusterDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroup) contextValidateMetroclusterDrGroupInlineMccipPorts(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
-		return err
-	}
+	for i := 0; i < len(m.MetroclusterDrGroupInlineMccipPorts); i++ {
 
-	return nil
-}
-
-func (m *MetroclusterDrGroup) contextValidateMccipPorts(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.MccipPorts); i++ {
-
-		if m.MccipPorts[i] != nil {
-			if err := m.MccipPorts[i].ContextValidate(ctx, formats); err != nil {
+		if m.MetroclusterDrGroupInlineMccipPorts[i] != nil {
+			if err := m.MetroclusterDrGroupInlineMccipPorts[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
 				}
@@ -266,34 +266,34 @@ func (m *MetroclusterDrGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrGroupMccipPortsItems0 Port configuration specification.
+// MetroclusterDrGroupInlineMccipPortsInlineArrayItem Port configuration specification.
 // l3_config information is only needed when configuring a MetroCluster IP for use in a layer 3 network.
 //
-// swagger:model MetroclusterDrGroupMccipPortsItems0
-type MetroclusterDrGroupMccipPortsItems0 struct {
+// swagger:model metrocluster_dr_group_inline_mccip_ports_inline_array_item
+type MetroclusterDrGroupInlineMccipPortsInlineArrayItem struct {
 
 	// l3 config
-	L3Config *MetroclusterDrGroupMccipPortsItems0L3Config `json:"l3_config,omitempty"`
+	L3Config *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config `json:"l3_config,omitempty"`
 
 	// Port name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *MetroclusterDrGroupMccipPortsItems0Node `json:"node,omitempty"`
+	Node *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Port UUID
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
 	// Minimum: 10
-	VlanID int64 `json:"vlan_id,omitempty"`
+	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
-// Validate validates this metrocluster dr group mccip ports items0
-func (m *MetroclusterDrGroupMccipPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline mccip ports inline array item
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateL3Config(formats); err != nil {
@@ -314,7 +314,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0) validateL3Config(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) validateL3Config(formats strfmt.Registry) error {
 	if swag.IsZero(m.L3Config) { // not required
 		return nil
 	}
@@ -331,7 +331,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0) validateL3Config(formats strfmt.Re
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0) validateNode(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -348,24 +348,24 @@ func (m *MetroclusterDrGroupMccipPortsItems0) validateNode(formats strfmt.Regist
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0) validateVlanID(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) validateVlanID(formats strfmt.Registry) error {
 	if swag.IsZero(m.VlanID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("vlan_id", "body", m.VlanID, 4095, false); err != nil {
+	if err := validate.MaximumInt("vlan_id", "body", *m.VlanID, 4095, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group mccip ports items0 based on the context it is used
-func (m *MetroclusterDrGroupMccipPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline mccip ports inline array item based on the context it is used
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateL3Config(ctx, formats); err != nil {
@@ -382,7 +382,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0) contextValidateL3Config(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) contextValidateL3Config(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.L3Config != nil {
 		if err := m.L3Config.ContextValidate(ctx, formats); err != nil {
@@ -396,7 +396,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0) contextValidateL3Config(ctx contex
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -411,7 +411,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0) contextValidateNode(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -419,8 +419,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupMccipPortsItems0
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlineMccipPortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -428,17 +428,17 @@ func (m *MetroclusterDrGroupMccipPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrGroupMccipPortsItems0L3Config metrocluster dr group mccip ports items0 l3 config
+// MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config metrocluster dr group inline mccip ports inline array item inline l3 config
 //
-// swagger:model MetroclusterDrGroupMccipPortsItems0L3Config
-type MetroclusterDrGroupMccipPortsItems0L3Config struct {
+// swagger:model metrocluster_dr_group_inline_mccip_ports_inline_array_item_inline_l3_config
+type MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config struct {
 
 	// ipv4 interface
-	IPV4Interface *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface `json:"ipv4_interface,omitempty"`
+	IPV4Interface *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface `json:"ipv4_interface,omitempty"`
 }
 
-// Validate validates this metrocluster dr group mccip ports items0 l3 config
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline mccip ports inline array item inline l3 config
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIPV4Interface(formats); err != nil {
@@ -451,7 +451,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) validateIPV4Interface(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) validateIPV4Interface(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPV4Interface) { // not required
 		return nil
 	}
@@ -468,8 +468,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) validateIPV4Interface(form
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group mccip ports items0 l3 config based on the context it is used
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline mccip ports inline array item inline l3 config based on the context it is used
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIPV4Interface(ctx, formats); err != nil {
@@ -482,7 +482,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IPV4Interface != nil {
 		if err := m.IPV4Interface.ContextValidate(ctx, formats); err != nil {
@@ -497,7 +497,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) contextValidateIPV4Interfa
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -505,8 +505,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0L3Config) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupMccipPortsItems0L3Config
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3Config
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -514,25 +514,25 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3Config) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface Object to setup an interface along with its default router.
+// MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface Object to setup an interface along with its default router.
 //
-// swagger:model MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface
-type MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface struct {
+// swagger:model metrocluster_dr_group_inline_mccip_ports_inline_array_item_inline_l3_config_inline_ipv4_interface
+type MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this metrocluster dr group mccip ports items0 l3 config IP v4 interface
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline mccip ports inline array item inline l3 config inline ipv4 interface
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNetmask(formats); err != nil {
@@ -545,23 +545,25 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) Validate(form
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) validateNetmask(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group mccip ports items0 l3 config IP v4 interface based on the context it is used
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline mccip ports inline array item inline l3 config inline ipv4 interface based on the context it is used
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNetmask(ctx, formats); err != nil {
@@ -574,20 +576,22 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) ContextValida
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -595,8 +599,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) MarshalBinary
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -604,25 +608,25 @@ func (m *MetroclusterDrGroupMccipPortsItems0L3ConfigIPV4Interface) UnmarshalBina
 	return nil
 }
 
-// MetroclusterDrGroupMccipPortsItems0Node Node information
+// MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode Node information
 //
-// swagger:model MetroclusterDrGroupMccipPortsItems0Node
-type MetroclusterDrGroupMccipPortsItems0Node struct {
+// swagger:model metrocluster_dr_group_inline_mccip_ports_inline_array_item_inline_node
+type MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *MetroclusterDrGroupMccipPortsItems0NodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster dr group mccip ports items0 node
-func (m *MetroclusterDrGroupMccipPortsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline mccip ports inline array item inline node
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -635,7 +639,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -652,8 +656,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) validateLinks(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group mccip ports items0 node based on the context it is used
-func (m *MetroclusterDrGroupMccipPortsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline mccip ports inline array item inline node based on the context it is used
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -666,7 +670,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -681,7 +685,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) contextValidateLinks(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -689,8 +693,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0Node) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupMccipPortsItems0Node
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -698,17 +702,17 @@ func (m *MetroclusterDrGroupMccipPortsItems0Node) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// MetroclusterDrGroupMccipPortsItems0NodeLinks metrocluster dr group mccip ports items0 node links
+// MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks metrocluster dr group inline mccip ports inline array item inline node inline links
 //
-// swagger:model MetroclusterDrGroupMccipPortsItems0NodeLinks
-type MetroclusterDrGroupMccipPortsItems0NodeLinks struct {
+// swagger:model metrocluster_dr_group_inline_mccip_ports_inline_array_item_inline_node_inline__links
+type MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster dr group mccip ports items0 node links
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline mccip ports inline array item inline node inline links
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -721,7 +725,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -738,8 +742,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) validateSelf(formats strf
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group mccip ports items0 node links based on the context it is used
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline mccip ports inline array item inline node inline links based on the context it is used
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -752,7 +756,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -767,7 +771,7 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) contextValidateSelf(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -775,8 +779,8 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupMccipPortsItems0NodeLinks
+func (m *MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlineMccipPortsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -784,26 +788,26 @@ func (m *MetroclusterDrGroupMccipPortsItems0NodeLinks) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// MetroclusterDrGroupPartnerCluster Partner cluster information.
+// MetroclusterDrGroupInlinePartnerCluster Partner cluster information.
 //
-// swagger:model MetroclusterDrGroupPartnerCluster
-type MetroclusterDrGroupPartnerCluster struct {
+// swagger:model metrocluster_dr_group_inline_partner_cluster
+type MetroclusterDrGroupInlinePartnerCluster struct {
 
 	// links
-	Links *MetroclusterDrGroupPartnerClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterDrGroupInlinePartnerClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster dr group partner cluster
-func (m *MetroclusterDrGroupPartnerCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline partner cluster
+func (m *MetroclusterDrGroupInlinePartnerCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -820,7 +824,7 @@ func (m *MetroclusterDrGroupPartnerCluster) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *MetroclusterDrGroupPartnerCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlinePartnerCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -837,7 +841,7 @@ func (m *MetroclusterDrGroupPartnerCluster) validateLinks(formats strfmt.Registr
 	return nil
 }
 
-func (m *MetroclusterDrGroupPartnerCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlinePartnerCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -849,8 +853,8 @@ func (m *MetroclusterDrGroupPartnerCluster) validateUUID(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group partner cluster based on the context it is used
-func (m *MetroclusterDrGroupPartnerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline partner cluster based on the context it is used
+func (m *MetroclusterDrGroupInlinePartnerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -863,7 +867,7 @@ func (m *MetroclusterDrGroupPartnerCluster) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *MetroclusterDrGroupPartnerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlinePartnerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -878,7 +882,7 @@ func (m *MetroclusterDrGroupPartnerCluster) contextValidateLinks(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupPartnerCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlinePartnerCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -886,8 +890,8 @@ func (m *MetroclusterDrGroupPartnerCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupPartnerCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupPartnerCluster
+func (m *MetroclusterDrGroupInlinePartnerCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlinePartnerCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -895,17 +899,17 @@ func (m *MetroclusterDrGroupPartnerCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrGroupPartnerClusterLinks metrocluster dr group partner cluster links
+// MetroclusterDrGroupInlinePartnerClusterInlineLinks metrocluster dr group inline partner cluster inline links
 //
-// swagger:model MetroclusterDrGroupPartnerClusterLinks
-type MetroclusterDrGroupPartnerClusterLinks struct {
+// swagger:model metrocluster_dr_group_inline_partner_cluster_inline__links
+type MetroclusterDrGroupInlinePartnerClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster dr group partner cluster links
-func (m *MetroclusterDrGroupPartnerClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group inline partner cluster inline links
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -918,7 +922,7 @@ func (m *MetroclusterDrGroupPartnerClusterLinks) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *MetroclusterDrGroupPartnerClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -935,8 +939,8 @@ func (m *MetroclusterDrGroupPartnerClusterLinks) validateSelf(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group partner cluster links based on the context it is used
-func (m *MetroclusterDrGroupPartnerClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group inline partner cluster inline links based on the context it is used
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -949,7 +953,7 @@ func (m *MetroclusterDrGroupPartnerClusterLinks) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *MetroclusterDrGroupPartnerClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -964,7 +968,7 @@ func (m *MetroclusterDrGroupPartnerClusterLinks) contextValidateSelf(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupPartnerClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -972,8 +976,8 @@ func (m *MetroclusterDrGroupPartnerClusterLinks) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupPartnerClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupPartnerClusterLinks
+func (m *MetroclusterDrGroupInlinePartnerClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupInlinePartnerClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

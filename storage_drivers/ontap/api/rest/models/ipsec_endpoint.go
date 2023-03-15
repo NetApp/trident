@@ -19,17 +19,17 @@ import (
 type IpsecEndpoint struct {
 
 	// address
-	Address IPAddress `json:"address,omitempty"`
+	Address *IPAddress `json:"address,omitempty"`
 
 	// family
-	Family IPAddressFamily `json:"family,omitempty"`
+	Family *IPAddressFamily `json:"family,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 
 	// Application port to be covered by the IPsec policy
 	// Example: 23
-	Port string `json:"port,omitempty"`
+	Port *string `json:"port,omitempty"`
 }
 
 // Validate validates this ipsec endpoint
@@ -59,11 +59,13 @@ func (m *IpsecEndpoint) validateAddress(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -74,11 +76,13 @@ func (m *IpsecEndpoint) validateFamily(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Family.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("family")
+	if m.Family != nil {
+		if err := m.Family.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -89,11 +93,13 @@ func (m *IpsecEndpoint) validateNetmask(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -123,11 +129,13 @@ func (m *IpsecEndpoint) ContextValidate(ctx context.Context, formats strfmt.Regi
 
 func (m *IpsecEndpoint) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -135,11 +143,13 @@ func (m *IpsecEndpoint) contextValidateAddress(ctx context.Context, formats strf
 
 func (m *IpsecEndpoint) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Family.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("family")
+	if m.Family != nil {
+		if err := m.Family.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -147,11 +157,13 @@ func (m *IpsecEndpoint) contextValidateFamily(ctx context.Context, formats strfm
 
 func (m *IpsecEndpoint) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

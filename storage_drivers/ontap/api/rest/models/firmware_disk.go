@@ -22,17 +22,17 @@ type FirmwareDisk struct {
 	// Average firmware update duration per disk (in seconds).
 	// Example: 120
 	// Read Only: true
-	AverageDurationPerDisk int64 `json:"average_duration_per_disk,omitempty"`
+	AverageDurationPerDisk *int64 `json:"average_duration_per_disk,omitempty"`
 
 	// The number of disks waiting to download the firmware update.
 	// Example: 0
 	// Read Only: true
-	NumWaitingDownload int64 `json:"num_waiting_download,omitempty"`
+	NumWaitingDownload *int64 `json:"num_waiting_download,omitempty"`
 
 	// Estimated firmware update duration to completion (in minutes).
 	// Example: 0
 	// Read Only: true
-	TotalCompletionEstimate int64 `json:"total_completion_estimate,omitempty"`
+	TotalCompletionEstimate *int64 `json:"total_completion_estimate,omitempty"`
 
 	// Status of the background disk firmware update.
 	// Read Only: true
@@ -69,7 +69,7 @@ func (m *FirmwareDisk) ContextValidate(ctx context.Context, formats strfmt.Regis
 
 func (m *FirmwareDisk) contextValidateAverageDurationPerDisk(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "average_duration_per_disk", "body", int64(m.AverageDurationPerDisk)); err != nil {
+	if err := validate.ReadOnly(ctx, "average_duration_per_disk", "body", m.AverageDurationPerDisk); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func (m *FirmwareDisk) contextValidateAverageDurationPerDisk(ctx context.Context
 
 func (m *FirmwareDisk) contextValidateNumWaitingDownload(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_waiting_download", "body", int64(m.NumWaitingDownload)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_waiting_download", "body", m.NumWaitingDownload); err != nil {
 		return err
 	}
 
@@ -87,7 +87,7 @@ func (m *FirmwareDisk) contextValidateNumWaitingDownload(ctx context.Context, fo
 
 func (m *FirmwareDisk) contextValidateTotalCompletionEstimate(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "total_completion_estimate", "body", int64(m.TotalCompletionEstimate)); err != nil {
+	if err := validate.ReadOnly(ctx, "total_completion_estimate", "body", m.TotalCompletionEstimate); err != nil {
 		return err
 	}
 

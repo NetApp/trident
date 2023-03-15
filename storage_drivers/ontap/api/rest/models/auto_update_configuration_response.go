@@ -20,14 +20,14 @@ import (
 type AutoUpdateConfigurationResponse struct {
 
 	// links
-	Links *AutoUpdateConfigurationResponseLinks `json:"_links,omitempty"`
+	Links *AutoUpdateConfigurationResponseInlineLinks `json:"_links,omitempty"`
+
+	// auto update configuration response inline records
+	AutoUpdateConfigurationResponseInlineRecords []*AutoUpdateConfiguration `json:"records,omitempty"`
 
 	// Number of records
-	// Example: 2
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*AutoUpdateConfiguration `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this auto update configuration response
@@ -38,7 +38,7 @@ func (m *AutoUpdateConfigurationResponse) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateAutoUpdateConfigurationResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *AutoUpdateConfigurationResponse) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *AutoUpdateConfigurationResponse) validateAutoUpdateConfigurationResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutoUpdateConfigurationResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.AutoUpdateConfigurationResponseInlineRecords); i++ {
+		if swag.IsZero(m.AutoUpdateConfigurationResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.AutoUpdateConfigurationResponseInlineRecords[i] != nil {
+			if err := m.AutoUpdateConfigurationResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *AutoUpdateConfigurationResponse) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateAutoUpdateConfigurationResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *AutoUpdateConfigurationResponse) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationResponse) contextValidateAutoUpdateConfigurationResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.AutoUpdateConfigurationResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.AutoUpdateConfigurationResponseInlineRecords[i] != nil {
+			if err := m.AutoUpdateConfigurationResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *AutoUpdateConfigurationResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateConfigurationResponseLinks auto update configuration response links
+// AutoUpdateConfigurationResponseInlineLinks auto update configuration response inline links
 //
-// swagger:model AutoUpdateConfigurationResponseLinks
-type AutoUpdateConfigurationResponseLinks struct {
+// swagger:model auto_update_configuration_response_inline__links
+type AutoUpdateConfigurationResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type AutoUpdateConfigurationResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this auto update configuration response links
-func (m *AutoUpdateConfigurationResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update configuration response inline links
+func (m *AutoUpdateConfigurationResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *AutoUpdateConfigurationResponseLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *AutoUpdateConfigurationResponseLinks) validateNext(formats strfmt.Regis
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *AutoUpdateConfigurationResponseLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this auto update configuration response links based on the context it is used
-func (m *AutoUpdateConfigurationResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update configuration response inline links based on the context it is used
+func (m *AutoUpdateConfigurationResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *AutoUpdateConfigurationResponseLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *AutoUpdateConfigurationResponseLinks) contextValidateNext(ctx context.C
 	return nil
 }
 
-func (m *AutoUpdateConfigurationResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *AutoUpdateConfigurationResponseLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateConfigurationResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateConfigurationResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *AutoUpdateConfigurationResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateConfigurationResponseLinks) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateConfigurationResponseLinks
+func (m *AutoUpdateConfigurationResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateConfigurationResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

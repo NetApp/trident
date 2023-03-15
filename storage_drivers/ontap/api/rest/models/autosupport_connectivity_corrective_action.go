@@ -22,12 +22,12 @@ type AutosupportConnectivityCorrectiveAction struct {
 	// Corrective action code
 	// Example: 53149746
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Corrective action message. The corrective action might contain commands which needs to be executed on the ONTAP CLI.
 	// Example: Check the hostname of the SMTP server
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this autosupport connectivity corrective action
@@ -55,7 +55,7 @@ func (m *AutosupportConnectivityCorrectiveAction) ContextValidate(ctx context.Co
 
 func (m *AutosupportConnectivityCorrectiveAction) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (m *AutosupportConnectivityCorrectiveAction) contextValidateCode(ctx contex
 
 func (m *AutosupportConnectivityCorrectiveAction) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 

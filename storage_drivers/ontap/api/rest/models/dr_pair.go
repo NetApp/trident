@@ -19,10 +19,10 @@ import (
 type DrPair struct {
 
 	// node
-	Node *DrPairNode `json:"node,omitempty"`
+	Node *DrPairInlineNode `json:"node,omitempty"`
 
 	// partner
-	Partner *DrPairPartner `json:"partner,omitempty"`
+	Partner *DrPairInlinePartner `json:"partner,omitempty"`
 }
 
 // Validate validates this dr pair
@@ -141,25 +141,25 @@ func (m *DrPair) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DrPairNode Local node of the DR Group.
+// DrPairInlineNode Local node of the DR Group.
 //
-// swagger:model DrPairNode
-type DrPairNode struct {
+// swagger:model dr_pair_inline_node
+type DrPairInlineNode struct {
 
 	// links
-	Links *DrPairNodeLinks `json:"_links,omitempty"`
+	Links *DrPairInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this dr pair node
-func (m *DrPairNode) Validate(formats strfmt.Registry) error {
+// Validate validates this dr pair inline node
+func (m *DrPairInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -172,7 +172,7 @@ func (m *DrPairNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DrPairNode) validateLinks(formats strfmt.Registry) error {
+func (m *DrPairInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -189,8 +189,8 @@ func (m *DrPairNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dr pair node based on the context it is used
-func (m *DrPairNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dr pair inline node based on the context it is used
+func (m *DrPairInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -203,7 +203,7 @@ func (m *DrPairNode) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *DrPairNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DrPairInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *DrPairNode) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *DrPairNode) MarshalBinary() ([]byte, error) {
+func (m *DrPairInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -226,8 +226,8 @@ func (m *DrPairNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DrPairNode) UnmarshalBinary(b []byte) error {
-	var res DrPairNode
+func (m *DrPairInlineNode) UnmarshalBinary(b []byte) error {
+	var res DrPairInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -235,17 +235,17 @@ func (m *DrPairNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DrPairNodeLinks dr pair node links
+// DrPairInlineNodeInlineLinks dr pair inline node inline links
 //
-// swagger:model DrPairNodeLinks
-type DrPairNodeLinks struct {
+// swagger:model dr_pair_inline_node_inline__links
+type DrPairInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this dr pair node links
-func (m *DrPairNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this dr pair inline node inline links
+func (m *DrPairInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -258,7 +258,7 @@ func (m *DrPairNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DrPairNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DrPairInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -275,8 +275,8 @@ func (m *DrPairNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dr pair node links based on the context it is used
-func (m *DrPairNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dr pair inline node inline links based on the context it is used
+func (m *DrPairInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -289,7 +289,7 @@ func (m *DrPairNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *DrPairNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DrPairInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -304,7 +304,7 @@ func (m *DrPairNodeLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *DrPairNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *DrPairInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -312,8 +312,8 @@ func (m *DrPairNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DrPairNodeLinks) UnmarshalBinary(b []byte) error {
-	var res DrPairNodeLinks
+func (m *DrPairInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DrPairInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -321,25 +321,25 @@ func (m *DrPairNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DrPairPartner Partner node of the DR Group.
+// DrPairInlinePartner Partner node of the DR Group.
 //
-// swagger:model DrPairPartner
-type DrPairPartner struct {
+// swagger:model dr_pair_inline_partner
+type DrPairInlinePartner struct {
 
 	// links
-	Links *DrPairPartnerLinks `json:"_links,omitempty"`
+	Links *DrPairInlinePartnerInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this dr pair partner
-func (m *DrPairPartner) Validate(formats strfmt.Registry) error {
+// Validate validates this dr pair inline partner
+func (m *DrPairInlinePartner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -352,7 +352,7 @@ func (m *DrPairPartner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DrPairPartner) validateLinks(formats strfmt.Registry) error {
+func (m *DrPairInlinePartner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -369,8 +369,8 @@ func (m *DrPairPartner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dr pair partner based on the context it is used
-func (m *DrPairPartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dr pair inline partner based on the context it is used
+func (m *DrPairInlinePartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *DrPairPartner) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *DrPairPartner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DrPairInlinePartner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *DrPairPartner) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *DrPairPartner) MarshalBinary() ([]byte, error) {
+func (m *DrPairInlinePartner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -406,8 +406,8 @@ func (m *DrPairPartner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DrPairPartner) UnmarshalBinary(b []byte) error {
-	var res DrPairPartner
+func (m *DrPairInlinePartner) UnmarshalBinary(b []byte) error {
+	var res DrPairInlinePartner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -415,17 +415,17 @@ func (m *DrPairPartner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DrPairPartnerLinks dr pair partner links
+// DrPairInlinePartnerInlineLinks dr pair inline partner inline links
 //
-// swagger:model DrPairPartnerLinks
-type DrPairPartnerLinks struct {
+// swagger:model dr_pair_inline_partner_inline__links
+type DrPairInlinePartnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this dr pair partner links
-func (m *DrPairPartnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this dr pair inline partner inline links
+func (m *DrPairInlinePartnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -438,7 +438,7 @@ func (m *DrPairPartnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DrPairPartnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DrPairInlinePartnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -455,8 +455,8 @@ func (m *DrPairPartnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dr pair partner links based on the context it is used
-func (m *DrPairPartnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dr pair inline partner inline links based on the context it is used
+func (m *DrPairInlinePartnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -469,7 +469,7 @@ func (m *DrPairPartnerLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *DrPairPartnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DrPairInlinePartnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -484,7 +484,7 @@ func (m *DrPairPartnerLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *DrPairPartnerLinks) MarshalBinary() ([]byte, error) {
+func (m *DrPairInlinePartnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -492,8 +492,8 @@ func (m *DrPairPartnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DrPairPartnerLinks) UnmarshalBinary(b []byte) error {
-	var res DrPairPartnerLinks
+func (m *DrPairInlinePartnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DrPairInlinePartnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

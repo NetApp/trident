@@ -66,31 +66,31 @@ type ApplicationComponentSnapshotRestoreParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* ComponentUUID.
 
 	   Application Component UUID
 	*/
-	ComponentUUIDPathParameter string
+	ComponentUUID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -110,14 +110,14 @@ func (o *ApplicationComponentSnapshotRestoreParams) WithDefaults() *ApplicationC
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentSnapshotRestoreParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ApplicationComponentSnapshotRestoreParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -159,59 +159,59 @@ func (o *ApplicationComponentSnapshotRestoreParams) SetHTTPClient(client *http.C
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentSnapshotRestoreParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentSnapshotRestoreParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithComponentUUIDPathParameter adds the componentUUID to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithComponentUUIDPathParameter(componentUUID string) *ApplicationComponentSnapshotRestoreParams {
-	o.SetComponentUUIDPathParameter(componentUUID)
+// WithComponentUUID adds the componentUUID to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithComponentUUID(componentUUID string) *ApplicationComponentSnapshotRestoreParams {
+	o.SetComponentUUID(componentUUID)
 	return o
 }
 
-// SetComponentUUIDPathParameter adds the componentUuid to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetComponentUUIDPathParameter(componentUUID string) {
-	o.ComponentUUIDPathParameter = componentUUID
+// SetComponentUUID adds the componentUuid to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetComponentUUID(componentUUID string) {
+	o.ComponentUUID = componentUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationComponentSnapshotRestoreParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithReturnRecords(returnRecords *bool) *ApplicationComponentSnapshotRestoreParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentSnapshotRestoreParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentSnapshotRestoreParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithUUIDPathParameter(uuid string) *ApplicationComponentSnapshotRestoreParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithUUID(uuid string) *ApplicationComponentSnapshotRestoreParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -223,22 +223,22 @@ func (o *ApplicationComponentSnapshotRestoreParams) WriteToRequest(r runtime.Cli
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
 	// path param component.uuid
-	if err := r.SetPathParam("component.uuid", o.ComponentUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("component.uuid", o.ComponentUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -249,13 +249,13 @@ func (o *ApplicationComponentSnapshotRestoreParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -267,7 +267,7 @@ func (o *ApplicationComponentSnapshotRestoreParams) WriteToRequest(r runtime.Cli
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

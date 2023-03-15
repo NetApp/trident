@@ -66,19 +66,19 @@ type LdapSchemaGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   LDAP schema name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   UUID of the owner to which this object belongs.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *LdapSchemaGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ldap schema get params
-func (o *LdapSchemaGetParams) WithFieldsQueryParameter(fields []string) *LdapSchemaGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ldap schema get params
+func (o *LdapSchemaGetParams) WithFields(fields []string) *LdapSchemaGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ldap schema get params
-func (o *LdapSchemaGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ldap schema get params
+func (o *LdapSchemaGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the ldap schema get params
-func (o *LdapSchemaGetParams) WithNamePathParameter(name string) *LdapSchemaGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ldap schema get params
+func (o *LdapSchemaGetParams) WithName(name string) *LdapSchemaGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ldap schema get params
-func (o *LdapSchemaGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ldap schema get params
+func (o *LdapSchemaGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the ldap schema get params
-func (o *LdapSchemaGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *LdapSchemaGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the ldap schema get params
+func (o *LdapSchemaGetParams) WithOwnerUUID(ownerUUID string) *LdapSchemaGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the ldap schema get params
-func (o *LdapSchemaGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the ldap schema get params
+func (o *LdapSchemaGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *LdapSchemaGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *LdapSchemaGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *LdapSchemaGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamLdapSchemaGet binds the parameter fields
 func (o *LdapSchemaGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

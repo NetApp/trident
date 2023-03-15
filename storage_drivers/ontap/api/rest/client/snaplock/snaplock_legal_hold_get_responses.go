@@ -52,7 +52,7 @@ SnaplockLegalHoldGetOK describes a response with status code 200, with default h
 OK
 */
 type SnaplockLegalHoldGetOK struct {
-	Payload *models.SnaplockLitigation
+	Payload *models.SnaplockLegalHoldOperation
 }
 
 // IsSuccess returns true when this snaplock legal hold get o k response has a 2xx status code
@@ -81,20 +81,20 @@ func (o *SnaplockLegalHoldGetOK) IsCode(code int) bool {
 }
 
 func (o *SnaplockLegalHoldGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
 }
 
 func (o *SnaplockLegalHoldGetOK) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplockLegalHoldGetOK  %+v", 200, o.Payload)
 }
 
-func (o *SnaplockLegalHoldGetOK) GetPayload() *models.SnaplockLitigation {
+func (o *SnaplockLegalHoldGetOK) GetPayload() *models.SnaplockLegalHoldOperation {
 	return o.Payload
 }
 
 func (o *SnaplockLegalHoldGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.SnaplockLitigation)
+	o.Payload = new(models.SnaplockLegalHoldOperation)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -158,11 +158,11 @@ func (o *SnaplockLegalHoldGetDefault) IsCode(code int) bool {
 }
 
 func (o *SnaplockLegalHoldGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *SnaplockLegalHoldGetDefault) String() string {
-	return fmt.Sprintf("[GET /storage/snaplock/litigations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/operations/{id}][%d] snaplock_legal_hold_get default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *SnaplockLegalHoldGetDefault) GetPayload() *models.ErrorResponse {

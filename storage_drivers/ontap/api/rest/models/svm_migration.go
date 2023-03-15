@@ -32,47 +32,53 @@ type SvmMigration struct {
 
 	// current operation
 	// Read Only: true
-	CurrentOperation SvmMigrationOperation `json:"current_operation,omitempty"`
+	CurrentOperation *SvmMigrationOperation `json:"current_operation,omitempty"`
 
 	// destination
-	Destination *SvmMigrationDestination `json:"destination,omitempty"`
+	Destination *SvmMigrationInlineDestination `json:"destination,omitempty"`
+
+	// Optional property used to specify the IP interface placement in the destination. It is input only and is not returned by a subsequent GET.
+	IPInterfacePlacement *SvmMigrationIPInterfacePlacement `json:"ip_interface_placement,omitempty"`
 
 	// last failed state
 	// Read Only: true
-	LastFailedState SvmMigrationState `json:"last_failed_state,omitempty"`
+	LastFailedState *SvmMigrationState `json:"last_failed_state,omitempty"`
 
 	// last operation
 	// Read Only: true
 	// Enum: [none start resume pause cleanup cutover]
-	LastOperation string `json:"last_operation,omitempty"`
-
-	// Errors and warnings returned/displayed during migration.
-	// Read Only: true
-	Messages []*SvmMigrationMessagesItems0 `json:"messages,omitempty"`
+	LastOperation *string `json:"last_operation,omitempty"`
 
 	// Indicates if the migration has progressed beyond the point of no return. When true, the migration cannot be aborted or paused. When false, the migration can be paused or aborted.
 	// Read Only: true
 	PointOfNoReturn *bool `json:"point_of_no_return,omitempty"`
 
-	// Number of times SVM migration was restarted since initially started.
+	// Number of times migrate restarted the transfer, for example, rollback to transfer after starting the cutover.
 	// Read Only: true
-	RestartCount int64 `json:"restart_count,omitempty"`
+	RestartCount *int64 `json:"restart_count,omitempty"`
 
 	// source
-	Source *SvmMigrationSource `json:"source,omitempty"`
+	Source *SvmMigrationInlineSource `json:"source,omitempty"`
 
 	// state
 	// Read Only: true
-	State SvmMigrationState `json:"state,omitempty"`
+	State *SvmMigrationState `json:"state,omitempty"`
+
+	// Errors and warnings returned/displayed during migration.
+	// Read Only: true
+	SvmMigrationInlineMessages []*SvmMigrationInlineMessagesInlineArrayItem `json:"messages,omitempty"`
+
+	// Optional property to specify a throttle value in KB/s for each individual volume transfer. Defaults to 0 if not set, which is interpreted as unlimited. The minimum throttle value is 4 KB/s, so if you specify a throttle value between 1 and 4, it will be treated as if you specified 4.
+	Throttle *int64 `json:"throttle"`
 
 	// time metrics
-	TimeMetrics *SvmMigrationTimeMetrics `json:"time_metrics,omitempty"`
+	TimeMetrics *SvmMigrationInlineTimeMetrics `json:"time_metrics,omitempty"`
 
 	// SVM migration UUID
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this svm migration
@@ -87,6 +93,10 @@ func (m *SvmMigration) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateIPInterfacePlacement(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLastFailedState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -95,15 +105,15 @@ func (m *SvmMigration) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMessages(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateSource(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvmMigrationInlineMessages(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -126,11 +136,13 @@ func (m *SvmMigration) validateCurrentOperation(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.CurrentOperation.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("current_operation")
+	if m.CurrentOperation != nil {
+		if err := m.CurrentOperation.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("current_operation")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -153,16 +165,35 @@ func (m *SvmMigration) validateDestination(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmMigration) validateIPInterfacePlacement(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPInterfacePlacement) { // not required
+		return nil
+	}
+
+	if m.IPInterfacePlacement != nil {
+		if err := m.IPInterfacePlacement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface_placement")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SvmMigration) validateLastFailedState(formats strfmt.Registry) error {
 	if swag.IsZero(m.LastFailedState) { // not required
 		return nil
 	}
 
-	if err := m.LastFailedState.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("last_failed_state")
+	if m.LastFailedState != nil {
+		if err := m.LastFailedState.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("last_failed_state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -257,32 +288,8 @@ func (m *SvmMigration) validateLastOperation(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateLastOperationEnum("last_operation", "body", m.LastOperation); err != nil {
+	if err := m.validateLastOperationEnum("last_operation", "body", *m.LastOperation); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *SvmMigration) validateMessages(formats strfmt.Registry) error {
-	if swag.IsZero(m.Messages) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Messages); i++ {
-		if swag.IsZero(m.Messages[i]) { // not required
-			continue
-		}
-
-		if m.Messages[i] != nil {
-			if err := m.Messages[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("messages" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -310,11 +317,37 @@ func (m *SvmMigration) validateState(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.State.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
-		return err
+	}
+
+	return nil
+}
+
+func (m *SvmMigration) validateSvmMigrationInlineMessages(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmMigrationInlineMessages) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SvmMigrationInlineMessages); i++ {
+		if swag.IsZero(m.SvmMigrationInlineMessages[i]) { // not required
+			continue
+		}
+
+		if m.SvmMigrationInlineMessages[i] != nil {
+			if err := m.SvmMigrationInlineMessages[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("messages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -361,15 +394,15 @@ func (m *SvmMigration) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIPInterfacePlacement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLastFailedState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateLastOperation(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessages(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -389,6 +422,10 @@ func (m *SvmMigration) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSvmMigrationInlineMessages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateTimeMetrics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -405,11 +442,13 @@ func (m *SvmMigration) ContextValidate(ctx context.Context, formats strfmt.Regis
 
 func (m *SvmMigration) contextValidateCurrentOperation(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.CurrentOperation.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("current_operation")
+	if m.CurrentOperation != nil {
+		if err := m.CurrentOperation.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("current_operation")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -429,13 +468,29 @@ func (m *SvmMigration) contextValidateDestination(ctx context.Context, formats s
 	return nil
 }
 
+func (m *SvmMigration) contextValidateIPInterfacePlacement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPInterfacePlacement != nil {
+		if err := m.IPInterfacePlacement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface_placement")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SvmMigration) contextValidateLastFailedState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.LastFailedState.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("last_failed_state")
+	if m.LastFailedState != nil {
+		if err := m.LastFailedState.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("last_failed_state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -443,30 +498,8 @@ func (m *SvmMigration) contextValidateLastFailedState(ctx context.Context, forma
 
 func (m *SvmMigration) contextValidateLastOperation(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "last_operation", "body", string(m.LastOperation)); err != nil {
+	if err := validate.ReadOnly(ctx, "last_operation", "body", m.LastOperation); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *SvmMigration) contextValidateMessages(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "messages", "body", []*SvmMigrationMessagesItems0(m.Messages)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Messages); i++ {
-
-		if m.Messages[i] != nil {
-			if err := m.Messages[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("messages" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -483,7 +516,7 @@ func (m *SvmMigration) contextValidatePointOfNoReturn(ctx context.Context, forma
 
 func (m *SvmMigration) contextValidateRestartCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "restart_count", "body", int64(m.RestartCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "restart_count", "body", m.RestartCount); err != nil {
 		return err
 	}
 
@@ -506,11 +539,35 @@ func (m *SvmMigration) contextValidateSource(ctx context.Context, formats strfmt
 
 func (m *SvmMigration) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.State.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SvmMigration) contextValidateSvmMigrationInlineMessages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "messages", "body", []*SvmMigrationInlineMessagesInlineArrayItem(m.SvmMigrationInlineMessages)); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(m.SvmMigrationInlineMessages); i++ {
+
+		if m.SvmMigrationInlineMessages[i] != nil {
+			if err := m.SvmMigrationInlineMessages[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("messages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -532,7 +589,7 @@ func (m *SvmMigration) contextValidateTimeMetrics(ctx context.Context, formats s
 
 func (m *SvmMigration) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -557,20 +614,20 @@ func (m *SvmMigration) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationDestination Destination cluster details for the SVM migration.
+// SvmMigrationInlineDestination Destination cluster details for the SVM migration.
 //
-// swagger:model SvmMigrationDestination
-type SvmMigrationDestination struct {
+// swagger:model svm_migration_inline_destination
+type SvmMigrationInlineDestination struct {
 
 	// ipspace
-	Ipspace *SvmMigrationDestinationIpspace `json:"ipspace,omitempty"`
+	Ipspace *SvmMigrationInlineDestinationInlineIpspace `json:"ipspace,omitempty"`
 
 	// volume placement
-	VolumePlacement *SvmMigrationDestinationVolumePlacement `json:"volume_placement,omitempty"`
+	VolumePlacement *SvmMigrationInlineDestinationInlineVolumePlacement `json:"volume_placement,omitempty"`
 }
 
-// Validate validates this svm migration destination
-func (m *SvmMigrationDestination) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline destination
+func (m *SvmMigrationInlineDestination) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIpspace(formats); err != nil {
@@ -587,7 +644,7 @@ func (m *SvmMigrationDestination) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationDestination) validateIpspace(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestination) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
 	}
@@ -604,7 +661,7 @@ func (m *SvmMigrationDestination) validateIpspace(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmMigrationDestination) validateVolumePlacement(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestination) validateVolumePlacement(formats strfmt.Registry) error {
 	if swag.IsZero(m.VolumePlacement) { // not required
 		return nil
 	}
@@ -621,8 +678,8 @@ func (m *SvmMigrationDestination) validateVolumePlacement(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this svm migration destination based on the context it is used
-func (m *SvmMigrationDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline destination based on the context it is used
+func (m *SvmMigrationInlineDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIpspace(ctx, formats); err != nil {
@@ -639,7 +696,7 @@ func (m *SvmMigrationDestination) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SvmMigrationDestination) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestination) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipspace != nil {
 		if err := m.Ipspace.ContextValidate(ctx, formats); err != nil {
@@ -653,7 +710,7 @@ func (m *SvmMigrationDestination) contextValidateIpspace(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmMigrationDestination) contextValidateVolumePlacement(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestination) contextValidateVolumePlacement(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.VolumePlacement != nil {
 		if err := m.VolumePlacement.ContextValidate(ctx, formats); err != nil {
@@ -668,7 +725,7 @@ func (m *SvmMigrationDestination) contextValidateVolumePlacement(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationDestination) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineDestination) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -676,8 +733,8 @@ func (m *SvmMigrationDestination) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationDestination) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationDestination
+func (m *SvmMigrationInlineDestination) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineDestination
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -685,25 +742,25 @@ func (m *SvmMigrationDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationDestinationIpspace Optional property used to specify which IPspace to use for the SVM. By default, the "default" ipspace is used.
+// SvmMigrationInlineDestinationInlineIpspace Optional property used to specify which IPspace to use for the SVM. By default, the "default" ipspace is used.
 //
-// swagger:model SvmMigrationDestinationIpspace
-type SvmMigrationDestinationIpspace struct {
+// swagger:model svm_migration_inline_destination_inline_ipspace
+type SvmMigrationInlineDestinationInlineIpspace struct {
 
 	// links
-	Links *SvmMigrationDestinationIpspaceLinks `json:"_links,omitempty"`
+	Links *SvmMigrationInlineDestinationInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration destination ipspace
-func (m *SvmMigrationDestinationIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline destination inline ipspace
+func (m *SvmMigrationInlineDestinationInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -716,7 +773,7 @@ func (m *SvmMigrationDestinationIpspace) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmMigrationDestinationIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -733,8 +790,8 @@ func (m *SvmMigrationDestinationIpspace) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this svm migration destination ipspace based on the context it is used
-func (m *SvmMigrationDestinationIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline destination inline ipspace based on the context it is used
+func (m *SvmMigrationInlineDestinationInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -747,7 +804,7 @@ func (m *SvmMigrationDestinationIpspace) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmMigrationDestinationIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -762,7 +819,7 @@ func (m *SvmMigrationDestinationIpspace) contextValidateLinks(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationDestinationIpspace) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineDestinationInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -770,8 +827,8 @@ func (m *SvmMigrationDestinationIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationDestinationIpspace) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationDestinationIpspace
+func (m *SvmMigrationInlineDestinationInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineDestinationInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -779,17 +836,17 @@ func (m *SvmMigrationDestinationIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationDestinationIpspaceLinks svm migration destination ipspace links
+// SvmMigrationInlineDestinationInlineIpspaceInlineLinks svm migration inline destination inline ipspace inline links
 //
-// swagger:model SvmMigrationDestinationIpspaceLinks
-type SvmMigrationDestinationIpspaceLinks struct {
+// swagger:model svm_migration_inline_destination_inline_ipspace_inline__links
+type SvmMigrationInlineDestinationInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration destination ipspace links
-func (m *SvmMigrationDestinationIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline destination inline ipspace inline links
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -802,7 +859,7 @@ func (m *SvmMigrationDestinationIpspaceLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SvmMigrationDestinationIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -819,8 +876,8 @@ func (m *SvmMigrationDestinationIpspaceLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this svm migration destination ipspace links based on the context it is used
-func (m *SvmMigrationDestinationIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline destination inline ipspace inline links based on the context it is used
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -833,7 +890,7 @@ func (m *SvmMigrationDestinationIpspaceLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *SvmMigrationDestinationIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -848,7 +905,7 @@ func (m *SvmMigrationDestinationIpspaceLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationDestinationIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -856,8 +913,8 @@ func (m *SvmMigrationDestinationIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationDestinationIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationDestinationIpspaceLinks
+func (m *SvmMigrationInlineDestinationInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineDestinationInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -865,20 +922,27 @@ func (m *SvmMigrationDestinationIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationDestinationVolumePlacement Optional property to specify the source volume placement in the destination. It is input only and won't be returned by a subsequent GET.
+// SvmMigrationInlineDestinationInlineVolumePlacement Optional property to specify the source volume placement in the destination. It is input only and won't be returned by a subsequent GET.
 //
-// swagger:model SvmMigrationDestinationVolumePlacement
-type SvmMigrationDestinationVolumePlacement struct {
+// swagger:model svm_migration_inline_destination_inline_volume_placement
+type SvmMigrationInlineDestinationInlineVolumePlacement struct {
 
 	// Optional property used to specify the list of desired aggregates to use for volume creation in the destination.
 	Aggregates []*SvmMigrationDestinationVolumePlacementAggregatesItems0 `json:"aggregates,omitempty"`
+
+	// Optional property used to specify the list of desired volume-aggregate pairs in the destination.
+	VolumeAggregatePairs []*SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0 `json:"volume_aggregate_pairs,omitempty"`
 }
 
-// Validate validates this svm migration destination volume placement
-func (m *SvmMigrationDestinationVolumePlacement) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline destination inline volume placement
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolumeAggregatePairs(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -888,7 +952,7 @@ func (m *SvmMigrationDestinationVolumePlacement) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *SvmMigrationDestinationVolumePlacement) validateAggregates(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) validateAggregates(formats strfmt.Registry) error {
 	if swag.IsZero(m.Aggregates) { // not required
 		return nil
 	}
@@ -912,11 +976,39 @@ func (m *SvmMigrationDestinationVolumePlacement) validateAggregates(formats strf
 	return nil
 }
 
-// ContextValidate validate this svm migration destination volume placement based on the context it is used
-func (m *SvmMigrationDestinationVolumePlacement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) validateVolumeAggregatePairs(formats strfmt.Registry) error {
+	if swag.IsZero(m.VolumeAggregatePairs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VolumeAggregatePairs); i++ {
+		if swag.IsZero(m.VolumeAggregatePairs[i]) { // not required
+			continue
+		}
+
+		if m.VolumeAggregatePairs[i] != nil {
+			if err := m.VolumeAggregatePairs[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("destination" + "." + "volume_placement" + "." + "volume_aggregate_pairs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration inline destination inline volume placement based on the context it is used
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeAggregatePairs(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -926,7 +1018,7 @@ func (m *SvmMigrationDestinationVolumePlacement) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *SvmMigrationDestinationVolumePlacement) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Aggregates); i++ {
 
@@ -944,8 +1036,26 @@ func (m *SvmMigrationDestinationVolumePlacement) contextValidateAggregates(ctx c
 	return nil
 }
 
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) contextValidateVolumeAggregatePairs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeAggregatePairs); i++ {
+
+		if m.VolumeAggregatePairs[i] != nil {
+			if err := m.VolumeAggregatePairs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("destination" + "." + "volume_placement" + "." + "volume_aggregate_pairs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
-func (m *SvmMigrationDestinationVolumePlacement) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -953,8 +1063,8 @@ func (m *SvmMigrationDestinationVolumePlacement) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationDestinationVolumePlacement) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationDestinationVolumePlacement
+func (m *SvmMigrationInlineDestinationInlineVolumePlacement) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineDestinationInlineVolumePlacement
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -972,11 +1082,11 @@ type SvmMigrationDestinationVolumePlacementAggregatesItems0 struct {
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this svm migration destination volume placement aggregates items0
@@ -1142,26 +1252,29 @@ func (m *SvmMigrationDestinationVolumePlacementAggregatesItems0Links) UnmarshalB
 	return nil
 }
 
-// SvmMigrationMessagesItems0 Specifies failure codes and messages.
+// SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0 Volume-aggregate pair information.
 //
-// swagger:model SvmMigrationMessagesItems0
-type SvmMigrationMessagesItems0 struct {
+// swagger:model SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0
+type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0 struct {
 
-	// Message code
-	Code int64 `json:"code,omitempty"`
+	// aggregate
+	Aggregate *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate `json:"aggregate,omitempty"`
 
-	// Detailed message of warning or error.
-	Message string `json:"message,omitempty"`
+	// volume
+	Volume *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume `json:"volume,omitempty"`
 }
 
-// Validate validates this svm migration messages items0
-func (m *SvmMigrationMessagesItems0) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this svm migration messages items0 based on the context it is used
-func (m *SvmMigrationMessagesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// Validate validates this svm migration destination volume placement volume aggregate pairs items0
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAggregate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolume(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
@@ -1169,8 +1282,88 @@ func (m *SvmMigrationMessagesItems0) ContextValidate(ctx context.Context, format
 	return nil
 }
 
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) validateAggregate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aggregate) { // not required
+		return nil
+	}
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) validateVolume(formats strfmt.Registry) error {
+	if swag.IsZero(m.Volume) { // not required
+		return nil
+	}
+
+	if m.Volume != nil {
+		if err := m.Volume.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration destination volume placement volume aggregate pairs items0 based on the context it is used
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAggregate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolume(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) contextValidateAggregate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Volume != nil {
+		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
-func (m *SvmMigrationMessagesItems0) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1178,8 +1371,8 @@ func (m *SvmMigrationMessagesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationMessagesItems0) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationMessagesItems0
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1187,20 +1380,453 @@ func (m *SvmMigrationMessagesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationSource Source cluster details for the SVM migration.
+// SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate Aggregate to use for volume creation.
 //
-// swagger:model SvmMigrationSource
-type SvmMigrationSource struct {
+// swagger:model SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate
+type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate struct {
 
-	// cluster
-	Cluster *SvmMigrationSourceCluster `json:"cluster,omitempty"`
+	// links
+	Links *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks `json:"_links,omitempty"`
 
-	// svm
-	Svm *SvmMigrationSourceSvm `json:"svm,omitempty"`
+	// name
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration source
-func (m *SvmMigrationSource) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration destination volume placement volume aggregate pairs items0 aggregate
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration destination volume placement volume aggregate pairs items0 aggregate based on the context it is used
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Aggregate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks svm migration destination volume placement volume aggregate pairs items0 aggregate links
+//
+// swagger:model SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks
+type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm migration destination volume placement volume aggregate pairs items0 aggregate links
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration destination volume placement volume aggregate pairs items0 aggregate links based on the context it is used
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0AggregateLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume Property indicating the source volume.
+//
+// swagger:model SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume
+type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume struct {
+
+	// links
+	Links *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks `json:"_links,omitempty"`
+
+	// The name of the volume.
+	// Example: volume1
+	Name *string `json:"name,omitempty"`
+
+	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
+	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm migration destination volume placement volume aggregate pairs items0 volume
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration destination volume placement volume aggregate pairs items0 volume based on the context it is used
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0Volume
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks svm migration destination volume placement volume aggregate pairs items0 volume links
+//
+// swagger:model SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks
+type SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm migration destination volume placement volume aggregate pairs items0 volume links
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm migration destination volume placement volume aggregate pairs items0 volume links based on the context it is used
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationDestinationVolumePlacementVolumeAggregatePairsItems0VolumeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmMigrationInlineMessagesInlineArrayItem svm migration inline messages inline array item
+//
+// swagger:model svm_migration_inline_messages_inline_array_item
+type SvmMigrationInlineMessagesInlineArrayItem struct {
+
+	// Argument code
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this svm migration inline messages inline array item
+func (m *SvmMigrationInlineMessagesInlineArrayItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this svm migration inline messages inline array item based on the context it is used
+func (m *SvmMigrationInlineMessagesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmMigrationInlineMessagesInlineArrayItem) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SvmMigrationInlineMessagesInlineArrayItem) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmMigrationInlineMessagesInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmMigrationInlineMessagesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineMessagesInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmMigrationInlineSource Source cluster details for the SVM migration.
+//
+// swagger:model svm_migration_inline_source
+type SvmMigrationInlineSource struct {
+
+	// cluster
+	Cluster *SvmMigrationInlineSourceInlineCluster `json:"cluster,omitempty"`
+
+	// svm
+	Svm *SvmMigrationInlineSourceInlineSvm `json:"svm,omitempty"`
+}
+
+// Validate validates this svm migration inline source
+func (m *SvmMigrationInlineSource) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCluster(formats); err != nil {
@@ -1217,7 +1843,7 @@ func (m *SvmMigrationSource) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationSource) validateCluster(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSource) validateCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cluster) { // not required
 		return nil
 	}
@@ -1234,7 +1860,7 @@ func (m *SvmMigrationSource) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationSource) validateSvm(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSource) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -1251,8 +1877,8 @@ func (m *SvmMigrationSource) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm migration source based on the context it is used
-func (m *SvmMigrationSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline source based on the context it is used
+func (m *SvmMigrationInlineSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCluster(ctx, formats); err != nil {
@@ -1269,7 +1895,7 @@ func (m *SvmMigrationSource) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *SvmMigrationSource) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSource) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cluster != nil {
 		if err := m.Cluster.ContextValidate(ctx, formats); err != nil {
@@ -1283,7 +1909,7 @@ func (m *SvmMigrationSource) contextValidateCluster(ctx context.Context, formats
 	return nil
 }
 
-func (m *SvmMigrationSource) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSource) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -1298,7 +1924,7 @@ func (m *SvmMigrationSource) contextValidateSvm(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationSource) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineSource) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1306,8 +1932,8 @@ func (m *SvmMigrationSource) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationSource) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationSource
+func (m *SvmMigrationInlineSource) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineSource
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1315,26 +1941,26 @@ func (m *SvmMigrationSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationSourceCluster Source cluster for the SVM migration.
+// SvmMigrationInlineSourceInlineCluster Source cluster for the SVM migration.
 //
-// swagger:model SvmMigrationSourceCluster
-type SvmMigrationSourceCluster struct {
+// swagger:model svm_migration_inline_source_inline_cluster
+type SvmMigrationInlineSourceInlineCluster struct {
 
 	// links
-	Links *SvmMigrationSourceClusterLinks `json:"_links,omitempty"`
+	Links *SvmMigrationInlineSourceInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration source cluster
-func (m *SvmMigrationSourceCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline source inline cluster
+func (m *SvmMigrationInlineSourceInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1351,7 +1977,7 @@ func (m *SvmMigrationSourceCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationSourceCluster) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1368,7 +1994,7 @@ func (m *SvmMigrationSourceCluster) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmMigrationSourceCluster) validateUUID(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -1380,8 +2006,8 @@ func (m *SvmMigrationSourceCluster) validateUUID(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this svm migration source cluster based on the context it is used
-func (m *SvmMigrationSourceCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline source inline cluster based on the context it is used
+func (m *SvmMigrationInlineSourceInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1394,7 +2020,7 @@ func (m *SvmMigrationSourceCluster) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *SvmMigrationSourceCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1409,7 +2035,7 @@ func (m *SvmMigrationSourceCluster) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationSourceCluster) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineSourceInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1417,8 +2043,8 @@ func (m *SvmMigrationSourceCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationSourceCluster) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationSourceCluster
+func (m *SvmMigrationInlineSourceInlineCluster) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineSourceInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1426,17 +2052,17 @@ func (m *SvmMigrationSourceCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationSourceClusterLinks svm migration source cluster links
+// SvmMigrationInlineSourceInlineClusterInlineLinks svm migration inline source inline cluster inline links
 //
-// swagger:model SvmMigrationSourceClusterLinks
-type SvmMigrationSourceClusterLinks struct {
+// swagger:model svm_migration_inline_source_inline_cluster_inline__links
+type SvmMigrationInlineSourceInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration source cluster links
-func (m *SvmMigrationSourceClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline source inline cluster inline links
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1449,7 +2075,7 @@ func (m *SvmMigrationSourceClusterLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmMigrationSourceClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1466,8 +2092,8 @@ func (m *SvmMigrationSourceClusterLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this svm migration source cluster links based on the context it is used
-func (m *SvmMigrationSourceClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline source inline cluster inline links based on the context it is used
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1480,7 +2106,7 @@ func (m *SvmMigrationSourceClusterLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmMigrationSourceClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1495,7 +2121,7 @@ func (m *SvmMigrationSourceClusterLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationSourceClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1503,8 +2129,8 @@ func (m *SvmMigrationSourceClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationSourceClusterLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationSourceClusterLinks
+func (m *SvmMigrationInlineSourceInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineSourceInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1512,27 +2138,27 @@ func (m *SvmMigrationSourceClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationSourceSvm Source SVM
+// SvmMigrationInlineSourceInlineSvm Source SVM
 //
-// swagger:model SvmMigrationSourceSvm
-type SvmMigrationSourceSvm struct {
+// swagger:model svm_migration_inline_source_inline_svm
+type SvmMigrationInlineSourceInlineSvm struct {
 
 	// links
-	Links *SvmMigrationSourceSvmLinks `json:"_links,omitempty"`
+	Links *SvmMigrationInlineSourceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration source svm
-func (m *SvmMigrationSourceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline source inline svm
+func (m *SvmMigrationInlineSourceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1545,7 +2171,7 @@ func (m *SvmMigrationSourceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationSourceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1562,8 +2188,8 @@ func (m *SvmMigrationSourceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm migration source svm based on the context it is used
-func (m *SvmMigrationSourceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline source inline svm based on the context it is used
+func (m *SvmMigrationInlineSourceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1576,7 +2202,7 @@ func (m *SvmMigrationSourceSvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SvmMigrationSourceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1591,7 +2217,7 @@ func (m *SvmMigrationSourceSvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationSourceSvm) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineSourceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1599,8 +2225,8 @@ func (m *SvmMigrationSourceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationSourceSvm) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationSourceSvm
+func (m *SvmMigrationInlineSourceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineSourceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1608,17 +2234,17 @@ func (m *SvmMigrationSourceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationSourceSvmLinks svm migration source svm links
+// SvmMigrationInlineSourceInlineSvmInlineLinks svm migration inline source inline svm inline links
 //
-// swagger:model SvmMigrationSourceSvmLinks
-type SvmMigrationSourceSvmLinks struct {
+// swagger:model svm_migration_inline_source_inline_svm_inline__links
+type SvmMigrationInlineSourceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration source svm links
-func (m *SvmMigrationSourceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline source inline svm inline links
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1631,7 +2257,7 @@ func (m *SvmMigrationSourceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationSourceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1648,8 +2274,8 @@ func (m *SvmMigrationSourceSvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this svm migration source svm links based on the context it is used
-func (m *SvmMigrationSourceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline source inline svm inline links based on the context it is used
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1662,7 +2288,7 @@ func (m *SvmMigrationSourceSvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SvmMigrationSourceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1677,7 +2303,7 @@ func (m *SvmMigrationSourceSvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationSourceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1685,8 +2311,8 @@ func (m *SvmMigrationSourceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationSourceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationSourceSvmLinks
+func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineSourceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1694,10 +2320,10 @@ func (m *SvmMigrationSourceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationTimeMetrics Various time metrics details
+// SvmMigrationInlineTimeMetrics Various time metrics details
 //
-// swagger:model SvmMigrationTimeMetrics
-type SvmMigrationTimeMetrics struct {
+// swagger:model svm_migration_inline_time_metrics
+type SvmMigrationInlineTimeMetrics struct {
 
 	// Cutover end time
 	// Example: 2020-12-02T19:30:19-08:00
@@ -1742,8 +2368,8 @@ type SvmMigrationTimeMetrics struct {
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
 }
 
-// Validate validates this svm migration time metrics
-func (m *SvmMigrationTimeMetrics) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration inline time metrics
+func (m *SvmMigrationInlineTimeMetrics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCutoverCompleteTime(formats); err != nil {
@@ -1780,7 +2406,7 @@ func (m *SvmMigrationTimeMetrics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateCutoverCompleteTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateCutoverCompleteTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.CutoverCompleteTime) { // not required
 		return nil
 	}
@@ -1792,7 +2418,7 @@ func (m *SvmMigrationTimeMetrics) validateCutoverCompleteTime(formats strfmt.Reg
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateCutoverStartTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateCutoverStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.CutoverStartTime) { // not required
 		return nil
 	}
@@ -1804,7 +2430,7 @@ func (m *SvmMigrationTimeMetrics) validateCutoverStartTime(formats strfmt.Regist
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateCutoverTriggerTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateCutoverTriggerTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.CutoverTriggerTime) { // not required
 		return nil
 	}
@@ -1816,7 +2442,7 @@ func (m *SvmMigrationTimeMetrics) validateCutoverTriggerTime(formats strfmt.Regi
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateEndTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateEndTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.EndTime) { // not required
 		return nil
 	}
@@ -1828,7 +2454,7 @@ func (m *SvmMigrationTimeMetrics) validateEndTime(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateLastPauseTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateLastPauseTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.LastPauseTime) { // not required
 		return nil
 	}
@@ -1840,7 +2466,7 @@ func (m *SvmMigrationTimeMetrics) validateLastPauseTime(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateLastResumeTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateLastResumeTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.LastResumeTime) { // not required
 		return nil
 	}
@@ -1852,7 +2478,7 @@ func (m *SvmMigrationTimeMetrics) validateLastResumeTime(formats strfmt.Registry
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) validateStartTime(formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) validateStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.StartTime) { // not required
 		return nil
 	}
@@ -1864,8 +2490,8 @@ func (m *SvmMigrationTimeMetrics) validateStartTime(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this svm migration time metrics based on the context it is used
-func (m *SvmMigrationTimeMetrics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration inline time metrics based on the context it is used
+func (m *SvmMigrationInlineTimeMetrics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCutoverCompleteTime(ctx, formats); err != nil {
@@ -1902,7 +2528,7 @@ func (m *SvmMigrationTimeMetrics) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateCutoverCompleteTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateCutoverCompleteTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"cutover_complete_time", "body", m.CutoverCompleteTime); err != nil {
 		return err
@@ -1911,7 +2537,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateCutoverCompleteTime(ctx context
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateCutoverStartTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateCutoverStartTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"cutover_start_time", "body", m.CutoverStartTime); err != nil {
 		return err
@@ -1920,7 +2546,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateCutoverStartTime(ctx context.Co
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateCutoverTriggerTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateCutoverTriggerTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"cutover_trigger_time", "body", m.CutoverTriggerTime); err != nil {
 		return err
@@ -1929,7 +2555,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateCutoverTriggerTime(ctx context.
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateEndTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateEndTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"end_time", "body", m.EndTime); err != nil {
 		return err
@@ -1938,7 +2564,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateEndTime(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateLastPauseTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateLastPauseTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"last_pause_time", "body", m.LastPauseTime); err != nil {
 		return err
@@ -1947,7 +2573,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateLastPauseTime(ctx context.Conte
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateLastResumeTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateLastResumeTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"last_resume_time", "body", m.LastResumeTime); err != nil {
 		return err
@@ -1956,7 +2582,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateLastResumeTime(ctx context.Cont
 	return nil
 }
 
-func (m *SvmMigrationTimeMetrics) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationInlineTimeMetrics) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "time_metrics"+"."+"start_time", "body", m.StartTime); err != nil {
 		return err
@@ -1966,7 +2592,7 @@ func (m *SvmMigrationTimeMetrics) contextValidateStartTime(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationTimeMetrics) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationInlineTimeMetrics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1974,8 +2600,8 @@ func (m *SvmMigrationTimeMetrics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationTimeMetrics) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationTimeMetrics
+func (m *SvmMigrationInlineTimeMetrics) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationInlineTimeMetrics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

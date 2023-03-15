@@ -119,6 +119,7 @@ func NewQtreeDeleteDefault(code int) *QtreeDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
+| 5242925 | The limit for the number of concurrent delete jobs has been reached. |
 | 5242955 | The UUID of the volume is required. |
 | 5242957 | Failed to delete qtree with ID in the volume and SVM. |
 */

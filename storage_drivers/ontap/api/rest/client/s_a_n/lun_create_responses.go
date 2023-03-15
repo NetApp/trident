@@ -52,6 +52,11 @@ LunCreateCreated describes a response with status code 201, with default header 
 Created
 */
 type LunCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.LunResponse
 }
 
@@ -93,6 +98,13 @@ func (o *LunCreateCreated) GetPayload() *models.LunResponse {
 }
 
 func (o *LunCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.LunResponse)
 
@@ -156,6 +168,7 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374942 | The property cannot be specified at the same time when creating a LUN as a clone. The `target` property of the error object identifies the other property given with clone. |
 | 5374943 | The property cannot be specified at the same time when creating a LUN as a copy. The `target` property of the error object identifies the other property given with copy. |
 | 5374944 | The property cannot be specified when converting an NVMe namespace into a LUN. The `target` property of the error object identifies the property. |
+| 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |
 | 13565952 | The LUN clone request failed. |
 | 72089755 | NVMe namespace with a block size of 4096 bytes cannot be converted to a LUN. |
 | 72089756 | Namespace is currently mapped to subsystem. |

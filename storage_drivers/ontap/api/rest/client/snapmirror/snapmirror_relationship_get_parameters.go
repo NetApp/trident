@@ -66,19 +66,19 @@ type SnapmirrorRelationshipGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ListDestinationsOnly.
 
 	   Set to true to show relationships from the source only.
 	*/
-	ListDestinationsOnlyQueryParameter *bool
+	ListDestinationsOnly *bool
 
 	/* UUID.
 
 	   Relationship UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SnapmirrorRelationshipGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) WithFields(fields []string) *SnapmirrorRelationshipGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithListDestinationsOnlyQueryParameter adds the listDestinationsOnly to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) WithListDestinationsOnlyQueryParameter(listDestinationsOnly *bool) *SnapmirrorRelationshipGetParams {
-	o.SetListDestinationsOnlyQueryParameter(listDestinationsOnly)
+// WithListDestinationsOnly adds the listDestinationsOnly to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) WithListDestinationsOnly(listDestinationsOnly *bool) *SnapmirrorRelationshipGetParams {
+	o.SetListDestinationsOnly(listDestinationsOnly)
 	return o
 }
 
-// SetListDestinationsOnlyQueryParameter adds the listDestinationsOnly to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) SetListDestinationsOnlyQueryParameter(listDestinationsOnly *bool) {
-	o.ListDestinationsOnlyQueryParameter = listDestinationsOnly
+// SetListDestinationsOnly adds the listDestinationsOnly to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) SetListDestinationsOnly(listDestinationsOnly *bool) {
+	o.ListDestinationsOnly = listDestinationsOnly
 }
 
-// WithUUIDPathParameter adds the uuid to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) WithUUIDPathParameter(uuid string) *SnapmirrorRelationshipGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) WithUUID(uuid string) *SnapmirrorRelationshipGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -185,13 +185,13 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ListDestinationsOnlyQueryParameter != nil {
+	if o.ListDestinationsOnly != nil {
 
 		// query param list_destinations_only
 		var qrListDestinationsOnly bool
 
-		if o.ListDestinationsOnlyQueryParameter != nil {
-			qrListDestinationsOnly = *o.ListDestinationsOnlyQueryParameter
+		if o.ListDestinationsOnly != nil {
+			qrListDestinationsOnly = *o.ListDestinationsOnly
 		}
 		qListDestinationsOnly := swag.FormatBool(qrListDestinationsOnly)
 		if qListDestinationsOnly != "" {
@@ -203,7 +203,7 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -215,7 +215,7 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSnapmirrorRelationshipGet binds the parameter fields
 func (o *SnapmirrorRelationshipGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

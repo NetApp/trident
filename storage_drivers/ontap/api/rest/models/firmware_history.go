@@ -22,7 +22,7 @@ import (
 type FirmwareHistory struct {
 
 	// links
-	Links *FirmwareHistoryLinks `json:"_links,omitempty"`
+	Links *FirmwareHistoryInlineLinks `json:"_links,omitempty"`
 
 	// End time of this update request.
 	// Example: 2019-02-02T19:00:00Z
@@ -30,29 +30,29 @@ type FirmwareHistory struct {
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
+	// firmware history inline update status
+	FirmwareHistoryInlineUpdateStatus []*FirmwareHistoryUpdateState `json:"update_status,omitempty"`
+
 	// Name of the firmware file.
 	// Example: all_disk_fw.zip
-	FwFileName string `json:"fw_file_name,omitempty"`
+	FwFileName *string `json:"fw_file_name,omitempty"`
 
 	// fw update state
 	// Read Only: true
 	// Enum: [downloading moving_firmware starting_workers waiting_on_workers completed failed]
-	FwUpdateState string `json:"fw_update_state,omitempty"`
+	FwUpdateState *string `json:"fw_update_state,omitempty"`
 
 	// job
 	Job *JobLink `json:"job,omitempty"`
 
 	// node
-	Node *FirmwareHistoryNode `json:"node,omitempty"`
+	Node *FirmwareHistoryInlineNode `json:"node,omitempty"`
 
 	// Start time of this update request.
 	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
-
-	// update status
-	UpdateStatus []*FirmwareHistoryUpdateState `json:"update_status,omitempty"`
 }
 
 // Validate validates this firmware history
@@ -64,6 +64,10 @@ func (m *FirmwareHistory) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateEndTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFirmwareHistoryInlineUpdateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -80,10 +84,6 @@ func (m *FirmwareHistory) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStartTime(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateUpdateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,6 +117,30 @@ func (m *FirmwareHistory) validateEndTime(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("end_time", "body", "date-time", m.EndTime.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *FirmwareHistory) validateFirmwareHistoryInlineUpdateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.FirmwareHistoryInlineUpdateStatus) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FirmwareHistoryInlineUpdateStatus); i++ {
+		if swag.IsZero(m.FirmwareHistoryInlineUpdateStatus[i]) { // not required
+			continue
+		}
+
+		if m.FirmwareHistoryInlineUpdateStatus[i] != nil {
+			if err := m.FirmwareHistoryInlineUpdateStatus[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("update_status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -211,7 +235,7 @@ func (m *FirmwareHistory) validateFwUpdateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateFwUpdateStateEnum("fw_update_state", "body", m.FwUpdateState); err != nil {
+	if err := m.validateFwUpdateStateEnum("fw_update_state", "body", *m.FwUpdateState); err != nil {
 		return err
 	}
 
@@ -264,30 +288,6 @@ func (m *FirmwareHistory) validateStartTime(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FirmwareHistory) validateUpdateStatus(formats strfmt.Registry) error {
-	if swag.IsZero(m.UpdateStatus) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.UpdateStatus); i++ {
-		if swag.IsZero(m.UpdateStatus[i]) { // not required
-			continue
-		}
-
-		if m.UpdateStatus[i] != nil {
-			if err := m.UpdateStatus[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_status" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this firmware history based on the context it is used
 func (m *FirmwareHistory) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -297,6 +297,10 @@ func (m *FirmwareHistory) ContextValidate(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.contextValidateEndTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareHistoryInlineUpdateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -313,10 +317,6 @@ func (m *FirmwareHistory) ContextValidate(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.contextValidateStartTime(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUpdateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -349,9 +349,27 @@ func (m *FirmwareHistory) contextValidateEndTime(ctx context.Context, formats st
 	return nil
 }
 
+func (m *FirmwareHistory) contextValidateFirmwareHistoryInlineUpdateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FirmwareHistoryInlineUpdateStatus); i++ {
+
+		if m.FirmwareHistoryInlineUpdateStatus[i] != nil {
+			if err := m.FirmwareHistoryInlineUpdateStatus[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("update_status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FirmwareHistory) contextValidateFwUpdateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fw_update_state", "body", string(m.FwUpdateState)); err != nil {
+	if err := validate.ReadOnly(ctx, "fw_update_state", "body", m.FwUpdateState); err != nil {
 		return err
 	}
 
@@ -395,24 +413,6 @@ func (m *FirmwareHistory) contextValidateStartTime(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FirmwareHistory) contextValidateUpdateStatus(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.UpdateStatus); i++ {
-
-		if m.UpdateStatus[i] != nil {
-			if err := m.UpdateStatus[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_status" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *FirmwareHistory) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -431,17 +431,17 @@ func (m *FirmwareHistory) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryLinks firmware history links
+// FirmwareHistoryInlineLinks firmware history inline links
 //
-// swagger:model FirmwareHistoryLinks
-type FirmwareHistoryLinks struct {
+// swagger:model firmware_history_inline__links
+type FirmwareHistoryInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this firmware history links
-func (m *FirmwareHistoryLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history inline links
+func (m *FirmwareHistoryInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -454,7 +454,7 @@ func (m *FirmwareHistoryLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FirmwareHistoryLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -471,8 +471,8 @@ func (m *FirmwareHistoryLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this firmware history links based on the context it is used
-func (m *FirmwareHistoryLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history inline links based on the context it is used
+func (m *FirmwareHistoryInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -485,7 +485,7 @@ func (m *FirmwareHistoryLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FirmwareHistoryLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -500,7 +500,7 @@ func (m *FirmwareHistoryLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryLinks) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -508,8 +508,8 @@ func (m *FirmwareHistoryLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryLinks) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryLinks
+func (m *FirmwareHistoryInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -517,25 +517,25 @@ func (m *FirmwareHistoryLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryNode firmware history node
+// FirmwareHistoryInlineNode firmware history inline node
 //
-// swagger:model FirmwareHistoryNode
-type FirmwareHistoryNode struct {
+// swagger:model firmware_history_inline_node
+type FirmwareHistoryInlineNode struct {
 
 	// links
-	Links *FirmwareHistoryNodeLinks `json:"_links,omitempty"`
+	Links *FirmwareHistoryInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this firmware history node
-func (m *FirmwareHistoryNode) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history inline node
+func (m *FirmwareHistoryInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -548,7 +548,7 @@ func (m *FirmwareHistoryNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FirmwareHistoryNode) validateLinks(formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -565,8 +565,8 @@ func (m *FirmwareHistoryNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this firmware history node based on the context it is used
-func (m *FirmwareHistoryNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history inline node based on the context it is used
+func (m *FirmwareHistoryInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -579,7 +579,7 @@ func (m *FirmwareHistoryNode) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FirmwareHistoryNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -594,7 +594,7 @@ func (m *FirmwareHistoryNode) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryNode) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -602,8 +602,8 @@ func (m *FirmwareHistoryNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryNode) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryNode
+func (m *FirmwareHistoryInlineNode) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -611,17 +611,17 @@ func (m *FirmwareHistoryNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryNodeLinks firmware history node links
+// FirmwareHistoryInlineNodeInlineLinks firmware history inline node inline links
 //
-// swagger:model FirmwareHistoryNodeLinks
-type FirmwareHistoryNodeLinks struct {
+// swagger:model firmware_history_inline_node_inline__links
+type FirmwareHistoryInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this firmware history node links
-func (m *FirmwareHistoryNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history inline node inline links
+func (m *FirmwareHistoryInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -634,7 +634,7 @@ func (m *FirmwareHistoryNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FirmwareHistoryNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -651,8 +651,8 @@ func (m *FirmwareHistoryNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this firmware history node links based on the context it is used
-func (m *FirmwareHistoryNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history inline node inline links based on the context it is used
+func (m *FirmwareHistoryInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -665,7 +665,7 @@ func (m *FirmwareHistoryNodeLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FirmwareHistoryNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -680,7 +680,7 @@ func (m *FirmwareHistoryNodeLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -688,8 +688,8 @@ func (m *FirmwareHistoryNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryNodeLinks
+func (m *FirmwareHistoryInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

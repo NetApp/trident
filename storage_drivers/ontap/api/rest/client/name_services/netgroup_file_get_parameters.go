@@ -66,13 +66,13 @@ type NetgroupFileGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *NetgroupFileGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the netgroup file get params
-func (o *NetgroupFileGetParams) WithFieldsQueryParameter(fields []string) *NetgroupFileGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the netgroup file get params
+func (o *NetgroupFileGetParams) WithFields(fields []string) *NetgroupFileGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the netgroup file get params
-func (o *NetgroupFileGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the netgroup file get params
+func (o *NetgroupFileGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the netgroup file get params
-func (o *NetgroupFileGetParams) WithSVMUUIDPathParameter(svmUUID string) *NetgroupFileGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the netgroup file get params
+func (o *NetgroupFileGetParams) WithSvmUUID(svmUUID string) *NetgroupFileGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the netgroup file get params
-func (o *NetgroupFileGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the netgroup file get params
+func (o *NetgroupFileGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *NetgroupFileGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *NetgroupFileGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *NetgroupFileGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamNetgroupFileGet binds the parameter fields
 func (o *NetgroupFileGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

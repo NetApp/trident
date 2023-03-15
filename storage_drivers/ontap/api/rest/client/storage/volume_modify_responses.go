@@ -119,6 +119,7 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 787141 | The specified \"aggregates.name\" and \"aggregates.uuid\" refer to different aggregates. |
+| 917505 | SVM not found. |
 | 917829 | Volume autosize grow threshold must be larger than autosize shrink threshold. |
 | 917831 | Volume minimum autosize must be smaller than the maximum autosize. |
 | 918193 | Cannot modify tiering min cooling days when vol move is in progress. |
@@ -141,14 +142,42 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918535 | The tiering minimum cooling day values are different for the FlexClone volume and its parent volume. The match-parent-storage-tier option cannot be set to true. |
 | 918537 | Could not get the FlexClone volume tiering policy or its parent volume tiering policy. Wait a minute and try again. |
 | 918538 | The match-parent-storage-tier option is not supported for clone creation. |
+| 2424998 | Unable to determine whether MetroCluster is configured. |
+| 9437885 | The volume is not online. |
+| 13107256 | Operation is only supported on FlexGroup volumes. |
+| 13107371 | Operation is only supported on read-write FlexGroup volumes. |
 | 13107404 | When adding new resources to a FlexGroup by specifying \"aggregates.name\" or \"aggregates.uuid\", the FlexGroup cannot be resized using \"size\". These operations must be done separately. |
+| 13107415 | Failed to lookup a volume property. |
+| 13107431 | Failed to lookup an SVM property. |
+| 13107433 | A Snapshot copy is scheduled to be taken within the volume capacity rebalancing runtime. |
+| 13107434 | A SnapMirror update is scheduled within the volume capacity rebalancing runtime. |
 | 13109187 | When adding new resources to a FlexGroup using \"sizing_method\", \"size\" must be specified.  Neither \"aggregates.name\" nor \"aggregates.uuid\" are allowed to be specified, as the aggregates are selected automatically by the system. |
 | 13109198 | Resizing by adding new resources is only supported for FlexGroups. |
+| 13109258 | Cannot enable granular data on volume \"name\" in Vserver \"svm.name\". This setting can only be enabled on FlexGroups. |
+| 13109259 | Granular data cannot be disabled on volume \"name\" in Vserver \"svm.name\". This property can only be disabled by restoring a Snapshot copy. |
+| 13109260 | Failed to enable granular data on the volume. |
 | 111411201 | File system analytics cannot be enabled on the target volume because of the specified reason. |
 | 111411202 | File system analytics cannot be disabled on the target volume because of the specified reason. |
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
+| 144180203 | Volume capacity rebalancing is not supported on FlexCache volumes. |
+| 144180204 | Volume capacity rebalancing is not supported on object store volumes. |
+| 144180207 | Volume capacity rebalancing is not supported on inactive MetroCluster configurations. |
+| 144182201 | Volume capacity rebalancing using non-disruptive file move operations and granular data requires an effective cluster version of 9.11.1 or later. |
+| 144182203 | The specified value for the \"rebalancing.state\" parameter is invalid for a PATCH operation. Valid values are \"starting\" and \"stopping\". |
+| 144182207 | Modifying the volume capacity rebalancing configuration is not supported in the same operation that volume capacity rebalancing is being stopped. |
+| 144182211 | The specified value for \"-max-file-moves\" is not valid. |
+| 144182212 | The \"-min-file-size\" value specified must be larger than 0. |
+| 144182213 | The \"-min-threshold\" value specified must be larger than 0. |
+| 144182214 | The \"-max-threshold\" value specified must be larger than 0. |
+| 144182215 | The maximum imbalance threshold value must be larger than the minimum imbalance threshold value. |
+| 144182216 | Volume capacity rebalancing is running on the volume. |
+| 144182219 | Volume capacity rebalancing for the volume has been started on some constituents. |
+| 144182221 | The \"-max-runtime\" value specified must be 30 minutes or longer. |
+| 144182223 | Volume capacity rebalancing is not running on the volume. |
+| 144182225 | Internal error in the data component. |
+| 144182226 | Failed to load the volume capacity rebalancing configuration for the volume. |
 */
 type VolumeModifyDefault struct {
 	_statusCode int

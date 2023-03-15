@@ -18,10 +18,10 @@ import (
 type ManagementProtocols struct {
 
 	// Indicates whether or not security protocol rsh is enabled on the cluster.
-	RshEnabled bool `json:"rsh_enabled,omitempty"`
+	RshEnabled *bool `json:"rsh_enabled,omitempty"`
 
 	// Indicates whether or not security protocol telnet is enabled on the cluster.
-	TelnetEnabled bool `json:"telnet_enabled,omitempty"`
+	TelnetEnabled *bool `json:"telnet_enabled,omitempty"`
 }
 
 // Validate validates this management protocols

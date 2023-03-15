@@ -23,11 +23,12 @@ type LicenseManagerResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// license manager response inline records
+	LicenseManagerResponseInlineRecords []*LicenseManagerResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
-	// records
-	Records []*LicenseManagerResponseRecordsItems0 `json:"records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this license manager response
@@ -38,7 +39,7 @@ func (m *LicenseManagerResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateLicenseManagerResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +66,18 @@ func (m *LicenseManagerResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LicenseManagerResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *LicenseManagerResponse) validateLicenseManagerResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.LicenseManagerResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.LicenseManagerResponseInlineRecords); i++ {
+		if swag.IsZero(m.LicenseManagerResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.LicenseManagerResponseInlineRecords[i] != nil {
+			if err := m.LicenseManagerResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +98,7 @@ func (m *LicenseManagerResponse) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateLicenseManagerResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +122,12 @@ func (m *LicenseManagerResponse) contextValidateLinks(ctx context.Context, forma
 	return nil
 }
 
-func (m *LicenseManagerResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *LicenseManagerResponse) contextValidateLicenseManagerResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.LicenseManagerResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.LicenseManagerResponseInlineRecords[i] != nil {
+			if err := m.LicenseManagerResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +158,10 @@ func (m *LicenseManagerResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LicenseManagerResponseRecordsItems0 Information on a license manager instance associated with the cluster.
+// LicenseManagerResponseInlineRecordsInlineArrayItem Information on a license manager instance associated with the cluster.
 //
-// swagger:model LicenseManagerResponseRecordsItems0
-type LicenseManagerResponseRecordsItems0 struct {
+// swagger:model license_manager_response_inline_records_inline_array_item
+type LicenseManagerResponseInlineRecordsInlineArrayItem struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
@@ -172,17 +173,17 @@ type LicenseManagerResponseRecordsItems0 struct {
 	Default *bool `json:"default,omitempty"`
 
 	// uri
-	URI *LicenseManagerResponseRecordsItems0URI `json:"uri,omitempty"`
+	URI *LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI `json:"uri,omitempty"`
 
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-112233445566
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this license manager response records items0
-func (m *LicenseManagerResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this license manager response inline records inline array item
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -203,7 +204,7 @@ func (m *LicenseManagerResponseRecordsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -220,7 +221,7 @@ func (m *LicenseManagerResponseRecordsItems0) validateLinks(formats strfmt.Regis
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) validateURI(formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) validateURI(formats strfmt.Registry) error {
 	if swag.IsZero(m.URI) { // not required
 		return nil
 	}
@@ -237,7 +238,7 @@ func (m *LicenseManagerResponseRecordsItems0) validateURI(formats strfmt.Registr
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) validateUUID(formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -249,8 +250,8 @@ func (m *LicenseManagerResponseRecordsItems0) validateUUID(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this license manager response records items0 based on the context it is used
-func (m *LicenseManagerResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this license manager response inline records inline array item based on the context it is used
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -275,7 +276,7 @@ func (m *LicenseManagerResponseRecordsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -289,7 +290,7 @@ func (m *LicenseManagerResponseRecordsItems0) contextValidateLinks(ctx context.C
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "default", "body", m.Default); err != nil {
 		return err
@@ -298,7 +299,7 @@ func (m *LicenseManagerResponseRecordsItems0) contextValidateDefault(ctx context
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) contextValidateURI(ctx context.Context, formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) contextValidateURI(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.URI != nil {
 		if err := m.URI.ContextValidate(ctx, formats); err != nil {
@@ -312,9 +313,9 @@ func (m *LicenseManagerResponseRecordsItems0) contextValidateURI(ctx context.Con
 	return nil
 }
 
-func (m *LicenseManagerResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -322,7 +323,7 @@ func (m *LicenseManagerResponseRecordsItems0) contextValidateUUID(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *LicenseManagerResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -330,8 +331,8 @@ func (m *LicenseManagerResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LicenseManagerResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res LicenseManagerResponseRecordsItems0
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res LicenseManagerResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -339,28 +340,28 @@ func (m *LicenseManagerResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LicenseManagerResponseRecordsItems0URI License manager URI.
+// LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI License manager URI.
 //
-// swagger:model LicenseManagerResponseRecordsItems0URI
-type LicenseManagerResponseRecordsItems0URI struct {
+// swagger:model license_manager_response_inline_records_inline_array_item_inline_uri
+type LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI struct {
 
 	// License manager host name, IPv4 or IPv6 address.
 	// Example: 10.1.1.1
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 }
 
-// Validate validates this license manager response records items0 URI
-func (m *LicenseManagerResponseRecordsItems0URI) Validate(formats strfmt.Registry) error {
+// Validate validates this license manager response inline records inline array item inline uri
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this license manager response records items0 URI based on context it is used
-func (m *LicenseManagerResponseRecordsItems0URI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this license manager response inline records inline array item inline uri based on context it is used
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LicenseManagerResponseRecordsItems0URI) MarshalBinary() ([]byte, error) {
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -368,8 +369,8 @@ func (m *LicenseManagerResponseRecordsItems0URI) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *LicenseManagerResponseRecordsItems0URI) UnmarshalBinary(b []byte) error {
-	var res LicenseManagerResponseRecordsItems0URI
+func (m *LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI) UnmarshalBinary(b []byte) error {
+	var res LicenseManagerResponseInlineRecordsInlineArrayItemInlineURI
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

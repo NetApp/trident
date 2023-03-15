@@ -21,10 +21,10 @@ import (
 type EmsConnectivityError struct {
 
 	// message
-	Message *EmsConnectivityErrorMessage `json:"message,omitempty"`
+	Message *EmsConnectivityErrorInlineMessage `json:"message,omitempty"`
 
 	// node
-	Node *EmsConnectivityErrorNode `json:"node,omitempty"`
+	Node *EmsConnectivityErrorInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this ems connectivity error
@@ -143,10 +143,10 @@ func (m *EmsConnectivityError) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsConnectivityErrorMessage Information to be displayed to the user.
+// EmsConnectivityErrorInlineMessage ems connectivity error inline message
 //
-// swagger:model EmsConnectivityErrorMessage
-type EmsConnectivityErrorMessage struct {
+// swagger:model ems_connectivity_error_inline_message
+type EmsConnectivityErrorInlineMessage struct {
 
 	// Message arguments
 	// Read Only: true
@@ -155,16 +155,16 @@ type EmsConnectivityErrorMessage struct {
 	// Unique message code.
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// User message.
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this ems connectivity error message
-func (m *EmsConnectivityErrorMessage) Validate(formats strfmt.Registry) error {
+// Validate validates this ems connectivity error inline message
+func (m *EmsConnectivityErrorInlineMessage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateArguments(formats); err != nil {
@@ -177,7 +177,7 @@ func (m *EmsConnectivityErrorMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsConnectivityErrorMessage) validateArguments(formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineMessage) validateArguments(formats strfmt.Registry) error {
 	if swag.IsZero(m.Arguments) { // not required
 		return nil
 	}
@@ -201,8 +201,8 @@ func (m *EmsConnectivityErrorMessage) validateArguments(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this ems connectivity error message based on the context it is used
-func (m *EmsConnectivityErrorMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems connectivity error inline message based on the context it is used
+func (m *EmsConnectivityErrorInlineMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateArguments(ctx, formats); err != nil {
@@ -223,7 +223,7 @@ func (m *EmsConnectivityErrorMessage) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *EmsConnectivityErrorMessage) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineMessage) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "message"+"."+"arguments", "body", []*EmsConnectivityErrorMessageArgumentsItems0(m.Arguments)); err != nil {
 		return err
@@ -245,18 +245,18 @@ func (m *EmsConnectivityErrorMessage) contextValidateArguments(ctx context.Conte
 	return nil
 }
 
-func (m *EmsConnectivityErrorMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "message"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsConnectivityErrorMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -264,7 +264,7 @@ func (m *EmsConnectivityErrorMessage) contextValidateMessage(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *EmsConnectivityErrorMessage) MarshalBinary() ([]byte, error) {
+func (m *EmsConnectivityErrorInlineMessage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -272,8 +272,8 @@ func (m *EmsConnectivityErrorMessage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsConnectivityErrorMessage) UnmarshalBinary(b []byte) error {
-	var res EmsConnectivityErrorMessage
+func (m *EmsConnectivityErrorInlineMessage) UnmarshalBinary(b []byte) error {
+	var res EmsConnectivityErrorInlineMessage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -288,11 +288,11 @@ type EmsConnectivityErrorMessageArgumentsItems0 struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this ems connectivity error message arguments items0
@@ -320,7 +320,7 @@ func (m *EmsConnectivityErrorMessageArgumentsItems0) ContextValidate(ctx context
 
 func (m *EmsConnectivityErrorMessageArgumentsItems0) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -329,7 +329,7 @@ func (m *EmsConnectivityErrorMessageArgumentsItems0) contextValidateCode(ctx con
 
 func (m *EmsConnectivityErrorMessageArgumentsItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -354,25 +354,25 @@ func (m *EmsConnectivityErrorMessageArgumentsItems0) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// EmsConnectivityErrorNode ems connectivity error node
+// EmsConnectivityErrorInlineNode ems connectivity error inline node
 //
-// swagger:model EmsConnectivityErrorNode
-type EmsConnectivityErrorNode struct {
+// swagger:model ems_connectivity_error_inline_node
+type EmsConnectivityErrorInlineNode struct {
 
 	// links
-	Links *EmsConnectivityErrorNodeLinks `json:"_links,omitempty"`
+	Links *EmsConnectivityErrorInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ems connectivity error node
-func (m *EmsConnectivityErrorNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ems connectivity error inline node
+func (m *EmsConnectivityErrorInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -385,7 +385,7 @@ func (m *EmsConnectivityErrorNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsConnectivityErrorNode) validateLinks(formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -402,8 +402,8 @@ func (m *EmsConnectivityErrorNode) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this ems connectivity error node based on the context it is used
-func (m *EmsConnectivityErrorNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems connectivity error inline node based on the context it is used
+func (m *EmsConnectivityErrorInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -416,7 +416,7 @@ func (m *EmsConnectivityErrorNode) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *EmsConnectivityErrorNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -431,7 +431,7 @@ func (m *EmsConnectivityErrorNode) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *EmsConnectivityErrorNode) MarshalBinary() ([]byte, error) {
+func (m *EmsConnectivityErrorInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -439,8 +439,8 @@ func (m *EmsConnectivityErrorNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsConnectivityErrorNode) UnmarshalBinary(b []byte) error {
-	var res EmsConnectivityErrorNode
+func (m *EmsConnectivityErrorInlineNode) UnmarshalBinary(b []byte) error {
+	var res EmsConnectivityErrorInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,17 +448,17 @@ func (m *EmsConnectivityErrorNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsConnectivityErrorNodeLinks ems connectivity error node links
+// EmsConnectivityErrorInlineNodeInlineLinks ems connectivity error inline node inline links
 //
-// swagger:model EmsConnectivityErrorNodeLinks
-type EmsConnectivityErrorNodeLinks struct {
+// swagger:model ems_connectivity_error_inline_node_inline__links
+type EmsConnectivityErrorInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems connectivity error node links
-func (m *EmsConnectivityErrorNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems connectivity error inline node inline links
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -471,7 +471,7 @@ func (m *EmsConnectivityErrorNodeLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *EmsConnectivityErrorNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -488,8 +488,8 @@ func (m *EmsConnectivityErrorNodeLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this ems connectivity error node links based on the context it is used
-func (m *EmsConnectivityErrorNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems connectivity error inline node inline links based on the context it is used
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -502,7 +502,7 @@ func (m *EmsConnectivityErrorNodeLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *EmsConnectivityErrorNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -517,7 +517,7 @@ func (m *EmsConnectivityErrorNodeLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *EmsConnectivityErrorNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -525,8 +525,8 @@ func (m *EmsConnectivityErrorNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsConnectivityErrorNodeLinks) UnmarshalBinary(b []byte) error {
-	var res EmsConnectivityErrorNodeLinks
+func (m *EmsConnectivityErrorInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsConnectivityErrorInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -19,15 +19,15 @@ import (
 type AggregateReference struct {
 
 	// links
-	Links *AggregateReferenceLinks `json:"_links,omitempty"`
+	Links *AggregateReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this aggregate reference
@@ -107,17 +107,17 @@ func (m *AggregateReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateReferenceLinks aggregate reference links
+// AggregateReferenceInlineLinks aggregate reference inline links
 //
-// swagger:model AggregateReferenceLinks
-type AggregateReferenceLinks struct {
+// swagger:model aggregate_reference_inline__links
+type AggregateReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate reference links
-func (m *AggregateReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate reference inline links
+func (m *AggregateReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *AggregateReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *AggregateReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate reference links based on the context it is used
-func (m *AggregateReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate reference inline links based on the context it is used
+func (m *AggregateReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *AggregateReferenceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AggregateReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *AggregateReferenceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *AggregateReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateReferenceLinks
+func (m *AggregateReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

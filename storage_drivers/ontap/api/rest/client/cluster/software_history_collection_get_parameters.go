@@ -66,43 +66,43 @@ type SoftwareHistoryCollectionGetParams struct {
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FromVersion.
 
 	   Filter by from_version
 	*/
-	FromVersionQueryParameter *string
+	FromVersion *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type SoftwareHistoryCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,25 +118,25 @@ type SoftwareHistoryCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StartTime.
 
 	   Filter by start_time
 	*/
-	StartTimeQueryParameter *string
+	StartTime *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* ToVersion.
 
 	   Filter by to_version
 	*/
-	ToVersionQueryParameter *string
+	ToVersion *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *SoftwareHistoryCollectionGetParams) WithDefaults() *SoftwareHistoryColl
 // All values with no default are reset to their zero value.
 func (o *SoftwareHistoryCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SoftwareHistoryCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *SoftwareHistoryCollectionGetParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithEndTimeQueryParameter adds the endTime to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithEndTimeQueryParameter(endTime *string) *SoftwareHistoryCollectionGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithEndTime adds the endTime to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithEndTime(endTime *string) *SoftwareHistoryCollectionGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetEndTime adds the endTime to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithFieldsQueryParameter adds the fields to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithFieldsQueryParameter(fields []string) *SoftwareHistoryCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithFields(fields []string) *SoftwareHistoryCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFromVersionQueryParameter adds the fromVersion to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithFromVersionQueryParameter(fromVersion *string) *SoftwareHistoryCollectionGetParams {
-	o.SetFromVersionQueryParameter(fromVersion)
+// WithFromVersion adds the fromVersion to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithFromVersion(fromVersion *string) *SoftwareHistoryCollectionGetParams {
+	o.SetFromVersion(fromVersion)
 	return o
 }
 
-// SetFromVersionQueryParameter adds the fromVersion to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetFromVersionQueryParameter(fromVersion *string) {
-	o.FromVersionQueryParameter = fromVersion
+// SetFromVersion adds the fromVersion to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetFromVersion(fromVersion *string) {
+	o.FromVersion = fromVersion
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SoftwareHistoryCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithMaxRecords(maxRecords *int64) *SoftwareHistoryCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *SoftwareHistoryCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithNodeName(nodeName *string) *SoftwareHistoryCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SoftwareHistoryCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithNodeUUID(nodeUUID *string) *SoftwareHistoryCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SoftwareHistoryCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithOrderBy(orderBy []string) *SoftwareHistoryCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SoftwareHistoryCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithReturnRecords(returnRecords *bool) *SoftwareHistoryCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwareHistoryCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SoftwareHistoryCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStartTimeQueryParameter adds the startTime to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithStartTimeQueryParameter(startTime *string) *SoftwareHistoryCollectionGetParams {
-	o.SetStartTimeQueryParameter(startTime)
+// WithStartTime adds the startTime to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithStartTime(startTime *string) *SoftwareHistoryCollectionGetParams {
+	o.SetStartTime(startTime)
 	return o
 }
 
-// SetStartTimeQueryParameter adds the startTime to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetStartTimeQueryParameter(startTime *string) {
-	o.StartTimeQueryParameter = startTime
+// SetStartTime adds the startTime to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetStartTime(startTime *string) {
+	o.StartTime = startTime
 }
 
-// WithStateQueryParameter adds the state to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithStateQueryParameter(state *string) *SoftwareHistoryCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithState(state *string) *SoftwareHistoryCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithToVersionQueryParameter adds the toVersion to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) WithToVersionQueryParameter(toVersion *string) *SoftwareHistoryCollectionGetParams {
-	o.SetToVersionQueryParameter(toVersion)
+// WithToVersion adds the toVersion to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) WithToVersion(toVersion *string) *SoftwareHistoryCollectionGetParams {
+	o.SetToVersion(toVersion)
 	return o
 }
 
-// SetToVersionQueryParameter adds the toVersion to the software history collection get params
-func (o *SoftwareHistoryCollectionGetParams) SetToVersionQueryParameter(toVersion *string) {
-	o.ToVersionQueryParameter = toVersion
+// SetToVersion adds the toVersion to the software history collection get params
+func (o *SoftwareHistoryCollectionGetParams) SetToVersion(toVersion *string) {
+	o.ToVersion = toVersion
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -362,7 +362,7 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FromVersionQueryParameter != nil {
+	if o.FromVersion != nil {
 
 		// query param from_version
 		var qrFromVersion string
 
-		if o.FromVersionQueryParameter != nil {
-			qrFromVersion = *o.FromVersionQueryParameter
+		if o.FromVersion != nil {
+			qrFromVersion = *o.FromVersion
 		}
 		qFromVersion := qrFromVersion
 		if qFromVersion != "" {
@@ -390,13 +390,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -407,13 +407,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -424,13 +424,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -441,7 +441,7 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -452,13 +452,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +469,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +486,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.StartTimeQueryParameter != nil {
+	if o.StartTime != nil {
 
 		// query param start_time
 		var qrStartTime string
 
-		if o.StartTimeQueryParameter != nil {
-			qrStartTime = *o.StartTimeQueryParameter
+		if o.StartTime != nil {
+			qrStartTime = *o.StartTime
 		}
 		qStartTime := qrStartTime
 		if qStartTime != "" {
@@ -503,13 +503,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -520,13 +520,13 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ToVersionQueryParameter != nil {
+	if o.ToVersion != nil {
 
 		// query param to_version
 		var qrToVersion string
 
-		if o.ToVersionQueryParameter != nil {
-			qrToVersion = *o.ToVersionQueryParameter
+		if o.ToVersion != nil {
+			qrToVersion = *o.ToVersion
 		}
 		qToVersion := qrToVersion
 		if qToVersion != "" {
@@ -545,7 +545,7 @@ func (o *SoftwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamSoftwareHistoryCollectionGet binds the parameter fields
 func (o *SoftwareHistoryCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *SoftwareHistoryCollectionGetParams) bindParamFields(formats strfmt.Regi
 
 // bindParamSoftwareHistoryCollectionGet binds the parameter order_by
 func (o *SoftwareHistoryCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

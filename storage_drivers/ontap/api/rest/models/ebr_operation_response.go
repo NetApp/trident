@@ -20,13 +20,14 @@ import (
 type EbrOperationResponse struct {
 
 	// links
-	Links *EbrOperationResponseLinks `json:"_links,omitempty"`
+	Links *EbrOperationResponseInlineLinks `json:"_links,omitempty"`
+
+	// ebr operation response inline records
+	EbrOperationResponseInlineRecords []*EbrOperation `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*EbrOperation `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ebr operation response
@@ -37,7 +38,7 @@ func (m *EbrOperationResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateEbrOperationResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *EbrOperationResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *EbrOperationResponse) validateEbrOperationResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.EbrOperationResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.EbrOperationResponseInlineRecords); i++ {
+		if swag.IsZero(m.EbrOperationResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.EbrOperationResponseInlineRecords[i] != nil {
+			if err := m.EbrOperationResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *EbrOperationResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateEbrOperationResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *EbrOperationResponse) contextValidateLinks(ctx context.Context, formats
 	return nil
 }
 
-func (m *EbrOperationResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationResponse) contextValidateEbrOperationResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.EbrOperationResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.EbrOperationResponseInlineRecords[i] != nil {
+			if err := m.EbrOperationResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *EbrOperationResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationResponseLinks ebr operation response links
+// EbrOperationResponseInlineLinks ebr operation response inline links
 //
-// swagger:model EbrOperationResponseLinks
-type EbrOperationResponseLinks struct {
+// swagger:model ebr_operation_response_inline__links
+type EbrOperationResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type EbrOperationResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation response links
-func (m *EbrOperationResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation response inline links
+func (m *EbrOperationResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *EbrOperationResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *EbrOperationResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *EbrOperationResponseLinks) validateNext(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *EbrOperationResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *EbrOperationResponseLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this ebr operation response links based on the context it is used
-func (m *EbrOperationResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation response inline links based on the context it is used
+func (m *EbrOperationResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *EbrOperationResponseLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *EbrOperationResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *EbrOperationResponseLinks) contextValidateNext(ctx context.Context, for
 	return nil
 }
 
-func (m *EbrOperationResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *EbrOperationResponseLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *EbrOperationResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationResponseLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationResponseLinks
+func (m *EbrOperationResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -73,13 +73,13 @@ type LdapSchemaModifyParams struct {
 
 	   LDAP schema name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   UUID of the owner to which this object belongs.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *LdapSchemaModifyParams) SetInfo(info *models.LdapSchema) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the ldap schema modify params
-func (o *LdapSchemaModifyParams) WithNamePathParameter(name string) *LdapSchemaModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ldap schema modify params
+func (o *LdapSchemaModifyParams) WithName(name string) *LdapSchemaModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ldap schema modify params
-func (o *LdapSchemaModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ldap schema modify params
+func (o *LdapSchemaModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the ldap schema modify params
-func (o *LdapSchemaModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *LdapSchemaModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the ldap schema modify params
+func (o *LdapSchemaModifyParams) WithOwnerUUID(ownerUUID string) *LdapSchemaModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the ldap schema modify params
-func (o *LdapSchemaModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the ldap schema modify params
+func (o *LdapSchemaModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *LdapSchemaModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

@@ -66,37 +66,37 @@ type SvmPeerPermissionCollectionGetParams struct {
 
 	   Filter by applications
 	*/
-	ApplicationsQueryParameter *string
+	Applications *string
 
 	/* ClusterPeerName.
 
 	   Filter by cluster_peer.name
 	*/
-	ClusterPeerNameQueryParameter *string
+	ClusterPeerName *string
 
 	/* ClusterPeerUUID.
 
 	   Filter by cluster_peer.uuid
 	*/
-	ClusterPeerUUIDQueryParameter *string
+	ClusterPeerUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type SvmPeerPermissionCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,19 +112,19 @@ type SvmPeerPermissionCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *SvmPeerPermissionCollectionGetParams) WithDefaults() *SvmPeerPermission
 // All values with no default are reset to their zero value.
 func (o *SvmPeerPermissionCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmPeerPermissionCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *SvmPeerPermissionCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithApplicationsQueryParameter adds the applications to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithApplicationsQueryParameter(applications *string) *SvmPeerPermissionCollectionGetParams {
-	o.SetApplicationsQueryParameter(applications)
+// WithApplications adds the applications to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithApplications(applications *string) *SvmPeerPermissionCollectionGetParams {
+	o.SetApplications(applications)
 	return o
 }
 
-// SetApplicationsQueryParameter adds the applications to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetApplicationsQueryParameter(applications *string) {
-	o.ApplicationsQueryParameter = applications
+// SetApplications adds the applications to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetApplications(applications *string) {
+	o.Applications = applications
 }
 
-// WithClusterPeerNameQueryParameter adds the clusterPeerName to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithClusterPeerNameQueryParameter(clusterPeerName *string) *SvmPeerPermissionCollectionGetParams {
-	o.SetClusterPeerNameQueryParameter(clusterPeerName)
+// WithClusterPeerName adds the clusterPeerName to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithClusterPeerName(clusterPeerName *string) *SvmPeerPermissionCollectionGetParams {
+	o.SetClusterPeerName(clusterPeerName)
 	return o
 }
 
-// SetClusterPeerNameQueryParameter adds the clusterPeerName to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetClusterPeerNameQueryParameter(clusterPeerName *string) {
-	o.ClusterPeerNameQueryParameter = clusterPeerName
+// SetClusterPeerName adds the clusterPeerName to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetClusterPeerName(clusterPeerName *string) {
+	o.ClusterPeerName = clusterPeerName
 }
 
-// WithClusterPeerUUIDQueryParameter adds the clusterPeerUUID to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithClusterPeerUUIDQueryParameter(clusterPeerUUID *string) *SvmPeerPermissionCollectionGetParams {
-	o.SetClusterPeerUUIDQueryParameter(clusterPeerUUID)
+// WithClusterPeerUUID adds the clusterPeerUUID to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithClusterPeerUUID(clusterPeerUUID *string) *SvmPeerPermissionCollectionGetParams {
+	o.SetClusterPeerUUID(clusterPeerUUID)
 	return o
 }
 
-// SetClusterPeerUUIDQueryParameter adds the clusterPeerUuid to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetClusterPeerUUIDQueryParameter(clusterPeerUUID *string) {
-	o.ClusterPeerUUIDQueryParameter = clusterPeerUUID
+// SetClusterPeerUUID adds the clusterPeerUuid to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetClusterPeerUUID(clusterPeerUUID *string) {
+	o.ClusterPeerUUID = clusterPeerUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmPeerPermissionCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithFields(fields []string) *SvmPeerPermissionCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmPeerPermissionCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmPeerPermissionCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmPeerPermissionCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithOrderBy(orderBy []string) *SvmPeerPermissionCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmPeerPermissionCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmPeerPermissionCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerPermissionCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerPermissionCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SvmPeerPermissionCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithSvmName(svmName *string) *SvmPeerPermissionCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SvmPeerPermissionCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) WithSvmUUID(svmUUID *string) *SvmPeerPermissionCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the svm peer permission collection get params
-func (o *SvmPeerPermissionCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm peer permission collection get params
+func (o *SvmPeerPermissionCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,13 +311,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.ApplicationsQueryParameter != nil {
+	if o.Applications != nil {
 
 		// query param applications
 		var qrApplications string
 
-		if o.ApplicationsQueryParameter != nil {
-			qrApplications = *o.ApplicationsQueryParameter
+		if o.Applications != nil {
+			qrApplications = *o.Applications
 		}
 		qApplications := qrApplications
 		if qApplications != "" {
@@ -328,13 +328,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ClusterPeerNameQueryParameter != nil {
+	if o.ClusterPeerName != nil {
 
 		// query param cluster_peer.name
 		var qrClusterPeerName string
 
-		if o.ClusterPeerNameQueryParameter != nil {
-			qrClusterPeerName = *o.ClusterPeerNameQueryParameter
+		if o.ClusterPeerName != nil {
+			qrClusterPeerName = *o.ClusterPeerName
 		}
 		qClusterPeerName := qrClusterPeerName
 		if qClusterPeerName != "" {
@@ -345,13 +345,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ClusterPeerUUIDQueryParameter != nil {
+	if o.ClusterPeerUUID != nil {
 
 		// query param cluster_peer.uuid
 		var qrClusterPeerUUID string
 
-		if o.ClusterPeerUUIDQueryParameter != nil {
-			qrClusterPeerUUID = *o.ClusterPeerUUIDQueryParameter
+		if o.ClusterPeerUUID != nil {
+			qrClusterPeerUUID = *o.ClusterPeerUUID
 		}
 		qClusterPeerUUID := qrClusterPeerUUID
 		if qClusterPeerUUID != "" {
@@ -362,7 +362,7 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,7 +390,7 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +401,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -418,13 +418,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -435,13 +435,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -452,13 +452,13 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -477,7 +477,7 @@ func (o *SvmPeerPermissionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamSvmPeerPermissionCollectionGet binds the parameter fields
 func (o *SvmPeerPermissionCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *SvmPeerPermissionCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamSvmPeerPermissionCollectionGet binds the parameter order_by
 func (o *SvmPeerPermissionCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

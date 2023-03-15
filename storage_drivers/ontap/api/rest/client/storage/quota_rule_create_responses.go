@@ -52,6 +52,11 @@ QuotaRuleCreateAccepted describes a response with status code 202, with default 
 Accepted
 */
 type QuotaRuleCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *QuotaRuleCreateAccepted) GetPayload() *models.JobLinkResponse {
 }
 
 func (o *QuotaRuleCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

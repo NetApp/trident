@@ -66,19 +66,19 @@ type S3AuditDeleteParams struct {
 
 	   Indicates whether a force deletion of the audit configuration is enabled.
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *S3AuditDeleteParams) WithDefaults() *S3AuditDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *S3AuditDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := S3AuditDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *S3AuditDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithForceQueryParameter adds the force to the s3 audit delete params
-func (o *S3AuditDeleteParams) WithForceQueryParameter(force *bool) *S3AuditDeleteParams {
-	o.SetForceQueryParameter(force)
+// WithForce adds the force to the s3 audit delete params
+func (o *S3AuditDeleteParams) WithForce(force *bool) *S3AuditDeleteParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the s3 audit delete params
-func (o *S3AuditDeleteParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetForce adds the force to the s3 audit delete params
+func (o *S3AuditDeleteParams) SetForce(force *bool) {
+	o.Force = force
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 audit delete params
-func (o *S3AuditDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3AuditDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the s3 audit delete params
+func (o *S3AuditDeleteParams) WithReturnTimeout(returnTimeout *int64) *S3AuditDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 audit delete params
-func (o *S3AuditDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the s3 audit delete params
+func (o *S3AuditDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 audit delete params
-func (o *S3AuditDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *S3AuditDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 audit delete params
+func (o *S3AuditDeleteParams) WithSvmUUID(svmUUID string) *S3AuditDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 audit delete params
-func (o *S3AuditDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 audit delete params
+func (o *S3AuditDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -185,13 +185,13 @@ func (o *S3AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.ForceQueryParameter != nil {
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -202,13 +202,13 @@ func (o *S3AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -220,7 +220,7 @@ func (o *S3AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

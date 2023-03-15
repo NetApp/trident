@@ -66,19 +66,19 @@ type QuotaReportGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Quota report index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *QuotaReportGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the quota report get params
-func (o *QuotaReportGetParams) WithFieldsQueryParameter(fields []string) *QuotaReportGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the quota report get params
+func (o *QuotaReportGetParams) WithFields(fields []string) *QuotaReportGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the quota report get params
-func (o *QuotaReportGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the quota report get params
+func (o *QuotaReportGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the quota report get params
-func (o *QuotaReportGetParams) WithIndexPathParameter(index int64) *QuotaReportGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the quota report get params
+func (o *QuotaReportGetParams) WithIndex(index int64) *QuotaReportGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the quota report get params
-func (o *QuotaReportGetParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the quota report get params
+func (o *QuotaReportGetParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the quota report get params
-func (o *QuotaReportGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *QuotaReportGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the quota report get params
+func (o *QuotaReportGetParams) WithVolumeUUID(volumeUUID string) *QuotaReportGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the quota report get params
-func (o *QuotaReportGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the quota report get params
+func (o *QuotaReportGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *QuotaReportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *QuotaReportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *QuotaReportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamQuotaReportGet binds the parameter fields
 func (o *QuotaReportGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

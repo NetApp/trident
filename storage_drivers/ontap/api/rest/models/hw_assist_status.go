@@ -21,14 +21,14 @@ import (
 type HwAssistStatus struct {
 
 	// The hardware assist IP address.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// The hardware assist port.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this hw assist status
@@ -94,7 +94,7 @@ func (m *HwAssistStatus) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

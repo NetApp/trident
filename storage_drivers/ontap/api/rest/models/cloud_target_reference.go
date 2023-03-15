@@ -19,15 +19,15 @@ import (
 type CloudTargetReference struct {
 
 	// links
-	Links *CloudTargetReferenceLinks `json:"_links,omitempty"`
+	Links *CloudTargetReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: target1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this cloud target reference
@@ -107,17 +107,17 @@ func (m *CloudTargetReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetReferenceLinks cloud target reference links
+// CloudTargetReferenceInlineLinks cloud target reference inline links
 //
-// swagger:model CloudTargetReferenceLinks
-type CloudTargetReferenceLinks struct {
+// swagger:model cloud_target_reference_inline__links
+type CloudTargetReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud target reference links
-func (m *CloudTargetReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target reference inline links
+func (m *CloudTargetReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *CloudTargetReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudTargetReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *CloudTargetReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this cloud target reference links based on the context it is used
-func (m *CloudTargetReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target reference inline links based on the context it is used
+func (m *CloudTargetReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *CloudTargetReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *CloudTargetReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *CloudTargetReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *CloudTargetReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res CloudTargetReferenceLinks
+func (m *CloudTargetReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudTargetReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

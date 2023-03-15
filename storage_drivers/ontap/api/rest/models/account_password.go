@@ -21,16 +21,16 @@ import (
 type AccountPassword struct {
 
 	// The user account name whose password is being modified.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// owner
-	Owner *AccountPasswordOwner `json:"owner,omitempty"`
+	Owner *AccountPasswordInlineOwner `json:"owner,omitempty"`
 
 	// The password string
 	// Max Length: 128
 	// Min Length: 8
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// Optional property that specifies the password hash algorithm used to generate a hash of the user's password for password matching.
 	// Example: sha512
@@ -209,27 +209,27 @@ func (m *AccountPassword) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountPasswordOwner Owner name and UUID that uniquely identifies the user account. This field is optional and valid only when a cluster administrator is executing the API to uniquely identify the account whose password is being modified. The "owner" field is not required to be specified for SVM user accounts trying to modify their password.
+// AccountPasswordInlineOwner Owner name and UUID that uniquely identifies the user account. This field is optional and valid only when a cluster administrator is executing the API to uniquely identify the account whose password is being modified. The "owner" field is not required to be specified for SVM user accounts trying to modify their password.
 //
-// swagger:model AccountPasswordOwner
-type AccountPasswordOwner struct {
+// swagger:model account_password_inline_owner
+type AccountPasswordInlineOwner struct {
 
 	// links
-	Links *AccountPasswordOwnerLinks `json:"_links,omitempty"`
+	Links *AccountPasswordInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this account password owner
-func (m *AccountPasswordOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this account password inline owner
+func (m *AccountPasswordInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -242,7 +242,7 @@ func (m *AccountPasswordOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountPasswordOwner) validateLinks(formats strfmt.Registry) error {
+func (m *AccountPasswordInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -259,8 +259,8 @@ func (m *AccountPasswordOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account password owner based on the context it is used
-func (m *AccountPasswordOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account password inline owner based on the context it is used
+func (m *AccountPasswordInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -273,7 +273,7 @@ func (m *AccountPasswordOwner) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *AccountPasswordOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountPasswordInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -288,7 +288,7 @@ func (m *AccountPasswordOwner) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *AccountPasswordOwner) MarshalBinary() ([]byte, error) {
+func (m *AccountPasswordInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -296,8 +296,8 @@ func (m *AccountPasswordOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountPasswordOwner) UnmarshalBinary(b []byte) error {
-	var res AccountPasswordOwner
+func (m *AccountPasswordInlineOwner) UnmarshalBinary(b []byte) error {
+	var res AccountPasswordInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -305,17 +305,17 @@ func (m *AccountPasswordOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountPasswordOwnerLinks account password owner links
+// AccountPasswordInlineOwnerInlineLinks account password inline owner inline links
 //
-// swagger:model AccountPasswordOwnerLinks
-type AccountPasswordOwnerLinks struct {
+// swagger:model account_password_inline_owner_inline__links
+type AccountPasswordInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this account password owner links
-func (m *AccountPasswordOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this account password inline owner inline links
+func (m *AccountPasswordInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -328,7 +328,7 @@ func (m *AccountPasswordOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountPasswordOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AccountPasswordInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -345,8 +345,8 @@ func (m *AccountPasswordOwnerLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this account password owner links based on the context it is used
-func (m *AccountPasswordOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account password inline owner inline links based on the context it is used
+func (m *AccountPasswordInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -359,7 +359,7 @@ func (m *AccountPasswordOwnerLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *AccountPasswordOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountPasswordInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -374,7 +374,7 @@ func (m *AccountPasswordOwnerLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *AccountPasswordOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *AccountPasswordInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -382,8 +382,8 @@ func (m *AccountPasswordOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountPasswordOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res AccountPasswordOwnerLinks
+func (m *AccountPasswordInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AccountPasswordInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

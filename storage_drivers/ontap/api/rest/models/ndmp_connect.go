@@ -19,15 +19,15 @@ import (
 type NdmpConnect struct {
 
 	// Indicates the NDMP data connection address.
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// Indicates the NDMP data connection port.
 	// Example: 18600
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Indicates the NDMP data connection type.
 	// Example: local
-	Type NdmpAddrType `json:"type,omitempty"`
+	Type *NdmpAddrType `json:"type,omitempty"`
 }
 
 // Validate validates this ndmp connect
@@ -49,11 +49,13 @@ func (m *NdmpConnect) validateType(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Type.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
+	if m.Type != nil {
+		if err := m.Type.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -75,11 +77,13 @@ func (m *NdmpConnect) ContextValidate(ctx context.Context, formats strfmt.Regist
 
 func (m *NdmpConnect) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Type.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("type")
+	if m.Type != nil {
+		if err := m.Type.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

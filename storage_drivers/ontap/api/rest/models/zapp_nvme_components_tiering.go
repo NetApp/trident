@@ -25,12 +25,12 @@ type ZappNvmeComponentsTiering struct {
 	// Enum: [required best_effort disallowed]
 	Control *string `json:"control,omitempty"`
 
-	// object stores
-	ObjectStores []*ZappNvmeComponentsTieringObjectStoresItems0 `json:"object_stores,omitempty"`
-
 	// The storage tiering type of the application component.
 	// Enum: [all auto none snapshot_only]
 	Policy *string `json:"policy,omitempty"`
+
+	// zapp nvme components tiering inline object stores
+	ZappNvmeComponentsTieringInlineObjectStores []*ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem `json:"object_stores,omitempty"`
 }
 
 // Validate validates this zapp nvme components tiering
@@ -41,11 +41,11 @@ func (m *ZappNvmeComponentsTiering) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateObjectStores(formats); err != nil {
+	if err := m.validatePolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePolicy(formats); err != nil {
+	if err := m.validateZappNvmeComponentsTieringInlineObjectStores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -116,30 +116,6 @@ func (m *ZappNvmeComponentsTiering) validateControl(formats strfmt.Registry) err
 	// value enum
 	if err := m.validateControlEnum("control", "body", *m.Control); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ZappNvmeComponentsTiering) validateObjectStores(formats strfmt.Registry) error {
-	if swag.IsZero(m.ObjectStores) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ObjectStores); i++ {
-		if swag.IsZero(m.ObjectStores[i]) { // not required
-			continue
-		}
-
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -221,11 +197,35 @@ func (m *ZappNvmeComponentsTiering) validatePolicy(formats strfmt.Registry) erro
 	return nil
 }
 
+func (m *ZappNvmeComponentsTiering) validateZappNvmeComponentsTieringInlineObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.ZappNvmeComponentsTieringInlineObjectStores) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ZappNvmeComponentsTieringInlineObjectStores); i++ {
+		if swag.IsZero(m.ZappNvmeComponentsTieringInlineObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.ZappNvmeComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.ZappNvmeComponentsTieringInlineObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this zapp nvme components tiering based on the context it is used
 func (m *ZappNvmeComponentsTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+	if err := m.contextValidateZappNvmeComponentsTieringInlineObjectStores(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -235,12 +235,12 @@ func (m *ZappNvmeComponentsTiering) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ZappNvmeComponentsTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeComponentsTiering) contextValidateZappNvmeComponentsTieringInlineObjectStores(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ObjectStores); i++ {
+	for i := 0; i < len(m.ZappNvmeComponentsTieringInlineObjectStores); i++ {
 
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+		if m.ZappNvmeComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.ZappNvmeComponentsTieringInlineObjectStores[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
 				}
@@ -271,19 +271,19 @@ func (m *ZappNvmeComponentsTiering) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeComponentsTieringObjectStoresItems0 zapp nvme components tiering object stores items0
+// ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem zapp nvme components tiering inline object stores inline array item
 //
-// swagger:model ZappNvmeComponentsTieringObjectStoresItems0
-type ZappNvmeComponentsTieringObjectStoresItems0 struct {
+// swagger:model zapp_nvme_components_tiering_inline_object_stores_inline_array_item
+type ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem struct {
 
 	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this zapp nvme components tiering object stores items0
-func (m *ZappNvmeComponentsTieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme components tiering inline object stores inline array item
+func (m *ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -296,29 +296,29 @@ func (m *ZappNvmeComponentsTieringObjectStoresItems0) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *ZappNvmeComponentsTieringObjectStoresItems0) validateName(formats strfmt.Registry) error {
+func (m *ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 512); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this zapp nvme components tiering object stores items0 based on context it is used
-func (m *ZappNvmeComponentsTieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp nvme components tiering inline object stores inline array item based on context it is used
+func (m *ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsTieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -326,8 +326,8 @@ func (m *ZappNvmeComponentsTieringObjectStoresItems0) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsTieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsTieringObjectStoresItems0
+func (m *ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeComponentsTieringInlineObjectStoresInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

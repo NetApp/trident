@@ -52,6 +52,11 @@ ClusterPeerCreateCreated describes a response with status code 201, with default
 Created
 */
 type ClusterPeerCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.ClusterPeerSetupResponse
 }
 
@@ -93,6 +98,13 @@ func (o *ClusterPeerCreateCreated) GetPayload() *models.ClusterPeerSetupResponse
 }
 
 func (o *ClusterPeerCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.ClusterPeerSetupResponse)
 

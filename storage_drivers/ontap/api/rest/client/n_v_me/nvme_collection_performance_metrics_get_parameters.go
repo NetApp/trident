@@ -66,91 +66,91 @@ type NvmeCollectionPerformanceMetricsGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* FcDuration.
 
 	   Filter by fc.duration
 	*/
-	FcDurationQueryParameter *string
+	FcDuration *string
 
 	/* FcIopsOther.
 
 	   Filter by fc.iops.other
 	*/
-	FcIopsOtherQueryParameter *int64
+	FcIopsOther *int64
 
 	/* FcIopsRead.
 
 	   Filter by fc.iops.read
 	*/
-	FcIopsReadQueryParameter *int64
+	FcIopsRead *int64
 
 	/* FcIopsTotal.
 
 	   Filter by fc.iops.total
 	*/
-	FcIopsTotalQueryParameter *int64
+	FcIopsTotal *int64
 
 	/* FcIopsWrite.
 
 	   Filter by fc.iops.write
 	*/
-	FcIopsWriteQueryParameter *int64
+	FcIopsWrite *int64
 
 	/* FcLatencyOther.
 
 	   Filter by fc.latency.other
 	*/
-	FcLatencyOtherQueryParameter *int64
+	FcLatencyOther *int64
 
 	/* FcLatencyRead.
 
 	   Filter by fc.latency.read
 	*/
-	FcLatencyReadQueryParameter *int64
+	FcLatencyRead *int64
 
 	/* FcLatencyTotal.
 
 	   Filter by fc.latency.total
 	*/
-	FcLatencyTotalQueryParameter *int64
+	FcLatencyTotal *int64
 
 	/* FcLatencyWrite.
 
 	   Filter by fc.latency.write
 	*/
-	FcLatencyWriteQueryParameter *int64
+	FcLatencyWrite *int64
 
 	/* FcStatus.
 
 	   Filter by fc.status
 	*/
-	FcStatusQueryParameter *string
+	FcStatus *string
 
 	/* FcThroughputRead.
 
 	   Filter by fc.throughput.read
 	*/
-	FcThroughputReadQueryParameter *int64
+	FcThroughputRead *int64
 
 	/* FcThroughputTotal.
 
 	   Filter by fc.throughput.total
 	*/
-	FcThroughputTotalQueryParameter *int64
+	FcThroughputTotal *int64
 
 	/* FcThroughputWrite.
 
 	   Filter by fc.throughput.write
 	*/
-	FcThroughputWriteQueryParameter *int64
+	FcThroughputWrite *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -165,67 +165,67 @@ type NvmeCollectionPerformanceMetricsGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* IopsOther.
 
 	   Filter by iops.other
 	*/
-	IopsOtherQueryParameter *int64
+	IopsOther *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsTotal.
 
 	   Filter by iops.total
 	*/
-	IopsTotalQueryParameter *int64
+	IopsTotal *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* LatencyOther.
 
 	   Filter by latency.other
 	*/
-	LatencyOtherQueryParameter *int64
+	LatencyOther *int64
 
 	/* LatencyRead.
 
 	   Filter by latency.read
 	*/
-	LatencyReadQueryParameter *int64
+	LatencyRead *int64
 
 	/* LatencyTotal.
 
 	   Filter by latency.total
 	*/
-	LatencyTotalQueryParameter *int64
+	LatencyTotal *int64
 
 	/* LatencyWrite.
 
 	   Filter by latency.write
 	*/
-	LatencyWriteQueryParameter *int64
+	LatencyWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -233,7 +233,7 @@ type NvmeCollectionPerformanceMetricsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -241,121 +241,121 @@ type NvmeCollectionPerformanceMetricsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* SvmUUID.
 
 	   Unique identifier of the SVM.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* TCPDuration.
 
 	   Filter by tcp.duration
 	*/
-	TCPDurationQueryParameter *string
+	TCPDuration *string
 
 	/* TCPIopsOther.
 
 	   Filter by tcp.iops.other
 	*/
-	TCPIopsOtherQueryParameter *int64
+	TCPIopsOther *int64
 
 	/* TCPIopsRead.
 
 	   Filter by tcp.iops.read
 	*/
-	TCPIopsReadQueryParameter *int64
+	TCPIopsRead *int64
 
 	/* TCPIopsTotal.
 
 	   Filter by tcp.iops.total
 	*/
-	TCPIopsTotalQueryParameter *int64
+	TCPIopsTotal *int64
 
 	/* TCPIopsWrite.
 
 	   Filter by tcp.iops.write
 	*/
-	TCPIopsWriteQueryParameter *int64
+	TCPIopsWrite *int64
 
 	/* TCPLatencyOther.
 
 	   Filter by tcp.latency.other
 	*/
-	TCPLatencyOtherQueryParameter *int64
+	TCPLatencyOther *int64
 
 	/* TCPLatencyRead.
 
 	   Filter by tcp.latency.read
 	*/
-	TCPLatencyReadQueryParameter *int64
+	TCPLatencyRead *int64
 
 	/* TCPLatencyTotal.
 
 	   Filter by tcp.latency.total
 	*/
-	TCPLatencyTotalQueryParameter *int64
+	TCPLatencyTotal *int64
 
 	/* TCPLatencyWrite.
 
 	   Filter by tcp.latency.write
 	*/
-	TCPLatencyWriteQueryParameter *int64
+	TCPLatencyWrite *int64
 
 	/* TCPStatus.
 
 	   Filter by tcp.status
 	*/
-	TCPStatusQueryParameter *string
+	TCPStatus *string
 
 	/* TCPThroughputRead.
 
 	   Filter by tcp.throughput.read
 	*/
-	TCPThroughputReadQueryParameter *int64
+	TCPThroughputRead *int64
 
 	/* TCPThroughputTotal.
 
 	   Filter by tcp.throughput.total
 	*/
-	TCPThroughputTotalQueryParameter *int64
+	TCPThroughputTotal *int64
 
 	/* TCPThroughputWrite.
 
 	   Filter by tcp.throughput.write
 	*/
-	TCPThroughputWriteQueryParameter *int64
+	TCPThroughputWrite *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -375,17 +375,17 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WithDefaults() *NvmeCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeCollectionPerformanceMetricsGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeCollectionPerformanceMetricsGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -427,521 +427,521 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) SetHTTPClient(client *http.C
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithDurationQueryParameter(duration *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithDuration(duration *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFcDurationQueryParameter adds the fcDuration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcDurationQueryParameter(fcDuration *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcDurationQueryParameter(fcDuration)
+// WithFcDuration adds the fcDuration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcDuration(fcDuration *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcDuration(fcDuration)
 	return o
 }
 
-// SetFcDurationQueryParameter adds the fcDuration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcDurationQueryParameter(fcDuration *string) {
-	o.FcDurationQueryParameter = fcDuration
+// SetFcDuration adds the fcDuration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcDuration(fcDuration *string) {
+	o.FcDuration = fcDuration
 }
 
-// WithFcIopsOtherQueryParameter adds the fcIopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsOtherQueryParameter(fcIopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcIopsOtherQueryParameter(fcIopsOther)
+// WithFcIopsOther adds the fcIopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsOther(fcIopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcIopsOther(fcIopsOther)
 	return o
 }
 
-// SetFcIopsOtherQueryParameter adds the fcIopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsOtherQueryParameter(fcIopsOther *int64) {
-	o.FcIopsOtherQueryParameter = fcIopsOther
+// SetFcIopsOther adds the fcIopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsOther(fcIopsOther *int64) {
+	o.FcIopsOther = fcIopsOther
 }
 
-// WithFcIopsReadQueryParameter adds the fcIopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsReadQueryParameter(fcIopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcIopsReadQueryParameter(fcIopsRead)
+// WithFcIopsRead adds the fcIopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsRead(fcIopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcIopsRead(fcIopsRead)
 	return o
 }
 
-// SetFcIopsReadQueryParameter adds the fcIopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsReadQueryParameter(fcIopsRead *int64) {
-	o.FcIopsReadQueryParameter = fcIopsRead
+// SetFcIopsRead adds the fcIopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsRead(fcIopsRead *int64) {
+	o.FcIopsRead = fcIopsRead
 }
 
-// WithFcIopsTotalQueryParameter adds the fcIopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsTotalQueryParameter(fcIopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcIopsTotalQueryParameter(fcIopsTotal)
+// WithFcIopsTotal adds the fcIopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsTotal(fcIopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcIopsTotal(fcIopsTotal)
 	return o
 }
 
-// SetFcIopsTotalQueryParameter adds the fcIopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsTotalQueryParameter(fcIopsTotal *int64) {
-	o.FcIopsTotalQueryParameter = fcIopsTotal
+// SetFcIopsTotal adds the fcIopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsTotal(fcIopsTotal *int64) {
+	o.FcIopsTotal = fcIopsTotal
 }
 
-// WithFcIopsWriteQueryParameter adds the fcIopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsWriteQueryParameter(fcIopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcIopsWriteQueryParameter(fcIopsWrite)
+// WithFcIopsWrite adds the fcIopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcIopsWrite(fcIopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcIopsWrite(fcIopsWrite)
 	return o
 }
 
-// SetFcIopsWriteQueryParameter adds the fcIopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsWriteQueryParameter(fcIopsWrite *int64) {
-	o.FcIopsWriteQueryParameter = fcIopsWrite
+// SetFcIopsWrite adds the fcIopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcIopsWrite(fcIopsWrite *int64) {
+	o.FcIopsWrite = fcIopsWrite
 }
 
-// WithFcLatencyOtherQueryParameter adds the fcLatencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyOtherQueryParameter(fcLatencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcLatencyOtherQueryParameter(fcLatencyOther)
+// WithFcLatencyOther adds the fcLatencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyOther(fcLatencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcLatencyOther(fcLatencyOther)
 	return o
 }
 
-// SetFcLatencyOtherQueryParameter adds the fcLatencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyOtherQueryParameter(fcLatencyOther *int64) {
-	o.FcLatencyOtherQueryParameter = fcLatencyOther
+// SetFcLatencyOther adds the fcLatencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyOther(fcLatencyOther *int64) {
+	o.FcLatencyOther = fcLatencyOther
 }
 
-// WithFcLatencyReadQueryParameter adds the fcLatencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyReadQueryParameter(fcLatencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcLatencyReadQueryParameter(fcLatencyRead)
+// WithFcLatencyRead adds the fcLatencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyRead(fcLatencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcLatencyRead(fcLatencyRead)
 	return o
 }
 
-// SetFcLatencyReadQueryParameter adds the fcLatencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyReadQueryParameter(fcLatencyRead *int64) {
-	o.FcLatencyReadQueryParameter = fcLatencyRead
+// SetFcLatencyRead adds the fcLatencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyRead(fcLatencyRead *int64) {
+	o.FcLatencyRead = fcLatencyRead
 }
 
-// WithFcLatencyTotalQueryParameter adds the fcLatencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyTotalQueryParameter(fcLatencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcLatencyTotalQueryParameter(fcLatencyTotal)
+// WithFcLatencyTotal adds the fcLatencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyTotal(fcLatencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcLatencyTotal(fcLatencyTotal)
 	return o
 }
 
-// SetFcLatencyTotalQueryParameter adds the fcLatencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyTotalQueryParameter(fcLatencyTotal *int64) {
-	o.FcLatencyTotalQueryParameter = fcLatencyTotal
+// SetFcLatencyTotal adds the fcLatencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyTotal(fcLatencyTotal *int64) {
+	o.FcLatencyTotal = fcLatencyTotal
 }
 
-// WithFcLatencyWriteQueryParameter adds the fcLatencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyWriteQueryParameter(fcLatencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcLatencyWriteQueryParameter(fcLatencyWrite)
+// WithFcLatencyWrite adds the fcLatencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcLatencyWrite(fcLatencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcLatencyWrite(fcLatencyWrite)
 	return o
 }
 
-// SetFcLatencyWriteQueryParameter adds the fcLatencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyWriteQueryParameter(fcLatencyWrite *int64) {
-	o.FcLatencyWriteQueryParameter = fcLatencyWrite
+// SetFcLatencyWrite adds the fcLatencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcLatencyWrite(fcLatencyWrite *int64) {
+	o.FcLatencyWrite = fcLatencyWrite
 }
 
-// WithFcStatusQueryParameter adds the fcStatus to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcStatusQueryParameter(fcStatus *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcStatusQueryParameter(fcStatus)
+// WithFcStatus adds the fcStatus to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcStatus(fcStatus *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcStatus(fcStatus)
 	return o
 }
 
-// SetFcStatusQueryParameter adds the fcStatus to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcStatusQueryParameter(fcStatus *string) {
-	o.FcStatusQueryParameter = fcStatus
+// SetFcStatus adds the fcStatus to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcStatus(fcStatus *string) {
+	o.FcStatus = fcStatus
 }
 
-// WithFcThroughputReadQueryParameter adds the fcThroughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputReadQueryParameter(fcThroughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcThroughputReadQueryParameter(fcThroughputRead)
+// WithFcThroughputRead adds the fcThroughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputRead(fcThroughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcThroughputRead(fcThroughputRead)
 	return o
 }
 
-// SetFcThroughputReadQueryParameter adds the fcThroughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputReadQueryParameter(fcThroughputRead *int64) {
-	o.FcThroughputReadQueryParameter = fcThroughputRead
+// SetFcThroughputRead adds the fcThroughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputRead(fcThroughputRead *int64) {
+	o.FcThroughputRead = fcThroughputRead
 }
 
-// WithFcThroughputTotalQueryParameter adds the fcThroughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputTotalQueryParameter(fcThroughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcThroughputTotalQueryParameter(fcThroughputTotal)
+// WithFcThroughputTotal adds the fcThroughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputTotal(fcThroughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcThroughputTotal(fcThroughputTotal)
 	return o
 }
 
-// SetFcThroughputTotalQueryParameter adds the fcThroughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputTotalQueryParameter(fcThroughputTotal *int64) {
-	o.FcThroughputTotalQueryParameter = fcThroughputTotal
+// SetFcThroughputTotal adds the fcThroughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputTotal(fcThroughputTotal *int64) {
+	o.FcThroughputTotal = fcThroughputTotal
 }
 
-// WithFcThroughputWriteQueryParameter adds the fcThroughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputWriteQueryParameter(fcThroughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFcThroughputWriteQueryParameter(fcThroughputWrite)
+// WithFcThroughputWrite adds the fcThroughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFcThroughputWrite(fcThroughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFcThroughputWrite(fcThroughputWrite)
 	return o
 }
 
-// SetFcThroughputWriteQueryParameter adds the fcThroughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputWriteQueryParameter(fcThroughputWrite *int64) {
-	o.FcThroughputWriteQueryParameter = fcThroughputWrite
+// SetFcThroughputWrite adds the fcThroughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFcThroughputWrite(fcThroughputWrite *int64) {
+	o.FcThroughputWrite = fcThroughputWrite
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithFieldsQueryParameter(fields []string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithFields(fields []string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithIntervalQueryParameter(interval *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithInterval(interval *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithIopsOtherQueryParameter adds the iopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsOtherQueryParameter(iopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetIopsOtherQueryParameter(iopsOther)
+// WithIopsOther adds the iopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsOther(iopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetIopsOther(iopsOther)
 	return o
 }
 
-// SetIopsOtherQueryParameter adds the iopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsOtherQueryParameter(iopsOther *int64) {
-	o.IopsOtherQueryParameter = iopsOther
+// SetIopsOther adds the iopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsOther(iopsOther *int64) {
+	o.IopsOther = iopsOther
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsReadQueryParameter(iopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsRead(iopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsTotalQueryParameter adds the iopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsTotalQueryParameter(iopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetIopsTotalQueryParameter(iopsTotal)
+// WithIopsTotal adds the iopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsTotal(iopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetIopsTotal(iopsTotal)
 	return o
 }
 
-// SetIopsTotalQueryParameter adds the iopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsTotalQueryParameter(iopsTotal *int64) {
-	o.IopsTotalQueryParameter = iopsTotal
+// SetIopsTotal adds the iopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsTotal(iopsTotal *int64) {
+	o.IopsTotal = iopsTotal
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithIopsWrite(iopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithLatencyOtherQueryParameter adds the latencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyOtherQueryParameter(latencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetLatencyOtherQueryParameter(latencyOther)
+// WithLatencyOther adds the latencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyOther(latencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetLatencyOther(latencyOther)
 	return o
 }
 
-// SetLatencyOtherQueryParameter adds the latencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyOtherQueryParameter(latencyOther *int64) {
-	o.LatencyOtherQueryParameter = latencyOther
+// SetLatencyOther adds the latencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyOther(latencyOther *int64) {
+	o.LatencyOther = latencyOther
 }
 
-// WithLatencyReadQueryParameter adds the latencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyReadQueryParameter(latencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetLatencyReadQueryParameter(latencyRead)
+// WithLatencyRead adds the latencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyRead(latencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetLatencyRead(latencyRead)
 	return o
 }
 
-// SetLatencyReadQueryParameter adds the latencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyReadQueryParameter(latencyRead *int64) {
-	o.LatencyReadQueryParameter = latencyRead
+// SetLatencyRead adds the latencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyRead(latencyRead *int64) {
+	o.LatencyRead = latencyRead
 }
 
-// WithLatencyTotalQueryParameter adds the latencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyTotalQueryParameter(latencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetLatencyTotalQueryParameter(latencyTotal)
+// WithLatencyTotal adds the latencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyTotal(latencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetLatencyTotal(latencyTotal)
 	return o
 }
 
-// SetLatencyTotalQueryParameter adds the latencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyTotalQueryParameter(latencyTotal *int64) {
-	o.LatencyTotalQueryParameter = latencyTotal
+// SetLatencyTotal adds the latencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyTotal(latencyTotal *int64) {
+	o.LatencyTotal = latencyTotal
 }
 
-// WithLatencyWriteQueryParameter adds the latencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyWriteQueryParameter(latencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetLatencyWriteQueryParameter(latencyWrite)
+// WithLatencyWrite adds the latencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithLatencyWrite(latencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetLatencyWrite(latencyWrite)
 	return o
 }
 
-// SetLatencyWriteQueryParameter adds the latencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyWriteQueryParameter(latencyWrite *int64) {
-	o.LatencyWriteQueryParameter = latencyWrite
+// SetLatencyWrite adds the latencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetLatencyWrite(latencyWrite *int64) {
+	o.LatencyWrite = latencyWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithMaxRecords(maxRecords *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithOrderBy(orderBy []string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithReturnRecords(returnRecords *bool) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithStatusQueryParameter(status *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithStatus(status *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithSVMUUIDPathParameter(svmUUID string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithSvmUUID(svmUUID string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTCPDurationQueryParameter adds the tCPDuration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPDurationQueryParameter(tCPDuration *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPDurationQueryParameter(tCPDuration)
+// WithTCPDuration adds the tCPDuration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPDuration(tCPDuration *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPDuration(tCPDuration)
 	return o
 }
 
-// SetTCPDurationQueryParameter adds the tcpDuration to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPDurationQueryParameter(tCPDuration *string) {
-	o.TCPDurationQueryParameter = tCPDuration
+// SetTCPDuration adds the tcpDuration to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPDuration(tCPDuration *string) {
+	o.TCPDuration = tCPDuration
 }
 
-// WithTCPIopsOtherQueryParameter adds the tCPIopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsOtherQueryParameter(tCPIopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPIopsOtherQueryParameter(tCPIopsOther)
+// WithTCPIopsOther adds the tCPIopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsOther(tCPIopsOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPIopsOther(tCPIopsOther)
 	return o
 }
 
-// SetTCPIopsOtherQueryParameter adds the tcpIopsOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsOtherQueryParameter(tCPIopsOther *int64) {
-	o.TCPIopsOtherQueryParameter = tCPIopsOther
+// SetTCPIopsOther adds the tcpIopsOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsOther(tCPIopsOther *int64) {
+	o.TCPIopsOther = tCPIopsOther
 }
 
-// WithTCPIopsReadQueryParameter adds the tCPIopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsReadQueryParameter(tCPIopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPIopsReadQueryParameter(tCPIopsRead)
+// WithTCPIopsRead adds the tCPIopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsRead(tCPIopsRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPIopsRead(tCPIopsRead)
 	return o
 }
 
-// SetTCPIopsReadQueryParameter adds the tcpIopsRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsReadQueryParameter(tCPIopsRead *int64) {
-	o.TCPIopsReadQueryParameter = tCPIopsRead
+// SetTCPIopsRead adds the tcpIopsRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsRead(tCPIopsRead *int64) {
+	o.TCPIopsRead = tCPIopsRead
 }
 
-// WithTCPIopsTotalQueryParameter adds the tCPIopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsTotalQueryParameter(tCPIopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPIopsTotalQueryParameter(tCPIopsTotal)
+// WithTCPIopsTotal adds the tCPIopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsTotal(tCPIopsTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPIopsTotal(tCPIopsTotal)
 	return o
 }
 
-// SetTCPIopsTotalQueryParameter adds the tcpIopsTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsTotalQueryParameter(tCPIopsTotal *int64) {
-	o.TCPIopsTotalQueryParameter = tCPIopsTotal
+// SetTCPIopsTotal adds the tcpIopsTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsTotal(tCPIopsTotal *int64) {
+	o.TCPIopsTotal = tCPIopsTotal
 }
 
-// WithTCPIopsWriteQueryParameter adds the tCPIopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsWriteQueryParameter(tCPIopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPIopsWriteQueryParameter(tCPIopsWrite)
+// WithTCPIopsWrite adds the tCPIopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPIopsWrite(tCPIopsWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPIopsWrite(tCPIopsWrite)
 	return o
 }
 
-// SetTCPIopsWriteQueryParameter adds the tcpIopsWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsWriteQueryParameter(tCPIopsWrite *int64) {
-	o.TCPIopsWriteQueryParameter = tCPIopsWrite
+// SetTCPIopsWrite adds the tcpIopsWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPIopsWrite(tCPIopsWrite *int64) {
+	o.TCPIopsWrite = tCPIopsWrite
 }
 
-// WithTCPLatencyOtherQueryParameter adds the tCPLatencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyOtherQueryParameter(tCPLatencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPLatencyOtherQueryParameter(tCPLatencyOther)
+// WithTCPLatencyOther adds the tCPLatencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyOther(tCPLatencyOther *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPLatencyOther(tCPLatencyOther)
 	return o
 }
 
-// SetTCPLatencyOtherQueryParameter adds the tcpLatencyOther to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyOtherQueryParameter(tCPLatencyOther *int64) {
-	o.TCPLatencyOtherQueryParameter = tCPLatencyOther
+// SetTCPLatencyOther adds the tcpLatencyOther to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyOther(tCPLatencyOther *int64) {
+	o.TCPLatencyOther = tCPLatencyOther
 }
 
-// WithTCPLatencyReadQueryParameter adds the tCPLatencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyReadQueryParameter(tCPLatencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPLatencyReadQueryParameter(tCPLatencyRead)
+// WithTCPLatencyRead adds the tCPLatencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyRead(tCPLatencyRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPLatencyRead(tCPLatencyRead)
 	return o
 }
 
-// SetTCPLatencyReadQueryParameter adds the tcpLatencyRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyReadQueryParameter(tCPLatencyRead *int64) {
-	o.TCPLatencyReadQueryParameter = tCPLatencyRead
+// SetTCPLatencyRead adds the tcpLatencyRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyRead(tCPLatencyRead *int64) {
+	o.TCPLatencyRead = tCPLatencyRead
 }
 
-// WithTCPLatencyTotalQueryParameter adds the tCPLatencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyTotalQueryParameter(tCPLatencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPLatencyTotalQueryParameter(tCPLatencyTotal)
+// WithTCPLatencyTotal adds the tCPLatencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyTotal(tCPLatencyTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPLatencyTotal(tCPLatencyTotal)
 	return o
 }
 
-// SetTCPLatencyTotalQueryParameter adds the tcpLatencyTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyTotalQueryParameter(tCPLatencyTotal *int64) {
-	o.TCPLatencyTotalQueryParameter = tCPLatencyTotal
+// SetTCPLatencyTotal adds the tcpLatencyTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyTotal(tCPLatencyTotal *int64) {
+	o.TCPLatencyTotal = tCPLatencyTotal
 }
 
-// WithTCPLatencyWriteQueryParameter adds the tCPLatencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyWriteQueryParameter(tCPLatencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPLatencyWriteQueryParameter(tCPLatencyWrite)
+// WithTCPLatencyWrite adds the tCPLatencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPLatencyWrite(tCPLatencyWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPLatencyWrite(tCPLatencyWrite)
 	return o
 }
 
-// SetTCPLatencyWriteQueryParameter adds the tcpLatencyWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyWriteQueryParameter(tCPLatencyWrite *int64) {
-	o.TCPLatencyWriteQueryParameter = tCPLatencyWrite
+// SetTCPLatencyWrite adds the tcpLatencyWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPLatencyWrite(tCPLatencyWrite *int64) {
+	o.TCPLatencyWrite = tCPLatencyWrite
 }
 
-// WithTCPStatusQueryParameter adds the tCPStatus to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPStatusQueryParameter(tCPStatus *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPStatusQueryParameter(tCPStatus)
+// WithTCPStatus adds the tCPStatus to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPStatus(tCPStatus *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPStatus(tCPStatus)
 	return o
 }
 
-// SetTCPStatusQueryParameter adds the tcpStatus to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPStatusQueryParameter(tCPStatus *string) {
-	o.TCPStatusQueryParameter = tCPStatus
+// SetTCPStatus adds the tcpStatus to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPStatus(tCPStatus *string) {
+	o.TCPStatus = tCPStatus
 }
 
-// WithTCPThroughputReadQueryParameter adds the tCPThroughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputReadQueryParameter(tCPThroughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPThroughputReadQueryParameter(tCPThroughputRead)
+// WithTCPThroughputRead adds the tCPThroughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputRead(tCPThroughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPThroughputRead(tCPThroughputRead)
 	return o
 }
 
-// SetTCPThroughputReadQueryParameter adds the tcpThroughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputReadQueryParameter(tCPThroughputRead *int64) {
-	o.TCPThroughputReadQueryParameter = tCPThroughputRead
+// SetTCPThroughputRead adds the tcpThroughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputRead(tCPThroughputRead *int64) {
+	o.TCPThroughputRead = tCPThroughputRead
 }
 
-// WithTCPThroughputTotalQueryParameter adds the tCPThroughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputTotalQueryParameter(tCPThroughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPThroughputTotalQueryParameter(tCPThroughputTotal)
+// WithTCPThroughputTotal adds the tCPThroughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputTotal(tCPThroughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPThroughputTotal(tCPThroughputTotal)
 	return o
 }
 
-// SetTCPThroughputTotalQueryParameter adds the tcpThroughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputTotalQueryParameter(tCPThroughputTotal *int64) {
-	o.TCPThroughputTotalQueryParameter = tCPThroughputTotal
+// SetTCPThroughputTotal adds the tcpThroughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputTotal(tCPThroughputTotal *int64) {
+	o.TCPThroughputTotal = tCPThroughputTotal
 }
 
-// WithTCPThroughputWriteQueryParameter adds the tCPThroughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputWriteQueryParameter(tCPThroughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTCPThroughputWriteQueryParameter(tCPThroughputWrite)
+// WithTCPThroughputWrite adds the tCPThroughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTCPThroughputWrite(tCPThroughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTCPThroughputWrite(tCPThroughputWrite)
 	return o
 }
 
-// SetTCPThroughputWriteQueryParameter adds the tcpThroughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputWriteQueryParameter(tCPThroughputWrite *int64) {
-	o.TCPThroughputWriteQueryParameter = tCPThroughputWrite
+// SetTCPThroughputWrite adds the tcpThroughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTCPThroughputWrite(tCPThroughputWrite *int64) {
+	o.TCPThroughputWrite = tCPThroughputWrite
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputRead(throughputRead *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputTotal(throughputTotal *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithThroughputWrite(throughputWrite *int64) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) WithTimestampQueryParameter(timestamp *string) *NvmeCollectionPerformanceMetricsGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) WithTimestamp(timestamp *string) *NvmeCollectionPerformanceMetricsGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the nvme collection performance metrics get params
-func (o *NvmeCollectionPerformanceMetricsGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the nvme collection performance metrics get params
+func (o *NvmeCollectionPerformanceMetricsGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -952,13 +952,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -969,13 +969,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcDurationQueryParameter != nil {
+	if o.FcDuration != nil {
 
 		// query param fc.duration
 		var qrFcDuration string
 
-		if o.FcDurationQueryParameter != nil {
-			qrFcDuration = *o.FcDurationQueryParameter
+		if o.FcDuration != nil {
+			qrFcDuration = *o.FcDuration
 		}
 		qFcDuration := qrFcDuration
 		if qFcDuration != "" {
@@ -986,13 +986,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcIopsOtherQueryParameter != nil {
+	if o.FcIopsOther != nil {
 
 		// query param fc.iops.other
 		var qrFcIopsOther int64
 
-		if o.FcIopsOtherQueryParameter != nil {
-			qrFcIopsOther = *o.FcIopsOtherQueryParameter
+		if o.FcIopsOther != nil {
+			qrFcIopsOther = *o.FcIopsOther
 		}
 		qFcIopsOther := swag.FormatInt64(qrFcIopsOther)
 		if qFcIopsOther != "" {
@@ -1003,13 +1003,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcIopsReadQueryParameter != nil {
+	if o.FcIopsRead != nil {
 
 		// query param fc.iops.read
 		var qrFcIopsRead int64
 
-		if o.FcIopsReadQueryParameter != nil {
-			qrFcIopsRead = *o.FcIopsReadQueryParameter
+		if o.FcIopsRead != nil {
+			qrFcIopsRead = *o.FcIopsRead
 		}
 		qFcIopsRead := swag.FormatInt64(qrFcIopsRead)
 		if qFcIopsRead != "" {
@@ -1020,13 +1020,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcIopsTotalQueryParameter != nil {
+	if o.FcIopsTotal != nil {
 
 		// query param fc.iops.total
 		var qrFcIopsTotal int64
 
-		if o.FcIopsTotalQueryParameter != nil {
-			qrFcIopsTotal = *o.FcIopsTotalQueryParameter
+		if o.FcIopsTotal != nil {
+			qrFcIopsTotal = *o.FcIopsTotal
 		}
 		qFcIopsTotal := swag.FormatInt64(qrFcIopsTotal)
 		if qFcIopsTotal != "" {
@@ -1037,13 +1037,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcIopsWriteQueryParameter != nil {
+	if o.FcIopsWrite != nil {
 
 		// query param fc.iops.write
 		var qrFcIopsWrite int64
 
-		if o.FcIopsWriteQueryParameter != nil {
-			qrFcIopsWrite = *o.FcIopsWriteQueryParameter
+		if o.FcIopsWrite != nil {
+			qrFcIopsWrite = *o.FcIopsWrite
 		}
 		qFcIopsWrite := swag.FormatInt64(qrFcIopsWrite)
 		if qFcIopsWrite != "" {
@@ -1054,13 +1054,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcLatencyOtherQueryParameter != nil {
+	if o.FcLatencyOther != nil {
 
 		// query param fc.latency.other
 		var qrFcLatencyOther int64
 
-		if o.FcLatencyOtherQueryParameter != nil {
-			qrFcLatencyOther = *o.FcLatencyOtherQueryParameter
+		if o.FcLatencyOther != nil {
+			qrFcLatencyOther = *o.FcLatencyOther
 		}
 		qFcLatencyOther := swag.FormatInt64(qrFcLatencyOther)
 		if qFcLatencyOther != "" {
@@ -1071,13 +1071,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcLatencyReadQueryParameter != nil {
+	if o.FcLatencyRead != nil {
 
 		// query param fc.latency.read
 		var qrFcLatencyRead int64
 
-		if o.FcLatencyReadQueryParameter != nil {
-			qrFcLatencyRead = *o.FcLatencyReadQueryParameter
+		if o.FcLatencyRead != nil {
+			qrFcLatencyRead = *o.FcLatencyRead
 		}
 		qFcLatencyRead := swag.FormatInt64(qrFcLatencyRead)
 		if qFcLatencyRead != "" {
@@ -1088,13 +1088,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcLatencyTotalQueryParameter != nil {
+	if o.FcLatencyTotal != nil {
 
 		// query param fc.latency.total
 		var qrFcLatencyTotal int64
 
-		if o.FcLatencyTotalQueryParameter != nil {
-			qrFcLatencyTotal = *o.FcLatencyTotalQueryParameter
+		if o.FcLatencyTotal != nil {
+			qrFcLatencyTotal = *o.FcLatencyTotal
 		}
 		qFcLatencyTotal := swag.FormatInt64(qrFcLatencyTotal)
 		if qFcLatencyTotal != "" {
@@ -1105,13 +1105,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcLatencyWriteQueryParameter != nil {
+	if o.FcLatencyWrite != nil {
 
 		// query param fc.latency.write
 		var qrFcLatencyWrite int64
 
-		if o.FcLatencyWriteQueryParameter != nil {
-			qrFcLatencyWrite = *o.FcLatencyWriteQueryParameter
+		if o.FcLatencyWrite != nil {
+			qrFcLatencyWrite = *o.FcLatencyWrite
 		}
 		qFcLatencyWrite := swag.FormatInt64(qrFcLatencyWrite)
 		if qFcLatencyWrite != "" {
@@ -1122,13 +1122,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcStatusQueryParameter != nil {
+	if o.FcStatus != nil {
 
 		// query param fc.status
 		var qrFcStatus string
 
-		if o.FcStatusQueryParameter != nil {
-			qrFcStatus = *o.FcStatusQueryParameter
+		if o.FcStatus != nil {
+			qrFcStatus = *o.FcStatus
 		}
 		qFcStatus := qrFcStatus
 		if qFcStatus != "" {
@@ -1139,13 +1139,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcThroughputReadQueryParameter != nil {
+	if o.FcThroughputRead != nil {
 
 		// query param fc.throughput.read
 		var qrFcThroughputRead int64
 
-		if o.FcThroughputReadQueryParameter != nil {
-			qrFcThroughputRead = *o.FcThroughputReadQueryParameter
+		if o.FcThroughputRead != nil {
+			qrFcThroughputRead = *o.FcThroughputRead
 		}
 		qFcThroughputRead := swag.FormatInt64(qrFcThroughputRead)
 		if qFcThroughputRead != "" {
@@ -1156,13 +1156,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcThroughputTotalQueryParameter != nil {
+	if o.FcThroughputTotal != nil {
 
 		// query param fc.throughput.total
 		var qrFcThroughputTotal int64
 
-		if o.FcThroughputTotalQueryParameter != nil {
-			qrFcThroughputTotal = *o.FcThroughputTotalQueryParameter
+		if o.FcThroughputTotal != nil {
+			qrFcThroughputTotal = *o.FcThroughputTotal
 		}
 		qFcThroughputTotal := swag.FormatInt64(qrFcThroughputTotal)
 		if qFcThroughputTotal != "" {
@@ -1173,13 +1173,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FcThroughputWriteQueryParameter != nil {
+	if o.FcThroughputWrite != nil {
 
 		// query param fc.throughput.write
 		var qrFcThroughputWrite int64
 
-		if o.FcThroughputWriteQueryParameter != nil {
-			qrFcThroughputWrite = *o.FcThroughputWriteQueryParameter
+		if o.FcThroughputWrite != nil {
+			qrFcThroughputWrite = *o.FcThroughputWrite
 		}
 		qFcThroughputWrite := swag.FormatInt64(qrFcThroughputWrite)
 		if qFcThroughputWrite != "" {
@@ -1190,7 +1190,7 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1201,13 +1201,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -1218,13 +1218,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.IopsOtherQueryParameter != nil {
+	if o.IopsOther != nil {
 
 		// query param iops.other
 		var qrIopsOther int64
 
-		if o.IopsOtherQueryParameter != nil {
-			qrIopsOther = *o.IopsOtherQueryParameter
+		if o.IopsOther != nil {
+			qrIopsOther = *o.IopsOther
 		}
 		qIopsOther := swag.FormatInt64(qrIopsOther)
 		if qIopsOther != "" {
@@ -1235,13 +1235,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -1252,13 +1252,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.IopsTotalQueryParameter != nil {
+	if o.IopsTotal != nil {
 
 		// query param iops.total
 		var qrIopsTotal int64
 
-		if o.IopsTotalQueryParameter != nil {
-			qrIopsTotal = *o.IopsTotalQueryParameter
+		if o.IopsTotal != nil {
+			qrIopsTotal = *o.IopsTotal
 		}
 		qIopsTotal := swag.FormatInt64(qrIopsTotal)
 		if qIopsTotal != "" {
@@ -1269,13 +1269,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -1286,13 +1286,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.LatencyOtherQueryParameter != nil {
+	if o.LatencyOther != nil {
 
 		// query param latency.other
 		var qrLatencyOther int64
 
-		if o.LatencyOtherQueryParameter != nil {
-			qrLatencyOther = *o.LatencyOtherQueryParameter
+		if o.LatencyOther != nil {
+			qrLatencyOther = *o.LatencyOther
 		}
 		qLatencyOther := swag.FormatInt64(qrLatencyOther)
 		if qLatencyOther != "" {
@@ -1303,13 +1303,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.LatencyReadQueryParameter != nil {
+	if o.LatencyRead != nil {
 
 		// query param latency.read
 		var qrLatencyRead int64
 
-		if o.LatencyReadQueryParameter != nil {
-			qrLatencyRead = *o.LatencyReadQueryParameter
+		if o.LatencyRead != nil {
+			qrLatencyRead = *o.LatencyRead
 		}
 		qLatencyRead := swag.FormatInt64(qrLatencyRead)
 		if qLatencyRead != "" {
@@ -1320,13 +1320,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.LatencyTotalQueryParameter != nil {
+	if o.LatencyTotal != nil {
 
 		// query param latency.total
 		var qrLatencyTotal int64
 
-		if o.LatencyTotalQueryParameter != nil {
-			qrLatencyTotal = *o.LatencyTotalQueryParameter
+		if o.LatencyTotal != nil {
+			qrLatencyTotal = *o.LatencyTotal
 		}
 		qLatencyTotal := swag.FormatInt64(qrLatencyTotal)
 		if qLatencyTotal != "" {
@@ -1337,13 +1337,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.LatencyWriteQueryParameter != nil {
+	if o.LatencyWrite != nil {
 
 		// query param latency.write
 		var qrLatencyWrite int64
 
-		if o.LatencyWriteQueryParameter != nil {
-			qrLatencyWrite = *o.LatencyWriteQueryParameter
+		if o.LatencyWrite != nil {
+			qrLatencyWrite = *o.LatencyWrite
 		}
 		qLatencyWrite := swag.FormatInt64(qrLatencyWrite)
 		if qLatencyWrite != "" {
@@ -1354,13 +1354,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1371,7 +1371,7 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1382,13 +1382,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1399,13 +1399,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1416,13 +1416,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -1434,17 +1434,17 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TCPDurationQueryParameter != nil {
+	if o.TCPDuration != nil {
 
 		// query param tcp.duration
 		var qrTCPDuration string
 
-		if o.TCPDurationQueryParameter != nil {
-			qrTCPDuration = *o.TCPDurationQueryParameter
+		if o.TCPDuration != nil {
+			qrTCPDuration = *o.TCPDuration
 		}
 		qTCPDuration := qrTCPDuration
 		if qTCPDuration != "" {
@@ -1455,13 +1455,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPIopsOtherQueryParameter != nil {
+	if o.TCPIopsOther != nil {
 
 		// query param tcp.iops.other
 		var qrTCPIopsOther int64
 
-		if o.TCPIopsOtherQueryParameter != nil {
-			qrTCPIopsOther = *o.TCPIopsOtherQueryParameter
+		if o.TCPIopsOther != nil {
+			qrTCPIopsOther = *o.TCPIopsOther
 		}
 		qTCPIopsOther := swag.FormatInt64(qrTCPIopsOther)
 		if qTCPIopsOther != "" {
@@ -1472,13 +1472,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPIopsReadQueryParameter != nil {
+	if o.TCPIopsRead != nil {
 
 		// query param tcp.iops.read
 		var qrTCPIopsRead int64
 
-		if o.TCPIopsReadQueryParameter != nil {
-			qrTCPIopsRead = *o.TCPIopsReadQueryParameter
+		if o.TCPIopsRead != nil {
+			qrTCPIopsRead = *o.TCPIopsRead
 		}
 		qTCPIopsRead := swag.FormatInt64(qrTCPIopsRead)
 		if qTCPIopsRead != "" {
@@ -1489,13 +1489,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPIopsTotalQueryParameter != nil {
+	if o.TCPIopsTotal != nil {
 
 		// query param tcp.iops.total
 		var qrTCPIopsTotal int64
 
-		if o.TCPIopsTotalQueryParameter != nil {
-			qrTCPIopsTotal = *o.TCPIopsTotalQueryParameter
+		if o.TCPIopsTotal != nil {
+			qrTCPIopsTotal = *o.TCPIopsTotal
 		}
 		qTCPIopsTotal := swag.FormatInt64(qrTCPIopsTotal)
 		if qTCPIopsTotal != "" {
@@ -1506,13 +1506,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPIopsWriteQueryParameter != nil {
+	if o.TCPIopsWrite != nil {
 
 		// query param tcp.iops.write
 		var qrTCPIopsWrite int64
 
-		if o.TCPIopsWriteQueryParameter != nil {
-			qrTCPIopsWrite = *o.TCPIopsWriteQueryParameter
+		if o.TCPIopsWrite != nil {
+			qrTCPIopsWrite = *o.TCPIopsWrite
 		}
 		qTCPIopsWrite := swag.FormatInt64(qrTCPIopsWrite)
 		if qTCPIopsWrite != "" {
@@ -1523,13 +1523,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPLatencyOtherQueryParameter != nil {
+	if o.TCPLatencyOther != nil {
 
 		// query param tcp.latency.other
 		var qrTCPLatencyOther int64
 
-		if o.TCPLatencyOtherQueryParameter != nil {
-			qrTCPLatencyOther = *o.TCPLatencyOtherQueryParameter
+		if o.TCPLatencyOther != nil {
+			qrTCPLatencyOther = *o.TCPLatencyOther
 		}
 		qTCPLatencyOther := swag.FormatInt64(qrTCPLatencyOther)
 		if qTCPLatencyOther != "" {
@@ -1540,13 +1540,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPLatencyReadQueryParameter != nil {
+	if o.TCPLatencyRead != nil {
 
 		// query param tcp.latency.read
 		var qrTCPLatencyRead int64
 
-		if o.TCPLatencyReadQueryParameter != nil {
-			qrTCPLatencyRead = *o.TCPLatencyReadQueryParameter
+		if o.TCPLatencyRead != nil {
+			qrTCPLatencyRead = *o.TCPLatencyRead
 		}
 		qTCPLatencyRead := swag.FormatInt64(qrTCPLatencyRead)
 		if qTCPLatencyRead != "" {
@@ -1557,13 +1557,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPLatencyTotalQueryParameter != nil {
+	if o.TCPLatencyTotal != nil {
 
 		// query param tcp.latency.total
 		var qrTCPLatencyTotal int64
 
-		if o.TCPLatencyTotalQueryParameter != nil {
-			qrTCPLatencyTotal = *o.TCPLatencyTotalQueryParameter
+		if o.TCPLatencyTotal != nil {
+			qrTCPLatencyTotal = *o.TCPLatencyTotal
 		}
 		qTCPLatencyTotal := swag.FormatInt64(qrTCPLatencyTotal)
 		if qTCPLatencyTotal != "" {
@@ -1574,13 +1574,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPLatencyWriteQueryParameter != nil {
+	if o.TCPLatencyWrite != nil {
 
 		// query param tcp.latency.write
 		var qrTCPLatencyWrite int64
 
-		if o.TCPLatencyWriteQueryParameter != nil {
-			qrTCPLatencyWrite = *o.TCPLatencyWriteQueryParameter
+		if o.TCPLatencyWrite != nil {
+			qrTCPLatencyWrite = *o.TCPLatencyWrite
 		}
 		qTCPLatencyWrite := swag.FormatInt64(qrTCPLatencyWrite)
 		if qTCPLatencyWrite != "" {
@@ -1591,13 +1591,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPStatusQueryParameter != nil {
+	if o.TCPStatus != nil {
 
 		// query param tcp.status
 		var qrTCPStatus string
 
-		if o.TCPStatusQueryParameter != nil {
-			qrTCPStatus = *o.TCPStatusQueryParameter
+		if o.TCPStatus != nil {
+			qrTCPStatus = *o.TCPStatus
 		}
 		qTCPStatus := qrTCPStatus
 		if qTCPStatus != "" {
@@ -1608,13 +1608,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPThroughputReadQueryParameter != nil {
+	if o.TCPThroughputRead != nil {
 
 		// query param tcp.throughput.read
 		var qrTCPThroughputRead int64
 
-		if o.TCPThroughputReadQueryParameter != nil {
-			qrTCPThroughputRead = *o.TCPThroughputReadQueryParameter
+		if o.TCPThroughputRead != nil {
+			qrTCPThroughputRead = *o.TCPThroughputRead
 		}
 		qTCPThroughputRead := swag.FormatInt64(qrTCPThroughputRead)
 		if qTCPThroughputRead != "" {
@@ -1625,13 +1625,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPThroughputTotalQueryParameter != nil {
+	if o.TCPThroughputTotal != nil {
 
 		// query param tcp.throughput.total
 		var qrTCPThroughputTotal int64
 
-		if o.TCPThroughputTotalQueryParameter != nil {
-			qrTCPThroughputTotal = *o.TCPThroughputTotalQueryParameter
+		if o.TCPThroughputTotal != nil {
+			qrTCPThroughputTotal = *o.TCPThroughputTotal
 		}
 		qTCPThroughputTotal := swag.FormatInt64(qrTCPThroughputTotal)
 		if qTCPThroughputTotal != "" {
@@ -1642,13 +1642,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TCPThroughputWriteQueryParameter != nil {
+	if o.TCPThroughputWrite != nil {
 
 		// query param tcp.throughput.write
 		var qrTCPThroughputWrite int64
 
-		if o.TCPThroughputWriteQueryParameter != nil {
-			qrTCPThroughputWrite = *o.TCPThroughputWriteQueryParameter
+		if o.TCPThroughputWrite != nil {
+			qrTCPThroughputWrite = *o.TCPThroughputWrite
 		}
 		qTCPThroughputWrite := swag.FormatInt64(qrTCPThroughputWrite)
 		if qTCPThroughputWrite != "" {
@@ -1659,13 +1659,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -1676,13 +1676,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -1693,13 +1693,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -1710,13 +1710,13 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -1735,7 +1735,7 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cli
 
 // bindParamNvmeCollectionPerformanceMetricsGet binds the parameter fields
 func (o *NvmeCollectionPerformanceMetricsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1752,7 +1752,7 @@ func (o *NvmeCollectionPerformanceMetricsGetParams) bindParamFields(formats strf
 
 // bindParamNvmeCollectionPerformanceMetricsGet binds the parameter order_by
 func (o *NvmeCollectionPerformanceMetricsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

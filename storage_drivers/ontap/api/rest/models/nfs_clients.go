@@ -21,51 +21,56 @@ import (
 type NfsClients struct {
 
 	// links
-	Links *NfsClientsLinks `json:"_links,omitempty"`
+	Links *NfsClientsInlineLinks `json:"_links,omitempty"`
 
 	// Specifies IP address of the client.
 	//
 	ClientIP *string `json:"client_ip,omitempty"`
 
 	// export policy
-	ExportPolicy *NfsClientsExportPolicy `json:"export_policy,omitempty"`
+	ExportPolicy *NfsClientsInlineExportPolicy `json:"export_policy,omitempty"`
 
 	// Specifies an ISO-8601 format of date and time to retrieve the idle time duration in hours, minutes, and seconds format.
 	//
 	// Example: P4DT84H30M5S
-	IdleDuration string `json:"idle_duration,omitempty"`
+	IdleDuration *string `json:"idle_duration,omitempty"`
 
 	// A counter that tracks requests that are sent to the volume with fast-path to local node.
 	//
-	LocalRequestCount int64 `json:"local_request_count,omitempty"`
+	LocalRequestCount *int64 `json:"local_request_count,omitempty"`
 
 	// node
-	Node *NfsClientsNode `json:"node,omitempty"`
+	Node *NfsClientsInlineNode `json:"node,omitempty"`
 
 	// The NFS protocol version over which client is accessing the volume. The following values are supported:
 	// * nfs - All NFS versions are considered
 	// * nfs3 - NFS version 3 protocol
 	// * nfs4 - NFS version 4 protocol
 	// * nfs4.1 - NFS version 4 minor version 1 protocol
+	// * nfs4.2 - NFS version 4 minor version 2 protocol
 	//
 	// Example: nfs3
 	// Read Only: true
-	// Enum: [nfs nfs3 nfs4 nfs4.1]
-	Protocol string `json:"protocol,omitempty"`
+	// Enum: [nfs nfs3 nfs4 nfs4.1 nfs4.2]
+	Protocol *string `json:"protocol,omitempty"`
 
 	// A counter that tracks requests that are sent to the volume with slow-path to remote node.
 	//
-	RemoteRequestCount int64 `json:"remote_request_count,omitempty"`
+	RemoteRequestCount *int64 `json:"remote_request_count,omitempty"`
 
 	// Specifies the IP address of the server.
 	//
 	ServerIP *string `json:"server_ip,omitempty"`
 
 	// svm
-	Svm *NfsClientsSvm `json:"svm,omitempty"`
+	Svm *NfsClientsInlineSvm `json:"svm,omitempty"`
+
+	// Flag that indicates the trunking status for the specified SVM connection. True indicates that the trunking feature is enabled while false indicates that the trunking feature is disabled.
+	//
+	TrunkingEnabled *bool `json:"trunking_enabled,omitempty"`
 
 	// volume
-	Volume *NfsClientsVolume `json:"volume,omitempty"`
+	Volume *NfsClientsInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this nfs clients
@@ -157,7 +162,7 @@ var nfsClientsTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["nfs","nfs3","nfs4","nfs4.1"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["nfs","nfs3","nfs4","nfs4.1","nfs4.2"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -206,6 +211,16 @@ const (
 	// END DEBUGGING
 	// NfsClientsProtocolNfs4Dot1 captures enum value "nfs4.1"
 	NfsClientsProtocolNfs4Dot1 string = "nfs4.1"
+
+	// BEGIN DEBUGGING
+	// nfs_clients
+	// NfsClients
+	// protocol
+	// Protocol
+	// nfs4.2
+	// END DEBUGGING
+	// NfsClientsProtocolNfs4Dot2 captures enum value "nfs4.2"
+	NfsClientsProtocolNfs4Dot2 string = "nfs4.2"
 )
 
 // prop value enum
@@ -222,7 +237,7 @@ func (m *NfsClients) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -341,7 +356,7 @@ func (m *NfsClients) contextValidateNode(ctx context.Context, formats strfmt.Reg
 
 func (m *NfsClients) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 
@@ -394,25 +409,25 @@ func (m *NfsClients) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsExportPolicy Export Policy
+// NfsClientsInlineExportPolicy Export Policy
 //
-// swagger:model NfsClientsExportPolicy
-type NfsClientsExportPolicy struct {
+// swagger:model nfs_clients_inline_export_policy
+type NfsClientsInlineExportPolicy struct {
 
 	// links
-	Links *NfsClientsExportPolicyLinks `json:"_links,omitempty"`
+	Links *NfsClientsInlineExportPolicyInlineLinks `json:"_links,omitempty"`
 
 	// id
 	// Example: 100
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// name
 	// Example: default
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this nfs clients export policy
-func (m *NfsClientsExportPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline export policy
+func (m *NfsClientsInlineExportPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -425,7 +440,7 @@ func (m *NfsClientsExportPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsExportPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsInlineExportPolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -442,8 +457,8 @@ func (m *NfsClientsExportPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients export policy based on the context it is used
-func (m *NfsClientsExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline export policy based on the context it is used
+func (m *NfsClientsInlineExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -456,7 +471,7 @@ func (m *NfsClientsExportPolicy) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *NfsClientsExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -471,7 +486,7 @@ func (m *NfsClientsExportPolicy) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsExportPolicy) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineExportPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -479,8 +494,8 @@ func (m *NfsClientsExportPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsExportPolicy) UnmarshalBinary(b []byte) error {
-	var res NfsClientsExportPolicy
+func (m *NfsClientsInlineExportPolicy) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineExportPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -488,17 +503,17 @@ func (m *NfsClientsExportPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsExportPolicyLinks nfs clients export policy links
+// NfsClientsInlineExportPolicyInlineLinks nfs clients inline export policy inline links
 //
-// swagger:model NfsClientsExportPolicyLinks
-type NfsClientsExportPolicyLinks struct {
+// swagger:model nfs_clients_inline_export_policy_inline__links
+type NfsClientsInlineExportPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients export policy links
-func (m *NfsClientsExportPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline export policy inline links
+func (m *NfsClientsInlineExportPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -511,7 +526,7 @@ func (m *NfsClientsExportPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsExportPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsInlineExportPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -528,8 +543,8 @@ func (m *NfsClientsExportPolicyLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this nfs clients export policy links based on the context it is used
-func (m *NfsClientsExportPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline export policy inline links based on the context it is used
+func (m *NfsClientsInlineExportPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -542,7 +557,7 @@ func (m *NfsClientsExportPolicyLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NfsClientsExportPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineExportPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -557,7 +572,7 @@ func (m *NfsClientsExportPolicyLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsExportPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineExportPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -565,8 +580,8 @@ func (m *NfsClientsExportPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsExportPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsExportPolicyLinks
+func (m *NfsClientsInlineExportPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineExportPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -574,17 +589,17 @@ func (m *NfsClientsExportPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsLinks nfs clients links
+// NfsClientsInlineLinks nfs clients inline links
 //
-// swagger:model NfsClientsLinks
-type NfsClientsLinks struct {
+// swagger:model nfs_clients_inline__links
+type NfsClientsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients links
-func (m *NfsClientsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline links
+func (m *NfsClientsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -597,7 +612,7 @@ func (m *NfsClientsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -614,8 +629,8 @@ func (m *NfsClientsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients links based on the context it is used
-func (m *NfsClientsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline links based on the context it is used
+func (m *NfsClientsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -628,7 +643,7 @@ func (m *NfsClientsLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NfsClientsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -643,7 +658,7 @@ func (m *NfsClientsLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -651,8 +666,8 @@ func (m *NfsClientsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsLinks
+func (m *NfsClientsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -660,25 +675,25 @@ func (m *NfsClientsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsNode nfs clients node
+// NfsClientsInlineNode nfs clients inline node
 //
-// swagger:model NfsClientsNode
-type NfsClientsNode struct {
+// swagger:model nfs_clients_inline_node
+type NfsClientsInlineNode struct {
 
 	// links
-	Links *NfsClientsNodeLinks `json:"_links,omitempty"`
+	Links *NfsClientsInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nfs clients node
-func (m *NfsClientsNode) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline node
+func (m *NfsClientsInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -691,7 +706,7 @@ func (m *NfsClientsNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsNode) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -708,8 +723,8 @@ func (m *NfsClientsNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients node based on the context it is used
-func (m *NfsClientsNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline node based on the context it is used
+func (m *NfsClientsInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -722,7 +737,7 @@ func (m *NfsClientsNode) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NfsClientsNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -737,7 +752,7 @@ func (m *NfsClientsNode) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsNode) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -745,8 +760,8 @@ func (m *NfsClientsNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsNode) UnmarshalBinary(b []byte) error {
-	var res NfsClientsNode
+func (m *NfsClientsInlineNode) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -754,17 +769,17 @@ func (m *NfsClientsNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsNodeLinks nfs clients node links
+// NfsClientsInlineNodeInlineLinks nfs clients inline node inline links
 //
-// swagger:model NfsClientsNodeLinks
-type NfsClientsNodeLinks struct {
+// swagger:model nfs_clients_inline_node_inline__links
+type NfsClientsInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients node links
-func (m *NfsClientsNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline node inline links
+func (m *NfsClientsInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -777,7 +792,7 @@ func (m *NfsClientsNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -794,8 +809,8 @@ func (m *NfsClientsNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients node links based on the context it is used
-func (m *NfsClientsNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline node inline links based on the context it is used
+func (m *NfsClientsInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -808,7 +823,7 @@ func (m *NfsClientsNodeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NfsClientsNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -823,7 +838,7 @@ func (m *NfsClientsNodeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -831,8 +846,8 @@ func (m *NfsClientsNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsNodeLinks
+func (m *NfsClientsInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -840,27 +855,27 @@ func (m *NfsClientsNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsSvm nfs clients svm
+// NfsClientsInlineSvm nfs clients inline svm
 //
-// swagger:model NfsClientsSvm
-type NfsClientsSvm struct {
+// swagger:model nfs_clients_inline_svm
+type NfsClientsInlineSvm struct {
 
 	// links
-	Links *NfsClientsSvmLinks `json:"_links,omitempty"`
+	Links *NfsClientsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nfs clients svm
-func (m *NfsClientsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline svm
+func (m *NfsClientsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -873,7 +888,7 @@ func (m *NfsClientsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -890,8 +905,8 @@ func (m *NfsClientsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients svm based on the context it is used
-func (m *NfsClientsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline svm based on the context it is used
+func (m *NfsClientsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -904,7 +919,7 @@ func (m *NfsClientsSvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *NfsClientsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -919,7 +934,7 @@ func (m *NfsClientsSvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsSvm) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -927,8 +942,8 @@ func (m *NfsClientsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsSvm) UnmarshalBinary(b []byte) error {
-	var res NfsClientsSvm
+func (m *NfsClientsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -936,17 +951,17 @@ func (m *NfsClientsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsSvmLinks nfs clients svm links
+// NfsClientsInlineSvmInlineLinks nfs clients inline svm inline links
 //
-// swagger:model NfsClientsSvmLinks
-type NfsClientsSvmLinks struct {
+// swagger:model nfs_clients_inline_svm_inline__links
+type NfsClientsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients svm links
-func (m *NfsClientsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline svm inline links
+func (m *NfsClientsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -959,7 +974,7 @@ func (m *NfsClientsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -976,8 +991,8 @@ func (m *NfsClientsSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients svm links based on the context it is used
-func (m *NfsClientsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline svm inline links based on the context it is used
+func (m *NfsClientsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -990,7 +1005,7 @@ func (m *NfsClientsSvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NfsClientsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1005,7 +1020,7 @@ func (m *NfsClientsSvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1013,8 +1028,8 @@ func (m *NfsClientsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsSvmLinks
+func (m *NfsClientsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1022,25 +1037,25 @@ func (m *NfsClientsSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsVolume nfs clients volume
+// NfsClientsInlineVolume nfs clients inline volume
 //
-// swagger:model NfsClientsVolume
-type NfsClientsVolume struct {
+// swagger:model nfs_clients_inline_volume
+type NfsClientsInlineVolume struct {
 
 	// links
-	Links *NfsClientsVolumeLinks `json:"_links,omitempty"`
+	Links *NfsClientsInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nfs clients volume
-func (m *NfsClientsVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline volume
+func (m *NfsClientsInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1053,7 +1068,7 @@ func (m *NfsClientsVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsVolume) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1070,8 +1085,8 @@ func (m *NfsClientsVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients volume based on the context it is used
-func (m *NfsClientsVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline volume based on the context it is used
+func (m *NfsClientsInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1084,7 +1099,7 @@ func (m *NfsClientsVolume) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NfsClientsVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1099,7 +1114,7 @@ func (m *NfsClientsVolume) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsVolume) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1107,8 +1122,8 @@ func (m *NfsClientsVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsVolume) UnmarshalBinary(b []byte) error {
-	var res NfsClientsVolume
+func (m *NfsClientsInlineVolume) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1116,17 +1131,17 @@ func (m *NfsClientsVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsVolumeLinks nfs clients volume links
+// NfsClientsInlineVolumeInlineLinks nfs clients inline volume inline links
 //
-// swagger:model NfsClientsVolumeLinks
-type NfsClientsVolumeLinks struct {
+// swagger:model nfs_clients_inline_volume_inline__links
+type NfsClientsInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients volume links
-func (m *NfsClientsVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients inline volume inline links
+func (m *NfsClientsInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1139,7 +1154,7 @@ func (m *NfsClientsVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1156,8 +1171,8 @@ func (m *NfsClientsVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients volume links based on the context it is used
-func (m *NfsClientsVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients inline volume inline links based on the context it is used
+func (m *NfsClientsInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1170,7 +1185,7 @@ func (m *NfsClientsVolumeLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NfsClientsVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1185,7 +1200,7 @@ func (m *NfsClientsVolumeLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1193,8 +1208,8 @@ func (m *NfsClientsVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsVolumeLinks
+func (m *NfsClientsInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

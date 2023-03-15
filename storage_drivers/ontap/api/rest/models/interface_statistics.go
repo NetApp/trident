@@ -23,10 +23,10 @@ type InterfaceStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *InterfaceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *InterfaceStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -185,7 +185,7 @@ func (m *InterfaceStatistics) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -267,36 +267,36 @@ func (m *InterfaceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceStatisticsThroughputRaw Throughput bytes observed at the interface. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// InterfaceStatisticsInlineThroughputRaw Throughput bytes observed at the interface. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model InterfaceStatisticsThroughputRaw
-type InterfaceStatisticsThroughputRaw struct {
+// swagger:model interface_statistics_inline_throughput_raw
+type InterfaceStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this interface statistics throughput raw
-func (m *InterfaceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this interface statistics inline throughput raw
+func (m *InterfaceStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this interface statistics throughput raw based on context it is used
-func (m *InterfaceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this interface statistics inline throughput raw based on context it is used
+func (m *InterfaceStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *InterfaceStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -304,8 +304,8 @@ func (m *InterfaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res InterfaceStatisticsThroughputRaw
+func (m *InterfaceStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res InterfaceStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

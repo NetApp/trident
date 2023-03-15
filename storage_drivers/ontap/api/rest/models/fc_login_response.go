@@ -20,14 +20,14 @@ import (
 type FcLoginResponse struct {
 
 	// links
-	Links *FcLoginResponseLinks `json:"_links,omitempty"`
+	Links *FcLoginResponseInlineLinks `json:"_links,omitempty"`
+
+	// fc login response inline records
+	FcLoginResponseInlineRecords []*FcLogin `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*FcLogin `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fc login response
@@ -38,7 +38,7 @@ func (m *FcLoginResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFcLoginResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *FcLoginResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FcLoginResponse) validateFcLoginResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcLoginResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FcLoginResponseInlineRecords); i++ {
+		if swag.IsZero(m.FcLoginResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FcLoginResponseInlineRecords[i] != nil {
+			if err := m.FcLoginResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *FcLoginResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFcLoginResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *FcLoginResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcLoginResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginResponse) contextValidateFcLoginResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FcLoginResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcLoginResponseInlineRecords[i] != nil {
+			if err := m.FcLoginResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *FcLoginResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginResponseLinks fc login response links
+// FcLoginResponseInlineLinks fc login response inline links
 //
-// swagger:model FcLoginResponseLinks
-type FcLoginResponseLinks struct {
+// swagger:model fc_login_response_inline__links
+type FcLoginResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type FcLoginResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc login response links
-func (m *FcLoginResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login response inline links
+func (m *FcLoginResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *FcLoginResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcLoginResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *FcLoginResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcLoginResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *FcLoginResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login response links based on the context it is used
-func (m *FcLoginResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login response inline links based on the context it is used
+func (m *FcLoginResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *FcLoginResponseLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcLoginResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *FcLoginResponseLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FcLoginResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *FcLoginResponseLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FcLoginResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *FcLoginResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FcLoginResponseLinks
+func (m *FcLoginResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcLoginResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

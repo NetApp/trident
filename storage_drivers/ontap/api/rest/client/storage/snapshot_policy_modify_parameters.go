@@ -73,7 +73,7 @@ type SnapshotPolicyModifyParams struct {
 
 	   Snapshot copy policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *SnapshotPolicyModifyParams) SetInfo(info *models.SnapshotPolicy) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot policy modify params
-func (o *SnapshotPolicyModifyParams) WithUUIDPathParameter(uuid string) *SnapshotPolicyModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapshot policy modify params
+func (o *SnapshotPolicyModifyParams) WithUUID(uuid string) *SnapshotPolicyModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapshot policy modify params
-func (o *SnapshotPolicyModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapshot policy modify params
+func (o *SnapshotPolicyModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *SnapshotPolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

@@ -23,7 +23,7 @@ type Token struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// expiry time
-	ExpiryTime *TokenExpiryTime `json:"expiry_time,omitempty"`
+	ExpiryTime *TokenInlineExpiryTime `json:"expiry_time,omitempty"`
 
 	// node
 	Node *NodeReference `json:"node,omitempty"`
@@ -34,7 +34,7 @@ type Token struct {
 
 	// Token UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this token
@@ -193,7 +193,7 @@ func (m *Token) contextValidateNode(ctx context.Context, formats strfmt.Registry
 
 func (m *Token) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -218,26 +218,26 @@ func (m *Token) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TokenExpiryTime token expiry time
+// TokenInlineExpiryTime token inline expiry time
 //
-// swagger:model TokenExpiryTime
-type TokenExpiryTime struct {
+// swagger:model token_inline_expiry_time
+type TokenInlineExpiryTime struct {
 
 	// Specifies the time remaining before the given token expires in ISO-8601 format.
 	// Read Only: true
-	Left string `json:"left,omitempty"`
+	Left *string `json:"left,omitempty"`
 
 	// Specifies when the given token expires in ISO-8601 format.
-	Limit string `json:"limit,omitempty"`
+	Limit *string `json:"limit,omitempty"`
 }
 
-// Validate validates this token expiry time
-func (m *TokenExpiryTime) Validate(formats strfmt.Registry) error {
+// Validate validates this token inline expiry time
+func (m *TokenInlineExpiryTime) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this token expiry time based on the context it is used
-func (m *TokenExpiryTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this token inline expiry time based on the context it is used
+func (m *TokenInlineExpiryTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLeft(ctx, formats); err != nil {
@@ -250,9 +250,9 @@ func (m *TokenExpiryTime) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *TokenExpiryTime) contextValidateLeft(ctx context.Context, formats strfmt.Registry) error {
+func (m *TokenInlineExpiryTime) contextValidateLeft(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "expiry_time"+"."+"left", "body", string(m.Left)); err != nil {
+	if err := validate.ReadOnly(ctx, "expiry_time"+"."+"left", "body", m.Left); err != nil {
 		return err
 	}
 
@@ -260,7 +260,7 @@ func (m *TokenExpiryTime) contextValidateLeft(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *TokenExpiryTime) MarshalBinary() ([]byte, error) {
+func (m *TokenInlineExpiryTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -268,8 +268,8 @@ func (m *TokenExpiryTime) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TokenExpiryTime) UnmarshalBinary(b []byte) error {
-	var res TokenExpiryTime
+func (m *TokenInlineExpiryTime) UnmarshalBinary(b []byte) error {
+	var res TokenInlineExpiryTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

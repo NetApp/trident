@@ -20,13 +20,14 @@ import (
 type SnmpUserResponse struct {
 
 	// links
-	Links *SnmpUserResponseLinks `json:"_links,omitempty"`
+	Links *SnmpUserResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SnmpUser `json:"records,omitempty"`
+	// snmp user response inline records
+	SnmpUserResponseInlineRecords []*SnmpUser `json:"records,omitempty"`
 }
 
 // Validate validates this snmp user response
@@ -37,7 +38,7 @@ func (m *SnmpUserResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSnmpUserResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SnmpUserResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnmpUserResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SnmpUserResponse) validateSnmpUserResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnmpUserResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SnmpUserResponseInlineRecords); i++ {
+		if swag.IsZero(m.SnmpUserResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SnmpUserResponseInlineRecords[i] != nil {
+			if err := m.SnmpUserResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SnmpUserResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSnmpUserResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SnmpUserResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnmpUserResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnmpUserResponse) contextValidateSnmpUserResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SnmpUserResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnmpUserResponseInlineRecords[i] != nil {
+			if err := m.SnmpUserResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SnmpUserResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnmpUserResponseLinks snmp user response links
+// SnmpUserResponseInlineLinks snmp user response inline links
 //
-// swagger:model SnmpUserResponseLinks
-type SnmpUserResponseLinks struct {
+// swagger:model snmp_user_response_inline__links
+type SnmpUserResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SnmpUserResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snmp user response links
-func (m *SnmpUserResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snmp user response inline links
+func (m *SnmpUserResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SnmpUserResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnmpUserResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SnmpUserResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SnmpUserResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnmpUserResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnmpUserResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SnmpUserResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snmp user response links based on the context it is used
-func (m *SnmpUserResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snmp user response inline links based on the context it is used
+func (m *SnmpUserResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SnmpUserResponseLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnmpUserResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnmpUserResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SnmpUserResponseLinks) contextValidateNext(ctx context.Context, formats
 	return nil
 }
 
-func (m *SnmpUserResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnmpUserResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SnmpUserResponseLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SnmpUserResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SnmpUserResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SnmpUserResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnmpUserResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SnmpUserResponseLinks
+func (m *SnmpUserResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnmpUserResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

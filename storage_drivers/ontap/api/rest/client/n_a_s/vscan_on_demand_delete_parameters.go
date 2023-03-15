@@ -62,13 +62,13 @@ VscanOnDemandDeleteParams contains all the parameters to send to the API endpoin
 type VscanOnDemandDeleteParams struct {
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,26 +123,26 @@ func (o *VscanOnDemandDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the vscan on demand delete params
-func (o *VscanOnDemandDeleteParams) WithNamePathParameter(name string) *VscanOnDemandDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the vscan on demand delete params
+func (o *VscanOnDemandDeleteParams) WithName(name string) *VscanOnDemandDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the vscan on demand delete params
-func (o *VscanOnDemandDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the vscan on demand delete params
+func (o *VscanOnDemandDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan on demand delete params
-func (o *VscanOnDemandDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnDemandDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan on demand delete params
+func (o *VscanOnDemandDeleteParams) WithSvmUUID(svmUUID string) *VscanOnDemandDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan on demand delete params
-func (o *VscanOnDemandDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan on demand delete params
+func (o *VscanOnDemandDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,12 +154,12 @@ func (o *VscanOnDemandDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

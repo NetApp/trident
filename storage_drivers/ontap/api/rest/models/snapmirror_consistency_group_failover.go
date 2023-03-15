@@ -22,7 +22,7 @@ type SnapmirrorConsistencyGroupFailover struct {
 	Error *Error `json:"error,omitempty"`
 
 	// status
-	Status *SnapmirrorConsistencyGroupFailoverStatus `json:"status,omitempty"`
+	Status *SnapmirrorConsistencyGroupFailoverInlineStatus `json:"status,omitempty"`
 }
 
 // Validate validates this snapmirror consistency group failover
@@ -141,30 +141,30 @@ func (m *SnapmirrorConsistencyGroupFailover) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorConsistencyGroupFailoverStatus snapmirror consistency group failover status
+// SnapmirrorConsistencyGroupFailoverInlineStatus snapmirror consistency group failover inline status
 //
-// swagger:model SnapmirrorConsistencyGroupFailoverStatus
-type SnapmirrorConsistencyGroupFailoverStatus struct {
+// swagger:model snapmirror_consistency_group_failover_inline_status
+type SnapmirrorConsistencyGroupFailoverInlineStatus struct {
 
 	// Status code
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// SnapMirror Consistency Group failover status.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this snapmirror consistency group failover status
-func (m *SnapmirrorConsistencyGroupFailoverStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror consistency group failover inline status
+func (m *SnapmirrorConsistencyGroupFailoverInlineStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this snapmirror consistency group failover status based on context it is used
-func (m *SnapmirrorConsistencyGroupFailoverStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snapmirror consistency group failover inline status based on context it is used
+func (m *SnapmirrorConsistencyGroupFailoverInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorConsistencyGroupFailoverStatus) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorConsistencyGroupFailoverInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -172,8 +172,8 @@ func (m *SnapmirrorConsistencyGroupFailoverStatus) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorConsistencyGroupFailoverStatus) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorConsistencyGroupFailoverStatus
+func (m *SnapmirrorConsistencyGroupFailoverInlineStatus) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorConsistencyGroupFailoverInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

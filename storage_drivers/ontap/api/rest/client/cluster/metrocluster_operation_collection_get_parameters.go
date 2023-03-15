@@ -66,55 +66,55 @@ type MetroclusterOperationCollectionGetParams struct {
 
 	   Filter by additional_info
 	*/
-	AdditionalInfoQueryParameter *string
+	AdditionalInfo *string
 
 	/* CommandLine.
 
 	   Filter by command_line
 	*/
-	CommandLineQueryParameter *string
+	CommandLine *string
 
 	/* EndTime.
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* Errors.
 
 	   Filter by errors
 	*/
-	ErrorsQueryParameter *string
+	Errors *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type MetroclusterOperationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,31 +130,31 @@ type MetroclusterOperationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StartTime.
 
 	   Filter by start_time
 	*/
-	StartTimeQueryParameter *string
+	StartTime *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *MetroclusterOperationCollectionGetParams) WithDefaults() *MetroclusterO
 // All values with no default are reset to their zero value.
 func (o *MetroclusterOperationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MetroclusterOperationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *MetroclusterOperationCollectionGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithAdditionalInfoQueryParameter adds the additionalInfo to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithAdditionalInfoQueryParameter(additionalInfo *string) *MetroclusterOperationCollectionGetParams {
-	o.SetAdditionalInfoQueryParameter(additionalInfo)
+// WithAdditionalInfo adds the additionalInfo to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithAdditionalInfo(additionalInfo *string) *MetroclusterOperationCollectionGetParams {
+	o.SetAdditionalInfo(additionalInfo)
 	return o
 }
 
-// SetAdditionalInfoQueryParameter adds the additionalInfo to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetAdditionalInfoQueryParameter(additionalInfo *string) {
-	o.AdditionalInfoQueryParameter = additionalInfo
+// SetAdditionalInfo adds the additionalInfo to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetAdditionalInfo(additionalInfo *string) {
+	o.AdditionalInfo = additionalInfo
 }
 
-// WithCommandLineQueryParameter adds the commandLine to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithCommandLineQueryParameter(commandLine *string) *MetroclusterOperationCollectionGetParams {
-	o.SetCommandLineQueryParameter(commandLine)
+// WithCommandLine adds the commandLine to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithCommandLine(commandLine *string) *MetroclusterOperationCollectionGetParams {
+	o.SetCommandLine(commandLine)
 	return o
 }
 
-// SetCommandLineQueryParameter adds the commandLine to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetCommandLineQueryParameter(commandLine *string) {
-	o.CommandLineQueryParameter = commandLine
+// SetCommandLine adds the commandLine to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetCommandLine(commandLine *string) {
+	o.CommandLine = commandLine
 }
 
-// WithEndTimeQueryParameter adds the endTime to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithEndTimeQueryParameter(endTime *string) *MetroclusterOperationCollectionGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithEndTime adds the endTime to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithEndTime(endTime *string) *MetroclusterOperationCollectionGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetEndTime adds the endTime to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithErrorsQueryParameter adds the errors to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithErrorsQueryParameter(errors *string) *MetroclusterOperationCollectionGetParams {
-	o.SetErrorsQueryParameter(errors)
+// WithErrors adds the errors to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithErrors(errors *string) *MetroclusterOperationCollectionGetParams {
+	o.SetErrors(errors)
 	return o
 }
 
-// SetErrorsQueryParameter adds the errors to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetErrorsQueryParameter(errors *string) {
-	o.ErrorsQueryParameter = errors
+// SetErrors adds the errors to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetErrors(errors *string) {
+	o.Errors = errors
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterOperationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithFields(fields []string) *MetroclusterOperationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MetroclusterOperationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithMaxRecords(maxRecords *int64) *MetroclusterOperationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *MetroclusterOperationCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithNodeName(nodeName *string) *MetroclusterOperationCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *MetroclusterOperationCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithNodeUUID(nodeUUID *string) *MetroclusterOperationCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MetroclusterOperationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithOrderBy(orderBy []string) *MetroclusterOperationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MetroclusterOperationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithReturnRecords(returnRecords *bool) *MetroclusterOperationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterOperationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterOperationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStartTimeQueryParameter adds the startTime to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithStartTimeQueryParameter(startTime *string) *MetroclusterOperationCollectionGetParams {
-	o.SetStartTimeQueryParameter(startTime)
+// WithStartTime adds the startTime to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithStartTime(startTime *string) *MetroclusterOperationCollectionGetParams {
+	o.SetStartTime(startTime)
 	return o
 }
 
-// SetStartTimeQueryParameter adds the startTime to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetStartTimeQueryParameter(startTime *string) {
-	o.StartTimeQueryParameter = startTime
+// SetStartTime adds the startTime to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetStartTime(startTime *string) {
+	o.StartTime = startTime
 }
 
-// WithStateQueryParameter adds the state to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithStateQueryParameter(state *string) *MetroclusterOperationCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithState(state *string) *MetroclusterOperationCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithTypeQueryParameter adds the typeVar to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithTypeQueryParameter(typeVar *string) *MetroclusterOperationCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithType(typeVar *string) *MetroclusterOperationCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) WithUUIDQueryParameter(uuid *string) *MetroclusterOperationCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) WithUUID(uuid *string) *MetroclusterOperationCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the metrocluster operation collection get params
-func (o *MetroclusterOperationCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the metrocluster operation collection get params
+func (o *MetroclusterOperationCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.AdditionalInfoQueryParameter != nil {
+	if o.AdditionalInfo != nil {
 
 		// query param additional_info
 		var qrAdditionalInfo string
 
-		if o.AdditionalInfoQueryParameter != nil {
-			qrAdditionalInfo = *o.AdditionalInfoQueryParameter
+		if o.AdditionalInfo != nil {
+			qrAdditionalInfo = *o.AdditionalInfo
 		}
 		qAdditionalInfo := qrAdditionalInfo
 		if qAdditionalInfo != "" {
@@ -413,13 +413,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.CommandLineQueryParameter != nil {
+	if o.CommandLine != nil {
 
 		// query param command_line
 		var qrCommandLine string
 
-		if o.CommandLineQueryParameter != nil {
-			qrCommandLine = *o.CommandLineQueryParameter
+		if o.CommandLine != nil {
+			qrCommandLine = *o.CommandLine
 		}
 		qCommandLine := qrCommandLine
 		if qCommandLine != "" {
@@ -430,13 +430,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -447,13 +447,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ErrorsQueryParameter != nil {
+	if o.Errors != nil {
 
 		// query param errors
 		var qrErrors string
 
-		if o.ErrorsQueryParameter != nil {
-			qrErrors = *o.ErrorsQueryParameter
+		if o.Errors != nil {
+			qrErrors = *o.Errors
 		}
 		qErrors := qrErrors
 		if qErrors != "" {
@@ -464,7 +464,7 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -509,13 +509,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -526,7 +526,7 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -537,13 +537,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.StartTimeQueryParameter != nil {
+	if o.StartTime != nil {
 
 		// query param start_time
 		var qrStartTime string
 
-		if o.StartTimeQueryParameter != nil {
-			qrStartTime = *o.StartTimeQueryParameter
+		if o.StartTime != nil {
+			qrStartTime = *o.StartTime
 		}
 		qStartTime := qrStartTime
 		if qStartTime != "" {
@@ -588,13 +588,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -605,13 +605,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -622,13 +622,13 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -647,7 +647,7 @@ func (o *MetroclusterOperationCollectionGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamMetroclusterOperationCollectionGet binds the parameter fields
 func (o *MetroclusterOperationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -664,7 +664,7 @@ func (o *MetroclusterOperationCollectionGetParams) bindParamFields(formats strfm
 
 // bindParamMetroclusterOperationCollectionGet binds the parameter order_by
 func (o *MetroclusterOperationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

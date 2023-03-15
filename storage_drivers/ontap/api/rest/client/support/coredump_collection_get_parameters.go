@@ -66,61 +66,61 @@ type CoredumpCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IsPartial.
 
 	   Filter by is_partial
 	*/
-	IsPartialQueryParameter *bool
+	IsPartial *bool
 
 	/* IsSaved.
 
 	   Filter by is_saved
 	*/
-	IsSavedQueryParameter *bool
+	IsSaved *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Md5DataChecksum.
 
 	   Filter by md5_data_checksum
 	*/
-	Md5DataChecksumQueryParameter *string
+	Md5DataChecksum *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PanicTime.
 
 	   Filter by panic_time
 	*/
-	PanicTimeQueryParameter *string
+	PanicTime *string
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type CoredumpCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,19 +136,19 @@ type CoredumpCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Size.
 
 	   Filter by size
 	*/
-	SizeQueryParameter *int64
+	Size *int64
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *CoredumpCollectionGetParams) WithDefaults() *CoredumpCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *CoredumpCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CoredumpCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *CoredumpCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithFieldsQueryParameter(fields []string) *CoredumpCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithFields(fields []string) *CoredumpCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIsPartialQueryParameter adds the isPartial to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithIsPartialQueryParameter(isPartial *bool) *CoredumpCollectionGetParams {
-	o.SetIsPartialQueryParameter(isPartial)
+// WithIsPartial adds the isPartial to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithIsPartial(isPartial *bool) *CoredumpCollectionGetParams {
+	o.SetIsPartial(isPartial)
 	return o
 }
 
-// SetIsPartialQueryParameter adds the isPartial to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetIsPartialQueryParameter(isPartial *bool) {
-	o.IsPartialQueryParameter = isPartial
+// SetIsPartial adds the isPartial to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetIsPartial(isPartial *bool) {
+	o.IsPartial = isPartial
 }
 
-// WithIsSavedQueryParameter adds the isSaved to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithIsSavedQueryParameter(isSaved *bool) *CoredumpCollectionGetParams {
-	o.SetIsSavedQueryParameter(isSaved)
+// WithIsSaved adds the isSaved to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithIsSaved(isSaved *bool) *CoredumpCollectionGetParams {
+	o.SetIsSaved(isSaved)
 	return o
 }
 
-// SetIsSavedQueryParameter adds the isSaved to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetIsSavedQueryParameter(isSaved *bool) {
-	o.IsSavedQueryParameter = isSaved
+// SetIsSaved adds the isSaved to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetIsSaved(isSaved *bool) {
+	o.IsSaved = isSaved
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CoredumpCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithMaxRecords(maxRecords *int64) *CoredumpCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMd5DataChecksumQueryParameter adds the md5DataChecksum to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithMd5DataChecksumQueryParameter(md5DataChecksum *string) *CoredumpCollectionGetParams {
-	o.SetMd5DataChecksumQueryParameter(md5DataChecksum)
+// WithMd5DataChecksum adds the md5DataChecksum to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithMd5DataChecksum(md5DataChecksum *string) *CoredumpCollectionGetParams {
+	o.SetMd5DataChecksum(md5DataChecksum)
 	return o
 }
 
-// SetMd5DataChecksumQueryParameter adds the md5DataChecksum to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetMd5DataChecksumQueryParameter(md5DataChecksum *string) {
-	o.Md5DataChecksumQueryParameter = md5DataChecksum
+// SetMd5DataChecksum adds the md5DataChecksum to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetMd5DataChecksum(md5DataChecksum *string) {
+	o.Md5DataChecksum = md5DataChecksum
 }
 
-// WithNameQueryParameter adds the name to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithNameQueryParameter(name *string) *CoredumpCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithName(name *string) *CoredumpCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *CoredumpCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithNodeName(nodeName *string) *CoredumpCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *CoredumpCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithNodeUUID(nodeUUID *string) *CoredumpCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CoredumpCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithOrderBy(orderBy []string) *CoredumpCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPanicTimeQueryParameter adds the panicTime to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithPanicTimeQueryParameter(panicTime *string) *CoredumpCollectionGetParams {
-	o.SetPanicTimeQueryParameter(panicTime)
+// WithPanicTime adds the panicTime to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithPanicTime(panicTime *string) *CoredumpCollectionGetParams {
+	o.SetPanicTime(panicTime)
 	return o
 }
 
-// SetPanicTimeQueryParameter adds the panicTime to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetPanicTimeQueryParameter(panicTime *string) {
-	o.PanicTimeQueryParameter = panicTime
+// SetPanicTime adds the panicTime to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetPanicTime(panicTime *string) {
+	o.PanicTime = panicTime
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CoredumpCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithReturnRecords(returnRecords *bool) *CoredumpCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CoredumpCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CoredumpCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSizeQueryParameter adds the size to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithSizeQueryParameter(size *int64) *CoredumpCollectionGetParams {
-	o.SetSizeQueryParameter(size)
+// WithSize adds the size to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithSize(size *int64) *CoredumpCollectionGetParams {
+	o.SetSize(size)
 	return o
 }
 
-// SetSizeQueryParameter adds the size to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetSizeQueryParameter(size *int64) {
-	o.SizeQueryParameter = size
+// SetSize adds the size to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetSize(size *int64) {
+	o.Size = size
 }
 
-// WithTypeQueryParameter adds the typeVar to the coredump collection get params
-func (o *CoredumpCollectionGetParams) WithTypeQueryParameter(typeVar *string) *CoredumpCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the coredump collection get params
+func (o *CoredumpCollectionGetParams) WithType(typeVar *string) *CoredumpCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the coredump collection get params
-func (o *CoredumpCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the coredump collection get params
+func (o *CoredumpCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,7 +379,7 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -390,13 +390,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IsPartialQueryParameter != nil {
+	if o.IsPartial != nil {
 
 		// query param is_partial
 		var qrIsPartial bool
 
-		if o.IsPartialQueryParameter != nil {
-			qrIsPartial = *o.IsPartialQueryParameter
+		if o.IsPartial != nil {
+			qrIsPartial = *o.IsPartial
 		}
 		qIsPartial := swag.FormatBool(qrIsPartial)
 		if qIsPartial != "" {
@@ -407,13 +407,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IsSavedQueryParameter != nil {
+	if o.IsSaved != nil {
 
 		// query param is_saved
 		var qrIsSaved bool
 
-		if o.IsSavedQueryParameter != nil {
-			qrIsSaved = *o.IsSavedQueryParameter
+		if o.IsSaved != nil {
+			qrIsSaved = *o.IsSaved
 		}
 		qIsSaved := swag.FormatBool(qrIsSaved)
 		if qIsSaved != "" {
@@ -424,13 +424,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -441,13 +441,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.Md5DataChecksumQueryParameter != nil {
+	if o.Md5DataChecksum != nil {
 
 		// query param md5_data_checksum
 		var qrMd5DataChecksum string
 
-		if o.Md5DataChecksumQueryParameter != nil {
-			qrMd5DataChecksum = *o.Md5DataChecksumQueryParameter
+		if o.Md5DataChecksum != nil {
+			qrMd5DataChecksum = *o.Md5DataChecksum
 		}
 		qMd5DataChecksum := qrMd5DataChecksum
 		if qMd5DataChecksum != "" {
@@ -458,13 +458,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -475,13 +475,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -492,13 +492,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -509,7 +509,7 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -520,13 +520,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PanicTimeQueryParameter != nil {
+	if o.PanicTime != nil {
 
 		// query param panic_time
 		var qrPanicTime string
 
-		if o.PanicTimeQueryParameter != nil {
-			qrPanicTime = *o.PanicTimeQueryParameter
+		if o.PanicTime != nil {
+			qrPanicTime = *o.PanicTime
 		}
 		qPanicTime := qrPanicTime
 		if qPanicTime != "" {
@@ -537,13 +537,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SizeQueryParameter != nil {
+	if o.Size != nil {
 
 		// query param size
 		var qrSize int64
 
-		if o.SizeQueryParameter != nil {
-			qrSize = *o.SizeQueryParameter
+		if o.Size != nil {
+			qrSize = *o.Size
 		}
 		qSize := swag.FormatInt64(qrSize)
 		if qSize != "" {
@@ -588,13 +588,13 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -613,7 +613,7 @@ func (o *CoredumpCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamCoredumpCollectionGet binds the parameter fields
 func (o *CoredumpCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *CoredumpCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamCoredumpCollectionGet binds the parameter order_by
 func (o *CoredumpCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

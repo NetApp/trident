@@ -19,13 +19,13 @@ import (
 type AggregateWarning struct {
 
 	// action
-	Action *AggregateWarningAction `json:"action,omitempty"`
+	Action *AggregateWarningInlineAction `json:"action,omitempty"`
 
 	// Name of the entity that returns the warning.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// warning
-	Warning *AggregateWarningWarning `json:"warning,omitempty"`
+	Warning *AggregateWarningInlineWarning `json:"warning,omitempty"`
 }
 
 // Validate validates this aggregate warning
@@ -144,33 +144,33 @@ func (m *AggregateWarning) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateWarningAction aggregate warning action
+// AggregateWarningInlineAction aggregate warning inline action
 //
-// swagger:model AggregateWarningAction
-type AggregateWarningAction struct {
+// swagger:model aggregate_warning_inline_action
+type AggregateWarningInlineAction struct {
 
 	// Arguments present in the specified action message.
-	Arguments []string `json:"arguments,omitempty"`
+	Arguments []*string `json:"arguments,omitempty"`
 
 	// Corrective action code of the specified action.
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Specifies the corrective action to be taken to resolve the issue.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this aggregate warning action
-func (m *AggregateWarningAction) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate warning inline action
+func (m *AggregateWarningInlineAction) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this aggregate warning action based on context it is used
-func (m *AggregateWarningAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this aggregate warning inline action based on context it is used
+func (m *AggregateWarningInlineAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateWarningAction) MarshalBinary() ([]byte, error) {
+func (m *AggregateWarningInlineAction) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -178,8 +178,8 @@ func (m *AggregateWarningAction) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateWarningAction) UnmarshalBinary(b []byte) error {
-	var res AggregateWarningAction
+func (m *AggregateWarningInlineAction) UnmarshalBinary(b []byte) error {
+	var res AggregateWarningInlineAction
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -187,33 +187,33 @@ func (m *AggregateWarningAction) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateWarningWarning aggregate warning warning
+// AggregateWarningInlineWarning aggregate warning inline warning
 //
-// swagger:model AggregateWarningWarning
-type AggregateWarningWarning struct {
+// swagger:model aggregate_warning_inline_warning
+type AggregateWarningInlineWarning struct {
 
 	// Arguments present in the warning message encountered.
-	Arguments []string `json:"arguments,omitempty"`
+	Arguments []*string `json:"arguments,omitempty"`
 
 	// Warning code of the warning encountered.
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Details of the warning encountered by the aggregate simulate query.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this aggregate warning warning
-func (m *AggregateWarningWarning) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate warning inline warning
+func (m *AggregateWarningInlineWarning) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this aggregate warning warning based on context it is used
-func (m *AggregateWarningWarning) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this aggregate warning inline warning based on context it is used
+func (m *AggregateWarningInlineWarning) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateWarningWarning) MarshalBinary() ([]byte, error) {
+func (m *AggregateWarningInlineWarning) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -221,8 +221,8 @@ func (m *AggregateWarningWarning) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateWarningWarning) UnmarshalBinary(b []byte) error {
-	var res AggregateWarningWarning
+func (m *AggregateWarningInlineWarning) UnmarshalBinary(b []byte) error {
+	var res AggregateWarningInlineWarning
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

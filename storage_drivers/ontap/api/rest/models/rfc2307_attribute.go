@@ -19,31 +19,31 @@ type Rfc2307Attribute struct {
 
 	// RFC 2307 gecos attribute.
 	// Example: name
-	Gecos string `json:"gecos,omitempty"`
+	Gecos *string `json:"gecos,omitempty"`
 
 	// RFC 2307 gidNumber attribute.
 	// Example: msSFU30GidNumber
-	GidNumber string `json:"gid_number,omitempty"`
+	GidNumber *string `json:"gid_number,omitempty"`
 
 	// RFC 2307 homeDirectory attribute.
 	// Example: msSFU30HomeDirectory
-	HomeDirectory string `json:"home_directory,omitempty"`
+	HomeDirectory *string `json:"home_directory,omitempty"`
 
 	// RFC 2307 loginShell attribute.
 	// Example: msSFU30LoginShell
-	LoginShell string `json:"login_shell,omitempty"`
+	LoginShell *string `json:"login_shell,omitempty"`
 
 	// RFC 1274 userid attribute used by RFC 2307 as UID.
 	// Example: sAMAccountName
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 
 	// RFC 2307 uidNumber attribute.
 	// Example: msSFU30UidNumber
-	UIDNumber string `json:"uid_number,omitempty"`
+	UIDNumber *string `json:"uid_number,omitempty"`
 
 	// RFC 2256 userPassword attribute used by RFC 2307.
 	// Example: msSFU30Password
-	UserPassword string `json:"user_password,omitempty"`
+	UserPassword *string `json:"user_password,omitempty"`
 }
 
 // Validate validates this rfc2307 attribute

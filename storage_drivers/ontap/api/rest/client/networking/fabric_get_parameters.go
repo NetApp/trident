@@ -69,20 +69,20 @@ type FabricGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   The world wide name (WWN) of the primary switch of the Fibre Channel fabric.
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -102,11 +102,11 @@ func (o *FabricGetParams) WithDefaults() *FabricGetParams {
 // All values with no default are reset to their zero value.
 func (o *FabricGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 	)
 
 	val := FabricGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
 	}
 
 	val.timeout = o.timeout
@@ -148,37 +148,37 @@ func (o *FabricGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fabric get params
-func (o *FabricGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FabricGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fabric get params
+func (o *FabricGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FabricGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fabric get params
-func (o *FabricGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fabric get params
+func (o *FabricGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithFieldsQueryParameter adds the fields to the fabric get params
-func (o *FabricGetParams) WithFieldsQueryParameter(fields []string) *FabricGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fabric get params
+func (o *FabricGetParams) WithFields(fields []string) *FabricGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fabric get params
-func (o *FabricGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fabric get params
+func (o *FabricGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the fabric get params
-func (o *FabricGetParams) WithNamePathParameter(name string) *FabricGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the fabric get params
+func (o *FabricGetParams) WithName(name string) *FabricGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the fabric get params
-func (o *FabricGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the fabric get params
+func (o *FabricGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -189,13 +189,13 @@ func (o *FabricGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -206,7 +206,7 @@ func (o *FabricGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -218,7 +218,7 @@ func (o *FabricGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -230,7 +230,7 @@ func (o *FabricGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamFabricGet binds the parameter fields
 func (o *FabricGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

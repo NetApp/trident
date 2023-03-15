@@ -73,7 +73,7 @@ type IPServicePolicyModifyParams struct {
 
 	   UUID of the service policy
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *IPServicePolicyModifyParams) SetInfo(info *models.IPServicePolicy) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the ip service policy modify params
-func (o *IPServicePolicyModifyParams) WithUUIDPathParameter(uuid string) *IPServicePolicyModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ip service policy modify params
+func (o *IPServicePolicyModifyParams) WithUUID(uuid string) *IPServicePolicyModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ip service policy modify params
-func (o *IPServicePolicyModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ip service policy modify params
+func (o *IPServicePolicyModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *IPServicePolicyModifyParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

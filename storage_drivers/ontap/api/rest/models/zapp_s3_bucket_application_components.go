@@ -21,22 +21,18 @@ import (
 // swagger:model zapp_s3_bucket_application_components
 type ZappS3BucketApplicationComponents struct {
 
-	// The list of S3 objectstore policies to be created.
-	// Max Items: 10
-	// Min Items: 0
-	AccessPolicies []*ZappS3BucketApplicationComponentsAccessPolicies `json:"access_policies,omitempty"`
+	// The type of bucket.
+	// Enum: [nas s3]
+	BucketEndpointType *string `json:"bucket_endpoint_type,omitempty"`
 
 	// Prefer lower latency storage under similar media costs.
 	// Enum: [false true]
-	CapacityTier bool `json:"capacity_tier,omitempty"`
+	CapacityTier *bool `json:"capacity_tier,omitempty"`
 
 	// Object Store Server Bucket Description Usage: &lt;(size 1..256)&gt;
 	// Max Length: 256
 	// Min Length: 1
-	Comment string `json:"comment,omitempty"`
-
-	// exclude aggregates
-	ExcludeAggregates []*ZappS3BucketApplicationComponentsExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// The name of the application component.
 	// Required: true
@@ -44,30 +40,40 @@ type ZappS3BucketApplicationComponents struct {
 	// Min Length: 3
 	Name *string `json:"name"`
 
+	// The path to which the bucket corresponds to.
+	NasPath *string `json:"nas_path,omitempty"`
+
 	// qos
-	Qos *ZappS3BucketApplicationComponentsQos `json:"qos,omitempty"`
+	Qos *ZappS3BucketApplicationComponentsInlineQos `json:"qos,omitempty"`
 
 	// The total size of the S3 Bucket, split across the member components. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	// Required: true
-	Size *int64 `json:"size"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *ZappS3BucketApplicationComponentsStorageService `json:"storage_service,omitempty"`
+	StorageService *ZappS3BucketApplicationComponentsInlineStorageService `json:"storage_service,omitempty"`
 
 	// Object Store Server Bucket UUID Usage: &lt;UUID&gt;
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
-	// Bucket Versioning State.
+	// Bucket Versioning State. For nas type buckets, this field is not set. For s3 type buckets, the default value is disabled.
 	// Enum: [disabled enabled suspended]
 	VersioningState *string `json:"versioning_state,omitempty"`
+
+	// The list of S3 objectstore policies to be created.
+	// Max Items: 10
+	// Min Items: 0
+	ZappS3BucketApplicationComponentsInlineAccessPolicies []*ZappS3BucketApplicationComponentsAccessPolicies `json:"access_policies,omitempty"`
+
+	// zapp s3 bucket application components inline exclude aggregates
+	ZappS3BucketApplicationComponentsInlineExcludeAggregates []*ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem `json:"exclude_aggregates,omitempty"`
 }
 
 // Validate validates this zapp s3 bucket application components
 func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAccessPolicies(formats); err != nil {
+	if err := m.validateBucketEndpointType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -79,19 +85,11 @@ func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
-	if err := m.validateExcludeAggregates(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateQos(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -103,41 +101,71 @@ func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.validateZappS3BucketApplicationComponentsInlineAccessPolicies(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateZappS3BucketApplicationComponentsInlineExcludeAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
 
-func (m *ZappS3BucketApplicationComponents) validateAccessPolicies(formats strfmt.Registry) error {
-	if swag.IsZero(m.AccessPolicies) { // not required
+var zappS3BucketApplicationComponentsTypeBucketEndpointTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["nas","s3"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappS3BucketApplicationComponentsTypeBucketEndpointTypePropEnum = append(zappS3BucketApplicationComponentsTypeBucketEndpointTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// bucket_endpoint_type
+	// BucketEndpointType
+	// nas
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsBucketEndpointTypeNas captures enum value "nas"
+	ZappS3BucketApplicationComponentsBucketEndpointTypeNas string = "nas"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// bucket_endpoint_type
+	// BucketEndpointType
+	// s3
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsBucketEndpointTypeS3 captures enum value "s3"
+	ZappS3BucketApplicationComponentsBucketEndpointTypeS3 string = "s3"
+)
+
+// prop value enum
+func (m *ZappS3BucketApplicationComponents) validateBucketEndpointTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappS3BucketApplicationComponentsTypeBucketEndpointTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) validateBucketEndpointType(formats strfmt.Registry) error {
+	if swag.IsZero(m.BucketEndpointType) { // not required
 		return nil
 	}
 
-	iAccessPoliciesSize := int64(len(m.AccessPolicies))
-
-	if err := validate.MinItems("access_policies", "body", iAccessPoliciesSize, 0); err != nil {
+	// value enum
+	if err := m.validateBucketEndpointTypeEnum("bucket_endpoint_type", "body", *m.BucketEndpointType); err != nil {
 		return err
-	}
-
-	if err := validate.MaxItems("access_policies", "body", iAccessPoliciesSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.AccessPolicies); i++ {
-		if swag.IsZero(m.AccessPolicies[i]) { // not required
-			continue
-		}
-
-		if m.AccessPolicies[i] != nil {
-			if err := m.AccessPolicies[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("access_policies" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -169,7 +197,7 @@ func (m *ZappS3BucketApplicationComponents) validateCapacityTier(formats strfmt.
 	}
 
 	// value enum
-	if err := m.validateCapacityTierEnum("capacity_tier", "body", m.CapacityTier); err != nil {
+	if err := m.validateCapacityTierEnum("capacity_tier", "body", *m.CapacityTier); err != nil {
 		return err
 	}
 
@@ -181,36 +209,12 @@ func (m *ZappS3BucketApplicationComponents) validateComment(formats strfmt.Regis
 		return nil
 	}
 
-	if err := validate.MinLength("comment", "body", m.Comment, 1); err != nil {
+	if err := validate.MinLength("comment", "body", *m.Comment, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("comment", "body", m.Comment, 256); err != nil {
+	if err := validate.MaxLength("comment", "body", *m.Comment, 256); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ZappS3BucketApplicationComponents) validateExcludeAggregates(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExcludeAggregates) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
-		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
-			continue
-		}
-
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -245,15 +249,6 @@ func (m *ZappS3BucketApplicationComponents) validateQos(formats strfmt.Registry)
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ZappS3BucketApplicationComponents) validateSize(formats strfmt.Registry) error {
-
-	if err := validate.Required("size", "body", m.Size); err != nil {
-		return err
 	}
 
 	return nil
@@ -342,17 +337,67 @@ func (m *ZappS3BucketApplicationComponents) validateVersioningState(formats strf
 	return nil
 }
 
+func (m *ZappS3BucketApplicationComponents) validateZappS3BucketApplicationComponentsInlineAccessPolicies(formats strfmt.Registry) error {
+	if swag.IsZero(m.ZappS3BucketApplicationComponentsInlineAccessPolicies) { // not required
+		return nil
+	}
+
+	iZappS3BucketApplicationComponentsInlineAccessPoliciesSize := int64(len(m.ZappS3BucketApplicationComponentsInlineAccessPolicies))
+
+	if err := validate.MinItems("access_policies", "body", iZappS3BucketApplicationComponentsInlineAccessPoliciesSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("access_policies", "body", iZappS3BucketApplicationComponentsInlineAccessPoliciesSize, 10); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsInlineAccessPolicies); i++ {
+		if swag.IsZero(m.ZappS3BucketApplicationComponentsInlineAccessPolicies[i]) { // not required
+			continue
+		}
+
+		if m.ZappS3BucketApplicationComponentsInlineAccessPolicies[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsInlineAccessPolicies[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("access_policies" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) validateZappS3BucketApplicationComponentsInlineExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ZappS3BucketApplicationComponentsInlineExcludeAggregates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsInlineExcludeAggregates); i++ {
+		if swag.IsZero(m.ZappS3BucketApplicationComponentsInlineExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ZappS3BucketApplicationComponentsInlineExcludeAggregates[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsInlineExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this zapp s3 bucket application components based on the context it is used
 func (m *ZappS3BucketApplicationComponents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateAccessPolicies(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateQos(ctx, formats); err != nil {
 		res = append(res, err)
@@ -366,45 +411,17 @@ func (m *ZappS3BucketApplicationComponents) ContextValidate(ctx context.Context,
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateZappS3BucketApplicationComponentsInlineAccessPolicies(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateZappS3BucketApplicationComponentsInlineExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ZappS3BucketApplicationComponents) contextValidateAccessPolicies(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.AccessPolicies); i++ {
-
-		if m.AccessPolicies[i] != nil {
-			if err := m.AccessPolicies[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("access_policies" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ZappS3BucketApplicationComponents) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
-
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -438,8 +455,44 @@ func (m *ZappS3BucketApplicationComponents) contextValidateStorageService(ctx co
 
 func (m *ZappS3BucketApplicationComponents) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) contextValidateZappS3BucketApplicationComponentsInlineAccessPolicies(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsInlineAccessPolicies); i++ {
+
+		if m.ZappS3BucketApplicationComponentsInlineAccessPolicies[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsInlineAccessPolicies[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("access_policies" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) contextValidateZappS3BucketApplicationComponentsInlineExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsInlineExcludeAggregates); i++ {
+
+		if m.ZappS3BucketApplicationComponentsInlineExcludeAggregates[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsInlineExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -463,30 +516,30 @@ func (m *ZappS3BucketApplicationComponents) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappS3BucketApplicationComponentsExcludeAggregatesItems0 zapp s3 bucket application components exclude aggregates items0
+// ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem zapp s3 bucket application components inline exclude aggregates inline array item
 //
-// swagger:model ZappS3BucketApplicationComponentsExcludeAggregatesItems0
-type ZappS3BucketApplicationComponentsExcludeAggregatesItems0 struct {
+// swagger:model zapp_s3_bucket_application_components_inline_exclude_aggregates_inline_array_item
+type ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_jrippy_vsim1&gt;
-	Name string `json:"name,omitempty"`
+	// The name of the aggregate to exclude. Usage: &lt;aggregate name&gt;
+	Name *string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this zapp s3 bucket application components exclude aggregates items0
-func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp s3 bucket application components inline exclude aggregates inline array item
+func (m *ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this zapp s3 bucket application components exclude aggregates items0 based on context it is used
-func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp s3 bucket application components inline exclude aggregates inline array item based on context it is used
+func (m *ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+func (m *ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -494,8 +547,8 @@ func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) MarshalBinary
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
-	var res ZappS3BucketApplicationComponentsExcludeAggregatesItems0
+func (m *ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketApplicationComponentsInlineExcludeAggregatesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -503,17 +556,17 @@ func (m *ZappS3BucketApplicationComponentsExcludeAggregatesItems0) UnmarshalBina
 	return nil
 }
 
-// ZappS3BucketApplicationComponentsQos zapp s3 bucket application components qos
+// ZappS3BucketApplicationComponentsInlineQos zapp s3 bucket application components inline qos
 //
-// swagger:model ZappS3BucketApplicationComponentsQos
-type ZappS3BucketApplicationComponentsQos struct {
+// swagger:model zapp_s3_bucket_application_components_inline_qos
+type ZappS3BucketApplicationComponentsInlineQos struct {
 
 	// policy
-	Policy *ZappS3BucketApplicationComponentsQosPolicy `json:"policy,omitempty"`
+	Policy *ZappS3BucketApplicationComponentsInlineQosInlinePolicy `json:"policy,omitempty"`
 }
 
-// Validate validates this zapp s3 bucket application components qos
-func (m *ZappS3BucketApplicationComponentsQos) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp s3 bucket application components inline qos
+func (m *ZappS3BucketApplicationComponentsInlineQos) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -526,7 +579,7 @@ func (m *ZappS3BucketApplicationComponentsQos) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ZappS3BucketApplicationComponentsQos) validatePolicy(formats strfmt.Registry) error {
+func (m *ZappS3BucketApplicationComponentsInlineQos) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -543,8 +596,8 @@ func (m *ZappS3BucketApplicationComponentsQos) validatePolicy(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this zapp s3 bucket application components qos based on the context it is used
-func (m *ZappS3BucketApplicationComponentsQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this zapp s3 bucket application components inline qos based on the context it is used
+func (m *ZappS3BucketApplicationComponentsInlineQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
@@ -557,7 +610,7 @@ func (m *ZappS3BucketApplicationComponentsQos) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *ZappS3BucketApplicationComponentsQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappS3BucketApplicationComponentsInlineQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -572,7 +625,7 @@ func (m *ZappS3BucketApplicationComponentsQos) contextValidatePolicy(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsQos) MarshalBinary() ([]byte, error) {
+func (m *ZappS3BucketApplicationComponentsInlineQos) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -580,8 +633,8 @@ func (m *ZappS3BucketApplicationComponentsQos) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsQos) UnmarshalBinary(b []byte) error {
-	var res ZappS3BucketApplicationComponentsQos
+func (m *ZappS3BucketApplicationComponentsInlineQos) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketApplicationComponentsInlineQos
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -589,30 +642,30 @@ func (m *ZappS3BucketApplicationComponentsQos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappS3BucketApplicationComponentsQosPolicy zapp s3 bucket application components qos policy
+// ZappS3BucketApplicationComponentsInlineQosInlinePolicy zapp s3 bucket application components inline qos inline policy
 //
-// swagger:model ZappS3BucketApplicationComponentsQosPolicy
-type ZappS3BucketApplicationComponentsQosPolicy struct {
+// swagger:model zapp_s3_bucket_application_components_inline_qos_inline_policy
+type ZappS3BucketApplicationComponentsInlineQosInlinePolicy struct {
 
 	// The name of an existing QoS policy.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this zapp s3 bucket application components qos policy
-func (m *ZappS3BucketApplicationComponentsQosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp s3 bucket application components inline qos inline policy
+func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this zapp s3 bucket application components qos policy based on context it is used
-func (m *ZappS3BucketApplicationComponentsQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp s3 bucket application components inline qos inline policy based on context it is used
+func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsQosPolicy) MarshalBinary() ([]byte, error) {
+func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -620,8 +673,8 @@ func (m *ZappS3BucketApplicationComponentsQosPolicy) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsQosPolicy) UnmarshalBinary(b []byte) error {
-	var res ZappS3BucketApplicationComponentsQosPolicy
+func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketApplicationComponentsInlineQosInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -629,18 +682,18 @@ func (m *ZappS3BucketApplicationComponentsQosPolicy) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ZappS3BucketApplicationComponentsStorageService zapp s3 bucket application components storage service
+// ZappS3BucketApplicationComponentsInlineStorageService zapp s3 bucket application components inline storage service
 //
-// swagger:model ZappS3BucketApplicationComponentsStorageService
-type ZappS3BucketApplicationComponentsStorageService struct {
+// swagger:model zapp_s3_bucket_application_components_inline_storage_service
+type ZappS3BucketApplicationComponentsInlineStorageService struct {
 
 	// The storage service of the application component.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this zapp s3 bucket application components storage service
-func (m *ZappS3BucketApplicationComponentsStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp s3 bucket application components inline storage service
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -653,7 +706,7 @@ func (m *ZappS3BucketApplicationComponentsStorageService) Validate(formats strfm
 	return nil
 }
 
-var zappS3BucketApplicationComponentsStorageServiceTypeNamePropEnum []interface{}
+var zappS3BucketApplicationComponentsInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -661,52 +714,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		zappS3BucketApplicationComponentsStorageServiceTypeNamePropEnum = append(zappS3BucketApplicationComponentsStorageServiceTypeNamePropEnum, v)
+		zappS3BucketApplicationComponentsInlineStorageServiceTypeNamePropEnum = append(zappS3BucketApplicationComponentsInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageService
-	// ZappS3BucketApplicationComponentsStorageService
+	// zapp_s3_bucket_application_components_inline_storage_service
+	// ZappS3BucketApplicationComponentsInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageServiceNameExtreme captures enum value "extreme"
-	ZappS3BucketApplicationComponentsStorageServiceNameExtreme string = "extreme"
+	// ZappS3BucketApplicationComponentsInlineStorageServiceNameExtreme captures enum value "extreme"
+	ZappS3BucketApplicationComponentsInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageService
-	// ZappS3BucketApplicationComponentsStorageService
+	// zapp_s3_bucket_application_components_inline_storage_service
+	// ZappS3BucketApplicationComponentsInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageServiceNamePerformance captures enum value "performance"
-	ZappS3BucketApplicationComponentsStorageServiceNamePerformance string = "performance"
+	// ZappS3BucketApplicationComponentsInlineStorageServiceNamePerformance captures enum value "performance"
+	ZappS3BucketApplicationComponentsInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageService
-	// ZappS3BucketApplicationComponentsStorageService
+	// zapp_s3_bucket_application_components_inline_storage_service
+	// ZappS3BucketApplicationComponentsInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// ZappS3BucketApplicationComponentsStorageServiceNameValue captures enum value "value"
-	ZappS3BucketApplicationComponentsStorageServiceNameValue string = "value"
+	// ZappS3BucketApplicationComponentsInlineStorageServiceNameValue captures enum value "value"
+	ZappS3BucketApplicationComponentsInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *ZappS3BucketApplicationComponentsStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, zappS3BucketApplicationComponentsStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappS3BucketApplicationComponentsInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ZappS3BucketApplicationComponentsStorageService) validateName(formats strfmt.Registry) error {
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -719,13 +772,13 @@ func (m *ZappS3BucketApplicationComponentsStorageService) validateName(formats s
 	return nil
 }
 
-// ContextValidate validates this zapp s3 bucket application components storage service based on context it is used
-func (m *ZappS3BucketApplicationComponentsStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp s3 bucket application components inline storage service based on context it is used
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsStorageService) MarshalBinary() ([]byte, error) {
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -733,8 +786,8 @@ func (m *ZappS3BucketApplicationComponentsStorageService) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappS3BucketApplicationComponentsStorageService) UnmarshalBinary(b []byte) error {
-	var res ZappS3BucketApplicationComponentsStorageService
+func (m *ZappS3BucketApplicationComponentsInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketApplicationComponentsInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

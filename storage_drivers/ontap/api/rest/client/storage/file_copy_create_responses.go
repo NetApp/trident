@@ -52,6 +52,11 @@ FileCopyCreateAccepted describes a response with status code 202, with default h
 Accepted
 */
 type FileCopyCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -94,6 +99,13 @@ func (o *FileCopyCreateAccepted) GetPayload() *models.JobLinkResponse {
 
 func (o *FileCopyCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.JobLinkResponse)
 
 	// response payload
@@ -135,6 +147,7 @@ func NewFileCopyCreateDefault(code int) *FileCopyCreateDefault {
 | 7012374 | Source volume and destination volume have different home clusters. |
 | 7012376 | Operation not allowed on a volume that is part of a SnapMirror Synchronous relationship. |
 | 7012377 | Cannot start a file copy operation on the volume because an active volume conversion is in progress. |
+| 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |
 | 13107223 | Operation not supported for FlexGroup volumes or FlexGroup constituents. |
 | 196608143 | Cannot start operation. The volume is undergoing a secure purge operation. |
 */

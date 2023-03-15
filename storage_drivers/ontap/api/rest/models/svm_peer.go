@@ -22,29 +22,32 @@ import (
 type SvmPeer struct {
 
 	// links
-	Links *SvmPeerLinks `json:"_links,omitempty"`
+	Links *SvmPeerInlineLinks `json:"_links,omitempty"`
 
-	// A list of applications for an SVM peer relation.
-	// Example: ["snapmirror","lun_copy"]
-	Applications []SvmPeerApplications `json:"applications,omitempty"`
+	// Use this to suspend, resume or delete the SVM peer relationship even if the remote cluster is not accessible due to, for example, network connectivity issues.
+	Force *bool `json:"force,omitempty"`
 
 	// A peer SVM alias name to avoid a name conflict on the local cluster.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// peer
-	Peer *SvmPeerPeer `json:"peer,omitempty"`
+	Peer *SvmPeerInlinePeer `json:"peer,omitempty"`
 
 	// SVM peering state. To accept a pending SVM peer request, PATCH the state to "peered". To reject a pending SVM peer request, PATCH the state to "rejected". To suspend a peered SVM peer relation, PATCH the state to "suspended". To resume a suspended SVM peer relation, PATCH the state to "peered". The states "initiated", "pending", and "initializing" are system-generated and cannot be used for PATCH.
 	// Example: peered
 	// Enum: [peered rejected suspended initiated pending initializing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *SvmPeerSvm `json:"svm,omitempty"`
+	Svm *SvmPeerInlineSvm `json:"svm,omitempty"`
+
+	// A list of applications for an SVM peer relation.
+	// Example: ["snapmirror","lun_copy"]
+	SvmPeerInlineApplications []*SvmPeerApplications `json:"applications,omitempty"`
 
 	// SVM peer relation UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this svm peer
@@ -52,10 +55,6 @@ func (m *SvmPeer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateApplications(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -68,6 +67,10 @@ func (m *SvmPeer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvmPeerInlineApplications(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,25 +92,6 @@ func (m *SvmPeer) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SvmPeer) validateApplications(formats strfmt.Registry) error {
-	if swag.IsZero(m.Applications) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Applications); i++ {
-
-		if err := m.Applications[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("applications" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -219,7 +203,7 @@ func (m *SvmPeer) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -243,6 +227,30 @@ func (m *SvmPeer) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmPeer) validateSvmPeerInlineApplications(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmPeerInlineApplications) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SvmPeerInlineApplications); i++ {
+		if swag.IsZero(m.SvmPeerInlineApplications[i]) { // not required
+			continue
+		}
+
+		if m.SvmPeerInlineApplications[i] != nil {
+			if err := m.SvmPeerInlineApplications[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("applications" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this svm peer based on the context it is used
 func (m *SvmPeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -251,15 +259,15 @@ func (m *SvmPeer) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateApplications(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidatePeer(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvmPeerInlineApplications(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -282,22 +290,6 @@ func (m *SvmPeer) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SvmPeer) contextValidateApplications(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Applications); i++ {
-
-		if err := m.Applications[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("applications" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -331,9 +323,27 @@ func (m *SvmPeer) contextValidateSvm(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *SvmPeer) contextValidateSvmPeerInlineApplications(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SvmPeerInlineApplications); i++ {
+
+		if m.SvmPeerInlineApplications[i] != nil {
+			if err := m.SvmPeerInlineApplications[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("applications" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *SvmPeer) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -358,17 +368,17 @@ func (m *SvmPeer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerLinks svm peer links
+// SvmPeerInlineLinks svm peer inline links
 //
-// swagger:model SvmPeerLinks
-type SvmPeerLinks struct {
+// swagger:model svm_peer_inline__links
+type SvmPeerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm peer links
-func (m *SvmPeerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline links
+func (m *SvmPeerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -381,7 +391,7 @@ func (m *SvmPeerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmPeerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -398,8 +408,8 @@ func (m *SvmPeerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer links based on the context it is used
-func (m *SvmPeerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline links based on the context it is used
+func (m *SvmPeerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -412,7 +422,7 @@ func (m *SvmPeerLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *SvmPeerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -427,7 +437,7 @@ func (m *SvmPeerLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -435,8 +445,8 @@ func (m *SvmPeerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerLinks) UnmarshalBinary(b []byte) error {
-	var res SvmPeerLinks
+func (m *SvmPeerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -444,20 +454,20 @@ func (m *SvmPeerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeer Details for a peer SVM object.
+// SvmPeerInlinePeer Details for a peer SVM object.
 //
-// swagger:model SvmPeerPeer
-type SvmPeerPeer struct {
+// swagger:model svm_peer_inline_peer
+type SvmPeerInlinePeer struct {
 
 	// cluster
-	Cluster *SvmPeerPeerCluster `json:"cluster,omitempty"`
+	Cluster *SvmPeerInlinePeerInlineCluster `json:"cluster,omitempty"`
 
 	// svm
-	Svm *SvmPeerPeerSvm `json:"svm,omitempty"`
+	Svm *SvmPeerInlinePeerInlineSvm `json:"svm,omitempty"`
 }
 
-// Validate validates this svm peer peer
-func (m *SvmPeerPeer) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline peer
+func (m *SvmPeerInlinePeer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCluster(formats); err != nil {
@@ -474,7 +484,7 @@ func (m *SvmPeerPeer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeer) validateCluster(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeer) validateCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cluster) { // not required
 		return nil
 	}
@@ -491,7 +501,7 @@ func (m *SvmPeerPeer) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeer) validateSvm(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeer) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -508,8 +518,8 @@ func (m *SvmPeerPeer) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer peer based on the context it is used
-func (m *SvmPeerPeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline peer based on the context it is used
+func (m *SvmPeerInlinePeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCluster(ctx, formats); err != nil {
@@ -526,7 +536,7 @@ func (m *SvmPeerPeer) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SvmPeerPeer) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeer) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cluster != nil {
 		if err := m.Cluster.ContextValidate(ctx, formats); err != nil {
@@ -540,7 +550,7 @@ func (m *SvmPeerPeer) contextValidateCluster(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *SvmPeerPeer) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeer) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -555,7 +565,7 @@ func (m *SvmPeerPeer) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPeer) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlinePeer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -563,8 +573,8 @@ func (m *SvmPeerPeer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPeer) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPeer
+func (m *SvmPeerInlinePeer) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlinePeer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -572,25 +582,25 @@ func (m *SvmPeerPeer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeerCluster svm peer peer cluster
+// SvmPeerInlinePeerInlineCluster svm peer inline peer inline cluster
 //
-// swagger:model SvmPeerPeerCluster
-type SvmPeerPeerCluster struct {
+// swagger:model svm_peer_inline_peer_inline_cluster
+type SvmPeerInlinePeerInlineCluster struct {
 
 	// links
-	Links *SvmPeerPeerClusterLinks `json:"_links,omitempty"`
+	Links *SvmPeerInlinePeerInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster2
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: ebe27c49-1adf-4496-8335-ab862aebebf2
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm peer peer cluster
-func (m *SvmPeerPeerCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline peer inline cluster
+func (m *SvmPeerInlinePeerInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -603,7 +613,7 @@ func (m *SvmPeerPeerCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeerCluster) validateLinks(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -620,8 +630,8 @@ func (m *SvmPeerPeerCluster) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer peer cluster based on the context it is used
-func (m *SvmPeerPeerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline peer inline cluster based on the context it is used
+func (m *SvmPeerInlinePeerInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -634,7 +644,7 @@ func (m *SvmPeerPeerCluster) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *SvmPeerPeerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -649,7 +659,7 @@ func (m *SvmPeerPeerCluster) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPeerCluster) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlinePeerInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -657,8 +667,8 @@ func (m *SvmPeerPeerCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPeerCluster) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPeerCluster
+func (m *SvmPeerInlinePeerInlineCluster) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlinePeerInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -666,17 +676,17 @@ func (m *SvmPeerPeerCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeerClusterLinks svm peer peer cluster links
+// SvmPeerInlinePeerInlineClusterInlineLinks svm peer inline peer inline cluster inline links
 //
-// swagger:model SvmPeerPeerClusterLinks
-type SvmPeerPeerClusterLinks struct {
+// swagger:model svm_peer_inline_peer_inline_cluster_inline__links
+type SvmPeerInlinePeerInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm peer peer cluster links
-func (m *SvmPeerPeerClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline peer inline cluster inline links
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -689,7 +699,7 @@ func (m *SvmPeerPeerClusterLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeerClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -706,8 +716,8 @@ func (m *SvmPeerPeerClusterLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer peer cluster links based on the context it is used
-func (m *SvmPeerPeerClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline peer inline cluster inline links based on the context it is used
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -720,7 +730,7 @@ func (m *SvmPeerPeerClusterLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SvmPeerPeerClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -735,7 +745,7 @@ func (m *SvmPeerPeerClusterLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPeerClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -743,8 +753,8 @@ func (m *SvmPeerPeerClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPeerClusterLinks) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPeerClusterLinks
+func (m *SvmPeerInlinePeerInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlinePeerInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -752,27 +762,27 @@ func (m *SvmPeerPeerClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeerSvm svm peer peer svm
+// SvmPeerInlinePeerInlineSvm svm peer inline peer inline svm
 //
-// swagger:model SvmPeerPeerSvm
-type SvmPeerPeerSvm struct {
+// swagger:model svm_peer_inline_peer_inline_svm
+type SvmPeerInlinePeerInlineSvm struct {
 
 	// links
-	Links *SvmPeerPeerSvmLinks `json:"_links,omitempty"`
+	Links *SvmPeerInlinePeerInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm peer peer svm
-func (m *SvmPeerPeerSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline peer inline svm
+func (m *SvmPeerInlinePeerInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -785,7 +795,7 @@ func (m *SvmPeerPeerSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeerSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -802,8 +812,8 @@ func (m *SvmPeerPeerSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer peer svm based on the context it is used
-func (m *SvmPeerPeerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline peer inline svm based on the context it is used
+func (m *SvmPeerInlinePeerInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -816,7 +826,7 @@ func (m *SvmPeerPeerSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SvmPeerPeerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -831,7 +841,7 @@ func (m *SvmPeerPeerSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPeerSvm) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlinePeerInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -839,8 +849,8 @@ func (m *SvmPeerPeerSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPeerSvm) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPeerSvm
+func (m *SvmPeerInlinePeerInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlinePeerInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -848,17 +858,17 @@ func (m *SvmPeerPeerSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeerSvmLinks svm peer peer svm links
+// SvmPeerInlinePeerInlineSvmInlineLinks svm peer inline peer inline svm inline links
 //
-// swagger:model SvmPeerPeerSvmLinks
-type SvmPeerPeerSvmLinks struct {
+// swagger:model svm_peer_inline_peer_inline_svm_inline__links
+type SvmPeerInlinePeerInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm peer peer svm links
-func (m *SvmPeerPeerSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline peer inline svm inline links
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -871,7 +881,7 @@ func (m *SvmPeerPeerSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerPeerSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -888,8 +898,8 @@ func (m *SvmPeerPeerSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer peer svm links based on the context it is used
-func (m *SvmPeerPeerSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline peer inline svm inline links based on the context it is used
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -902,7 +912,7 @@ func (m *SvmPeerPeerSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SvmPeerPeerSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -917,7 +927,7 @@ func (m *SvmPeerPeerSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPeerSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -925,8 +935,8 @@ func (m *SvmPeerPeerSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPeerSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPeerSvmLinks
+func (m *SvmPeerInlinePeerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlinePeerInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -934,27 +944,27 @@ func (m *SvmPeerPeerSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerSvm Local SVM details
+// SvmPeerInlineSvm Local SVM details
 //
-// swagger:model SvmPeerSvm
-type SvmPeerSvm struct {
+// swagger:model svm_peer_inline_svm
+type SvmPeerInlineSvm struct {
 
 	// links
-	Links *SvmPeerSvmLinks `json:"_links,omitempty"`
+	Links *SvmPeerInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm peer svm
-func (m *SvmPeerSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline svm
+func (m *SvmPeerInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -967,7 +977,7 @@ func (m *SvmPeerSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SvmPeerInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -984,8 +994,8 @@ func (m *SvmPeerSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer svm based on the context it is used
-func (m *SvmPeerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline svm based on the context it is used
+func (m *SvmPeerInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -998,7 +1008,7 @@ func (m *SvmPeerSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *SvmPeerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1013,7 +1023,7 @@ func (m *SvmPeerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerSvm) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1021,8 +1031,8 @@ func (m *SvmPeerSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerSvm) UnmarshalBinary(b []byte) error {
-	var res SvmPeerSvm
+func (m *SvmPeerInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1030,17 +1040,17 @@ func (m *SvmPeerSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerSvmLinks svm peer svm links
+// SvmPeerInlineSvmInlineLinks svm peer inline svm inline links
 //
-// swagger:model SvmPeerSvmLinks
-type SvmPeerSvmLinks struct {
+// swagger:model svm_peer_inline_svm_inline__links
+type SvmPeerInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm peer svm links
-func (m *SvmPeerSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer inline svm inline links
+func (m *SvmPeerInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1053,7 +1063,7 @@ func (m *SvmPeerSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmPeerSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmPeerInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1070,8 +1080,8 @@ func (m *SvmPeerSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm peer svm links based on the context it is used
-func (m *SvmPeerSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer inline svm inline links based on the context it is used
+func (m *SvmPeerInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1084,7 +1094,7 @@ func (m *SvmPeerSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *SvmPeerSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1099,7 +1109,7 @@ func (m *SvmPeerSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1107,8 +1117,8 @@ func (m *SvmPeerSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SvmPeerSvmLinks
+func (m *SvmPeerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmPeerInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

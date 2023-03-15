@@ -24,11 +24,12 @@ type ConsistencyGroupSnapshotResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// consistency group snapshot response inline records
+	ConsistencyGroupSnapshotResponseInlineRecords []*ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
-	// records
-	Records []*ConsistencyGroupSnapshotResponseRecordsItems0 `json:"records,omitempty"`
+	// Number of records.
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this consistency group snapshot response
@@ -39,7 +40,7 @@ func (m *ConsistencyGroupSnapshotResponse) Validate(formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateConsistencyGroupSnapshotResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *ConsistencyGroupSnapshotResponse) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ConsistencyGroupSnapshotResponse) validateConsistencyGroupSnapshotResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupSnapshotResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ConsistencyGroupSnapshotResponseInlineRecords); i++ {
+		if swag.IsZero(m.ConsistencyGroupSnapshotResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ConsistencyGroupSnapshotResponseInlineRecords[i] != nil {
+			if err := m.ConsistencyGroupSnapshotResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *ConsistencyGroupSnapshotResponse) ContextValidate(ctx context.Context, 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateConsistencyGroupSnapshotResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *ConsistencyGroupSnapshotResponse) contextValidateLinks(ctx context.Cont
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponse) contextValidateConsistencyGroupSnapshotResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ConsistencyGroupSnapshotResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ConsistencyGroupSnapshotResponseInlineRecords[i] != nil {
+			if err := m.ConsistencyGroupSnapshotResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *ConsistencyGroupSnapshotResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupSnapshotResponseRecordsItems0 consistency group snapshot response records items0
+// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem consistency group snapshot response inline records inline array item
 //
-// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0
-type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
+// swagger:model consistency_group_snapshot_response_inline_records_inline_array_item
+type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
@@ -169,16 +170,16 @@ type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
 	// Comment for the Snapshot copy.
 	//
 	// Example: My Snapshot copy comment
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// consistency group
-	ConsistencyGroup *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup `json:"consistency_group,omitempty"`
+	ConsistencyGroup *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup `json:"consistency_group,omitempty"`
 
 	// Consistency type. This is for categorization purposes only. A Snapshot copy should not be set to 'application consistent' unless the host application is quiesced for the Snapshot copy. Valid in POST.
 	//
 	// Example: crash
 	// Enum: [crash application]
-	ConsistencyType string `json:"consistency_type,omitempty"`
+	ConsistencyType *string `json:"consistency_type,omitempty"`
 
 	// Time the snapshot copy was created
 	//
@@ -189,20 +190,25 @@ type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
 	// Indicates whether the Snapshot copy taken is partial or not.
 	//
 	// Example: false
-	IsPartial bool `json:"is_partial,omitempty"`
+	IsPartial *bool `json:"is_partial,omitempty"`
 
 	// List of volumes which are not in the Snapshot copy.
 	//
-	MissingVolumes []*VolumeReference `json:"missing_volumes,omitempty"`
+	MissingVolumes []*VolumeReference `json:"missing_volumes"`
 
 	// Name of the Snapshot copy.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Snapmirror Label for the Snapshot copy.
 	//
 	// Example: sm_label
-	SnapmirrorLabel string `json:"snapmirror_label,omitempty"`
+	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
+
+	// List of volume and snapshot identifiers for each volume in the Snapshot copy.
+	//
+	// Read Only: true
+	SnapshotVolumes []*ConsistencyGroupVolumeSnapshot `json:"snapshot_volumes"`
 
 	// The SVM in which the consistency group is located.
 	//
@@ -212,11 +218,11 @@ type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
 	// by ONTAP when the Snapshot copy is created.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group snapshot response records items0
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group snapshot response inline records inline array item
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -239,6 +245,10 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) Validate(formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.validateSnapshotVolumes(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
@@ -249,7 +259,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) Validate(formats strfmt.
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -266,7 +276,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateLinks(formats st
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateConsistencyGroup(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateConsistencyGroup(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConsistencyGroup) { // not required
 		return nil
 	}
@@ -283,7 +293,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateConsistencyGroup
 	return nil
 }
 
-var consistencyGroupSnapshotResponseRecordsItems0TypeConsistencyTypePropEnum []interface{}
+var consistencyGroupSnapshotResponseInlineRecordsInlineArrayItemTypeConsistencyTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -291,55 +301,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupSnapshotResponseRecordsItems0TypeConsistencyTypePropEnum = append(consistencyGroupSnapshotResponseRecordsItems0TypeConsistencyTypePropEnum, v)
+		consistencyGroupSnapshotResponseInlineRecordsInlineArrayItemTypeConsistencyTypePropEnum = append(consistencyGroupSnapshotResponseInlineRecordsInlineArrayItemTypeConsistencyTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupSnapshotResponseRecordsItems0
-	// ConsistencyGroupSnapshotResponseRecordsItems0
+	// consistency_group_snapshot_response_inline_records_inline_array_item
+	// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem
 	// consistency_type
 	// ConsistencyType
 	// crash
 	// END DEBUGGING
-	// ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyTypeCrash captures enum value "crash"
-	ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyTypeCrash string = "crash"
+	// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemConsistencyTypeCrash captures enum value "crash"
+	ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemConsistencyTypeCrash string = "crash"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupSnapshotResponseRecordsItems0
-	// ConsistencyGroupSnapshotResponseRecordsItems0
+	// consistency_group_snapshot_response_inline_records_inline_array_item
+	// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem
 	// consistency_type
 	// ConsistencyType
 	// application
 	// END DEBUGGING
-	// ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyTypeApplication captures enum value "application"
-	ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyTypeApplication string = "application"
+	// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemConsistencyTypeApplication captures enum value "application"
+	ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemConsistencyTypeApplication string = "application"
 )
 
 // prop value enum
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateConsistencyTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupSnapshotResponseRecordsItems0TypeConsistencyTypePropEnum, true); err != nil {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateConsistencyTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupSnapshotResponseInlineRecordsInlineArrayItemTypeConsistencyTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateConsistencyType(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateConsistencyType(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConsistencyType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConsistencyTypeEnum("consistency_type", "body", m.ConsistencyType); err != nil {
+	if err := m.validateConsistencyTypeEnum("consistency_type", "body", *m.ConsistencyType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateCreateTime(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateCreateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.CreateTime) { // not required
 		return nil
 	}
@@ -351,7 +361,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateCreateTime(forma
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateMissingVolumes(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateMissingVolumes(formats strfmt.Registry) error {
 	if swag.IsZero(m.MissingVolumes) { // not required
 		return nil
 	}
@@ -375,7 +385,31 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateMissingVolumes(f
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateSvm(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateSnapshotVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotVolumes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnapshotVolumes); i++ {
+		if swag.IsZero(m.SnapshotVolumes[i]) { // not required
+			continue
+		}
+
+		if m.SnapshotVolumes[i] != nil {
+			if err := m.SnapshotVolumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("snapshot_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -392,8 +426,8 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) validateSvm(formats strf
 	return nil
 }
 
-// ContextValidate validate this consistency group snapshot response records items0 based on the context it is used
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group snapshot response inline records inline array item based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -408,6 +442,10 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) ContextValidate(ctx cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSnapshotVolumes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -418,7 +456,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -432,7 +470,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateLinks(ctx
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateConsistencyGroup(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateConsistencyGroup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ConsistencyGroup != nil {
 		if err := m.ConsistencyGroup.ContextValidate(ctx, formats); err != nil {
@@ -446,7 +484,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateConsisten
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateMissingVolumes(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateMissingVolumes(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.MissingVolumes); i++ {
 
@@ -464,7 +502,29 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateMissingVo
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateSnapshotVolumes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snapshot_volumes", "body", []*ConsistencyGroupVolumeSnapshot(m.SnapshotVolumes)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SnapshotVolumes); i++ {
+
+		if m.SnapshotVolumes[i] != nil {
+			if err := m.SnapshotVolumes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("snapshot_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -479,7 +539,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateSvm(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -487,8 +547,8 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupSnapshotResponseRecordsItems0
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -496,25 +556,25 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) UnmarshalBinary(b []byte
 	return nil
 }
 
-// ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup The consistency group of the Snapshot copy.
+// ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup The consistency group of the Snapshot copy.
 //
-// swagger:model ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup
-type ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup struct {
+// swagger:model consistency_group_snapshot_response_inline_records_inline_array_item_inline_consistency_group
+type ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// The name of the consistency group.
 	// Example: my_consistency_group
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the consistency group.
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group snapshot response records items0 consistency group
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group snapshot response inline records inline array item inline consistency group
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -527,7 +587,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) Validate
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -544,8 +604,8 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) validate
 	return nil
 }
 
-// ContextValidate validate this consistency group snapshot response records items0 consistency group based on the context it is used
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group snapshot response inline records inline array item inline consistency group based on the context it is used
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -558,7 +618,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) ContextV
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -573,7 +633,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) contextV
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -581,8 +641,8 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) MarshalB
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup
+func (m *ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupSnapshotResponseInlineRecordsInlineArrayItemInlineConsistencyGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

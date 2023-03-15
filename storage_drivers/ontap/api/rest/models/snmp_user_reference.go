@@ -19,11 +19,11 @@ import (
 type SnmpUserReference struct {
 
 	// links
-	Links *SnmpUserReferenceLinks `json:"_links,omitempty"`
+	Links *SnmpUserReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Optional SNMPv1/SNMPv2c or SNMPv3 user name. For an SNMPv3 traphost, this object refers to an SNMPv3 or User-based Security Model (USM) user. For an SNMPv1 or SNMPv2c traphost, this object refers to an SNMP community. For an SNMPv3 traphost, this object is mandatory and refers to an SNMPv3 or User-based Security Model (USM) user. For an SNMPv1 or SNMPv2c traphost, ONTAP automatically uses "public", if the same is configured, or any other configured community as user. So, for an SNMPv1 or SNMPv2c traphost, this property should not be provided in the "POST" method. However, the configured community for the SNMPv1/SNMPv2c traphost is returned by the "GET" method.
 	// Example: snmpv3user3
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this snmp user reference
@@ -103,17 +103,17 @@ func (m *SnmpUserReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnmpUserReferenceLinks snmp user reference links
+// SnmpUserReferenceInlineLinks snmp user reference inline links
 //
-// swagger:model SnmpUserReferenceLinks
-type SnmpUserReferenceLinks struct {
+// swagger:model snmp_user_reference_inline__links
+type SnmpUserReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snmp user reference links
-func (m *SnmpUserReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snmp user reference inline links
+func (m *SnmpUserReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *SnmpUserReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnmpUserReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnmpUserReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *SnmpUserReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snmp user reference links based on the context it is used
-func (m *SnmpUserReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snmp user reference inline links based on the context it is used
+func (m *SnmpUserReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *SnmpUserReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SnmpUserReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnmpUserReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *SnmpUserReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnmpUserReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SnmpUserReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *SnmpUserReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnmpUserReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SnmpUserReferenceLinks
+func (m *SnmpUserReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnmpUserReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

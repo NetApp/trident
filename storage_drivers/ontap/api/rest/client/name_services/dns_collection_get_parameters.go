@@ -66,61 +66,61 @@ type DNSCollectionGetParams struct {
 
 	   Filter by attempts
 	*/
-	AttemptsQueryParameter *int64
+	Attempts *int64
 
 	/* Domains.
 
 	   Filter by domains
 	*/
-	DomainsQueryParameter *string
+	Domains *string
 
 	/* DynamicDNSEnabled.
 
 	   Filter by dynamic_dns.enabled
 	*/
-	DynamicDNSEnabledQueryParameter *bool
+	DynamicDNSEnabled *bool
 
 	/* DynamicDNSFqdn.
 
 	   Filter by dynamic_dns.fqdn
 	*/
-	DynamicDNSFqdnQueryParameter *string
+	DynamicDNSFqdn *string
 
 	/* DynamicDNSTimeToLive.
 
 	   Filter by dynamic_dns.time_to_live
 	*/
-	DynamicDNSTimeToLiveQueryParameter *string
+	DynamicDNSTimeToLive *string
 
 	/* DynamicDNSUseSecure.
 
 	   Filter by dynamic_dns.use_secure
 	*/
-	DynamicDNSUseSecureQueryParameter *bool
+	DynamicDNSUseSecure *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PacketQueryMatch.
 
 	   Filter by packet_query_match
 	*/
-	PacketQueryMatchQueryParameter *bool
+	PacketQueryMatch *bool
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type DNSCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,73 +136,73 @@ type DNSCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* Servers.
 
 	   Filter by servers
 	*/
-	ServersQueryParameter *string
+	Servers *string
 
 	/* SourceAddressMatch.
 
 	   Filter by source_address_match
 	*/
-	SourceAddressMatchQueryParameter *bool
+	SourceAddressMatch *bool
 
 	/* StatusCode.
 
 	   Filter by status.code
 	*/
-	StatusCodeQueryParameter *int64
+	StatusCode *int64
 
 	/* StatusMessage.
 
 	   Filter by status.message
 	*/
-	StatusMessageQueryParameter *string
+	StatusMessage *string
 
 	/* StatusNameServer.
 
 	   Filter by status.name_server
 	*/
-	StatusNameServerQueryParameter *string
+	StatusNameServer *string
 
 	/* StatusState.
 
 	   Filter by status.state
 	*/
-	StatusStateQueryParameter *string
+	StatusState *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Timeout.
 
 	   Filter by timeout
 	*/
-	TimeoutQueryParameter *int64
+	Timeout *int64
 
 	/* TldQueryEnabled.
 
 	   Filter by tld_query_enabled
 	*/
-	TldQueryEnabledQueryParameter *bool
+	TldQueryEnabled *bool
 
 	requestTimeout time.Duration
 	Context        context.Context
@@ -222,14 +222,14 @@ func (o *DNSCollectionGetParams) WithDefaults() *DNSCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *DNSCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := DNSCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.requestTimeout = o.requestTimeout
@@ -271,257 +271,257 @@ func (o *DNSCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAttemptsQueryParameter adds the attempts to the dns collection get params
-func (o *DNSCollectionGetParams) WithAttemptsQueryParameter(attempts *int64) *DNSCollectionGetParams {
-	o.SetAttemptsQueryParameter(attempts)
+// WithAttempts adds the attempts to the dns collection get params
+func (o *DNSCollectionGetParams) WithAttempts(attempts *int64) *DNSCollectionGetParams {
+	o.SetAttempts(attempts)
 	return o
 }
 
-// SetAttemptsQueryParameter adds the attempts to the dns collection get params
-func (o *DNSCollectionGetParams) SetAttemptsQueryParameter(attempts *int64) {
-	o.AttemptsQueryParameter = attempts
+// SetAttempts adds the attempts to the dns collection get params
+func (o *DNSCollectionGetParams) SetAttempts(attempts *int64) {
+	o.Attempts = attempts
 }
 
-// WithDomainsQueryParameter adds the domains to the dns collection get params
-func (o *DNSCollectionGetParams) WithDomainsQueryParameter(domains *string) *DNSCollectionGetParams {
-	o.SetDomainsQueryParameter(domains)
+// WithDomains adds the domains to the dns collection get params
+func (o *DNSCollectionGetParams) WithDomains(domains *string) *DNSCollectionGetParams {
+	o.SetDomains(domains)
 	return o
 }
 
-// SetDomainsQueryParameter adds the domains to the dns collection get params
-func (o *DNSCollectionGetParams) SetDomainsQueryParameter(domains *string) {
-	o.DomainsQueryParameter = domains
+// SetDomains adds the domains to the dns collection get params
+func (o *DNSCollectionGetParams) SetDomains(domains *string) {
+	o.Domains = domains
 }
 
-// WithDynamicDNSEnabledQueryParameter adds the dynamicDNSEnabled to the dns collection get params
-func (o *DNSCollectionGetParams) WithDynamicDNSEnabledQueryParameter(dynamicDNSEnabled *bool) *DNSCollectionGetParams {
-	o.SetDynamicDNSEnabledQueryParameter(dynamicDNSEnabled)
+// WithDynamicDNSEnabled adds the dynamicDNSEnabled to the dns collection get params
+func (o *DNSCollectionGetParams) WithDynamicDNSEnabled(dynamicDNSEnabled *bool) *DNSCollectionGetParams {
+	o.SetDynamicDNSEnabled(dynamicDNSEnabled)
 	return o
 }
 
-// SetDynamicDNSEnabledQueryParameter adds the dynamicDnsEnabled to the dns collection get params
-func (o *DNSCollectionGetParams) SetDynamicDNSEnabledQueryParameter(dynamicDNSEnabled *bool) {
-	o.DynamicDNSEnabledQueryParameter = dynamicDNSEnabled
+// SetDynamicDNSEnabled adds the dynamicDnsEnabled to the dns collection get params
+func (o *DNSCollectionGetParams) SetDynamicDNSEnabled(dynamicDNSEnabled *bool) {
+	o.DynamicDNSEnabled = dynamicDNSEnabled
 }
 
-// WithDynamicDNSFqdnQueryParameter adds the dynamicDNSFqdn to the dns collection get params
-func (o *DNSCollectionGetParams) WithDynamicDNSFqdnQueryParameter(dynamicDNSFqdn *string) *DNSCollectionGetParams {
-	o.SetDynamicDNSFqdnQueryParameter(dynamicDNSFqdn)
+// WithDynamicDNSFqdn adds the dynamicDNSFqdn to the dns collection get params
+func (o *DNSCollectionGetParams) WithDynamicDNSFqdn(dynamicDNSFqdn *string) *DNSCollectionGetParams {
+	o.SetDynamicDNSFqdn(dynamicDNSFqdn)
 	return o
 }
 
-// SetDynamicDNSFqdnQueryParameter adds the dynamicDnsFqdn to the dns collection get params
-func (o *DNSCollectionGetParams) SetDynamicDNSFqdnQueryParameter(dynamicDNSFqdn *string) {
-	o.DynamicDNSFqdnQueryParameter = dynamicDNSFqdn
+// SetDynamicDNSFqdn adds the dynamicDnsFqdn to the dns collection get params
+func (o *DNSCollectionGetParams) SetDynamicDNSFqdn(dynamicDNSFqdn *string) {
+	o.DynamicDNSFqdn = dynamicDNSFqdn
 }
 
-// WithDynamicDNSTimeToLiveQueryParameter adds the dynamicDNSTimeToLive to the dns collection get params
-func (o *DNSCollectionGetParams) WithDynamicDNSTimeToLiveQueryParameter(dynamicDNSTimeToLive *string) *DNSCollectionGetParams {
-	o.SetDynamicDNSTimeToLiveQueryParameter(dynamicDNSTimeToLive)
+// WithDynamicDNSTimeToLive adds the dynamicDNSTimeToLive to the dns collection get params
+func (o *DNSCollectionGetParams) WithDynamicDNSTimeToLive(dynamicDNSTimeToLive *string) *DNSCollectionGetParams {
+	o.SetDynamicDNSTimeToLive(dynamicDNSTimeToLive)
 	return o
 }
 
-// SetDynamicDNSTimeToLiveQueryParameter adds the dynamicDnsTimeToLive to the dns collection get params
-func (o *DNSCollectionGetParams) SetDynamicDNSTimeToLiveQueryParameter(dynamicDNSTimeToLive *string) {
-	o.DynamicDNSTimeToLiveQueryParameter = dynamicDNSTimeToLive
+// SetDynamicDNSTimeToLive adds the dynamicDnsTimeToLive to the dns collection get params
+func (o *DNSCollectionGetParams) SetDynamicDNSTimeToLive(dynamicDNSTimeToLive *string) {
+	o.DynamicDNSTimeToLive = dynamicDNSTimeToLive
 }
 
-// WithDynamicDNSUseSecureQueryParameter adds the dynamicDNSUseSecure to the dns collection get params
-func (o *DNSCollectionGetParams) WithDynamicDNSUseSecureQueryParameter(dynamicDNSUseSecure *bool) *DNSCollectionGetParams {
-	o.SetDynamicDNSUseSecureQueryParameter(dynamicDNSUseSecure)
+// WithDynamicDNSUseSecure adds the dynamicDNSUseSecure to the dns collection get params
+func (o *DNSCollectionGetParams) WithDynamicDNSUseSecure(dynamicDNSUseSecure *bool) *DNSCollectionGetParams {
+	o.SetDynamicDNSUseSecure(dynamicDNSUseSecure)
 	return o
 }
 
-// SetDynamicDNSUseSecureQueryParameter adds the dynamicDnsUseSecure to the dns collection get params
-func (o *DNSCollectionGetParams) SetDynamicDNSUseSecureQueryParameter(dynamicDNSUseSecure *bool) {
-	o.DynamicDNSUseSecureQueryParameter = dynamicDNSUseSecure
+// SetDynamicDNSUseSecure adds the dynamicDnsUseSecure to the dns collection get params
+func (o *DNSCollectionGetParams) SetDynamicDNSUseSecure(dynamicDNSUseSecure *bool) {
+	o.DynamicDNSUseSecure = dynamicDNSUseSecure
 }
 
-// WithFieldsQueryParameter adds the fields to the dns collection get params
-func (o *DNSCollectionGetParams) WithFieldsQueryParameter(fields []string) *DNSCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the dns collection get params
+func (o *DNSCollectionGetParams) WithFields(fields []string) *DNSCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the dns collection get params
-func (o *DNSCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the dns collection get params
+func (o *DNSCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the dns collection get params
-func (o *DNSCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *DNSCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the dns collection get params
+func (o *DNSCollectionGetParams) WithMaxRecords(maxRecords *int64) *DNSCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the dns collection get params
-func (o *DNSCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the dns collection get params
+func (o *DNSCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the dns collection get params
-func (o *DNSCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *DNSCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the dns collection get params
+func (o *DNSCollectionGetParams) WithOrderBy(orderBy []string) *DNSCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the dns collection get params
-func (o *DNSCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the dns collection get params
+func (o *DNSCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPacketQueryMatchQueryParameter adds the packetQueryMatch to the dns collection get params
-func (o *DNSCollectionGetParams) WithPacketQueryMatchQueryParameter(packetQueryMatch *bool) *DNSCollectionGetParams {
-	o.SetPacketQueryMatchQueryParameter(packetQueryMatch)
+// WithPacketQueryMatch adds the packetQueryMatch to the dns collection get params
+func (o *DNSCollectionGetParams) WithPacketQueryMatch(packetQueryMatch *bool) *DNSCollectionGetParams {
+	o.SetPacketQueryMatch(packetQueryMatch)
 	return o
 }
 
-// SetPacketQueryMatchQueryParameter adds the packetQueryMatch to the dns collection get params
-func (o *DNSCollectionGetParams) SetPacketQueryMatchQueryParameter(packetQueryMatch *bool) {
-	o.PacketQueryMatchQueryParameter = packetQueryMatch
+// SetPacketQueryMatch adds the packetQueryMatch to the dns collection get params
+func (o *DNSCollectionGetParams) SetPacketQueryMatch(packetQueryMatch *bool) {
+	o.PacketQueryMatch = packetQueryMatch
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the dns collection get params
-func (o *DNSCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *DNSCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the dns collection get params
+func (o *DNSCollectionGetParams) WithReturnRecords(returnRecords *bool) *DNSCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the dns collection get params
-func (o *DNSCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the dns collection get params
+func (o *DNSCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the dns collection get params
-func (o *DNSCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *DNSCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the dns collection get params
+func (o *DNSCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *DNSCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the dns collection get params
-func (o *DNSCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the dns collection get params
+func (o *DNSCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the dns collection get params
-func (o *DNSCollectionGetParams) WithScopeQueryParameter(scope *string) *DNSCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the dns collection get params
+func (o *DNSCollectionGetParams) WithScope(scope *string) *DNSCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the dns collection get params
-func (o *DNSCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the dns collection get params
+func (o *DNSCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithServersQueryParameter adds the servers to the dns collection get params
-func (o *DNSCollectionGetParams) WithServersQueryParameter(servers *string) *DNSCollectionGetParams {
-	o.SetServersQueryParameter(servers)
+// WithServers adds the servers to the dns collection get params
+func (o *DNSCollectionGetParams) WithServers(servers *string) *DNSCollectionGetParams {
+	o.SetServers(servers)
 	return o
 }
 
-// SetServersQueryParameter adds the servers to the dns collection get params
-func (o *DNSCollectionGetParams) SetServersQueryParameter(servers *string) {
-	o.ServersQueryParameter = servers
+// SetServers adds the servers to the dns collection get params
+func (o *DNSCollectionGetParams) SetServers(servers *string) {
+	o.Servers = servers
 }
 
-// WithSourceAddressMatchQueryParameter adds the sourceAddressMatch to the dns collection get params
-func (o *DNSCollectionGetParams) WithSourceAddressMatchQueryParameter(sourceAddressMatch *bool) *DNSCollectionGetParams {
-	o.SetSourceAddressMatchQueryParameter(sourceAddressMatch)
+// WithSourceAddressMatch adds the sourceAddressMatch to the dns collection get params
+func (o *DNSCollectionGetParams) WithSourceAddressMatch(sourceAddressMatch *bool) *DNSCollectionGetParams {
+	o.SetSourceAddressMatch(sourceAddressMatch)
 	return o
 }
 
-// SetSourceAddressMatchQueryParameter adds the sourceAddressMatch to the dns collection get params
-func (o *DNSCollectionGetParams) SetSourceAddressMatchQueryParameter(sourceAddressMatch *bool) {
-	o.SourceAddressMatchQueryParameter = sourceAddressMatch
+// SetSourceAddressMatch adds the sourceAddressMatch to the dns collection get params
+func (o *DNSCollectionGetParams) SetSourceAddressMatch(sourceAddressMatch *bool) {
+	o.SourceAddressMatch = sourceAddressMatch
 }
 
-// WithStatusCodeQueryParameter adds the statusCode to the dns collection get params
-func (o *DNSCollectionGetParams) WithStatusCodeQueryParameter(statusCode *int64) *DNSCollectionGetParams {
-	o.SetStatusCodeQueryParameter(statusCode)
+// WithStatusCode adds the statusCode to the dns collection get params
+func (o *DNSCollectionGetParams) WithStatusCode(statusCode *int64) *DNSCollectionGetParams {
+	o.SetStatusCode(statusCode)
 	return o
 }
 
-// SetStatusCodeQueryParameter adds the statusCode to the dns collection get params
-func (o *DNSCollectionGetParams) SetStatusCodeQueryParameter(statusCode *int64) {
-	o.StatusCodeQueryParameter = statusCode
+// SetStatusCode adds the statusCode to the dns collection get params
+func (o *DNSCollectionGetParams) SetStatusCode(statusCode *int64) {
+	o.StatusCode = statusCode
 }
 
-// WithStatusMessageQueryParameter adds the statusMessage to the dns collection get params
-func (o *DNSCollectionGetParams) WithStatusMessageQueryParameter(statusMessage *string) *DNSCollectionGetParams {
-	o.SetStatusMessageQueryParameter(statusMessage)
+// WithStatusMessage adds the statusMessage to the dns collection get params
+func (o *DNSCollectionGetParams) WithStatusMessage(statusMessage *string) *DNSCollectionGetParams {
+	o.SetStatusMessage(statusMessage)
 	return o
 }
 
-// SetStatusMessageQueryParameter adds the statusMessage to the dns collection get params
-func (o *DNSCollectionGetParams) SetStatusMessageQueryParameter(statusMessage *string) {
-	o.StatusMessageQueryParameter = statusMessage
+// SetStatusMessage adds the statusMessage to the dns collection get params
+func (o *DNSCollectionGetParams) SetStatusMessage(statusMessage *string) {
+	o.StatusMessage = statusMessage
 }
 
-// WithStatusNameServerQueryParameter adds the statusNameServer to the dns collection get params
-func (o *DNSCollectionGetParams) WithStatusNameServerQueryParameter(statusNameServer *string) *DNSCollectionGetParams {
-	o.SetStatusNameServerQueryParameter(statusNameServer)
+// WithStatusNameServer adds the statusNameServer to the dns collection get params
+func (o *DNSCollectionGetParams) WithStatusNameServer(statusNameServer *string) *DNSCollectionGetParams {
+	o.SetStatusNameServer(statusNameServer)
 	return o
 }
 
-// SetStatusNameServerQueryParameter adds the statusNameServer to the dns collection get params
-func (o *DNSCollectionGetParams) SetStatusNameServerQueryParameter(statusNameServer *string) {
-	o.StatusNameServerQueryParameter = statusNameServer
+// SetStatusNameServer adds the statusNameServer to the dns collection get params
+func (o *DNSCollectionGetParams) SetStatusNameServer(statusNameServer *string) {
+	o.StatusNameServer = statusNameServer
 }
 
-// WithStatusStateQueryParameter adds the statusState to the dns collection get params
-func (o *DNSCollectionGetParams) WithStatusStateQueryParameter(statusState *string) *DNSCollectionGetParams {
-	o.SetStatusStateQueryParameter(statusState)
+// WithStatusState adds the statusState to the dns collection get params
+func (o *DNSCollectionGetParams) WithStatusState(statusState *string) *DNSCollectionGetParams {
+	o.SetStatusState(statusState)
 	return o
 }
 
-// SetStatusStateQueryParameter adds the statusState to the dns collection get params
-func (o *DNSCollectionGetParams) SetStatusStateQueryParameter(statusState *string) {
-	o.StatusStateQueryParameter = statusState
+// SetStatusState adds the statusState to the dns collection get params
+func (o *DNSCollectionGetParams) SetStatusState(statusState *string) {
+	o.StatusState = statusState
 }
 
-// WithSVMNameQueryParameter adds the svmName to the dns collection get params
-func (o *DNSCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *DNSCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the dns collection get params
+func (o *DNSCollectionGetParams) WithSvmName(svmName *string) *DNSCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the dns collection get params
-func (o *DNSCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the dns collection get params
+func (o *DNSCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the dns collection get params
-func (o *DNSCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *DNSCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the dns collection get params
+func (o *DNSCollectionGetParams) WithSvmUUID(svmUUID *string) *DNSCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the dns collection get params
-func (o *DNSCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the dns collection get params
+func (o *DNSCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTimeoutQueryParameter adds the timeout to the dns collection get params
-func (o *DNSCollectionGetParams) WithTimeoutQueryParameter(timeout *int64) *DNSCollectionGetParams {
-	o.SetTimeoutQueryParameter(timeout)
+// WithTimeout adds the timeout to the dns collection get params
+func (o *DNSCollectionGetParams) WithTimeout(timeout *int64) *DNSCollectionGetParams {
+	o.SetTimeout(timeout)
 	return o
 }
 
-// SetTimeoutQueryParameter adds the timeout to the dns collection get params
-func (o *DNSCollectionGetParams) SetTimeoutQueryParameter(timeout *int64) {
-	o.TimeoutQueryParameter = timeout
+// SetTimeout adds the timeout to the dns collection get params
+func (o *DNSCollectionGetParams) SetTimeout(timeout *int64) {
+	o.Timeout = timeout
 }
 
-// WithTldQueryEnabledQueryParameter adds the tldQueryEnabled to the dns collection get params
-func (o *DNSCollectionGetParams) WithTldQueryEnabledQueryParameter(tldQueryEnabled *bool) *DNSCollectionGetParams {
-	o.SetTldQueryEnabledQueryParameter(tldQueryEnabled)
+// WithTldQueryEnabled adds the tldQueryEnabled to the dns collection get params
+func (o *DNSCollectionGetParams) WithTldQueryEnabled(tldQueryEnabled *bool) *DNSCollectionGetParams {
+	o.SetTldQueryEnabled(tldQueryEnabled)
 	return o
 }
 
-// SetTldQueryEnabledQueryParameter adds the tldQueryEnabled to the dns collection get params
-func (o *DNSCollectionGetParams) SetTldQueryEnabledQueryParameter(tldQueryEnabled *bool) {
-	o.TldQueryEnabledQueryParameter = tldQueryEnabled
+// SetTldQueryEnabled adds the tldQueryEnabled to the dns collection get params
+func (o *DNSCollectionGetParams) SetTldQueryEnabled(tldQueryEnabled *bool) {
+	o.TldQueryEnabled = tldQueryEnabled
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -532,13 +532,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.AttemptsQueryParameter != nil {
+	if o.Attempts != nil {
 
 		// query param attempts
 		var qrAttempts int64
 
-		if o.AttemptsQueryParameter != nil {
-			qrAttempts = *o.AttemptsQueryParameter
+		if o.Attempts != nil {
+			qrAttempts = *o.Attempts
 		}
 		qAttempts := swag.FormatInt64(qrAttempts)
 		if qAttempts != "" {
@@ -549,13 +549,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DomainsQueryParameter != nil {
+	if o.Domains != nil {
 
 		// query param domains
 		var qrDomains string
 
-		if o.DomainsQueryParameter != nil {
-			qrDomains = *o.DomainsQueryParameter
+		if o.Domains != nil {
+			qrDomains = *o.Domains
 		}
 		qDomains := qrDomains
 		if qDomains != "" {
@@ -566,13 +566,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DynamicDNSEnabledQueryParameter != nil {
+	if o.DynamicDNSEnabled != nil {
 
 		// query param dynamic_dns.enabled
 		var qrDynamicDNSEnabled bool
 
-		if o.DynamicDNSEnabledQueryParameter != nil {
-			qrDynamicDNSEnabled = *o.DynamicDNSEnabledQueryParameter
+		if o.DynamicDNSEnabled != nil {
+			qrDynamicDNSEnabled = *o.DynamicDNSEnabled
 		}
 		qDynamicDNSEnabled := swag.FormatBool(qrDynamicDNSEnabled)
 		if qDynamicDNSEnabled != "" {
@@ -583,13 +583,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DynamicDNSFqdnQueryParameter != nil {
+	if o.DynamicDNSFqdn != nil {
 
 		// query param dynamic_dns.fqdn
 		var qrDynamicDNSFqdn string
 
-		if o.DynamicDNSFqdnQueryParameter != nil {
-			qrDynamicDNSFqdn = *o.DynamicDNSFqdnQueryParameter
+		if o.DynamicDNSFqdn != nil {
+			qrDynamicDNSFqdn = *o.DynamicDNSFqdn
 		}
 		qDynamicDNSFqdn := qrDynamicDNSFqdn
 		if qDynamicDNSFqdn != "" {
@@ -600,13 +600,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DynamicDNSTimeToLiveQueryParameter != nil {
+	if o.DynamicDNSTimeToLive != nil {
 
 		// query param dynamic_dns.time_to_live
 		var qrDynamicDNSTimeToLive string
 
-		if o.DynamicDNSTimeToLiveQueryParameter != nil {
-			qrDynamicDNSTimeToLive = *o.DynamicDNSTimeToLiveQueryParameter
+		if o.DynamicDNSTimeToLive != nil {
+			qrDynamicDNSTimeToLive = *o.DynamicDNSTimeToLive
 		}
 		qDynamicDNSTimeToLive := qrDynamicDNSTimeToLive
 		if qDynamicDNSTimeToLive != "" {
@@ -617,13 +617,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DynamicDNSUseSecureQueryParameter != nil {
+	if o.DynamicDNSUseSecure != nil {
 
 		// query param dynamic_dns.use_secure
 		var qrDynamicDNSUseSecure bool
 
-		if o.DynamicDNSUseSecureQueryParameter != nil {
-			qrDynamicDNSUseSecure = *o.DynamicDNSUseSecureQueryParameter
+		if o.DynamicDNSUseSecure != nil {
+			qrDynamicDNSUseSecure = *o.DynamicDNSUseSecure
 		}
 		qDynamicDNSUseSecure := swag.FormatBool(qrDynamicDNSUseSecure)
 		if qDynamicDNSUseSecure != "" {
@@ -634,7 +634,7 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -645,13 +645,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -662,7 +662,7 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -673,13 +673,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.PacketQueryMatchQueryParameter != nil {
+	if o.PacketQueryMatch != nil {
 
 		// query param packet_query_match
 		var qrPacketQueryMatch bool
 
-		if o.PacketQueryMatchQueryParameter != nil {
-			qrPacketQueryMatch = *o.PacketQueryMatchQueryParameter
+		if o.PacketQueryMatch != nil {
+			qrPacketQueryMatch = *o.PacketQueryMatch
 		}
 		qPacketQueryMatch := swag.FormatBool(qrPacketQueryMatch)
 		if qPacketQueryMatch != "" {
@@ -690,13 +690,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -707,13 +707,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -724,13 +724,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -741,13 +741,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ServersQueryParameter != nil {
+	if o.Servers != nil {
 
 		// query param servers
 		var qrServers string
 
-		if o.ServersQueryParameter != nil {
-			qrServers = *o.ServersQueryParameter
+		if o.Servers != nil {
+			qrServers = *o.Servers
 		}
 		qServers := qrServers
 		if qServers != "" {
@@ -758,13 +758,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SourceAddressMatchQueryParameter != nil {
+	if o.SourceAddressMatch != nil {
 
 		// query param source_address_match
 		var qrSourceAddressMatch bool
 
-		if o.SourceAddressMatchQueryParameter != nil {
-			qrSourceAddressMatch = *o.SourceAddressMatchQueryParameter
+		if o.SourceAddressMatch != nil {
+			qrSourceAddressMatch = *o.SourceAddressMatch
 		}
 		qSourceAddressMatch := swag.FormatBool(qrSourceAddressMatch)
 		if qSourceAddressMatch != "" {
@@ -775,13 +775,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusCodeQueryParameter != nil {
+	if o.StatusCode != nil {
 
 		// query param status.code
 		var qrStatusCode int64
 
-		if o.StatusCodeQueryParameter != nil {
-			qrStatusCode = *o.StatusCodeQueryParameter
+		if o.StatusCode != nil {
+			qrStatusCode = *o.StatusCode
 		}
 		qStatusCode := swag.FormatInt64(qrStatusCode)
 		if qStatusCode != "" {
@@ -792,13 +792,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusMessageQueryParameter != nil {
+	if o.StatusMessage != nil {
 
 		// query param status.message
 		var qrStatusMessage string
 
-		if o.StatusMessageQueryParameter != nil {
-			qrStatusMessage = *o.StatusMessageQueryParameter
+		if o.StatusMessage != nil {
+			qrStatusMessage = *o.StatusMessage
 		}
 		qStatusMessage := qrStatusMessage
 		if qStatusMessage != "" {
@@ -809,13 +809,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusNameServerQueryParameter != nil {
+	if o.StatusNameServer != nil {
 
 		// query param status.name_server
 		var qrStatusNameServer string
 
-		if o.StatusNameServerQueryParameter != nil {
-			qrStatusNameServer = *o.StatusNameServerQueryParameter
+		if o.StatusNameServer != nil {
+			qrStatusNameServer = *o.StatusNameServer
 		}
 		qStatusNameServer := qrStatusNameServer
 		if qStatusNameServer != "" {
@@ -826,13 +826,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusStateQueryParameter != nil {
+	if o.StatusState != nil {
 
 		// query param status.state
 		var qrStatusState string
 
-		if o.StatusStateQueryParameter != nil {
-			qrStatusState = *o.StatusStateQueryParameter
+		if o.StatusState != nil {
+			qrStatusState = *o.StatusState
 		}
 		qStatusState := qrStatusState
 		if qStatusState != "" {
@@ -843,13 +843,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -860,13 +860,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -877,13 +877,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.TimeoutQueryParameter != nil {
+	if o.Timeout != nil {
 
 		// query param timeout
 		var qrTimeout int64
 
-		if o.TimeoutQueryParameter != nil {
-			qrTimeout = *o.TimeoutQueryParameter
+		if o.Timeout != nil {
+			qrTimeout = *o.Timeout
 		}
 		qTimeout := swag.FormatInt64(qrTimeout)
 		if qTimeout != "" {
@@ -894,13 +894,13 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.TldQueryEnabledQueryParameter != nil {
+	if o.TldQueryEnabled != nil {
 
 		// query param tld_query_enabled
 		var qrTldQueryEnabled bool
 
-		if o.TldQueryEnabledQueryParameter != nil {
-			qrTldQueryEnabled = *o.TldQueryEnabledQueryParameter
+		if o.TldQueryEnabled != nil {
+			qrTldQueryEnabled = *o.TldQueryEnabled
 		}
 		qTldQueryEnabled := swag.FormatBool(qrTldQueryEnabled)
 		if qTldQueryEnabled != "" {
@@ -919,7 +919,7 @@ func (o *DNSCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamDNSCollectionGet binds the parameter fields
 func (o *DNSCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -936,7 +936,7 @@ func (o *DNSCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamDNSCollectionGet binds the parameter order_by
 func (o *DNSCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -22,14 +22,14 @@ type ApplicationProtectionGroups struct {
 
 	// Protection group name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// rpo
-	Rpo *ApplicationProtectionGroupsRpo `json:"rpo,omitempty"`
+	Rpo *ApplicationProtectionGroupsInlineRpo `json:"rpo,omitempty"`
 
 	// Protection group UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application protection groups
@@ -87,7 +87,7 @@ func (m *ApplicationProtectionGroups) ContextValidate(ctx context.Context, forma
 
 func (m *ApplicationProtectionGroups) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -110,7 +110,7 @@ func (m *ApplicationProtectionGroups) contextValidateRpo(ctx context.Context, fo
 
 func (m *ApplicationProtectionGroups) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -135,20 +135,20 @@ func (m *ApplicationProtectionGroups) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationProtectionGroupsRpo application protection groups rpo
+// ApplicationProtectionGroupsInlineRpo application protection groups inline rpo
 //
-// swagger:model ApplicationProtectionGroupsRpo
-type ApplicationProtectionGroupsRpo struct {
+// swagger:model application_protection_groups_inline_rpo
+type ApplicationProtectionGroupsInlineRpo struct {
 
 	// local
-	Local *ApplicationProtectionGroupsRpoLocal `json:"local,omitempty"`
+	Local *ApplicationProtectionGroupsInlineRpoInlineLocal `json:"local,omitempty"`
 
 	// remote
-	Remote *ApplicationProtectionGroupsRpoRemote `json:"remote,omitempty"`
+	Remote *ApplicationProtectionGroupsInlineRpoInlineRemote `json:"remote,omitempty"`
 }
 
-// Validate validates this application protection groups rpo
-func (m *ApplicationProtectionGroupsRpo) Validate(formats strfmt.Registry) error {
+// Validate validates this application protection groups inline rpo
+func (m *ApplicationProtectionGroupsInlineRpo) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocal(formats); err != nil {
@@ -165,7 +165,7 @@ func (m *ApplicationProtectionGroupsRpo) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpo) validateLocal(formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpo) validateLocal(formats strfmt.Registry) error {
 	if swag.IsZero(m.Local) { // not required
 		return nil
 	}
@@ -182,7 +182,7 @@ func (m *ApplicationProtectionGroupsRpo) validateLocal(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpo) validateRemote(formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpo) validateRemote(formats strfmt.Registry) error {
 	if swag.IsZero(m.Remote) { // not required
 		return nil
 	}
@@ -199,8 +199,8 @@ func (m *ApplicationProtectionGroupsRpo) validateRemote(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this application protection groups rpo based on the context it is used
-func (m *ApplicationProtectionGroupsRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application protection groups inline rpo based on the context it is used
+func (m *ApplicationProtectionGroupsInlineRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
@@ -217,7 +217,7 @@ func (m *ApplicationProtectionGroupsRpo) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Local != nil {
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
@@ -231,7 +231,7 @@ func (m *ApplicationProtectionGroupsRpo) contextValidateLocal(ctx context.Contex
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpo) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpo) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Remote != nil {
 		if err := m.Remote.ContextValidate(ctx, formats); err != nil {
@@ -246,7 +246,7 @@ func (m *ApplicationProtectionGroupsRpo) contextValidateRemote(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpo) MarshalBinary() ([]byte, error) {
+func (m *ApplicationProtectionGroupsInlineRpo) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -254,8 +254,8 @@ func (m *ApplicationProtectionGroupsRpo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpo) UnmarshalBinary(b []byte) error {
-	var res ApplicationProtectionGroupsRpo
+func (m *ApplicationProtectionGroupsInlineRpo) UnmarshalBinary(b []byte) error {
+	var res ApplicationProtectionGroupsInlineRpo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -263,23 +263,23 @@ func (m *ApplicationProtectionGroupsRpo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationProtectionGroupsRpoLocal application protection groups rpo local
+// ApplicationProtectionGroupsInlineRpoInlineLocal application protection groups inline rpo inline local
 //
-// swagger:model ApplicationProtectionGroupsRpoLocal
-type ApplicationProtectionGroupsRpoLocal struct {
+// swagger:model application_protection_groups_inline_rpo_inline_local
+type ApplicationProtectionGroupsInlineRpoInlineLocal struct {
 
 	// A detailed description of the local RPO. This includes details on the Snapshot copy schedule.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The local RPO of the component. This indicates how often component Snapshot copies are automatically created.
 	// Read Only: true
 	// Enum: [none hourly 6_hourly 15_minutely]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application protection groups rpo local
-func (m *ApplicationProtectionGroupsRpoLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this application protection groups inline rpo inline local
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -292,7 +292,7 @@ func (m *ApplicationProtectionGroupsRpoLocal) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var applicationProtectionGroupsRpoLocalTypeNamePropEnum []interface{}
+var applicationProtectionGroupsInlineRpoInlineLocalTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -300,76 +300,76 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationProtectionGroupsRpoLocalTypeNamePropEnum = append(applicationProtectionGroupsRpoLocalTypeNamePropEnum, v)
+		applicationProtectionGroupsInlineRpoInlineLocalTypeNamePropEnum = append(applicationProtectionGroupsInlineRpoInlineLocalTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoLocal
-	// ApplicationProtectionGroupsRpoLocal
+	// application_protection_groups_inline_rpo_inline_local
+	// ApplicationProtectionGroupsInlineRpoInlineLocal
 	// name
 	// Name
 	// none
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoLocalNameNone captures enum value "none"
-	ApplicationProtectionGroupsRpoLocalNameNone string = "none"
+	// ApplicationProtectionGroupsInlineRpoInlineLocalNameNone captures enum value "none"
+	ApplicationProtectionGroupsInlineRpoInlineLocalNameNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoLocal
-	// ApplicationProtectionGroupsRpoLocal
+	// application_protection_groups_inline_rpo_inline_local
+	// ApplicationProtectionGroupsInlineRpoInlineLocal
 	// name
 	// Name
 	// hourly
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoLocalNameHourly captures enum value "hourly"
-	ApplicationProtectionGroupsRpoLocalNameHourly string = "hourly"
+	// ApplicationProtectionGroupsInlineRpoInlineLocalNameHourly captures enum value "hourly"
+	ApplicationProtectionGroupsInlineRpoInlineLocalNameHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoLocal
-	// ApplicationProtectionGroupsRpoLocal
+	// application_protection_groups_inline_rpo_inline_local
+	// ApplicationProtectionGroupsInlineRpoInlineLocal
 	// name
 	// Name
 	// 6_hourly
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoLocalNameNr6Hourly captures enum value "6_hourly"
-	ApplicationProtectionGroupsRpoLocalNameNr6Hourly string = "6_hourly"
+	// ApplicationProtectionGroupsInlineRpoInlineLocalNameNr6Hourly captures enum value "6_hourly"
+	ApplicationProtectionGroupsInlineRpoInlineLocalNameNr6Hourly string = "6_hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoLocal
-	// ApplicationProtectionGroupsRpoLocal
+	// application_protection_groups_inline_rpo_inline_local
+	// ApplicationProtectionGroupsInlineRpoInlineLocal
 	// name
 	// Name
 	// 15_minutely
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoLocalNameNr15Minutely captures enum value "15_minutely"
-	ApplicationProtectionGroupsRpoLocalNameNr15Minutely string = "15_minutely"
+	// ApplicationProtectionGroupsInlineRpoInlineLocalNameNr15Minutely captures enum value "15_minutely"
+	ApplicationProtectionGroupsInlineRpoInlineLocalNameNr15Minutely string = "15_minutely"
 )
 
 // prop value enum
-func (m *ApplicationProtectionGroupsRpoLocal) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationProtectionGroupsRpoLocalTypeNamePropEnum, true); err != nil {
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationProtectionGroupsInlineRpoInlineLocalTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoLocal) validateName(formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application protection groups rpo local based on the context it is used
-func (m *ApplicationProtectionGroupsRpoLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application protection groups inline rpo inline local based on the context it is used
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDescription(ctx, formats); err != nil {
@@ -386,18 +386,18 @@ func (m *ApplicationProtectionGroupsRpoLocal) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoLocal) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoLocal) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -405,7 +405,7 @@ func (m *ApplicationProtectionGroupsRpoLocal) contextValidateName(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpoLocal) MarshalBinary() ([]byte, error) {
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -413,8 +413,8 @@ func (m *ApplicationProtectionGroupsRpoLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpoLocal) UnmarshalBinary(b []byte) error {
-	var res ApplicationProtectionGroupsRpoLocal
+func (m *ApplicationProtectionGroupsInlineRpoInlineLocal) UnmarshalBinary(b []byte) error {
+	var res ApplicationProtectionGroupsInlineRpoInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -422,23 +422,23 @@ func (m *ApplicationProtectionGroupsRpoLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationProtectionGroupsRpoRemote application protection groups rpo remote
+// ApplicationProtectionGroupsInlineRpoInlineRemote application protection groups inline rpo inline remote
 //
-// swagger:model ApplicationProtectionGroupsRpoRemote
-type ApplicationProtectionGroupsRpoRemote struct {
+// swagger:model application_protection_groups_inline_rpo_inline_remote
+type ApplicationProtectionGroupsInlineRpoInlineRemote struct {
 
 	// A detailed description of the remote RPO.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The remote RPO of the component. A remote RPO of zero indicates that the component is synchronously replicated to another cluster.
 	// Read Only: true
 	// Enum: [none zero hourly 6_hourly 15_minutely]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application protection groups rpo remote
-func (m *ApplicationProtectionGroupsRpoRemote) Validate(formats strfmt.Registry) error {
+// Validate validates this application protection groups inline rpo inline remote
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -451,7 +451,7 @@ func (m *ApplicationProtectionGroupsRpoRemote) Validate(formats strfmt.Registry)
 	return nil
 }
 
-var applicationProtectionGroupsRpoRemoteTypeNamePropEnum []interface{}
+var applicationProtectionGroupsInlineRpoInlineRemoteTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -459,86 +459,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationProtectionGroupsRpoRemoteTypeNamePropEnum = append(applicationProtectionGroupsRpoRemoteTypeNamePropEnum, v)
+		applicationProtectionGroupsInlineRpoInlineRemoteTypeNamePropEnum = append(applicationProtectionGroupsInlineRpoInlineRemoteTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoRemote
-	// ApplicationProtectionGroupsRpoRemote
+	// application_protection_groups_inline_rpo_inline_remote
+	// ApplicationProtectionGroupsInlineRpoInlineRemote
 	// name
 	// Name
 	// none
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoRemoteNameNone captures enum value "none"
-	ApplicationProtectionGroupsRpoRemoteNameNone string = "none"
+	// ApplicationProtectionGroupsInlineRpoInlineRemoteNameNone captures enum value "none"
+	ApplicationProtectionGroupsInlineRpoInlineRemoteNameNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoRemote
-	// ApplicationProtectionGroupsRpoRemote
+	// application_protection_groups_inline_rpo_inline_remote
+	// ApplicationProtectionGroupsInlineRpoInlineRemote
 	// name
 	// Name
 	// zero
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoRemoteNameZero captures enum value "zero"
-	ApplicationProtectionGroupsRpoRemoteNameZero string = "zero"
+	// ApplicationProtectionGroupsInlineRpoInlineRemoteNameZero captures enum value "zero"
+	ApplicationProtectionGroupsInlineRpoInlineRemoteNameZero string = "zero"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoRemote
-	// ApplicationProtectionGroupsRpoRemote
+	// application_protection_groups_inline_rpo_inline_remote
+	// ApplicationProtectionGroupsInlineRpoInlineRemote
 	// name
 	// Name
 	// hourly
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoRemoteNameHourly captures enum value "hourly"
-	ApplicationProtectionGroupsRpoRemoteNameHourly string = "hourly"
+	// ApplicationProtectionGroupsInlineRpoInlineRemoteNameHourly captures enum value "hourly"
+	ApplicationProtectionGroupsInlineRpoInlineRemoteNameHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoRemote
-	// ApplicationProtectionGroupsRpoRemote
+	// application_protection_groups_inline_rpo_inline_remote
+	// ApplicationProtectionGroupsInlineRpoInlineRemote
 	// name
 	// Name
 	// 6_hourly
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoRemoteNameNr6Hourly captures enum value "6_hourly"
-	ApplicationProtectionGroupsRpoRemoteNameNr6Hourly string = "6_hourly"
+	// ApplicationProtectionGroupsInlineRpoInlineRemoteNameNr6Hourly captures enum value "6_hourly"
+	ApplicationProtectionGroupsInlineRpoInlineRemoteNameNr6Hourly string = "6_hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationProtectionGroupsRpoRemote
-	// ApplicationProtectionGroupsRpoRemote
+	// application_protection_groups_inline_rpo_inline_remote
+	// ApplicationProtectionGroupsInlineRpoInlineRemote
 	// name
 	// Name
 	// 15_minutely
 	// END DEBUGGING
-	// ApplicationProtectionGroupsRpoRemoteNameNr15Minutely captures enum value "15_minutely"
-	ApplicationProtectionGroupsRpoRemoteNameNr15Minutely string = "15_minutely"
+	// ApplicationProtectionGroupsInlineRpoInlineRemoteNameNr15Minutely captures enum value "15_minutely"
+	ApplicationProtectionGroupsInlineRpoInlineRemoteNameNr15Minutely string = "15_minutely"
 )
 
 // prop value enum
-func (m *ApplicationProtectionGroupsRpoRemote) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationProtectionGroupsRpoRemoteTypeNamePropEnum, true); err != nil {
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationProtectionGroupsInlineRpoInlineRemoteTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoRemote) validateName(formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application protection groups rpo remote based on the context it is used
-func (m *ApplicationProtectionGroupsRpoRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application protection groups inline rpo inline remote based on the context it is used
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDescription(ctx, formats); err != nil {
@@ -555,18 +555,18 @@ func (m *ApplicationProtectionGroupsRpoRemote) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoRemote) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationProtectionGroupsRpoRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -574,7 +574,7 @@ func (m *ApplicationProtectionGroupsRpoRemote) contextValidateName(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpoRemote) MarshalBinary() ([]byte, error) {
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -582,8 +582,8 @@ func (m *ApplicationProtectionGroupsRpoRemote) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationProtectionGroupsRpoRemote) UnmarshalBinary(b []byte) error {
-	var res ApplicationProtectionGroupsRpoRemote
+func (m *ApplicationProtectionGroupsInlineRpoInlineRemote) UnmarshalBinary(b []byte) error {
+	var res ApplicationProtectionGroupsInlineRpoInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -20,10 +20,10 @@ import (
 type CifsSymlinkMapping struct {
 
 	// links
-	Links *CifsSymlinkMappingLinks `json:"_links,omitempty"`
+	Links *CifsSymlinkMappingInlineLinks `json:"_links,omitempty"`
 
 	// svm
-	Svm *CifsSymlinkMappingSvm `json:"svm,omitempty"`
+	Svm *CifsSymlinkMappingInlineSvm `json:"svm,omitempty"`
 
 	// target
 	Target *CifsTarget `json:"target,omitempty"`
@@ -31,7 +31,7 @@ type CifsSymlinkMapping struct {
 	// Specifies the UNIX path prefix to be matched for the mapping.
 	// Example: /mnt/eng_volume/
 	// Max Length: 256
-	UnixPath string `json:"unix_path,omitempty"`
+	UnixPath *string `json:"unix_path,omitempty"`
 }
 
 // Validate validates this cifs symlink mapping
@@ -116,7 +116,7 @@ func (m *CifsSymlinkMapping) validateUnixPath(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MaxLength("unix_path", "body", m.UnixPath, 256); err != nil {
+	if err := validate.MaxLength("unix_path", "body", *m.UnixPath, 256); err != nil {
 		return err
 	}
 
@@ -205,17 +205,17 @@ func (m *CifsSymlinkMapping) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSymlinkMappingLinks cifs symlink mapping links
+// CifsSymlinkMappingInlineLinks cifs symlink mapping inline links
 //
-// swagger:model CifsSymlinkMappingLinks
-type CifsSymlinkMappingLinks struct {
+// swagger:model cifs_symlink_mapping_inline__links
+type CifsSymlinkMappingInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs symlink mapping links
-func (m *CifsSymlinkMappingLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs symlink mapping inline links
+func (m *CifsSymlinkMappingInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -228,7 +228,7 @@ func (m *CifsSymlinkMappingLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSymlinkMappingLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -245,8 +245,8 @@ func (m *CifsSymlinkMappingLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs symlink mapping links based on the context it is used
-func (m *CifsSymlinkMappingLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs symlink mapping inline links based on the context it is used
+func (m *CifsSymlinkMappingInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -259,7 +259,7 @@ func (m *CifsSymlinkMappingLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsSymlinkMappingLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -274,7 +274,7 @@ func (m *CifsSymlinkMappingLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSymlinkMappingLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSymlinkMappingInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -282,8 +282,8 @@ func (m *CifsSymlinkMappingLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSymlinkMappingLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSymlinkMappingLinks
+func (m *CifsSymlinkMappingInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSymlinkMappingInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -291,27 +291,27 @@ func (m *CifsSymlinkMappingLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSymlinkMappingSvm cifs symlink mapping svm
+// CifsSymlinkMappingInlineSvm cifs symlink mapping inline svm
 //
-// swagger:model CifsSymlinkMappingSvm
-type CifsSymlinkMappingSvm struct {
+// swagger:model cifs_symlink_mapping_inline_svm
+type CifsSymlinkMappingInlineSvm struct {
 
 	// links
-	Links *CifsSymlinkMappingSvmLinks `json:"_links,omitempty"`
+	Links *CifsSymlinkMappingInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs symlink mapping svm
-func (m *CifsSymlinkMappingSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs symlink mapping inline svm
+func (m *CifsSymlinkMappingInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -324,7 +324,7 @@ func (m *CifsSymlinkMappingSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSymlinkMappingSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -341,8 +341,8 @@ func (m *CifsSymlinkMappingSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs symlink mapping svm based on the context it is used
-func (m *CifsSymlinkMappingSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs symlink mapping inline svm based on the context it is used
+func (m *CifsSymlinkMappingInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -355,7 +355,7 @@ func (m *CifsSymlinkMappingSvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CifsSymlinkMappingSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -370,7 +370,7 @@ func (m *CifsSymlinkMappingSvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSymlinkMappingSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsSymlinkMappingInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -378,8 +378,8 @@ func (m *CifsSymlinkMappingSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSymlinkMappingSvm) UnmarshalBinary(b []byte) error {
-	var res CifsSymlinkMappingSvm
+func (m *CifsSymlinkMappingInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsSymlinkMappingInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -387,17 +387,17 @@ func (m *CifsSymlinkMappingSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSymlinkMappingSvmLinks cifs symlink mapping svm links
+// CifsSymlinkMappingInlineSvmInlineLinks cifs symlink mapping inline svm inline links
 //
-// swagger:model CifsSymlinkMappingSvmLinks
-type CifsSymlinkMappingSvmLinks struct {
+// swagger:model cifs_symlink_mapping_inline_svm_inline__links
+type CifsSymlinkMappingInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs symlink mapping svm links
-func (m *CifsSymlinkMappingSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs symlink mapping inline svm inline links
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -410,7 +410,7 @@ func (m *CifsSymlinkMappingSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSymlinkMappingSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -427,8 +427,8 @@ func (m *CifsSymlinkMappingSvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this cifs symlink mapping svm links based on the context it is used
-func (m *CifsSymlinkMappingSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs symlink mapping inline svm inline links based on the context it is used
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -441,7 +441,7 @@ func (m *CifsSymlinkMappingSvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *CifsSymlinkMappingSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -456,7 +456,7 @@ func (m *CifsSymlinkMappingSvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSymlinkMappingSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -464,8 +464,8 @@ func (m *CifsSymlinkMappingSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSymlinkMappingSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSymlinkMappingSvmLinks
+func (m *CifsSymlinkMappingInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSymlinkMappingInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

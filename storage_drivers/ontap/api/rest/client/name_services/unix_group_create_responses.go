@@ -52,6 +52,10 @@ UnixGroupCreateCreated describes a response with status code 201, with default h
 Created
 */
 type UnixGroupCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this unix group create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *UnixGroupCreateCreated) String() string {
 }
 
 func (o *UnixGroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

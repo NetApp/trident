@@ -65,13 +65,13 @@ type KerberosRealmDeleteParams struct {
 
 	   Kerberos realm
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *KerberosRealmDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the kerberos realm delete params
-func (o *KerberosRealmDeleteParams) WithNamePathParameter(name string) *KerberosRealmDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the kerberos realm delete params
+func (o *KerberosRealmDeleteParams) WithName(name string) *KerberosRealmDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the kerberos realm delete params
-func (o *KerberosRealmDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the kerberos realm delete params
+func (o *KerberosRealmDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the kerberos realm delete params
-func (o *KerberosRealmDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *KerberosRealmDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the kerberos realm delete params
+func (o *KerberosRealmDeleteParams) WithSvmUUID(svmUUID string) *KerberosRealmDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the kerberos realm delete params
-func (o *KerberosRealmDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the kerberos realm delete params
+func (o *KerberosRealmDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *KerberosRealmDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

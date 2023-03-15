@@ -22,14 +22,14 @@ type ApplicationSubsystemMapObject struct {
 
 	// Subsystem ANA group ID
 	// Read Only: true
-	Anagrpid string `json:"anagrpid,omitempty"`
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// Subsystem namespace ID
 	// Read Only: true
-	Nsid string `json:"nsid,omitempty"`
+	Nsid *string `json:"nsid,omitempty"`
 
 	// subsystem
-	Subsystem *ApplicationSubsystemMapObjectSubsystem `json:"subsystem,omitempty"`
+	Subsystem *ApplicationSubsystemMapObjectInlineSubsystem `json:"subsystem,omitempty"`
 }
 
 // Validate validates this application subsystem map object
@@ -87,7 +87,7 @@ func (m *ApplicationSubsystemMapObject) ContextValidate(ctx context.Context, for
 
 func (m *ApplicationSubsystemMapObject) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "anagrpid", "body", string(m.Anagrpid)); err != nil {
+	if err := validate.ReadOnly(ctx, "anagrpid", "body", m.Anagrpid); err != nil {
 		return err
 	}
 
@@ -96,7 +96,7 @@ func (m *ApplicationSubsystemMapObject) contextValidateAnagrpid(ctx context.Cont
 
 func (m *ApplicationSubsystemMapObject) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nsid", "body", string(m.Nsid)); err != nil {
+	if err := validate.ReadOnly(ctx, "nsid", "body", m.Nsid); err != nil {
 		return err
 	}
 
@@ -135,13 +135,13 @@ func (m *ApplicationSubsystemMapObject) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationSubsystemMapObjectSubsystem application subsystem map object subsystem
+// ApplicationSubsystemMapObjectInlineSubsystem application subsystem map object inline subsystem
 //
-// swagger:model ApplicationSubsystemMapObjectSubsystem
-type ApplicationSubsystemMapObjectSubsystem struct {
+// swagger:model application_subsystem_map_object_inline_subsystem
+type ApplicationSubsystemMapObjectInlineSubsystem struct {
 
 	// links
-	Links *ApplicationSubsystemMapObjectSubsystemLinks `json:"_links,omitempty"`
+	Links *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks `json:"_links,omitempty"`
 
 	// hosts
 	// Read Only: true
@@ -149,15 +149,15 @@ type ApplicationSubsystemMapObjectSubsystem struct {
 
 	// Subsystem name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Subsystem UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application subsystem map object subsystem
-func (m *ApplicationSubsystemMapObjectSubsystem) Validate(formats strfmt.Registry) error {
+// Validate validates this application subsystem map object inline subsystem
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -174,7 +174,7 @@ func (m *ApplicationSubsystemMapObjectSubsystem) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -191,7 +191,7 @@ func (m *ApplicationSubsystemMapObjectSubsystem) validateLinks(formats strfmt.Re
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) validateHosts(formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) validateHosts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Hosts) { // not required
 		return nil
 	}
@@ -215,8 +215,8 @@ func (m *ApplicationSubsystemMapObjectSubsystem) validateHosts(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this application subsystem map object subsystem based on the context it is used
-func (m *ApplicationSubsystemMapObjectSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application subsystem map object inline subsystem based on the context it is used
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -241,7 +241,7 @@ func (m *ApplicationSubsystemMapObjectSubsystem) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -255,7 +255,7 @@ func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateLinks(ctx contex
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateHosts(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) contextValidateHosts(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "subsystem"+"."+"hosts", "body", []*ApplicationSubsystemMapObjectSubsystemHostsItems0(m.Hosts)); err != nil {
 		return err
@@ -277,18 +277,18 @@ func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateHosts(ctx contex
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -296,7 +296,7 @@ func (m *ApplicationSubsystemMapObjectSubsystem) contextValidateUUID(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSubsystemMapObjectSubsystem) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -304,8 +304,8 @@ func (m *ApplicationSubsystemMapObjectSubsystem) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSubsystemMapObjectSubsystem) UnmarshalBinary(b []byte) error {
-	var res ApplicationSubsystemMapObjectSubsystem
+func (m *ApplicationSubsystemMapObjectInlineSubsystem) UnmarshalBinary(b []byte) error {
+	var res ApplicationSubsystemMapObjectInlineSubsystem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -323,7 +323,7 @@ type ApplicationSubsystemMapObjectSubsystemHostsItems0 struct {
 
 	// Host
 	// Read Only: true
-	Nqn string `json:"nqn,omitempty"`
+	Nqn *string `json:"nqn,omitempty"`
 }
 
 // Validate validates this application subsystem map object subsystem hosts items0
@@ -391,7 +391,7 @@ func (m *ApplicationSubsystemMapObjectSubsystemHostsItems0) contextValidateLinks
 
 func (m *ApplicationSubsystemMapObjectSubsystemHostsItems0) contextValidateNqn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nqn", "body", string(m.Nqn)); err != nil {
+	if err := validate.ReadOnly(ctx, "nqn", "body", m.Nqn); err != nil {
 		return err
 	}
 
@@ -588,17 +588,17 @@ func (m *ApplicationSubsystemMapObjectSubsystemHostsItems0LinksSelf) UnmarshalBi
 	return nil
 }
 
-// ApplicationSubsystemMapObjectSubsystemLinks application subsystem map object subsystem links
+// ApplicationSubsystemMapObjectInlineSubsystemInlineLinks application subsystem map object inline subsystem inline links
 //
-// swagger:model ApplicationSubsystemMapObjectSubsystemLinks
-type ApplicationSubsystemMapObjectSubsystemLinks struct {
+// swagger:model application_subsystem_map_object_inline_subsystem_inline__links
+type ApplicationSubsystemMapObjectInlineSubsystemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application subsystem map object subsystem links
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application subsystem map object inline subsystem inline links
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -611,7 +611,7 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -628,8 +628,8 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) validateSelf(formats strfm
 	return nil
 }
 
-// ContextValidate validate this application subsystem map object subsystem links based on the context it is used
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application subsystem map object inline subsystem inline links based on the context it is used
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -642,7 +642,7 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -657,7 +657,7 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) contextValidateSelf(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -665,8 +665,8 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSubsystemMapObjectSubsystemLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationSubsystemMapObjectSubsystemLinks
+func (m *ApplicationSubsystemMapObjectInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationSubsystemMapObjectInlineSubsystemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

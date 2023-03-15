@@ -22,13 +22,14 @@ import (
 type InterfaceMetricsResponse struct {
 
 	// links
-	Links *InterfaceMetricsResponseLinks `json:"_links,omitempty"`
+	Links *InterfaceMetricsResponseInlineLinks `json:"_links,omitempty"`
+
+	// interface metrics response inline records
+	InterfaceMetricsResponseInlineRecords []*InterfaceMetricsResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*InterfaceMetricsResponseRecordsItems0 `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this interface metrics response
@@ -39,7 +40,7 @@ func (m *InterfaceMetricsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateInterfaceMetricsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *InterfaceMetricsResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *InterfaceMetricsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *InterfaceMetricsResponse) validateInterfaceMetricsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.InterfaceMetricsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.InterfaceMetricsResponseInlineRecords); i++ {
+		if swag.IsZero(m.InterfaceMetricsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.InterfaceMetricsResponseInlineRecords[i] != nil {
+			if err := m.InterfaceMetricsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *InterfaceMetricsResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateInterfaceMetricsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *InterfaceMetricsResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *InterfaceMetricsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponse) contextValidateInterfaceMetricsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.InterfaceMetricsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.InterfaceMetricsResponseInlineRecords[i] != nil {
+			if err := m.InterfaceMetricsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *InterfaceMetricsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceMetricsResponseLinks interface metrics response links
+// InterfaceMetricsResponseInlineLinks interface metrics response inline links
 //
-// swagger:model InterfaceMetricsResponseLinks
-type InterfaceMetricsResponseLinks struct {
+// swagger:model interface_metrics_response_inline__links
+type InterfaceMetricsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type InterfaceMetricsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this interface metrics response links
-func (m *InterfaceMetricsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics response inline links
+func (m *InterfaceMetricsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *InterfaceMetricsResponseLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *InterfaceMetricsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *InterfaceMetricsResponseLinks) validateNext(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *InterfaceMetricsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *InterfaceMetricsResponseLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this interface metrics response links based on the context it is used
-func (m *InterfaceMetricsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this interface metrics response inline links based on the context it is used
+func (m *InterfaceMetricsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *InterfaceMetricsResponseLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *InterfaceMetricsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *InterfaceMetricsResponseLinks) contextValidateNext(ctx context.Context,
 	return nil
 }
 
-func (m *InterfaceMetricsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *InterfaceMetricsResponseLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *InterfaceMetricsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsResponseLinks
+func (m *InterfaceMetricsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,27 +287,27 @@ func (m *InterfaceMetricsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceMetricsResponseRecordsItems0 Throughput performance for the interfaces.
+// InterfaceMetricsResponseInlineRecordsInlineArrayItem Throughput performance for the interfaces.
 //
-// swagger:model InterfaceMetricsResponseRecordsItems0
-type InterfaceMetricsResponseRecordsItems0 struct {
+// swagger:model interface_metrics_response_inline_records_inline_array_item
+type InterfaceMetricsResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *InterfaceMetricsResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *InterfaceMetricsResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -316,11 +317,11 @@ type InterfaceMetricsResponseRecordsItems0 struct {
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this interface metrics response records items0
-func (m *InterfaceMetricsResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics response inline records inline array item
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -349,7 +350,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -366,7 +367,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) validateLinks(formats strfmt.Reg
 	return nil
 }
 
-var interfaceMetricsResponseRecordsItems0TypeDurationPropEnum []interface{}
+var interfaceMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -374,95 +375,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		interfaceMetricsResponseRecordsItems0TypeDurationPropEnum = append(interfaceMetricsResponseRecordsItems0TypeDurationPropEnum, v)
+		interfaceMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(interfaceMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	InterfaceMetricsResponseRecordsItems0DurationPT15S string = "PT15S"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	InterfaceMetricsResponseRecordsItems0DurationPT4M string = "PT4M"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	InterfaceMetricsResponseRecordsItems0DurationPT30M string = "PT30M"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	InterfaceMetricsResponseRecordsItems0DurationPT2H string = "PT2H"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationP1D captures enum value "P1D"
-	InterfaceMetricsResponseRecordsItems0DurationP1D string = "P1D"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	InterfaceMetricsResponseRecordsItems0DurationPT5M string = "PT5M"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *InterfaceMetricsResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, interfaceMetricsResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, interfaceMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var interfaceMetricsResponseRecordsItems0TypeStatusPropEnum []interface{}
+var interfaceMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -470,135 +471,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		interfaceMetricsResponseRecordsItems0TypeStatusPropEnum = append(interfaceMetricsResponseRecordsItems0TypeStatusPropEnum, v)
+		interfaceMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(interfaceMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusOk captures enum value "ok"
-	InterfaceMetricsResponseRecordsItems0StatusOk string = "ok"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusError captures enum value "error"
-	InterfaceMetricsResponseRecordsItems0StatusError string = "error"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	InterfaceMetricsResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	InterfaceMetricsResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	InterfaceMetricsResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	InterfaceMetricsResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	InterfaceMetricsResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	InterfaceMetricsResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	InterfaceMetricsResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0
-	// InterfaceMetricsResponseRecordsItems0
+	// interface_metrics_response_inline_records_inline_array_item
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// InterfaceMetricsResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	InterfaceMetricsResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	InterfaceMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *InterfaceMetricsResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, interfaceMetricsResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, interfaceMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -615,7 +616,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) validateThroughput(formats strfm
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -627,8 +628,8 @@ func (m *InterfaceMetricsResponseRecordsItems0) validateTimestamp(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this interface metrics response records items0 based on the context it is used
-func (m *InterfaceMetricsResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this interface metrics response inline records inline array item based on the context it is used
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -649,7 +650,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -663,7 +664,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) contextValidateLinks(ctx context
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -677,9 +678,9 @@ func (m *InterfaceMetricsResponseRecordsItems0) contextValidateThroughput(ctx co
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -687,7 +688,7 @@ func (m *InterfaceMetricsResponseRecordsItems0) contextValidateUUID(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -695,8 +696,8 @@ func (m *InterfaceMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsResponseRecordsItems0
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -704,17 +705,17 @@ func (m *InterfaceMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// InterfaceMetricsResponseRecordsItems0Links interface metrics response records items0 links
+// InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks interface metrics response inline records inline array item inline links
 //
-// swagger:model InterfaceMetricsResponseRecordsItems0Links
-type InterfaceMetricsResponseRecordsItems0Links struct {
+// swagger:model interface_metrics_response_inline_records_inline_array_item_inline__links
+type InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this interface metrics response records items0 links
-func (m *InterfaceMetricsResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics response inline records inline array item inline links
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -727,7 +728,7 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -744,8 +745,8 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) validateSelf(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this interface metrics response records items0 links based on the context it is used
-func (m *InterfaceMetricsResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this interface metrics response inline records inline array item inline links based on the context it is used
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -758,7 +759,7 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) ContextValidate(ctx context
 	return nil
 }
 
-func (m *InterfaceMetricsResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -773,7 +774,7 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) contextValidateSelf(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -781,8 +782,8 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsResponseRecordsItems0Links
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -790,36 +791,36 @@ func (m *InterfaceMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// InterfaceMetricsResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the interface.
+// InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the interface.
 //
-// swagger:model InterfaceMetricsResponseRecordsItems0Throughput
-type InterfaceMetricsResponseRecordsItems0Throughput struct {
+// swagger:model interface_metrics_response_inline_records_inline_array_item_inline_throughput
+type InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this interface metrics response records items0 throughput
-func (m *InterfaceMetricsResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics response inline records inline array item inline throughput
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this interface metrics response records items0 throughput based on context it is used
-func (m *InterfaceMetricsResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this interface metrics response inline records inline array item inline throughput based on context it is used
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -827,8 +828,8 @@ func (m *InterfaceMetricsResponseRecordsItems0Throughput) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsResponseRecordsItems0Throughput
+func (m *InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

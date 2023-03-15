@@ -13,21 +13,21 @@ import (
 )
 
 // AzureKeyVaultConnectivity Indicates whether or not the AKV service is reachable from all the nodes in the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
 // swagger:model azure_key_vault_connectivity
 type AzureKeyVaultConnectivity struct {
 
 	// Code corresponding to the status message. Returns a 0 if AKV service is reachable from all nodes in the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message set when reachability is false.
 	// Example: AKV service is not reachable from all nodes - reason.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Set to true when the AKV service is reachable from all nodes of the cluster.
-	Reachable bool `json:"reachable,omitempty"`
+	Reachable *bool `json:"reachable,omitempty"`
 }
 
 // Validate validates this azure key vault connectivity

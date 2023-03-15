@@ -22,7 +22,7 @@ import (
 type CifsSession struct {
 
 	// links
-	Links *CifsSessionLinks `json:"_links,omitempty"`
+	Links *CifsSessionInlineLinks `json:"_links,omitempty"`
 
 	// SMB authentication over which the client accesses the share. The following values are supported:
 	// * none - No authentication
@@ -34,31 +34,34 @@ type CifsSession struct {
 	// Example: ntlmv2
 	// Read Only: true
 	// Enum: [none ntlmv1 ntlmv2 kerberos anonymous]
-	Authentication string `json:"authentication,omitempty"`
+	Authentication *string `json:"authentication,omitempty"`
+
+	// A group of volumes, the client is accessing.
+	CifsSessionInlineVolumes []*CifsSessionInlineVolumesInlineArrayItem `json:"volumes,omitempty"`
 
 	// Specifies IP address of the client.
 	//
 	// Example: 10.74.7.182
 	// Read Only: true
-	ClientIP string `json:"client_ip,omitempty"`
+	ClientIP *string `json:"client_ip,omitempty"`
 
 	// Specifies an ISO-8601 format of date and time used to retrieve the connected time duration in hours, minutes, and seconds format.
 	//
 	// Example: P4DT84H30M5S
 	// Read Only: true
-	ConnectedDuration string `json:"connected_duration,omitempty"`
+	ConnectedDuration *string `json:"connected_duration,omitempty"`
 
 	// A counter used to track requests that are sent to the volumes to the node.
 	//
 	// Example: 0
 	// Read Only: true
-	ConnectionCount int64 `json:"connection_count,omitempty"`
+	ConnectionCount *int64 `json:"connection_count,omitempty"`
 
 	// A unique 32-bit unsigned number used to represent each SMB session's connection ID.
 	//
 	// Example: 22802
 	// Read Only: true
-	ConnectionID int64 `json:"connection_id,omitempty"`
+	ConnectionID *int64 `json:"connection_id,omitempty"`
 
 	// The level of continuous availabilty protection provided to the SMB sessions and/or files.
 	// * unavailable - Open file is not continuously available. For sessions, it contains one or more open files but none of them are continuously available.
@@ -68,19 +71,19 @@ type CifsSession struct {
 	// Example: unavailable
 	// Read Only: true
 	// Enum: [unavailable available partial]
-	ContinuousAvailability string `json:"continuous_availability,omitempty"`
+	ContinuousAvailability *string `json:"continuous_availability,omitempty"`
 
 	// A unique 64-bit unsigned number used to represent each SMB session's identifier.
 	//
 	// Example: 4622663542519103000
 	// Read Only: true
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 
 	// Specifies an ISO-8601 format of date and time used to retrieve the idle time duration in hours, minutes, and seconds format.
 	//
 	// Example: P4DT84H30M5S
 	// Read Only: true
-	IdleDuration string `json:"idle_duration,omitempty"`
+	IdleDuration *string `json:"idle_duration,omitempty"`
 
 	// Specifies whether the large MTU is enabled or not for an SMB session.
 	//
@@ -92,25 +95,25 @@ type CifsSession struct {
 	//
 	// Example: root
 	// Read Only: true
-	MappedUnixUser string `json:"mapped_unix_user,omitempty"`
+	MappedUnixUser *string `json:"mapped_unix_user,omitempty"`
 
 	// node
-	Node *CifsSessionNode `json:"node,omitempty"`
+	Node *CifsSessionInlineNode `json:"node,omitempty"`
 
 	// Number of files the SMB session has opened.
 	//
 	// Read Only: true
-	OpenFiles int64 `json:"open_files,omitempty"`
+	OpenFiles *int64 `json:"open_files,omitempty"`
 
 	// Number of other files the SMB session has opened.
 	//
 	// Read Only: true
-	OpenOther int64 `json:"open_other,omitempty"`
+	OpenOther *int64 `json:"open_other,omitempty"`
 
 	// Number of shares the SMB session has opened.
 	//
 	// Read Only: true
-	OpenShares int64 `json:"open_shares,omitempty"`
+	OpenShares *int64 `json:"open_shares,omitempty"`
 
 	// The SMB protocol version over which the client accesses the volumes. The following values are supported:
 	// * smb1 - SMB version 1
@@ -122,13 +125,13 @@ type CifsSession struct {
 	// Example: smb3_1
 	// Read Only: true
 	// Enum: [smb1 smb2 smb2_1 smb3 smb3_1]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// Specifies the IP address of the SVM.
 	//
 	// Example: 10.140.78.248
 	// Read Only: true
-	ServerIP string `json:"server_ip,omitempty"`
+	ServerIP *string `json:"server_ip,omitempty"`
 
 	// Indicates an SMB encryption state. The following values are supported:
 	// * unencrypted - SMB session is not encrypted
@@ -138,7 +141,7 @@ type CifsSession struct {
 	// Example: unencrypted
 	// Read Only: true
 	// Enum: [unencrypted encrypted partially_encrypted]
-	SmbEncryption string `json:"smb_encryption,omitempty"`
+	SmbEncryption *string `json:"smb_encryption,omitempty"`
 
 	// Specifies whether or not SMB signing is enabled.
 	// Example: false
@@ -146,16 +149,13 @@ type CifsSession struct {
 	SmbSigning *bool `json:"smb_signing,omitempty"`
 
 	// svm
-	Svm *CifsSessionSvm `json:"svm,omitempty"`
+	Svm *CifsSessionInlineSvm `json:"svm,omitempty"`
 
 	// Indicates that a Windows user has logged in.
 	//
 	// Example: NBCIFSQA2\\administrator
 	// Read Only: true
-	User string `json:"user,omitempty"`
-
-	// A group of volumes, the client is accessing.
-	Volumes []*CifsSessionVolumesItems0 `json:"volumes,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this cifs session
@@ -167,6 +167,10 @@ func (m *CifsSession) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAuthentication(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCifsSessionInlineVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -187,10 +191,6 @@ func (m *CifsSession) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -296,8 +296,32 @@ func (m *CifsSession) validateAuthentication(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateAuthenticationEnum("authentication", "body", m.Authentication); err != nil {
+	if err := m.validateAuthenticationEnum("authentication", "body", *m.Authentication); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *CifsSession) validateCifsSessionInlineVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsSessionInlineVolumes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CifsSessionInlineVolumes); i++ {
+		if swag.IsZero(m.CifsSessionInlineVolumes[i]) { // not required
+			continue
+		}
+
+		if m.CifsSessionInlineVolumes[i] != nil {
+			if err := m.CifsSessionInlineVolumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -362,7 +386,7 @@ func (m *CifsSession) validateContinuousAvailability(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateContinuousAvailabilityEnum("continuous_availability", "body", m.ContinuousAvailability); err != nil {
+	if err := m.validateContinuousAvailabilityEnum("continuous_availability", "body", *m.ContinuousAvailability); err != nil {
 		return err
 	}
 
@@ -465,7 +489,7 @@ func (m *CifsSession) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -531,7 +555,7 @@ func (m *CifsSession) validateSmbEncryption(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSmbEncryptionEnum("smb_encryption", "body", m.SmbEncryption); err != nil {
+	if err := m.validateSmbEncryptionEnum("smb_encryption", "body", *m.SmbEncryption); err != nil {
 		return err
 	}
 
@@ -555,30 +579,6 @@ func (m *CifsSession) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSession) validateVolumes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Volumes) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Volumes); i++ {
-		if swag.IsZero(m.Volumes[i]) { // not required
-			continue
-		}
-
-		if m.Volumes[i] != nil {
-			if err := m.Volumes[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this cifs session based on the context it is used
 func (m *CifsSession) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -588,6 +588,10 @@ func (m *CifsSession) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateAuthentication(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCifsSessionInlineVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -667,10 +671,6 @@ func (m *CifsSession) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVolumes(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -693,8 +693,26 @@ func (m *CifsSession) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *CifsSession) contextValidateAuthentication(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "authentication", "body", string(m.Authentication)); err != nil {
+	if err := validate.ReadOnly(ctx, "authentication", "body", m.Authentication); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *CifsSession) contextValidateCifsSessionInlineVolumes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CifsSessionInlineVolumes); i++ {
+
+		if m.CifsSessionInlineVolumes[i] != nil {
+			if err := m.CifsSessionInlineVolumes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -702,7 +720,7 @@ func (m *CifsSession) contextValidateAuthentication(ctx context.Context, formats
 
 func (m *CifsSession) contextValidateClientIP(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "client_ip", "body", string(m.ClientIP)); err != nil {
+	if err := validate.ReadOnly(ctx, "client_ip", "body", m.ClientIP); err != nil {
 		return err
 	}
 
@@ -711,7 +729,7 @@ func (m *CifsSession) contextValidateClientIP(ctx context.Context, formats strfm
 
 func (m *CifsSession) contextValidateConnectedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connected_duration", "body", string(m.ConnectedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "connected_duration", "body", m.ConnectedDuration); err != nil {
 		return err
 	}
 
@@ -720,7 +738,7 @@ func (m *CifsSession) contextValidateConnectedDuration(ctx context.Context, form
 
 func (m *CifsSession) contextValidateConnectionCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connection_count", "body", int64(m.ConnectionCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "connection_count", "body", m.ConnectionCount); err != nil {
 		return err
 	}
 
@@ -729,7 +747,7 @@ func (m *CifsSession) contextValidateConnectionCount(ctx context.Context, format
 
 func (m *CifsSession) contextValidateConnectionID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connection_id", "body", int64(m.ConnectionID)); err != nil {
+	if err := validate.ReadOnly(ctx, "connection_id", "body", m.ConnectionID); err != nil {
 		return err
 	}
 
@@ -738,7 +756,7 @@ func (m *CifsSession) contextValidateConnectionID(ctx context.Context, formats s
 
 func (m *CifsSession) contextValidateContinuousAvailability(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "continuous_availability", "body", string(m.ContinuousAvailability)); err != nil {
+	if err := validate.ReadOnly(ctx, "continuous_availability", "body", m.ContinuousAvailability); err != nil {
 		return err
 	}
 
@@ -747,7 +765,7 @@ func (m *CifsSession) contextValidateContinuousAvailability(ctx context.Context,
 
 func (m *CifsSession) contextValidateIdentifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identifier", "body", int64(m.Identifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "identifier", "body", m.Identifier); err != nil {
 		return err
 	}
 
@@ -756,7 +774,7 @@ func (m *CifsSession) contextValidateIdentifier(ctx context.Context, formats str
 
 func (m *CifsSession) contextValidateIdleDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "idle_duration", "body", string(m.IdleDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "idle_duration", "body", m.IdleDuration); err != nil {
 		return err
 	}
 
@@ -774,7 +792,7 @@ func (m *CifsSession) contextValidateLargeMtu(ctx context.Context, formats strfm
 
 func (m *CifsSession) contextValidateMappedUnixUser(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mapped_unix_user", "body", string(m.MappedUnixUser)); err != nil {
+	if err := validate.ReadOnly(ctx, "mapped_unix_user", "body", m.MappedUnixUser); err != nil {
 		return err
 	}
 
@@ -797,7 +815,7 @@ func (m *CifsSession) contextValidateNode(ctx context.Context, formats strfmt.Re
 
 func (m *CifsSession) contextValidateOpenFiles(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_files", "body", int64(m.OpenFiles)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_files", "body", m.OpenFiles); err != nil {
 		return err
 	}
 
@@ -806,7 +824,7 @@ func (m *CifsSession) contextValidateOpenFiles(ctx context.Context, formats strf
 
 func (m *CifsSession) contextValidateOpenOther(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_other", "body", int64(m.OpenOther)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_other", "body", m.OpenOther); err != nil {
 		return err
 	}
 
@@ -815,7 +833,7 @@ func (m *CifsSession) contextValidateOpenOther(ctx context.Context, formats strf
 
 func (m *CifsSession) contextValidateOpenShares(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "open_shares", "body", int64(m.OpenShares)); err != nil {
+	if err := validate.ReadOnly(ctx, "open_shares", "body", m.OpenShares); err != nil {
 		return err
 	}
 
@@ -824,7 +842,7 @@ func (m *CifsSession) contextValidateOpenShares(ctx context.Context, formats str
 
 func (m *CifsSession) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 
@@ -833,7 +851,7 @@ func (m *CifsSession) contextValidateProtocol(ctx context.Context, formats strfm
 
 func (m *CifsSession) contextValidateServerIP(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "server_ip", "body", string(m.ServerIP)); err != nil {
+	if err := validate.ReadOnly(ctx, "server_ip", "body", m.ServerIP); err != nil {
 		return err
 	}
 
@@ -842,7 +860,7 @@ func (m *CifsSession) contextValidateServerIP(ctx context.Context, formats strfm
 
 func (m *CifsSession) contextValidateSmbEncryption(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "smb_encryption", "body", string(m.SmbEncryption)); err != nil {
+	if err := validate.ReadOnly(ctx, "smb_encryption", "body", m.SmbEncryption); err != nil {
 		return err
 	}
 
@@ -874,26 +892,8 @@ func (m *CifsSession) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *CifsSession) contextValidateUser(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user", "body", string(m.User)); err != nil {
+	if err := validate.ReadOnly(ctx, "user", "body", m.User); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *CifsSession) contextValidateVolumes(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Volumes); i++ {
-
-		if m.Volumes[i] != nil {
-			if err := m.Volumes[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -917,17 +917,17 @@ func (m *CifsSession) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionLinks cifs session links
+// CifsSessionInlineLinks cifs session inline links
 //
-// swagger:model CifsSessionLinks
-type CifsSessionLinks struct {
+// swagger:model cifs_session_inline__links
+type CifsSessionInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs session links
-func (m *CifsSessionLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline links
+func (m *CifsSessionInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -940,7 +940,7 @@ func (m *CifsSessionLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSessionInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -957,8 +957,8 @@ func (m *CifsSessionLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs session links based on the context it is used
-func (m *CifsSessionLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline links based on the context it is used
+func (m *CifsSessionInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -971,7 +971,7 @@ func (m *CifsSessionLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *CifsSessionLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -986,7 +986,7 @@ func (m *CifsSessionLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -994,8 +994,8 @@ func (m *CifsSessionLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSessionLinks
+func (m *CifsSessionInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1003,25 +1003,25 @@ func (m *CifsSessionLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionNode cifs session node
+// CifsSessionInlineNode cifs session inline node
 //
-// swagger:model CifsSessionNode
-type CifsSessionNode struct {
+// swagger:model cifs_session_inline_node
+type CifsSessionInlineNode struct {
 
 	// links
-	Links *CifsSessionNodeLinks `json:"_links,omitempty"`
+	Links *CifsSessionInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs session node
-func (m *CifsSessionNode) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline node
+func (m *CifsSessionInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1034,7 +1034,7 @@ func (m *CifsSessionNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionNode) validateLinks(formats strfmt.Registry) error {
+func (m *CifsSessionInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1051,8 +1051,8 @@ func (m *CifsSessionNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs session node based on the context it is used
-func (m *CifsSessionNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline node based on the context it is used
+func (m *CifsSessionInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1065,7 +1065,7 @@ func (m *CifsSessionNode) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *CifsSessionNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1080,7 +1080,7 @@ func (m *CifsSessionNode) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionNode) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1088,8 +1088,8 @@ func (m *CifsSessionNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionNode) UnmarshalBinary(b []byte) error {
-	var res CifsSessionNode
+func (m *CifsSessionInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1097,17 +1097,17 @@ func (m *CifsSessionNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionNodeLinks cifs session node links
+// CifsSessionInlineNodeInlineLinks cifs session inline node inline links
 //
-// swagger:model CifsSessionNodeLinks
-type CifsSessionNodeLinks struct {
+// swagger:model cifs_session_inline_node_inline__links
+type CifsSessionInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs session node links
-func (m *CifsSessionNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline node inline links
+func (m *CifsSessionInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1120,7 +1120,7 @@ func (m *CifsSessionNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSessionInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1137,8 +1137,8 @@ func (m *CifsSessionNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs session node links based on the context it is used
-func (m *CifsSessionNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline node inline links based on the context it is used
+func (m *CifsSessionInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1151,7 +1151,7 @@ func (m *CifsSessionNodeLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *CifsSessionNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1166,7 +1166,7 @@ func (m *CifsSessionNodeLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1174,8 +1174,8 @@ func (m *CifsSessionNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSessionNodeLinks
+func (m *CifsSessionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1183,27 +1183,27 @@ func (m *CifsSessionNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionSvm cifs session svm
+// CifsSessionInlineSvm cifs session inline svm
 //
-// swagger:model CifsSessionSvm
-type CifsSessionSvm struct {
+// swagger:model cifs_session_inline_svm
+type CifsSessionInlineSvm struct {
 
 	// links
-	Links *CifsSessionSvmLinks `json:"_links,omitempty"`
+	Links *CifsSessionInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs session svm
-func (m *CifsSessionSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline svm
+func (m *CifsSessionInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1216,7 +1216,7 @@ func (m *CifsSessionSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsSessionInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1233,8 +1233,8 @@ func (m *CifsSessionSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs session svm based on the context it is used
-func (m *CifsSessionSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline svm based on the context it is used
+func (m *CifsSessionInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1247,7 +1247,7 @@ func (m *CifsSessionSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *CifsSessionSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1262,7 +1262,7 @@ func (m *CifsSessionSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1270,8 +1270,8 @@ func (m *CifsSessionSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionSvm) UnmarshalBinary(b []byte) error {
-	var res CifsSessionSvm
+func (m *CifsSessionInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1279,17 +1279,17 @@ func (m *CifsSessionSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionSvmLinks cifs session svm links
+// CifsSessionInlineSvmInlineLinks cifs session inline svm inline links
 //
-// swagger:model CifsSessionSvmLinks
-type CifsSessionSvmLinks struct {
+// swagger:model cifs_session_inline_svm_inline__links
+type CifsSessionInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs session svm links
-func (m *CifsSessionSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline svm inline links
+func (m *CifsSessionInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1302,7 +1302,7 @@ func (m *CifsSessionSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSessionInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1319,8 +1319,8 @@ func (m *CifsSessionSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs session svm links based on the context it is used
-func (m *CifsSessionSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline svm inline links based on the context it is used
+func (m *CifsSessionInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1333,7 +1333,7 @@ func (m *CifsSessionSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *CifsSessionSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1348,7 +1348,7 @@ func (m *CifsSessionSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1356,8 +1356,8 @@ func (m *CifsSessionSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSessionSvmLinks
+func (m *CifsSessionInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1365,25 +1365,25 @@ func (m *CifsSessionSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionVolumesItems0 cifs session volumes items0
+// CifsSessionInlineVolumesInlineArrayItem cifs session inline volumes inline array item
 //
-// swagger:model CifsSessionVolumesItems0
-type CifsSessionVolumesItems0 struct {
+// swagger:model cifs_session_inline_volumes_inline_array_item
+type CifsSessionInlineVolumesInlineArrayItem struct {
 
 	// links
-	Links *CifsSessionVolumesItems0Links `json:"_links,omitempty"`
+	Links *CifsSessionInlineVolumesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs session volumes items0
-func (m *CifsSessionVolumesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline volumes inline array item
+func (m *CifsSessionInlineVolumesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1396,7 +1396,7 @@ func (m *CifsSessionVolumesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSessionVolumesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *CifsSessionInlineVolumesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1413,8 +1413,8 @@ func (m *CifsSessionVolumesItems0) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this cifs session volumes items0 based on the context it is used
-func (m *CifsSessionVolumesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline volumes inline array item based on the context it is used
+func (m *CifsSessionInlineVolumesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1427,7 +1427,7 @@ func (m *CifsSessionVolumesItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CifsSessionVolumesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineVolumesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1442,7 +1442,7 @@ func (m *CifsSessionVolumesItems0) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionVolumesItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineVolumesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1450,8 +1450,8 @@ func (m *CifsSessionVolumesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionVolumesItems0) UnmarshalBinary(b []byte) error {
-	var res CifsSessionVolumesItems0
+func (m *CifsSessionInlineVolumesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineVolumesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1459,17 +1459,17 @@ func (m *CifsSessionVolumesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSessionVolumesItems0Links cifs session volumes items0 links
+// CifsSessionInlineVolumesInlineArrayItemInlineLinks cifs session inline volumes inline array item inline links
 //
-// swagger:model CifsSessionVolumesItems0Links
-type CifsSessionVolumesItems0Links struct {
+// swagger:model cifs_session_inline_volumes_inline_array_item_inline__links
+type CifsSessionInlineVolumesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs session volumes items0 links
-func (m *CifsSessionVolumesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs session inline volumes inline array item inline links
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1482,7 +1482,7 @@ func (m *CifsSessionVolumesItems0Links) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *CifsSessionVolumesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1499,8 +1499,8 @@ func (m *CifsSessionVolumesItems0Links) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this cifs session volumes items0 links based on the context it is used
-func (m *CifsSessionVolumesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs session inline volumes inline array item inline links based on the context it is used
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1513,7 +1513,7 @@ func (m *CifsSessionVolumesItems0Links) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *CifsSessionVolumesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1528,7 +1528,7 @@ func (m *CifsSessionVolumesItems0Links) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSessionVolumesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1536,8 +1536,8 @@ func (m *CifsSessionVolumesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSessionVolumesItems0Links) UnmarshalBinary(b []byte) error {
-	var res CifsSessionVolumesItems0Links
+func (m *CifsSessionInlineVolumesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSessionInlineVolumesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

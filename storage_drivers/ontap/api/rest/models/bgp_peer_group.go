@@ -21,27 +21,27 @@ import (
 type BgpPeerGroup struct {
 
 	// ipspace
-	Ipspace *BgpPeerGroupIpspace `json:"ipspace,omitempty"`
+	Ipspace *BgpPeerGroupInlineIpspace `json:"ipspace,omitempty"`
 
 	// local
-	Local *BgpPeerGroupLocal `json:"local,omitempty"`
+	Local *BgpPeerGroupInlineLocal `json:"local,omitempty"`
 
 	// Name of the peer group
 	// Example: bgpv4peer
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// peer
-	Peer *BgpPeerGroupPeer `json:"peer,omitempty"`
+	Peer *BgpPeerGroupInlinePeer `json:"peer,omitempty"`
 
 	// State of the peer group
 	// Read Only: true
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// UUID of the peer group
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this bgp peer group
@@ -170,7 +170,7 @@ func (m *BgpPeerGroup) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -251,7 +251,7 @@ func (m *BgpPeerGroup) contextValidatePeer(ctx context.Context, formats strfmt.R
 
 func (m *BgpPeerGroup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -260,7 +260,7 @@ func (m *BgpPeerGroup) contextValidateState(ctx context.Context, formats strfmt.
 
 func (m *BgpPeerGroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -285,25 +285,25 @@ func (m *BgpPeerGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupIpspace Either the UUID or name is supplied on input.
+// BgpPeerGroupInlineIpspace Either the UUID or name is supplied on input.
 //
-// swagger:model BgpPeerGroupIpspace
-type BgpPeerGroupIpspace struct {
+// swagger:model bgp_peer_group_inline_ipspace
+type BgpPeerGroupInlineIpspace struct {
 
 	// links
-	Links *BgpPeerGroupIpspaceLinks `json:"_links,omitempty"`
+	Links *BgpPeerGroupInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this bgp peer group ipspace
-func (m *BgpPeerGroupIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline ipspace
+func (m *BgpPeerGroupInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -316,7 +316,7 @@ func (m *BgpPeerGroupIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -333,8 +333,8 @@ func (m *BgpPeerGroupIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this bgp peer group ipspace based on the context it is used
-func (m *BgpPeerGroupIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline ipspace based on the context it is used
+func (m *BgpPeerGroupInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -347,7 +347,7 @@ func (m *BgpPeerGroupIpspace) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *BgpPeerGroupIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -362,7 +362,7 @@ func (m *BgpPeerGroupIpspace) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupIpspace) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -370,8 +370,8 @@ func (m *BgpPeerGroupIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupIpspace) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupIpspace
+func (m *BgpPeerGroupInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -379,17 +379,17 @@ func (m *BgpPeerGroupIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupIpspaceLinks bgp peer group ipspace links
+// BgpPeerGroupInlineIpspaceInlineLinks bgp peer group inline ipspace inline links
 //
-// swagger:model BgpPeerGroupIpspaceLinks
-type BgpPeerGroupIpspaceLinks struct {
+// swagger:model bgp_peer_group_inline_ipspace_inline__links
+type BgpPeerGroupInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this bgp peer group ipspace links
-func (m *BgpPeerGroupIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline ipspace inline links
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -402,7 +402,7 @@ func (m *BgpPeerGroupIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -419,8 +419,8 @@ func (m *BgpPeerGroupIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this bgp peer group ipspace links based on the context it is used
-func (m *BgpPeerGroupIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline ipspace inline links based on the context it is used
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -433,7 +433,7 @@ func (m *BgpPeerGroupIpspaceLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *BgpPeerGroupIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -448,7 +448,7 @@ func (m *BgpPeerGroupIpspaceLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -456,8 +456,8 @@ func (m *BgpPeerGroupIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupIpspaceLinks
+func (m *BgpPeerGroupInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -465,23 +465,23 @@ func (m *BgpPeerGroupIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocal Information describing the local interface that is being used to peer with a router using BGP. On a POST operation, an existing BGP interface is used by specifying the interface, or create a new one by specifying the port and IP address.
+// BgpPeerGroupInlineLocal Information describing the local interface that is being used to peer with a router using BGP. On a POST operation, an existing BGP interface is used by specifying the interface, or create a new one by specifying the port and IP address.
 //
-// swagger:model BgpPeerGroupLocal
-type BgpPeerGroupLocal struct {
+// swagger:model bgp_peer_group_inline_local
+type BgpPeerGroupInlineLocal struct {
 
 	// interface
-	Interface *BgpPeerGroupLocalInterface `json:"interface,omitempty"`
+	Interface *BgpPeerGroupInlineLocalInlineInterface `json:"interface,omitempty"`
 
 	// ip
-	IP *BgpPeerGroupLocalIP `json:"ip,omitempty"`
+	IP *BgpPeerGroupInlineLocalInlineIP `json:"ip,omitempty"`
 
 	// port
-	Port *BgpPeerGroupLocalPort `json:"port,omitempty"`
+	Port *BgpPeerGroupInlineLocalInlinePort `json:"port,omitempty"`
 }
 
-// Validate validates this bgp peer group local
-func (m *BgpPeerGroupLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local
+func (m *BgpPeerGroupInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInterface(formats); err != nil {
@@ -502,7 +502,7 @@ func (m *BgpPeerGroupLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) validateInterface(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) validateInterface(formats strfmt.Registry) error {
 	if swag.IsZero(m.Interface) { // not required
 		return nil
 	}
@@ -519,7 +519,7 @@ func (m *BgpPeerGroupLocal) validateInterface(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) validateIP(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -536,7 +536,7 @@ func (m *BgpPeerGroupLocal) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) validatePort(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -553,8 +553,8 @@ func (m *BgpPeerGroupLocal) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local based on the context it is used
-func (m *BgpPeerGroupLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local based on the context it is used
+func (m *BgpPeerGroupInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInterface(ctx, formats); err != nil {
@@ -575,7 +575,7 @@ func (m *BgpPeerGroupLocal) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) contextValidateInterface(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) contextValidateInterface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Interface != nil {
 		if err := m.Interface.ContextValidate(ctx, formats); err != nil {
@@ -589,7 +589,7 @@ func (m *BgpPeerGroupLocal) contextValidateInterface(ctx context.Context, format
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -603,7 +603,7 @@ func (m *BgpPeerGroupLocal) contextValidateIP(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *BgpPeerGroupLocal) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocal) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -618,7 +618,7 @@ func (m *BgpPeerGroupLocal) contextValidatePort(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocal) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -626,8 +626,8 @@ func (m *BgpPeerGroupLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocal) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocal
+func (m *BgpPeerGroupInlineLocal) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -635,20 +635,20 @@ func (m *BgpPeerGroupLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalIP IP information to create a new interface.
+// BgpPeerGroupInlineLocalInlineIP IP information to create a new interface.
 //
-// swagger:model BgpPeerGroupLocalIP
-type BgpPeerGroupLocalIP struct {
+// swagger:model bgp_peer_group_inline_local_inline_ip
+type BgpPeerGroupInlineLocalInlineIP struct {
 
 	// address
-	Address IPAddress `json:"address,omitempty"`
+	Address *IPAddress `json:"address,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this bgp peer group local IP
-func (m *BgpPeerGroupLocalIP) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline ip
+func (m *BgpPeerGroupInlineLocalInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -665,38 +665,42 @@ func (m *BgpPeerGroupLocalIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalIP) validateAddress(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *BgpPeerGroupLocalIP) validateNetmask(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineIP) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "ip" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "ip" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local IP based on the context it is used
-func (m *BgpPeerGroupLocalIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline ip based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -713,32 +717,36 @@ func (m *BgpPeerGroupLocalIP) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *BgpPeerGroupLocalIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *BgpPeerGroupLocalIP) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineIP) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "ip" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "ip" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalIP) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -746,8 +754,8 @@ func (m *BgpPeerGroupLocalIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalIP) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalIP
+func (m *BgpPeerGroupInlineLocalInlineIP) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -755,30 +763,30 @@ func (m *BgpPeerGroupLocalIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalInterface bgp peer group local interface
+// BgpPeerGroupInlineLocalInlineInterface bgp peer group inline local inline interface
 //
-// swagger:model BgpPeerGroupLocalInterface
-type BgpPeerGroupLocalInterface struct {
+// swagger:model bgp_peer_group_inline_local_inline_interface
+type BgpPeerGroupInlineLocalInlineInterface struct {
 
 	// links
-	Links *BgpPeerGroupLocalInterfaceLinks `json:"_links,omitempty"`
+	Links *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *BgpPeerGroupLocalInterfaceIP `json:"ip,omitempty"`
+	IP *BgpPeerGroupInlineLocalInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this bgp peer group local interface
-func (m *BgpPeerGroupLocalInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline interface
+func (m *BgpPeerGroupInlineLocalInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -795,7 +803,7 @@ func (m *BgpPeerGroupLocalInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterface) validateLinks(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -812,7 +820,7 @@ func (m *BgpPeerGroupLocalInterface) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterface) validateIP(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -829,8 +837,8 @@ func (m *BgpPeerGroupLocalInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local interface based on the context it is used
-func (m *BgpPeerGroupLocalInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline interface based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -847,7 +855,7 @@ func (m *BgpPeerGroupLocalInterface) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -861,7 +869,7 @@ func (m *BgpPeerGroupLocalInterface) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -876,7 +884,7 @@ func (m *BgpPeerGroupLocalInterface) contextValidateIP(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterface) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -884,8 +892,8 @@ func (m *BgpPeerGroupLocalInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterface) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalInterface
+func (m *BgpPeerGroupInlineLocalInlineInterface) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -893,17 +901,17 @@ func (m *BgpPeerGroupLocalInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalInterfaceIP IP information
+// BgpPeerGroupInlineLocalInlineInterfaceInlineIP IP information
 //
-// swagger:model BgpPeerGroupLocalInterfaceIP
-type BgpPeerGroupLocalInterfaceIP struct {
+// swagger:model bgp_peer_group_inline_local_inline_interface_inline_ip
+type BgpPeerGroupInlineLocalInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this bgp peer group local interface IP
-func (m *BgpPeerGroupLocalInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline interface inline ip
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -916,23 +924,25 @@ func (m *BgpPeerGroupLocalInterfaceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local interface IP based on the context it is used
-func (m *BgpPeerGroupLocalInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline interface inline ip based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -945,20 +955,22 @@ func (m *BgpPeerGroupLocalInterfaceIP) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local" + "." + "interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local" + "." + "interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -966,8 +978,8 @@ func (m *BgpPeerGroupLocalInterfaceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalInterfaceIP
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -975,17 +987,17 @@ func (m *BgpPeerGroupLocalInterfaceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalInterfaceLinks bgp peer group local interface links
+// BgpPeerGroupInlineLocalInlineInterfaceInlineLinks bgp peer group inline local inline interface inline links
 //
-// swagger:model BgpPeerGroupLocalInterfaceLinks
-type BgpPeerGroupLocalInterfaceLinks struct {
+// swagger:model bgp_peer_group_inline_local_inline_interface_inline__links
+type BgpPeerGroupInlineLocalInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this bgp peer group local interface links
-func (m *BgpPeerGroupLocalInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline interface inline links
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -998,7 +1010,7 @@ func (m *BgpPeerGroupLocalInterfaceLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1015,8 +1027,8 @@ func (m *BgpPeerGroupLocalInterfaceLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local interface links based on the context it is used
-func (m *BgpPeerGroupLocalInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline interface inline links based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1029,7 +1041,7 @@ func (m *BgpPeerGroupLocalInterfaceLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *BgpPeerGroupLocalInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1044,7 +1056,7 @@ func (m *BgpPeerGroupLocalInterfaceLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1052,8 +1064,8 @@ func (m *BgpPeerGroupLocalInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalInterfaceLinks
+func (m *BgpPeerGroupInlineLocalInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1061,28 +1073,28 @@ func (m *BgpPeerGroupLocalInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalPort bgp peer group local port
+// BgpPeerGroupInlineLocalInlinePort bgp peer group inline local inline port
 //
-// swagger:model BgpPeerGroupLocalPort
-type BgpPeerGroupLocalPort struct {
+// swagger:model bgp_peer_group_inline_local_inline_port
+type BgpPeerGroupInlineLocalInlinePort struct {
 
 	// links
-	Links *BgpPeerGroupLocalPortLinks `json:"_links,omitempty"`
+	Links *BgpPeerGroupInlineLocalInlinePortInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *BgpPeerGroupLocalPortNode `json:"node,omitempty"`
+	Node *BgpPeerGroupInlineLocalInlinePortInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this bgp peer group local port
-func (m *BgpPeerGroupLocalPort) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline port
+func (m *BgpPeerGroupInlineLocalInlinePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1099,7 +1111,7 @@ func (m *BgpPeerGroupLocalPort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPort) validateLinks(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1116,7 +1128,7 @@ func (m *BgpPeerGroupLocalPort) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPort) validateNode(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1133,8 +1145,8 @@ func (m *BgpPeerGroupLocalPort) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local port based on the context it is used
-func (m *BgpPeerGroupLocalPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline port based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1151,7 +1163,7 @@ func (m *BgpPeerGroupLocalPort) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1165,7 +1177,7 @@ func (m *BgpPeerGroupLocalPort) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1180,7 +1192,7 @@ func (m *BgpPeerGroupLocalPort) contextValidateNode(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPort) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1188,8 +1200,8 @@ func (m *BgpPeerGroupLocalPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPort) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalPort
+func (m *BgpPeerGroupInlineLocalInlinePort) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1197,17 +1209,17 @@ func (m *BgpPeerGroupLocalPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalPortLinks bgp peer group local port links
+// BgpPeerGroupInlineLocalInlinePortInlineLinks bgp peer group inline local inline port inline links
 //
-// swagger:model BgpPeerGroupLocalPortLinks
-type BgpPeerGroupLocalPortLinks struct {
+// swagger:model bgp_peer_group_inline_local_inline_port_inline__links
+type BgpPeerGroupInlineLocalInlinePortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this bgp peer group local port links
-func (m *BgpPeerGroupLocalPortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline port inline links
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1220,7 +1232,7 @@ func (m *BgpPeerGroupLocalPortLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1237,8 +1249,8 @@ func (m *BgpPeerGroupLocalPortLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this bgp peer group local port links based on the context it is used
-func (m *BgpPeerGroupLocalPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this bgp peer group inline local inline port inline links based on the context it is used
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1251,7 +1263,7 @@ func (m *BgpPeerGroupLocalPortLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *BgpPeerGroupLocalPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1266,7 +1278,7 @@ func (m *BgpPeerGroupLocalPortLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPortLinks) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1274,8 +1286,8 @@ func (m *BgpPeerGroupLocalPortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPortLinks) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalPortLinks
+func (m *BgpPeerGroupInlineLocalInlinePortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlinePortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1283,28 +1295,28 @@ func (m *BgpPeerGroupLocalPortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupLocalPortNode bgp peer group local port node
+// BgpPeerGroupInlineLocalInlinePortInlineNode bgp peer group inline local inline port inline node
 //
-// swagger:model BgpPeerGroupLocalPortNode
-type BgpPeerGroupLocalPortNode struct {
+// swagger:model bgp_peer_group_inline_local_inline_port_inline_node
+type BgpPeerGroupInlineLocalInlinePortInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this bgp peer group local port node
-func (m *BgpPeerGroupLocalPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline local inline port inline node
+func (m *BgpPeerGroupInlineLocalInlinePortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this bgp peer group local port node based on context it is used
-func (m *BgpPeerGroupLocalPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this bgp peer group inline local inline port inline node based on context it is used
+func (m *BgpPeerGroupInlineLocalInlinePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPortNode) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlineLocalInlinePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1312,8 +1324,8 @@ func (m *BgpPeerGroupLocalPortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupLocalPortNode) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupLocalPortNode
+func (m *BgpPeerGroupInlineLocalInlinePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlineLocalInlinePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1321,34 +1333,34 @@ func (m *BgpPeerGroupLocalPortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BgpPeerGroupPeer Information describing the router to peer with
+// BgpPeerGroupInlinePeer Information describing the router to peer with
 //
-// swagger:model BgpPeerGroupPeer
-type BgpPeerGroupPeer struct {
+// swagger:model bgp_peer_group_inline_peer
+type BgpPeerGroupInlinePeer struct {
 
 	// Peer router address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// Autonomous system number of peer
-	Asn int64 `json:"asn,omitempty"`
+	Asn *int64 `json:"asn,omitempty"`
 
 	// Use peer address as next hop.
-	IsNextHop bool `json:"is_next_hop,omitempty"`
+	IsNextHop *bool `json:"is_next_hop,omitempty"`
 }
 
-// Validate validates this bgp peer group peer
-func (m *BgpPeerGroupPeer) Validate(formats strfmt.Registry) error {
+// Validate validates this bgp peer group inline peer
+func (m *BgpPeerGroupInlinePeer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this bgp peer group peer based on context it is used
-func (m *BgpPeerGroupPeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this bgp peer group inline peer based on context it is used
+func (m *BgpPeerGroupInlinePeer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *BgpPeerGroupPeer) MarshalBinary() ([]byte, error) {
+func (m *BgpPeerGroupInlinePeer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1356,8 +1368,8 @@ func (m *BgpPeerGroupPeer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BgpPeerGroupPeer) UnmarshalBinary(b []byte) error {
-	var res BgpPeerGroupPeer
+func (m *BgpPeerGroupInlinePeer) UnmarshalBinary(b []byte) error {
+	var res BgpPeerGroupInlinePeer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

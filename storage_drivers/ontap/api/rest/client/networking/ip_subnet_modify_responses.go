@@ -112,6 +112,7 @@ ONTAP Error Response Codes
 | 1377663 | The specified IP address range of subnet in IPspace contains an address already in use by a LIF. |
 | 1377664 | The specified IP address range of subnet in IPspace contains an address already in use by the Service Processor. |
 | 1377673 | The addresses provided must have the same address family. |
+| 1377681 | Cannot update LIF associations for LIF. The broadcast domain of the LIF does not match the broadcast domain of the subnet. |
 | 53282568 | The subnet.address must be specified together with subnet.netmask. |
 | 53282569 | The specified subnet.netmask is not valid. |
 | 53282570 | Each pair of ranges must have ip_ranges.start less than or equal to ip_ranges.end. |

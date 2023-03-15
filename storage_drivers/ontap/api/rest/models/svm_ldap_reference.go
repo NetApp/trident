@@ -21,19 +21,19 @@ type SvmLdapReference struct {
 	// used to discover LDAP servers for use by this client.
 	// This is mutually exclusive with `servers` during POST.
 	//
-	AdDomain string `json:"ad_domain,omitempty"`
+	AdDomain *string `json:"ad_domain,omitempty"`
 
 	// Specifies the default base DN for all searches.
-	BaseDn string `json:"base_dn,omitempty"`
+	BaseDn *string `json:"base_dn,omitempty"`
 
 	// Specifies the user that binds to the LDAP servers. SVM API supports anonymous binding. For Simple and SASL LDAP binding, use the LDAP API endpoint.
-	BindDn string `json:"bind_dn,omitempty"`
+	BindDn *string `json:"bind_dn,omitempty"`
 
 	// Enable LDAP? Setting to true creates a configuration if not already created.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
-	// servers
-	Servers []string `json:"servers,omitempty"`
+	// svm ldap reference inline servers
+	SvmLdapReferenceInlineServers []*string `json:"servers,omitempty"`
 }
 
 // Validate validates this svm ldap reference

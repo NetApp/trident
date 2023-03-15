@@ -66,14 +66,14 @@ type IgroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   The unique identifier of the initiator group.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *IgroupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the igroup get params
-func (o *IgroupGetParams) WithFieldsQueryParameter(fields []string) *IgroupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the igroup get params
+func (o *IgroupGetParams) WithFields(fields []string) *IgroupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the igroup get params
-func (o *IgroupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the igroup get params
+func (o *IgroupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the igroup get params
-func (o *IgroupGetParams) WithUUIDPathParameter(uuid string) *IgroupGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the igroup get params
+func (o *IgroupGetParams) WithUUID(uuid string) *IgroupGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the igroup get params
-func (o *IgroupGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the igroup get params
+func (o *IgroupGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *IgroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *IgroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *IgroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamIgroupGet binds the parameter fields
 func (o *IgroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

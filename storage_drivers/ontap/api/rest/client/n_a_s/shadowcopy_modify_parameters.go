@@ -68,7 +68,7 @@ type ShadowcopyModifyParams struct {
 
 	   client shadowcopy ID
 	*/
-	ClientUUIDPathParameter string
+	ClientUUID string
 
 	/* Info.
 
@@ -80,7 +80,7 @@ type ShadowcopyModifyParams struct {
 
 	   Indicates whether to restore a directory
 	*/
-	RestoreQueryParameter *bool
+	Restore *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,15 +135,15 @@ func (o *ShadowcopyModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientUUIDPathParameter adds the clientUUID to the shadowcopy modify params
-func (o *ShadowcopyModifyParams) WithClientUUIDPathParameter(clientUUID string) *ShadowcopyModifyParams {
-	o.SetClientUUIDPathParameter(clientUUID)
+// WithClientUUID adds the clientUUID to the shadowcopy modify params
+func (o *ShadowcopyModifyParams) WithClientUUID(clientUUID string) *ShadowcopyModifyParams {
+	o.SetClientUUID(clientUUID)
 	return o
 }
 
-// SetClientUUIDPathParameter adds the clientUuid to the shadowcopy modify params
-func (o *ShadowcopyModifyParams) SetClientUUIDPathParameter(clientUUID string) {
-	o.ClientUUIDPathParameter = clientUUID
+// SetClientUUID adds the clientUuid to the shadowcopy modify params
+func (o *ShadowcopyModifyParams) SetClientUUID(clientUUID string) {
+	o.ClientUUID = clientUUID
 }
 
 // WithInfo adds the info to the shadowcopy modify params
@@ -157,15 +157,15 @@ func (o *ShadowcopyModifyParams) SetInfo(info *models.Shadowcopy) {
 	o.Info = info
 }
 
-// WithRestoreQueryParameter adds the restore to the shadowcopy modify params
-func (o *ShadowcopyModifyParams) WithRestoreQueryParameter(restore *bool) *ShadowcopyModifyParams {
-	o.SetRestoreQueryParameter(restore)
+// WithRestore adds the restore to the shadowcopy modify params
+func (o *ShadowcopyModifyParams) WithRestore(restore *bool) *ShadowcopyModifyParams {
+	o.SetRestore(restore)
 	return o
 }
 
-// SetRestoreQueryParameter adds the restore to the shadowcopy modify params
-func (o *ShadowcopyModifyParams) SetRestoreQueryParameter(restore *bool) {
-	o.RestoreQueryParameter = restore
+// SetRestore adds the restore to the shadowcopy modify params
+func (o *ShadowcopyModifyParams) SetRestore(restore *bool) {
+	o.Restore = restore
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -177,7 +177,7 @@ func (o *ShadowcopyModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param client_uuid
-	if err := r.SetPathParam("client_uuid", o.ClientUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("client_uuid", o.ClientUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -186,13 +186,13 @@ func (o *ShadowcopyModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.RestoreQueryParameter != nil {
+	if o.Restore != nil {
 
 		// query param restore
 		var qrRestore bool
 
-		if o.RestoreQueryParameter != nil {
-			qrRestore = *o.RestoreQueryParameter
+		if o.Restore != nil {
+			qrRestore = *o.Restore
 		}
 		qRestore := swag.FormatBool(qrRestore)
 		if qRestore != "" {

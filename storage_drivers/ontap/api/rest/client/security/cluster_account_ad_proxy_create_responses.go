@@ -52,6 +52,10 @@ ClusterAccountAdProxyCreateCreated describes a response with status code 201, wi
 Created
 */
 type ClusterAccountAdProxyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this cluster account ad proxy create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *ClusterAccountAdProxyCreateCreated) String() string {
 }
 
 func (o *ClusterAccountAdProxyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

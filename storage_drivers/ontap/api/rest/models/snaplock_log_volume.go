@@ -19,18 +19,18 @@ import (
 type SnaplockLogVolume struct {
 
 	// links
-	Links *SnaplockLogVolumeLinks `json:"_links,omitempty"`
+	Links *SnaplockLogVolumeInlineLinks `json:"_links,omitempty"`
 
 	// Maximum size of log file in bytes
 	// Example: 20971520
-	MaxLogSize int64 `json:"max_log_size,omitempty"`
+	MaxLogSize *int64 `json:"max_log_size,omitempty"`
 
 	// Specifies the default log record retention period. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, minutes and seconds. A period specified for years, months and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively. For example "P10Y" represents a duration of 10 years. A duration in hours, minutes and seconds is represented by "PT<num>H", "PT<num>M", and "PT<num>S" respectively. The period string must contain only a single time element i.e. either years, months, days, hours, minutes or seconds. A duration which combines different periods is not supported, example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the retention period field also accepts the string "infinite".
 	// Example: P30M
 	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// volume
-	Volume *SnaplockLogVolumeVolume `json:"volume,omitempty"`
+	Volume *SnaplockLogVolumeInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this snaplock log volume
@@ -149,17 +149,17 @@ func (m *SnaplockLogVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogVolumeLinks snaplock log volume links
+// SnaplockLogVolumeInlineLinks snaplock log volume inline links
 //
-// swagger:model SnaplockLogVolumeLinks
-type SnaplockLogVolumeLinks struct {
+// swagger:model snaplock_log_volume_inline__links
+type SnaplockLogVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock log volume links
-func (m *SnaplockLogVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log volume inline links
+func (m *SnaplockLogVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -172,7 +172,7 @@ func (m *SnaplockLogVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -189,8 +189,8 @@ func (m *SnaplockLogVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock log volume links based on the context it is used
-func (m *SnaplockLogVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log volume inline links based on the context it is used
+func (m *SnaplockLogVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -203,7 +203,7 @@ func (m *SnaplockLogVolumeLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SnaplockLogVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *SnaplockLogVolumeLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -226,8 +226,8 @@ func (m *SnaplockLogVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogVolumeLinks
+func (m *SnaplockLogVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -235,25 +235,25 @@ func (m *SnaplockLogVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogVolumeVolume snaplock log volume volume
+// SnaplockLogVolumeInlineVolume snaplock log volume inline volume
 //
-// swagger:model SnaplockLogVolumeVolume
-type SnaplockLogVolumeVolume struct {
+// swagger:model snaplock_log_volume_inline_volume
+type SnaplockLogVolumeInlineVolume struct {
 
 	// links
-	Links *SnaplockLogVolumeVolumeLinks `json:"_links,omitempty"`
+	Links *SnaplockLogVolumeInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock log volume volume
-func (m *SnaplockLogVolumeVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log volume inline volume
+func (m *SnaplockLogVolumeInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -266,7 +266,7 @@ func (m *SnaplockLogVolumeVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogVolumeVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -283,8 +283,8 @@ func (m *SnaplockLogVolumeVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock log volume volume based on the context it is used
-func (m *SnaplockLogVolumeVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log volume inline volume based on the context it is used
+func (m *SnaplockLogVolumeInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -297,7 +297,7 @@ func (m *SnaplockLogVolumeVolume) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SnaplockLogVolumeVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -312,7 +312,7 @@ func (m *SnaplockLogVolumeVolume) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogVolumeVolume) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogVolumeInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -320,8 +320,8 @@ func (m *SnaplockLogVolumeVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogVolumeVolume) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogVolumeVolume
+func (m *SnaplockLogVolumeInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogVolumeInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -329,17 +329,17 @@ func (m *SnaplockLogVolumeVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogVolumeVolumeLinks snaplock log volume volume links
+// SnaplockLogVolumeInlineVolumeInlineLinks snaplock log volume inline volume inline links
 //
-// swagger:model SnaplockLogVolumeVolumeLinks
-type SnaplockLogVolumeVolumeLinks struct {
+// swagger:model snaplock_log_volume_inline_volume_inline__links
+type SnaplockLogVolumeInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock log volume volume links
-func (m *SnaplockLogVolumeVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log volume inline volume inline links
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -352,7 +352,7 @@ func (m *SnaplockLogVolumeVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogVolumeVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -369,8 +369,8 @@ func (m *SnaplockLogVolumeVolumeLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock log volume volume links based on the context it is used
-func (m *SnaplockLogVolumeVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log volume inline volume inline links based on the context it is used
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *SnaplockLogVolumeVolumeLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SnaplockLogVolumeVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *SnaplockLogVolumeVolumeLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogVolumeVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -406,8 +406,8 @@ func (m *SnaplockLogVolumeVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogVolumeVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogVolumeVolumeLinks
+func (m *SnaplockLogVolumeInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogVolumeInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

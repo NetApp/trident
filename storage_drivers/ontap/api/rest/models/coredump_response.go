@@ -20,13 +20,14 @@ import (
 type CoredumpResponse struct {
 
 	// links
-	Links *CoredumpResponseLinks `json:"_links,omitempty"`
+	Links *CoredumpResponseInlineLinks `json:"_links,omitempty"`
+
+	// coredump response inline records
+	CoredumpResponseInlineRecords []*Coredump `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Coredump `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this coredump response
@@ -37,7 +38,7 @@ func (m *CoredumpResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCoredumpResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CoredumpResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CoredumpResponse) validateCoredumpResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CoredumpResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CoredumpResponseInlineRecords); i++ {
+		if swag.IsZero(m.CoredumpResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CoredumpResponseInlineRecords[i] != nil {
+			if err := m.CoredumpResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CoredumpResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCoredumpResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CoredumpResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CoredumpResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpResponse) contextValidateCoredumpResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CoredumpResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CoredumpResponseInlineRecords[i] != nil {
+			if err := m.CoredumpResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CoredumpResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CoredumpResponseLinks coredump response links
+// CoredumpResponseInlineLinks coredump response inline links
 //
-// swagger:model CoredumpResponseLinks
-type CoredumpResponseLinks struct {
+// swagger:model coredump_response_inline__links
+type CoredumpResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CoredumpResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this coredump response links
-func (m *CoredumpResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this coredump response inline links
+func (m *CoredumpResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CoredumpResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CoredumpResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CoredumpResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CoredumpResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CoredumpResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this coredump response links based on the context it is used
-func (m *CoredumpResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this coredump response inline links based on the context it is used
+func (m *CoredumpResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CoredumpResponseLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CoredumpResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CoredumpResponseLinks) contextValidateNext(ctx context.Context, formats
 	return nil
 }
 
-func (m *CoredumpResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CoredumpResponseLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *CoredumpResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CoredumpResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CoredumpResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CoredumpResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CoredumpResponseLinks
+func (m *CoredumpResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CoredumpResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

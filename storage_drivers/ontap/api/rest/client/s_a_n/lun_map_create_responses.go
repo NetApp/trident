@@ -52,6 +52,11 @@ LunMapCreateCreated describes a response with status code 201, with default head
 Created
 */
 type LunMapCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.LunMapResponse
 }
 
@@ -93,6 +98,13 @@ func (o *LunMapCreateCreated) GetPayload() *models.LunMapResponse {
 }
 
 func (o *LunMapCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.LunMapResponse)
 

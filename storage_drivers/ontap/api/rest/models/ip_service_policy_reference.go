@@ -19,15 +19,15 @@ import (
 type IPServicePolicyReference struct {
 
 	// links
-	Links *IPServicePolicyReferenceLinks `json:"_links,omitempty"`
+	Links *IPServicePolicyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: default-intercluster
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ip service policy reference
@@ -107,17 +107,17 @@ func (m *IPServicePolicyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPServicePolicyReferenceLinks IP service policy reference links
+// IPServicePolicyReferenceInlineLinks ip service policy reference inline links
 //
-// swagger:model IPServicePolicyReferenceLinks
-type IPServicePolicyReferenceLinks struct {
+// swagger:model ip_service_policy_reference_inline__links
+type IPServicePolicyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP service policy reference links
-func (m *IPServicePolicyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip service policy reference inline links
+func (m *IPServicePolicyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *IPServicePolicyReferenceLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IPServicePolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPServicePolicyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *IPServicePolicyReferenceLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this IP service policy reference links based on the context it is used
-func (m *IPServicePolicyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip service policy reference inline links based on the context it is used
+func (m *IPServicePolicyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *IPServicePolicyReferenceLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *IPServicePolicyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPServicePolicyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *IPServicePolicyReferenceLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *IPServicePolicyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *IPServicePolicyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *IPServicePolicyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPServicePolicyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res IPServicePolicyReferenceLinks
+func (m *IPServicePolicyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPServicePolicyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

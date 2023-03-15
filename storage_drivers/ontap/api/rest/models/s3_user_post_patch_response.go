@@ -20,17 +20,18 @@ import (
 type S3UserPostPatchResponse struct {
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*S3ServiceUserPostResponse `json:"records,omitempty"`
+	// s3 user post patch response inline records
+	S3UserPostPatchResponseInlineRecords []*S3ServiceUserPostResponse `json:"records,omitempty"`
 }
 
 // Validate validates this s3 user post patch response
 func (m *S3UserPostPatchResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateS3UserPostPatchResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -40,18 +41,18 @@ func (m *S3UserPostPatchResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3UserPostPatchResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *S3UserPostPatchResponse) validateS3UserPostPatchResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3UserPostPatchResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.S3UserPostPatchResponseInlineRecords); i++ {
+		if swag.IsZero(m.S3UserPostPatchResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.S3UserPostPatchResponseInlineRecords[i] != nil {
+			if err := m.S3UserPostPatchResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -68,7 +69,7 @@ func (m *S3UserPostPatchResponse) validateRecords(formats strfmt.Registry) error
 func (m *S3UserPostPatchResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateS3UserPostPatchResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,12 +79,12 @@ func (m *S3UserPostPatchResponse) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *S3UserPostPatchResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3UserPostPatchResponse) contextValidateS3UserPostPatchResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.S3UserPostPatchResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3UserPostPatchResponseInlineRecords[i] != nil {
+			if err := m.S3UserPostPatchResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

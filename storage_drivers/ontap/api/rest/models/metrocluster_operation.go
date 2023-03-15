@@ -26,12 +26,12 @@ type MetroclusterOperation struct {
 	// Additional information for the auto heal.
 	// Example: MetroCluster switchover with auto heal completed successfully.
 	// Read Only: true
-	AdditionalInfo string `json:"additional_info,omitempty"`
+	AdditionalInfo *string `json:"additional_info,omitempty"`
 
 	// Command line executed with the options specified.
 	// Example: metrocluster switchover
 	// Read Only: true
-	CommandLine string `json:"command_line,omitempty"`
+	CommandLine *string `json:"command_line,omitempty"`
 
 	// End Time
 	// Example: 2016-03-10T14:35:16-08:00
@@ -42,10 +42,10 @@ type MetroclusterOperation struct {
 	// List of errors in the operation.
 	// Example: ["siteB (warning): Unable to prepare the partner cluster for a pending switchback operation. Reason: entry doesn't exist. Reboot the nodes in the partner cluster before using the \"metrocluster switchback\" command."]
 	// Read Only: true
-	Errors []string `json:"errors,omitempty"`
+	MetroclusterOperationInlineErrors []*string `json:"errors,omitempty"`
 
 	// node
-	Node *MetroclusterOperationNode `json:"node,omitempty"`
+	Node *MetroclusterOperationInlineNode `json:"node,omitempty"`
 
 	// Start Time
 	// Example: 2016-03-10T14:33:16-08:00
@@ -57,19 +57,19 @@ type MetroclusterOperation struct {
 	// Example: completed_with_warnings
 	// Read Only: true
 	// Enum: [completed_with_manual_recovery_needed completed_with_warnings failed in_progress partially_successful successful unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Name of the operation.
 	// Example: switchover
 	// Read Only: true
 	// Enum: [check configure connect disconnect dr_group_create dr_group_delete heal_aggr_auto heal_aggregates heal_root_aggr_auto heal_root_aggregates interface_create interface_delete interface_modify ip_setup ip_teardown modify switchback switchback_continuation_agent switchback_simulate switchover switchover_simulate unconfigure unconfigure_continuation_agent unknown]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Identifier for the operation.
 	// Example: 11111111-2222-3333-4444-abcdefabcdef
 	// Required: true
 	// Read Only: true
-	UUID string `json:"uuid"`
+	UUID *string `json:"uuid"`
 }
 
 // Validate validates this metrocluster operation
@@ -267,7 +267,7 @@ func (m *MetroclusterOperation) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -543,7 +543,7 @@ func (m *MetroclusterOperation) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -552,7 +552,7 @@ func (m *MetroclusterOperation) validateType(formats strfmt.Registry) error {
 
 func (m *MetroclusterOperation) validateUUID(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("uuid", "body", m.UUID); err != nil {
+	if err := validate.Required("uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -579,7 +579,7 @@ func (m *MetroclusterOperation) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateErrors(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterOperationInlineErrors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -625,7 +625,7 @@ func (m *MetroclusterOperation) contextValidateLinks(ctx context.Context, format
 
 func (m *MetroclusterOperation) contextValidateAdditionalInfo(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "additional_info", "body", string(m.AdditionalInfo)); err != nil {
+	if err := validate.ReadOnly(ctx, "additional_info", "body", m.AdditionalInfo); err != nil {
 		return err
 	}
 
@@ -634,7 +634,7 @@ func (m *MetroclusterOperation) contextValidateAdditionalInfo(ctx context.Contex
 
 func (m *MetroclusterOperation) contextValidateCommandLine(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "command_line", "body", string(m.CommandLine)); err != nil {
+	if err := validate.ReadOnly(ctx, "command_line", "body", m.CommandLine); err != nil {
 		return err
 	}
 
@@ -650,9 +650,9 @@ func (m *MetroclusterOperation) contextValidateEndTime(ctx context.Context, form
 	return nil
 }
 
-func (m *MetroclusterOperation) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterOperation) contextValidateMetroclusterOperationInlineErrors(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "errors", "body", []string(m.Errors)); err != nil {
+	if err := validate.ReadOnly(ctx, "errors", "body", []*string(m.MetroclusterOperationInlineErrors)); err != nil {
 		return err
 	}
 
@@ -684,7 +684,7 @@ func (m *MetroclusterOperation) contextValidateStartTime(ctx context.Context, fo
 
 func (m *MetroclusterOperation) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -693,7 +693,7 @@ func (m *MetroclusterOperation) contextValidateState(ctx context.Context, format
 
 func (m *MetroclusterOperation) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -702,7 +702,7 @@ func (m *MetroclusterOperation) contextValidateType(ctx context.Context, formats
 
 func (m *MetroclusterOperation) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -727,25 +727,25 @@ func (m *MetroclusterOperation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterOperationNode Node from where the command is executed.
+// MetroclusterOperationInlineNode Node from where the command is executed.
 //
-// swagger:model MetroclusterOperationNode
-type MetroclusterOperationNode struct {
+// swagger:model metrocluster_operation_inline_node
+type MetroclusterOperationInlineNode struct {
 
 	// links
-	Links *MetroclusterOperationNodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterOperationInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster operation node
-func (m *MetroclusterOperationNode) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster operation inline node
+func (m *MetroclusterOperationInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -758,7 +758,7 @@ func (m *MetroclusterOperationNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterOperationNode) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterOperationInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -775,8 +775,8 @@ func (m *MetroclusterOperationNode) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this metrocluster operation node based on the context it is used
-func (m *MetroclusterOperationNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster operation inline node based on the context it is used
+func (m *MetroclusterOperationInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -789,7 +789,7 @@ func (m *MetroclusterOperationNode) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *MetroclusterOperationNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterOperationInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -804,7 +804,7 @@ func (m *MetroclusterOperationNode) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterOperationNode) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterOperationInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -812,8 +812,8 @@ func (m *MetroclusterOperationNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterOperationNode) UnmarshalBinary(b []byte) error {
-	var res MetroclusterOperationNode
+func (m *MetroclusterOperationInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterOperationInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -821,17 +821,17 @@ func (m *MetroclusterOperationNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterOperationNodeLinks metrocluster operation node links
+// MetroclusterOperationInlineNodeInlineLinks metrocluster operation inline node inline links
 //
-// swagger:model MetroclusterOperationNodeLinks
-type MetroclusterOperationNodeLinks struct {
+// swagger:model metrocluster_operation_inline_node_inline__links
+type MetroclusterOperationInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster operation node links
-func (m *MetroclusterOperationNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster operation inline node inline links
+func (m *MetroclusterOperationInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -844,7 +844,7 @@ func (m *MetroclusterOperationNodeLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MetroclusterOperationNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterOperationInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -861,8 +861,8 @@ func (m *MetroclusterOperationNodeLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this metrocluster operation node links based on the context it is used
-func (m *MetroclusterOperationNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster operation inline node inline links based on the context it is used
+func (m *MetroclusterOperationInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -875,7 +875,7 @@ func (m *MetroclusterOperationNodeLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MetroclusterOperationNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterOperationInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -890,7 +890,7 @@ func (m *MetroclusterOperationNodeLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterOperationNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterOperationInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -898,8 +898,8 @@ func (m *MetroclusterOperationNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterOperationNodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterOperationNodeLinks
+func (m *MetroclusterOperationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterOperationInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

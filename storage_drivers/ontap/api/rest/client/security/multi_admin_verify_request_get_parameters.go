@@ -66,10 +66,10 @@ type MultiAdminVerifyRequestGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Index.
-	IndexPathParameter string
+	Index string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *MultiAdminVerifyRequestGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the multi admin verify request get params
-func (o *MultiAdminVerifyRequestGetParams) WithFieldsQueryParameter(fields []string) *MultiAdminVerifyRequestGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the multi admin verify request get params
+func (o *MultiAdminVerifyRequestGetParams) WithFields(fields []string) *MultiAdminVerifyRequestGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the multi admin verify request get params
-func (o *MultiAdminVerifyRequestGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the multi admin verify request get params
+func (o *MultiAdminVerifyRequestGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the multi admin verify request get params
-func (o *MultiAdminVerifyRequestGetParams) WithIndexPathParameter(index string) *MultiAdminVerifyRequestGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the multi admin verify request get params
+func (o *MultiAdminVerifyRequestGetParams) WithIndex(index string) *MultiAdminVerifyRequestGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the multi admin verify request get params
-func (o *MultiAdminVerifyRequestGetParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the multi admin verify request get params
+func (o *MultiAdminVerifyRequestGetParams) SetIndex(index string) {
+	o.Index = index
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *MultiAdminVerifyRequestGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *MultiAdminVerifyRequestGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *MultiAdminVerifyRequestGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamMultiAdminVerifyRequestGet binds the parameter fields
 func (o *MultiAdminVerifyRequestGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

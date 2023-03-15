@@ -22,7 +22,7 @@ import (
 type NvmeService struct {
 
 	// links
-	Links *NvmeServiceLinks `json:"_links,omitempty"`
+	Links *NvmeServiceInlineLinks `json:"_links,omitempty"`
 
 	// The administrative state of the NVMe service. The NVMe service can be disabled to block all NVMe connectivity to the SVM.<br/>
 	// This is optional in POST and PATCH. The default setting is _true_ (enabled) in POST.
@@ -30,13 +30,13 @@ type NvmeService struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// metric
-	Metric *NvmeServiceMetricType `json:"metric,omitempty"`
+	Metric *NvmeServiceInlineMetric `json:"metric,omitempty"`
 
 	// statistics
-	Statistics *NvmeServiceStatisticsType `json:"statistics,omitempty"`
+	Statistics *NvmeServiceInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *NvmeServiceSvm `json:"svm,omitempty"`
+	Svm *NvmeServiceInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this nvme service
@@ -233,17 +233,17 @@ func (m *NvmeService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeServiceLinks nvme service links
+// NvmeServiceInlineLinks nvme service inline links
 //
-// swagger:model NvmeServiceLinks
-type NvmeServiceLinks struct {
+// swagger:model nvme_service_inline__links
+type NvmeServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme service links
-func (m *NvmeServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline links
+func (m *NvmeServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -256,7 +256,7 @@ func (m *NvmeServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -273,8 +273,8 @@ func (m *NvmeServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service links based on the context it is used
-func (m *NvmeServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline links based on the context it is used
+func (m *NvmeServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -287,7 +287,7 @@ func (m *NvmeServiceLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NvmeServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -302,7 +302,7 @@ func (m *NvmeServiceLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -310,8 +310,8 @@ func (m *NvmeServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceLinks
+func (m *NvmeServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -319,41 +319,41 @@ func (m *NvmeServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeServiceMetricType Performance numbers, such as IOPS latency and throughput, for SVM protocols.
+// NvmeServiceInlineMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
-// swagger:model NvmeServiceMetricType
-type NvmeServiceMetricType struct {
+// swagger:model nvme_service_inline_metric
+type NvmeServiceInlineMetric struct {
 
 	// links
-	Links *NvmeServiceMetricTypeNvmeServiceMetricLinksType `json:"_links,omitempty"`
+	Links *NvmeServiceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// fc
-	Fc *NvmeServiceMetricTypeNvmeServiceMetricFcType `json:"fc,omitempty"`
+	Fc *NvmeServiceInlineMetricInlineFc `json:"fc,omitempty"`
 
 	// iops
-	Iops *NvmeServiceMetricTypeNvmeServiceMetricIopsType `json:"iops,omitempty"`
+	Iops *NvmeServiceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *NvmeServiceMetricTypeNvmeServiceMetricLatencyType `json:"latency,omitempty"`
+	Latency *NvmeServiceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// tcp
-	TCP *NvmeServiceMetricTypeNvmeServiceMetricTCPType `json:"tcp,omitempty"`
+	TCP *NvmeServiceInlineMetricInlineTCP `json:"tcp,omitempty"`
 
 	// throughput
-	Throughput *NvmeServiceMetricTypeNvmeServiceMetricThroughputType `json:"throughput,omitempty"`
+	Throughput *NvmeServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -362,8 +362,8 @@ type NvmeServiceMetricType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service metric type
-func (m *NvmeServiceMetricType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric
+func (m *NvmeServiceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -408,7 +408,7 @@ func (m *NvmeServiceMetricType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -425,7 +425,7 @@ func (m *NvmeServiceMetricType) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeServiceMetricTypeTypeDurationPropEnum []interface{}
+var nvmeServiceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -433,95 +433,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeTypeDurationPropEnum = append(nvmeServiceMetricTypeTypeDurationPropEnum, v)
+		nvmeServiceInlineMetricTypeDurationPropEnum = append(nvmeServiceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationPT15S captures enum value "PT15S"
-	NvmeServiceMetricTypeDurationPT15S string = "PT15S"
+	// NvmeServiceInlineMetricDurationPT15S captures enum value "PT15S"
+	NvmeServiceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationPT4M captures enum value "PT4M"
-	NvmeServiceMetricTypeDurationPT4M string = "PT4M"
+	// NvmeServiceInlineMetricDurationPT4M captures enum value "PT4M"
+	NvmeServiceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationPT30M captures enum value "PT30M"
-	NvmeServiceMetricTypeDurationPT30M string = "PT30M"
+	// NvmeServiceInlineMetricDurationPT30M captures enum value "PT30M"
+	NvmeServiceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationPT2H captures enum value "PT2H"
-	NvmeServiceMetricTypeDurationPT2H string = "PT2H"
+	// NvmeServiceInlineMetricDurationPT2H captures enum value "PT2H"
+	NvmeServiceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationP1D captures enum value "P1D"
-	NvmeServiceMetricTypeDurationP1D string = "P1D"
+	// NvmeServiceInlineMetricDurationP1D captures enum value "P1D"
+	NvmeServiceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeDurationPT5M captures enum value "PT5M"
-	NvmeServiceMetricTypeDurationPT5M string = "PT5M"
+	// NvmeServiceInlineMetricDurationPT5M captures enum value "PT5M"
+	NvmeServiceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricType) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeTypeDurationPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateDuration(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateFc(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateFc(formats strfmt.Registry) error {
 	if swag.IsZero(m.Fc) { // not required
 		return nil
 	}
@@ -538,7 +538,7 @@ func (m *NvmeServiceMetricType) validateFc(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateIops(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -555,7 +555,7 @@ func (m *NvmeServiceMetricType) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateLatency(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -572,7 +572,7 @@ func (m *NvmeServiceMetricType) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var nvmeServiceMetricTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -580,145 +580,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeTypeStatusPropEnum = append(nvmeServiceMetricTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineMetricTypeStatusPropEnum = append(nvmeServiceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusOk captures enum value "ok"
-	NvmeServiceMetricTypeStatusOk string = "ok"
+	// NvmeServiceInlineMetricStatusOk captures enum value "ok"
+	NvmeServiceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusError captures enum value "error"
-	NvmeServiceMetricTypeStatusError string = "error"
+	// NvmeServiceInlineMetricStatusError captures enum value "error"
+	NvmeServiceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceMetricTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceMetricTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceMetricTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceMetricTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceMetricTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineMetricStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceMetricTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceMetricTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceMetricTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricType
-	// NvmeServiceMetricType
+	// nvme_service_inline_metric
+	// NvmeServiceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceMetricTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceMetricTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateTCP(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateTCP(formats strfmt.Registry) error {
 	if swag.IsZero(m.TCP) { // not required
 		return nil
 	}
@@ -735,7 +735,7 @@ func (m *NvmeServiceMetricType) validateTCP(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateThroughput(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -752,7 +752,7 @@ func (m *NvmeServiceMetricType) validateThroughput(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NvmeServiceMetricType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -764,8 +764,8 @@ func (m *NvmeServiceMetricType) validateTimestamp(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type based on the context it is used
-func (m *NvmeServiceMetricType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric based on the context it is used
+func (m *NvmeServiceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -810,7 +810,7 @@ func (m *NvmeServiceMetricType) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -824,16 +824,16 @@ func (m *NvmeServiceMetricType) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Fc != nil {
 		if err := m.Fc.ContextValidate(ctx, formats); err != nil {
@@ -847,7 +847,7 @@ func (m *NvmeServiceMetricType) contextValidateFc(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -861,7 +861,7 @@ func (m *NvmeServiceMetricType) contextValidateIops(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -875,16 +875,16 @@ func (m *NvmeServiceMetricType) contextValidateLatency(ctx context.Context, form
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateTCP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateTCP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TCP != nil {
 		if err := m.TCP.ContextValidate(ctx, formats); err != nil {
@@ -898,7 +898,7 @@ func (m *NvmeServiceMetricType) contextValidateTCP(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -912,7 +912,7 @@ func (m *NvmeServiceMetricType) contextValidateThroughput(ctx context.Context, f
 	return nil
 }
 
-func (m *NvmeServiceMetricType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -922,7 +922,7 @@ func (m *NvmeServiceMetricType) contextValidateTimestamp(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -930,8 +930,8 @@ func (m *NvmeServiceMetricType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricType
+func (m *NvmeServiceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -939,35 +939,35 @@ func (m *NvmeServiceMetricType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricFcType The NVMe/FC portion of the aggregated metrics.
+// NvmeServiceInlineMetricInlineFc The NVMe/FC portion of the aggregated metrics.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricFcType
-type NvmeServiceMetricTypeNvmeServiceMetricFcType struct {
+// swagger:model nvme_service_inline_metric_inline_fc
+type NvmeServiceInlineMetricInlineFc struct {
 
 	// links
-	Links *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType `json:"_links,omitempty"`
+	Links *NvmeServiceInlineMetricInlineFcInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType `json:"iops,omitempty"`
+	Iops *NvmeServiceInlineMetricInlineFcInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType `json:"latency,omitempty"`
+	Latency *NvmeServiceInlineMetricInlineFcInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType `json:"throughput,omitempty"`
+	Throughput *NvmeServiceInlineMetricInlineFcInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -976,8 +976,8 @@ type NvmeServiceMetricTypeNvmeServiceMetricFcType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric fc type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline fc
+func (m *NvmeServiceInlineMetricInlineFc) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1014,7 +1014,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1031,7 +1031,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateLinks(formats str
 	return nil
 }
 
-var nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeDurationPropEnum []interface{}
+var nvmeServiceInlineMetricInlineFcTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1039,95 +1039,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeDurationPropEnum = append(nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeDurationPropEnum, v)
+		nvmeServiceInlineMetricInlineFcTypeDurationPropEnum = append(nvmeServiceInlineMetricInlineFcTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT15S captures enum value "PT15S"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT15S string = "PT15S"
+	// NvmeServiceInlineMetricInlineFcDurationPT15S captures enum value "PT15S"
+	NvmeServiceInlineMetricInlineFcDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT4M captures enum value "PT4M"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT4M string = "PT4M"
+	// NvmeServiceInlineMetricInlineFcDurationPT4M captures enum value "PT4M"
+	NvmeServiceInlineMetricInlineFcDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT30M captures enum value "PT30M"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT30M string = "PT30M"
+	// NvmeServiceInlineMetricInlineFcDurationPT30M captures enum value "PT30M"
+	NvmeServiceInlineMetricInlineFcDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT2H captures enum value "PT2H"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT2H string = "PT2H"
+	// NvmeServiceInlineMetricInlineFcDurationPT2H captures enum value "PT2H"
+	NvmeServiceInlineMetricInlineFcDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationP1D captures enum value "P1D"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationP1D string = "P1D"
+	// NvmeServiceInlineMetricInlineFcDurationP1D captures enum value "P1D"
+	NvmeServiceInlineMetricInlineFcDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT5M captures enum value "PT5M"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeDurationPT5M string = "PT5M"
+	// NvmeServiceInlineMetricInlineFcDurationPT5M captures enum value "PT5M"
+	NvmeServiceInlineMetricInlineFcDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeDurationPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetricInlineFc) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricInlineFcTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateDuration(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"fc"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"fc"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateIops(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1144,7 +1144,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateIops(formats strf
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateLatency(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1161,7 +1161,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateLatency(formats s
 	return nil
 }
 
-var nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineMetricInlineFcTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1169,145 +1169,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeStatusPropEnum = append(nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineMetricInlineFcTypeStatusPropEnum = append(nvmeServiceInlineMetricInlineFcTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusOk captures enum value "ok"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusOk string = "ok"
+	// NvmeServiceInlineMetricInlineFcStatusOk captures enum value "ok"
+	NvmeServiceInlineMetricInlineFcStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusError captures enum value "error"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusError string = "error"
+	// NvmeServiceInlineMetricInlineFcStatusError captures enum value "error"
+	NvmeServiceInlineMetricInlineFcStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineMetricInlineFcStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineMetricInlineFcStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineMetricInlineFcStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineMetricInlineFcStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineMetricInlineFcStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineMetricInlineFcStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineMetricInlineFcStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineMetricInlineFcStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineMetricInlineFcStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineMetricInlineFcStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineMetricInlineFcStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineMetricInlineFcStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineMetricInlineFcStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineMetricInlineFcStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineMetricInlineFcStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineMetricInlineFcStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
-	// NvmeServiceMetricTypeNvmeServiceMetricFcType
+	// nvme_service_inline_metric_inline_fc
+	// NvmeServiceInlineMetricInlineFc
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceMetricTypeNvmeServiceMetricFcTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineMetricInlineFcStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineMetricInlineFcStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeNvmeServiceMetricFcTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetricInlineFc) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricInlineFcTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"fc"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"fc"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateThroughput(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1324,7 +1324,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateThroughput(format
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1336,8 +1336,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) validateTimestamp(formats
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric fc type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline fc based on the context it is used
+func (m *NvmeServiceInlineMetricInlineFc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1374,7 +1374,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1388,16 +1388,16 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateLinks(ctx 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"fc"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"fc"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1411,7 +1411,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateIops(ctx c
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1425,16 +1425,16 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateLatency(ct
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"fc"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"fc"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1448,7 +1448,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateThroughput
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFc) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"fc"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1458,7 +1458,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) contextValidateTimestamp(
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineFc) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1466,8 +1466,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricFcType
+func (m *NvmeServiceInlineMetricInlineFc) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineFc
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1475,34 +1475,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcType) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType The rate of I/O operations observed at the storage object.
+// NvmeServiceInlineMetricInlineFcInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType
-type NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType struct {
+// swagger:model nvme_service_inline_metric_inline_fc_inline_iops
+type NvmeServiceInlineMetricInlineFcInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric fc type nvme service metric fc iops type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline fc inline iops
+func (m *NvmeServiceInlineMetricInlineFcInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric fc type nvme service metric fc iops type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline fc inline iops based on the context it is used
+func (m *NvmeServiceInlineMetricInlineFcInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1512,7 +1512,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineFcInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1520,8 +1520,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType
+func (m *NvmeServiceInlineMetricInlineFcInlineIops) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineFcInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1529,34 +1529,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType The round trip latency in microseconds observed at the storage object.
+// NvmeServiceInlineMetricInlineFcInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType
-type NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType struct {
+// swagger:model nvme_service_inline_metric_inline_fc_inline_latency
+type NvmeServiceInlineMetricInlineFcInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric fc type nvme service metric fc latency type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline fc inline latency
+func (m *NvmeServiceInlineMetricInlineFcInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric fc type nvme service metric fc latency type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline fc inline latency based on the context it is used
+func (m *NvmeServiceInlineMetricInlineFcInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1566,7 +1566,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyT
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineFcInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1574,8 +1574,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyT
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType
+func (m *NvmeServiceInlineMetricInlineFcInlineLatency) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineFcInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1583,17 +1583,17 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyT
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType nvme service metric type nvme service metric fc type nvme service metric fc links type
+// NvmeServiceInlineMetricInlineFcInlineLinks nvme service inline metric inline fc inline links
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType
-type NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType struct {
+// swagger:model nvme_service_inline_metric_inline_fc_inline__links
+type NvmeServiceInlineMetricInlineFcInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric fc type nvme service metric fc links type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline fc inline links
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1606,7 +1606,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1623,8 +1623,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric fc type nvme service metric fc links type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline fc inline links based on the context it is used
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1637,7 +1637,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1652,7 +1652,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1660,8 +1660,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType
+func (m *NvmeServiceInlineMetricInlineFcInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineFcInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1669,31 +1669,31 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksTyp
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType The rate of throughput bytes per second observed at the storage object.
+// NvmeServiceInlineMetricInlineFcInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType
-type NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType struct {
+// swagger:model nvme_service_inline_metric_inline_fc_inline_throughput
+type NvmeServiceInlineMetricInlineFcInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric fc type nvme service metric fc throughput type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline fc inline throughput
+func (m *NvmeServiceInlineMetricInlineFcInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric fc type nvme service metric fc throughput type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline fc inline throughput based on the context it is used
+func (m *NvmeServiceInlineMetricInlineFcInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1703,7 +1703,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughp
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineFcInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1711,8 +1711,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughp
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType
+func (m *NvmeServiceInlineMetricInlineFcInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineFcInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1720,34 +1720,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughp
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricIopsType The rate of I/O operations observed at the storage object.
+// NvmeServiceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricIopsType
-type NvmeServiceMetricTypeNvmeServiceMetricIopsType struct {
+// swagger:model nvme_service_inline_metric_inline_iops
+type NvmeServiceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric iops type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline iops
+func (m *NvmeServiceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric iops type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline iops based on the context it is used
+func (m *NvmeServiceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1757,7 +1757,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) ContextValidate(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1765,8 +1765,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricIopsType
+func (m *NvmeServiceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1774,34 +1774,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricIopsType) UnmarshalBinary(b []byt
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricLatencyType The round trip latency in microseconds observed at the storage object.
+// NvmeServiceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricLatencyType
-type NvmeServiceMetricTypeNvmeServiceMetricLatencyType struct {
+// swagger:model nvme_service_inline_metric_inline_latency
+type NvmeServiceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric latency type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline latency
+func (m *NvmeServiceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric latency type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline latency based on the context it is used
+func (m *NvmeServiceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1811,7 +1811,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) ContextValidate(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1819,8 +1819,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricLatencyType
+func (m *NvmeServiceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1828,17 +1828,17 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLatencyType) UnmarshalBinary(b []
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricLinksType nvme service metric type nvme service metric links type
+// NvmeServiceInlineMetricInlineLinks nvme service inline metric inline links
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricLinksType
-type NvmeServiceMetricTypeNvmeServiceMetricLinksType struct {
+// swagger:model nvme_service_inline_metric_inline__links
+type NvmeServiceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric links type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline links
+func (m *NvmeServiceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1851,7 +1851,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) Validate(formats strfm
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1868,8 +1868,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) validateSelf(formats s
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric links type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline links based on the context it is used
+func (m *NvmeServiceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1882,7 +1882,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) ContextValidate(ctx co
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1897,7 +1897,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) contextValidateSelf(ct
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1905,8 +1905,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricLinksType
+func (m *NvmeServiceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1914,35 +1914,35 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricLinksType) UnmarshalBinary(b []by
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricTCPType The NVMe/TCP portion of the aggregated metrics.
+// NvmeServiceInlineMetricInlineTCP The NVMe/TCP portion of the aggregated metrics.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricTCPType
-type NvmeServiceMetricTypeNvmeServiceMetricTCPType struct {
+// swagger:model nvme_service_inline_metric_inline_tcp
+type NvmeServiceInlineMetricInlineTCP struct {
 
 	// links
-	Links *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType `json:"_links,omitempty"`
+	Links *NvmeServiceInlineMetricInlineTCPInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType `json:"iops,omitempty"`
+	Iops *NvmeServiceInlineMetricInlineTCPInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType `json:"latency,omitempty"`
+	Latency *NvmeServiceInlineMetricInlineTCPInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType `json:"throughput,omitempty"`
+	Throughput *NvmeServiceInlineMetricInlineTCPInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1951,8 +1951,8 @@ type NvmeServiceMetricTypeNvmeServiceMetricTCPType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric TCP type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline tcp
+func (m *NvmeServiceInlineMetricInlineTCP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1989,7 +1989,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) Validate(formats strfmt.
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2006,7 +2006,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateLinks(formats st
 	return nil
 }
 
-var nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeDurationPropEnum []interface{}
+var nvmeServiceInlineMetricInlineTcpTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2014,95 +2014,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeDurationPropEnum = append(nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeDurationPropEnum, v)
+		nvmeServiceInlineMetricInlineTcpTypeDurationPropEnum = append(nvmeServiceInlineMetricInlineTcpTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT15S captures enum value "PT15S"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT15S string = "PT15S"
+	// NvmeServiceInlineMetricInlineTCPDurationPT15S captures enum value "PT15S"
+	NvmeServiceInlineMetricInlineTCPDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT4M captures enum value "PT4M"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT4M string = "PT4M"
+	// NvmeServiceInlineMetricInlineTCPDurationPT4M captures enum value "PT4M"
+	NvmeServiceInlineMetricInlineTCPDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT30M captures enum value "PT30M"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT30M string = "PT30M"
+	// NvmeServiceInlineMetricInlineTCPDurationPT30M captures enum value "PT30M"
+	NvmeServiceInlineMetricInlineTCPDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT2H captures enum value "PT2H"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT2H string = "PT2H"
+	// NvmeServiceInlineMetricInlineTCPDurationPT2H captures enum value "PT2H"
+	NvmeServiceInlineMetricInlineTCPDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationP1D captures enum value "P1D"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationP1D string = "P1D"
+	// NvmeServiceInlineMetricInlineTCPDurationP1D captures enum value "P1D"
+	NvmeServiceInlineMetricInlineTCPDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT5M captures enum value "PT5M"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeDurationPT5M string = "PT5M"
+	// NvmeServiceInlineMetricInlineTCPDurationPT5M captures enum value "PT5M"
+	NvmeServiceInlineMetricInlineTCPDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeDurationPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetricInlineTCP) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricInlineTcpTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateDuration(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"tcp"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"tcp"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateIops(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -2119,7 +2119,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateIops(formats str
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateLatency(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -2136,7 +2136,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateLatency(formats 
 	return nil
 }
 
-var nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineMetricInlineTcpTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2144,145 +2144,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeStatusPropEnum = append(nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineMetricInlineTcpTypeStatusPropEnum = append(nvmeServiceInlineMetricInlineTcpTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusOk captures enum value "ok"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusOk string = "ok"
+	// NvmeServiceInlineMetricInlineTCPStatusOk captures enum value "ok"
+	NvmeServiceInlineMetricInlineTCPStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusError captures enum value "error"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusError string = "error"
+	// NvmeServiceInlineMetricInlineTCPStatusError captures enum value "error"
+	NvmeServiceInlineMetricInlineTCPStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineMetricInlineTCPStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineMetricInlineTCPStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineMetricInlineTCPStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineMetricInlineTCPStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineMetricInlineTCPStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineMetricInlineTCPStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineMetricInlineTCPStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineMetricInlineTCPStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineMetricInlineTCPStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineMetricInlineTCPStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineMetricInlineTCPStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineMetricInlineTCPStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineMetricInlineTCPStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineMetricInlineTCPStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineMetricInlineTCPStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineMetricInlineTCPStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPType
+	// nvme_service_inline_metric_inline_tcp
+	// NvmeServiceInlineMetricInlineTCP
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceMetricTypeNvmeServiceMetricTCPTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineMetricInlineTCPStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineMetricInlineTCPStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceMetricTypeNvmeServiceMetricTcpTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineMetricInlineTCP) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineMetricInlineTcpTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"tcp"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"tcp"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateThroughput(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -2299,7 +2299,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateThroughput(forma
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2311,8 +2311,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) validateTimestamp(format
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric TCP type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline tcp based on the context it is used
+func (m *NvmeServiceInlineMetricInlineTCP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2349,7 +2349,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2363,16 +2363,16 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateLinks(ctx
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"tcp"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"tcp"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -2386,7 +2386,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateIops(ctx 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -2400,16 +2400,16 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateLatency(c
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"tcp"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"tcp"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -2423,7 +2423,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateThroughpu
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCP) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"tcp"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2433,7 +2433,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) contextValidateTimestamp
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineTCP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2441,8 +2441,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricTCPType
+func (m *NvmeServiceInlineMetricInlineTCP) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineTCP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2450,34 +2450,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPType) UnmarshalBinary(b []byte
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType The rate of I/O operations observed at the storage object.
+// NvmeServiceInlineMetricInlineTCPInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType
-type NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType struct {
+// swagger:model nvme_service_inline_metric_inline_tcp_inline_iops
+type NvmeServiceInlineMetricInlineTCPInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric TCP type nvme service metric TCP iops type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline tcp inline iops
+func (m *NvmeServiceInlineMetricInlineTCPInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric TCP type nvme service metric TCP iops type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline tcp inline iops based on the context it is used
+func (m *NvmeServiceInlineMetricInlineTCPInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2487,7 +2487,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsTy
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineTCPInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2495,8 +2495,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsTy
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType
+func (m *NvmeServiceInlineMetricInlineTCPInlineIops) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineTCPInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2504,34 +2504,34 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsTy
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType The round trip latency in microseconds observed at the storage object.
+// NvmeServiceInlineMetricInlineTCPInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType
-type NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType struct {
+// swagger:model nvme_service_inline_metric_inline_tcp_inline_latency
+type NvmeServiceInlineMetricInlineTCPInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric TCP type nvme service metric TCP latency type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline tcp inline latency
+func (m *NvmeServiceInlineMetricInlineTCPInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric TCP type nvme service metric TCP latency type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline tcp inline latency based on the context it is used
+func (m *NvmeServiceInlineMetricInlineTCPInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2541,7 +2541,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatenc
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineTCPInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2549,8 +2549,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatenc
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType
+func (m *NvmeServiceInlineMetricInlineTCPInlineLatency) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineTCPInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2558,17 +2558,17 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatenc
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType nvme service metric type nvme service metric TCP type nvme service metric TCP links type
+// NvmeServiceInlineMetricInlineTCPInlineLinks nvme service inline metric inline tcp inline links
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType
-type NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType struct {
+// swagger:model nvme_service_inline_metric_inline_tcp_inline__links
+type NvmeServiceInlineMetricInlineTCPInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric TCP type nvme service metric TCP links type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline tcp inline links
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2581,7 +2581,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2598,8 +2598,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric TCP type nvme service metric TCP links type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline tcp inline links based on the context it is used
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2612,7 +2612,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 	return nil
 }
 
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2627,7 +2627,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2635,8 +2635,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType
+func (m *NvmeServiceInlineMetricInlineTCPInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineTCPInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2644,31 +2644,31 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksT
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType The rate of throughput bytes per second observed at the storage object.
+// NvmeServiceInlineMetricInlineTCPInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType
-type NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType struct {
+// swagger:model nvme_service_inline_metric_inline_tcp_inline_throughput
+type NvmeServiceInlineMetricInlineTCPInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric TCP type nvme service metric TCP throughput type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline tcp inline throughput
+func (m *NvmeServiceInlineMetricInlineTCPInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric TCP type nvme service metric TCP throughput type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline tcp inline throughput based on the context it is used
+func (m *NvmeServiceInlineMetricInlineTCPInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2678,7 +2678,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroug
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineTCPInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2686,8 +2686,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroug
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType
+func (m *NvmeServiceInlineMetricInlineTCPInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineTCPInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2695,31 +2695,31 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroug
 	return nil
 }
 
-// NvmeServiceMetricTypeNvmeServiceMetricThroughputType The rate of throughput bytes per second observed at the storage object.
+// NvmeServiceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model NvmeServiceMetricTypeNvmeServiceMetricThroughputType
-type NvmeServiceMetricTypeNvmeServiceMetricThroughputType struct {
+// swagger:model nvme_service_inline_metric_inline_throughput
+type NvmeServiceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service metric type nvme service metric throughput type
-func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline metric inline throughput
+func (m *NvmeServiceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service metric type nvme service metric throughput type based on the context it is used
-func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline metric inline throughput based on the context it is used
+func (m *NvmeServiceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2729,7 +2729,7 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) ContextValidate(c
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2737,8 +2737,8 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) MarshalBinary() (
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceMetricTypeNvmeServiceMetricThroughputType
+func (m *NvmeServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2746,31 +2746,31 @@ func (m *NvmeServiceMetricTypeNvmeServiceMetricThroughputType) UnmarshalBinary(b
 	return nil
 }
 
-// NvmeServiceStatisticsType These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// NvmeServiceInlineStatistics These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
-// swagger:model NvmeServiceStatisticsType
-type NvmeServiceStatisticsType struct {
+// swagger:model nvme_service_inline_statistics
+type NvmeServiceInlineStatistics struct {
 
 	// fc
-	Fc *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType `json:"fc,omitempty"`
+	Fc *NvmeServiceInlineStatisticsInlineFc `json:"fc,omitempty"`
 
 	// iops raw
-	IopsRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType `json:"iops_raw,omitempty"`
+	IopsRaw *NvmeServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType `json:"latency_raw,omitempty"`
+	LatencyRaw *NvmeServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// tcp
-	TCP *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType `json:"tcp,omitempty"`
+	TCP *NvmeServiceInlineStatisticsInlineTCP `json:"tcp,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType `json:"throughput_raw,omitempty"`
+	ThroughputRaw *NvmeServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2779,8 +2779,8 @@ type NvmeServiceStatisticsType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service statistics type
-func (m *NvmeServiceStatisticsType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics
+func (m *NvmeServiceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFc(formats); err != nil {
@@ -2817,7 +2817,7 @@ func (m *NvmeServiceStatisticsType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateFc(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateFc(formats strfmt.Registry) error {
 	if swag.IsZero(m.Fc) { // not required
 		return nil
 	}
@@ -2834,7 +2834,7 @@ func (m *NvmeServiceStatisticsType) validateFc(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateIopsRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -2851,7 +2851,7 @@ func (m *NvmeServiceStatisticsType) validateIopsRaw(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -2868,7 +2868,7 @@ func (m *NvmeServiceStatisticsType) validateLatencyRaw(formats strfmt.Registry) 
 	return nil
 }
 
-var nvmeServiceStatisticsTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2876,145 +2876,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceStatisticsTypeTypeStatusPropEnum = append(nvmeServiceStatisticsTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineStatisticsTypeStatusPropEnum = append(nvmeServiceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusOk captures enum value "ok"
-	NvmeServiceStatisticsTypeStatusOk string = "ok"
+	// NvmeServiceInlineStatisticsStatusOk captures enum value "ok"
+	NvmeServiceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusError captures enum value "error"
-	NvmeServiceStatisticsTypeStatusError string = "error"
+	// NvmeServiceInlineStatisticsStatusError captures enum value "error"
+	NvmeServiceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceStatisticsTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceStatisticsTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceStatisticsTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceStatisticsTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceStatisticsTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineStatisticsStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceStatisticsTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceStatisticsTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceStatisticsTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsType
-	// NvmeServiceStatisticsType
+	// nvme_service_inline_statistics
+	// NvmeServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceStatisticsTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceStatisticsType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceStatisticsTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateTCP(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateTCP(formats strfmt.Registry) error {
 	if swag.IsZero(m.TCP) { // not required
 		return nil
 	}
@@ -3031,7 +3031,7 @@ func (m *NvmeServiceStatisticsType) validateTCP(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -3048,7 +3048,7 @@ func (m *NvmeServiceStatisticsType) validateThroughputRaw(formats strfmt.Registr
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3060,8 +3060,8 @@ func (m *NvmeServiceStatisticsType) validateTimestamp(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type based on the context it is used
-func (m *NvmeServiceStatisticsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics based on the context it is used
+func (m *NvmeServiceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFc(ctx, formats); err != nil {
@@ -3098,7 +3098,7 @@ func (m *NvmeServiceStatisticsType) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Fc != nil {
 		if err := m.Fc.ContextValidate(ctx, formats); err != nil {
@@ -3112,7 +3112,7 @@ func (m *NvmeServiceStatisticsType) contextValidateFc(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -3126,7 +3126,7 @@ func (m *NvmeServiceStatisticsType) contextValidateIopsRaw(ctx context.Context, 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -3140,16 +3140,16 @@ func (m *NvmeServiceStatisticsType) contextValidateLatencyRaw(ctx context.Contex
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateTCP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateTCP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TCP != nil {
 		if err := m.TCP.ContextValidate(ctx, formats); err != nil {
@@ -3163,7 +3163,7 @@ func (m *NvmeServiceStatisticsType) contextValidateTCP(ctx context.Context, form
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -3177,7 +3177,7 @@ func (m *NvmeServiceStatisticsType) contextValidateThroughputRaw(ctx context.Con
 	return nil
 }
 
-func (m *NvmeServiceStatisticsType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -3187,7 +3187,7 @@ func (m *NvmeServiceStatisticsType) contextValidateTimestamp(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3195,8 +3195,8 @@ func (m *NvmeServiceStatisticsType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsType
+func (m *NvmeServiceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3204,25 +3204,25 @@ func (m *NvmeServiceStatisticsType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType The NVMe/FC portion of the aggregated statistics.
+// NvmeServiceInlineStatisticsInlineFc The NVMe/FC portion of the aggregated statistics.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType struct {
+// swagger:model nvme_service_inline_statistics_inline_fc
+type NvmeServiceInlineStatisticsInlineFc struct {
 
 	// iops raw
-	IopsRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType `json:"iops_raw,omitempty"`
+	IopsRaw *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType `json:"latency_raw,omitempty"`
+	LatencyRaw *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType `json:"throughput_raw,omitempty"`
+	ThroughputRaw *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -3231,8 +3231,8 @@ type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline fc
+func (m *NvmeServiceInlineStatisticsInlineFc) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -3261,7 +3261,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) Validate(formats 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateIopsRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -3278,7 +3278,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateIopsRaw(f
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -3295,7 +3295,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateLatencyRa
 	return nil
 }
 
-var nvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineStatisticsInlineFcTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3303,145 +3303,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeTypeStatusPropEnum = append(nvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineStatisticsInlineFcTypeStatusPropEnum = append(nvmeServiceInlineStatisticsInlineFcTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusOk captures enum value "ok"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusOk string = "ok"
+	// NvmeServiceInlineStatisticsInlineFcStatusOk captures enum value "ok"
+	NvmeServiceInlineStatisticsInlineFcStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusError captures enum value "error"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusError string = "error"
+	// NvmeServiceInlineStatisticsInlineFcStatusError captures enum value "error"
+	NvmeServiceInlineStatisticsInlineFcStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineStatisticsInlineFcStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineStatisticsInlineFcStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineStatisticsInlineFcStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineStatisticsInlineFcStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineStatisticsInlineFcStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineStatisticsInlineFcStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineStatisticsInlineFcStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineStatisticsInlineFcStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineStatisticsInlineFcStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineStatisticsInlineFcStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineStatisticsInlineFcStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineStatisticsInlineFcStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineStatisticsInlineFcStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineStatisticsInlineFcStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineStatisticsInlineFcStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineStatisticsInlineFcStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+	// nvme_service_inline_statistics_inline_fc
+	// NvmeServiceInlineStatisticsInlineFc
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineStatisticsInlineFcStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineStatisticsInlineFcStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineStatisticsInlineFcTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"fc"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"fc"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -3458,7 +3458,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateThroughpu
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3470,8 +3470,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) validateTimestamp
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline fc based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineFc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -3500,7 +3500,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) ContextValidate(c
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -3514,7 +3514,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateIo
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -3528,16 +3528,16 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateLa
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"fc"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"fc"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -3551,7 +3551,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateTh
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineFc) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"fc"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -3561,7 +3561,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) contextValidateTi
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineFc) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3569,8 +3569,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) MarshalBinary() (
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType
+func (m *NvmeServiceInlineStatisticsInlineFc) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineFc
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3578,34 +3578,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType) UnmarshalBinary(b
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// NvmeServiceInlineStatisticsInlineFcInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_fc_inline_iops_raw
+type NvmeServiceInlineStatisticsInlineFcInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics fc iops raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline fc inline iops raw
+func (m *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics fc iops raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline fc inline iops raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3615,7 +3615,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3623,8 +3623,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType
+func (m *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineFcInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3632,34 +3632,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_fc_inline_latency_raw
+type NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics fc latency raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline fc inline latency raw
+func (m *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics fc latency raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline fc inline latency raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3669,7 +3669,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3677,8 +3677,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType
+func (m *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3686,31 +3686,31 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_fc_inline_throughput_raw
+type NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics fc throughput raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline fc inline throughput raw
+func (m *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics fc throughput raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline fc inline throughput raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3720,7 +3720,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3728,8 +3728,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType
+func (m *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3737,34 +3737,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// NvmeServiceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_iops_raw
+type NvmeServiceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics iops raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline iops raw
+func (m *NvmeServiceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics iops raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline iops raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3774,7 +3774,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3782,8 +3782,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType
+func (m *NvmeServiceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3791,34 +3791,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// NvmeServiceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_latency_raw
+type NvmeServiceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics latency raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline latency raw
+func (m *NvmeServiceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics latency raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline latency raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3828,7 +3828,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3836,8 +3836,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType
+func (m *NvmeServiceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3845,25 +3845,25 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType The NVMe/TCP portion of the aggregated statistics.
+// NvmeServiceInlineStatisticsInlineTCP The NVMe/TCP portion of the aggregated statistics.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType struct {
+// swagger:model nvme_service_inline_statistics_inline_tcp
+type NvmeServiceInlineStatisticsInlineTCP struct {
 
 	// iops raw
-	IopsRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType `json:"iops_raw,omitempty"`
+	IopsRaw *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType `json:"latency_raw,omitempty"`
+	LatencyRaw *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType `json:"throughput_raw,omitempty"`
+	ThroughputRaw *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -3872,8 +3872,8 @@ type NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics TCP type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline tcp
+func (m *NvmeServiceInlineStatisticsInlineTCP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -3902,7 +3902,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) Validate(formats
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateIopsRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -3919,7 +3919,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateIopsRaw(
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -3936,7 +3936,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateLatencyR
 	return nil
 }
 
-var nvmeServiceStatisticsTypeNvmeServiceStatisticsTcpTypeTypeStatusPropEnum []interface{}
+var nvmeServiceInlineStatisticsInlineTcpTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3944,145 +3944,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nvmeServiceStatisticsTypeNvmeServiceStatisticsTcpTypeTypeStatusPropEnum = append(nvmeServiceStatisticsTypeNvmeServiceStatisticsTcpTypeTypeStatusPropEnum, v)
+		nvmeServiceInlineStatisticsInlineTcpTypeStatusPropEnum = append(nvmeServiceInlineStatisticsInlineTcpTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusOk captures enum value "ok"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusOk string = "ok"
+	// NvmeServiceInlineStatisticsInlineTCPStatusOk captures enum value "ok"
+	NvmeServiceInlineStatisticsInlineTCPStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusError captures enum value "error"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusError string = "error"
+	// NvmeServiceInlineStatisticsInlineTCPStatusError captures enum value "error"
+	NvmeServiceInlineStatisticsInlineTCPStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoData captures enum value "partial_no_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoData string = "partial_no_data"
+	// NvmeServiceInlineStatisticsInlineTCPStatusPartialNoData captures enum value "partial_no_data"
+	NvmeServiceInlineStatisticsInlineTCPStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoResponse string = "partial_no_response"
+	// NvmeServiceInlineStatisticsInlineTCPStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeServiceInlineStatisticsInlineTCPStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialOtherError string = "partial_other_error"
+	// NvmeServiceInlineStatisticsInlineTCPStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeServiceInlineStatisticsInlineTCPStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusNegativeDelta captures enum value "negative_delta"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusNegativeDelta string = "negative_delta"
+	// NvmeServiceInlineStatisticsInlineTCPStatusNegativeDelta captures enum value "negative_delta"
+	NvmeServiceInlineStatisticsInlineTCPStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusNotFound captures enum value "not_found"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusNotFound string = "not_found"
+	// NvmeServiceInlineStatisticsInlineTCPStatusNotFound captures enum value "not_found"
+	NvmeServiceInlineStatisticsInlineTCPStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusBackfilledData captures enum value "backfilled_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusBackfilledData string = "backfilled_data"
+	// NvmeServiceInlineStatisticsInlineTCPStatusBackfilledData captures enum value "backfilled_data"
+	NvmeServiceInlineStatisticsInlineTCPStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NvmeServiceInlineStatisticsInlineTCPStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeServiceInlineStatisticsInlineTCPStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NvmeServiceInlineStatisticsInlineTCPStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeServiceInlineStatisticsInlineTCPStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+	// nvme_service_inline_statistics_inline_tcp
+	// NvmeServiceInlineStatisticsInlineTCP
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NvmeServiceInlineStatisticsInlineTCPStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceInlineStatisticsInlineTCPStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nvmeServiceStatisticsTypeNvmeServiceStatisticsTcpTypeTypeStatusPropEnum, true); err != nil {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeServiceInlineStatisticsInlineTcpTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateStatus(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"tcp"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"tcp"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -4099,7 +4099,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateThroughp
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -4111,8 +4111,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) validateTimestam
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics TCP type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline tcp based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineTCP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -4141,7 +4141,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) ContextValidate(
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -4155,7 +4155,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateI
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -4169,16 +4169,16 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateL
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"tcp"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"tcp"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -4192,7 +4192,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateT
 	return nil
 }
 
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineStatisticsInlineTCP) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"tcp"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -4202,7 +4202,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) contextValidateT
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineTCP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4210,8 +4210,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) MarshalBinary() 
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType
+func (m *NvmeServiceInlineStatisticsInlineTCP) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineTCP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4219,34 +4219,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType) UnmarshalBinary(
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_tcp_inline_iops_raw
+type NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP iops raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline tcp inline iops raw
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP iops raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline tcp inline iops raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -4256,7 +4256,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4264,8 +4264,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4273,34 +4273,34 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_tcp_inline_latency_raw
+type NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP latency raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline tcp inline latency raw
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP latency raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline tcp inline latency raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -4310,7 +4310,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4318,8 +4318,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4327,31 +4327,31 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_tcp_inline_throughput_raw
+type NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP throughput raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline tcp inline throughput raw
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics TCP type nvme service statistics TCP throughput raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline tcp inline throughput raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -4361,7 +4361,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4369,8 +4369,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType
+func (m *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4378,31 +4378,31 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatist
 	return nil
 }
 
-// NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// NvmeServiceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType
-type NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType struct {
+// swagger:model nvme_service_inline_statistics_inline_throughput_raw
+type NvmeServiceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this nvme service statistics type nvme service statistics fc type nvme service statistics throughput raw type
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline statistics inline throughput raw
+func (m *NvmeServiceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service statistics type nvme service statistics fc type nvme service statistics throughput raw type based on the context it is used
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline statistics inline throughput raw based on the context it is used
+func (m *NvmeServiceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -4412,7 +4412,7 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4420,8 +4420,8 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType
+func (m *NvmeServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4429,27 +4429,27 @@ func (m *NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisti
 	return nil
 }
 
-// NvmeServiceSvm nvme service svm
+// NvmeServiceInlineSvm nvme service inline svm
 //
-// swagger:model NvmeServiceSvm
-type NvmeServiceSvm struct {
+// swagger:model nvme_service_inline_svm
+type NvmeServiceInlineSvm struct {
 
 	// links
-	Links *NvmeServiceSvmLinks `json:"_links,omitempty"`
+	Links *NvmeServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme service svm
-func (m *NvmeServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline svm
+func (m *NvmeServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -4462,7 +4462,7 @@ func (m *NvmeServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -4479,8 +4479,8 @@ func (m *NvmeServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service svm based on the context it is used
-func (m *NvmeServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline svm based on the context it is used
+func (m *NvmeServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -4493,7 +4493,7 @@ func (m *NvmeServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NvmeServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -4508,7 +4508,7 @@ func (m *NvmeServiceSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4516,8 +4516,8 @@ func (m *NvmeServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceSvm) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceSvm
+func (m *NvmeServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4525,17 +4525,17 @@ func (m *NvmeServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeServiceSvmLinks nvme service svm links
+// NvmeServiceInlineSvmInlineLinks nvme service inline svm inline links
 //
-// swagger:model NvmeServiceSvmLinks
-type NvmeServiceSvmLinks struct {
+// swagger:model nvme_service_inline_svm_inline__links
+type NvmeServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme service svm links
-func (m *NvmeServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme service inline svm inline links
+func (m *NvmeServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -4548,7 +4548,7 @@ func (m *NvmeServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -4565,8 +4565,8 @@ func (m *NvmeServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme service svm links based on the context it is used
-func (m *NvmeServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme service inline svm inline links based on the context it is used
+func (m *NvmeServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -4579,7 +4579,7 @@ func (m *NvmeServiceSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NvmeServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -4594,7 +4594,7 @@ func (m *NvmeServiceSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4602,8 +4602,8 @@ func (m *NvmeServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeServiceSvmLinks
+func (m *NvmeServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

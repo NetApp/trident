@@ -22,13 +22,14 @@ import (
 type PerformanceReducedThroughputResponse struct {
 
 	// links
-	Links *PerformanceReducedThroughputResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceReducedThroughputResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceReducedThroughputResponseRecordsItems0 `json:"records,omitempty"`
+	// performance reduced throughput response inline records
+	PerformanceReducedThroughputResponseInlineRecords []*PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance reduced throughput response
@@ -39,7 +40,7 @@ func (m *PerformanceReducedThroughputResponse) Validate(formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceReducedThroughputResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceReducedThroughputResponse) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceReducedThroughputResponse) validatePerformanceReducedThroughputResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceReducedThroughputResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceReducedThroughputResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceReducedThroughputResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceReducedThroughputResponseInlineRecords[i] != nil {
+			if err := m.PerformanceReducedThroughputResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceReducedThroughputResponse) ContextValidate(ctx context.Conte
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceReducedThroughputResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceReducedThroughputResponse) contextValidateLinks(ctx context.
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponse) contextValidatePerformanceReducedThroughputResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceReducedThroughputResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceReducedThroughputResponseInlineRecords[i] != nil {
+			if err := m.PerformanceReducedThroughputResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceReducedThroughputResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceReducedThroughputResponseLinks performance reduced throughput response links
+// PerformanceReducedThroughputResponseInlineLinks performance reduced throughput response inline links
 //
-// swagger:model PerformanceReducedThroughputResponseLinks
-type PerformanceReducedThroughputResponseLinks struct {
+// swagger:model performance_reduced_throughput_response_inline__links
+type PerformanceReducedThroughputResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceReducedThroughputResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response links
-func (m *PerformanceReducedThroughputResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline links
+func (m *PerformanceReducedThroughputResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceReducedThroughputResponseLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceReducedThroughputResponseLinks) validateNext(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceReducedThroughputResponseLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response links based on the context it is used
-func (m *PerformanceReducedThroughputResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline links based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceReducedThroughputResponseLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceReducedThroughputResponseLinks) contextValidateNext(ctx cont
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceReducedThroughputResponseLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceReducedThroughputResponseLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseLinks
+func (m *PerformanceReducedThroughputResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *PerformanceReducedThroughputResponseLinks) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// PerformanceReducedThroughputResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput
+// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput
 //
-// swagger:model PerformanceReducedThroughputResponseRecordsItems0
-type PerformanceReducedThroughputResponseRecordsItems0 struct {
+// swagger:model performance_reduced_throughput_response_inline_records_inline_array_item
+type PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *PerformanceReducedThroughputResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceReducedThroughputResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceReducedThroughputResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceReducedThroughputResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -323,8 +324,8 @@ type PerformanceReducedThroughputResponseRecordsItems0 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response records items0
-func (m *PerformanceReducedThroughputResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline records inline array item
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -361,7 +362,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) Validate(formats str
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -378,7 +379,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) validateLinks(format
 	return nil
 }
 
-var performanceReducedThroughputResponseRecordsItems0TypeDurationPropEnum []interface{}
+var performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -386,95 +387,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceReducedThroughputResponseRecordsItems0TypeDurationPropEnum = append(performanceReducedThroughputResponseRecordsItems0TypeDurationPropEnum, v)
+		performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	PerformanceReducedThroughputResponseRecordsItems0DurationPT15S string = "PT15S"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	PerformanceReducedThroughputResponseRecordsItems0DurationPT4M string = "PT4M"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	PerformanceReducedThroughputResponseRecordsItems0DurationPT30M string = "PT30M"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	PerformanceReducedThroughputResponseRecordsItems0DurationPT2H string = "PT2H"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationP1D captures enum value "P1D"
-	PerformanceReducedThroughputResponseRecordsItems0DurationP1D string = "P1D"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	PerformanceReducedThroughputResponseRecordsItems0DurationPT5M string = "PT5M"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceReducedThroughputResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -491,7 +492,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) validateIops(formats
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -508,7 +509,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) validateLatency(form
 	return nil
 }
 
-var performanceReducedThroughputResponseRecordsItems0TypeStatusPropEnum []interface{}
+var performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -516,145 +517,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceReducedThroughputResponseRecordsItems0TypeStatusPropEnum = append(performanceReducedThroughputResponseRecordsItems0TypeStatusPropEnum, v)
+		performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusOk captures enum value "ok"
-	PerformanceReducedThroughputResponseRecordsItems0StatusOk string = "ok"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusError captures enum value "error"
-	PerformanceReducedThroughputResponseRecordsItems0StatusError string = "error"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceReducedThroughputResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceReducedThroughputResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	PerformanceReducedThroughputResponseRecordsItems0StatusNotFound string = "not_found"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceReducedThroughputResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceReducedThroughputResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceReducedThroughputResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0
-	// PerformanceReducedThroughputResponseRecordsItems0
+	// performance_reduced_throughput_response_inline_records_inline_array_item
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceReducedThroughputResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceReducedThroughputResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceReducedThroughputResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -671,7 +672,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) validateThroughput(f
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -683,8 +684,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) validateTimestamp(fo
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response records items0 based on the context it is used
-func (m *PerformanceReducedThroughputResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline records inline array item based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -721,7 +722,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) ContextValidate(ctx 
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -735,16 +736,16 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateLinks
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +759,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateIops(
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -772,16 +773,16 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateLaten
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -795,7 +796,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateThrou
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -805,7 +806,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) contextValidateTimes
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -813,8 +814,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseRecordsItems0
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -822,34 +823,34 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0) UnmarshalBinary(b []
 	return nil
 }
 
-// PerformanceReducedThroughputResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceReducedThroughputResponseRecordsItems0Iops
-type PerformanceReducedThroughputResponseRecordsItems0Iops struct {
+// swagger:model performance_reduced_throughput_response_inline_records_inline_array_item_inline_iops
+type PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response records items0 iops
-func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline records inline array item inline iops
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response records items0 iops based on the context it is used
-func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline records inline array item inline iops based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -859,7 +860,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) ContextValidate(
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -867,8 +868,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) MarshalBinary() 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseRecordsItems0Iops
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -876,34 +877,34 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Iops) UnmarshalBinary(
 	return nil
 }
 
-// PerformanceReducedThroughputResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceReducedThroughputResponseRecordsItems0Latency
-type PerformanceReducedThroughputResponseRecordsItems0Latency struct {
+// swagger:model performance_reduced_throughput_response_inline_records_inline_array_item_inline_latency
+type PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response records items0 latency
-func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline records inline array item inline latency
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response records items0 latency based on the context it is used
-func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline records inline array item inline latency based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -913,7 +914,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) ContextValida
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -921,8 +922,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) MarshalBinary
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseRecordsItems0Latency
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -930,17 +931,17 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Latency) UnmarshalBina
 	return nil
 }
 
-// PerformanceReducedThroughputResponseRecordsItems0Links performance reduced throughput response records items0 links
+// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks performance reduced throughput response inline records inline array item inline links
 //
-// swagger:model PerformanceReducedThroughputResponseRecordsItems0Links
-type PerformanceReducedThroughputResponseRecordsItems0Links struct {
+// swagger:model performance_reduced_throughput_response_inline_records_inline_array_item_inline__links
+type PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response records items0 links
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline records inline array item inline links
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -953,7 +954,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) Validate(format
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -970,8 +971,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) validateSelf(fo
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response records items0 links based on the context it is used
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline records inline array item inline links based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -984,7 +985,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) ContextValidate
 	return nil
 }
 
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -999,7 +1000,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) contextValidate
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1007,8 +1008,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) MarshalBinary()
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseRecordsItems0Links
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1016,31 +1017,31 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Links) UnmarshalBinary
 	return nil
 }
 
-// PerformanceReducedThroughputResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceReducedThroughputResponseRecordsItems0Throughput
-type PerformanceReducedThroughputResponseRecordsItems0Throughput struct {
+// swagger:model performance_reduced_throughput_response_inline_records_inline_array_item_inline_throughput
+type PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance reduced throughput response records items0 throughput
-func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance reduced throughput response inline records inline array item inline throughput
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance reduced throughput response records items0 throughput based on the context it is used
-func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance reduced throughput response inline records inline array item inline throughput based on the context it is used
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1050,7 +1051,7 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) ContextVal
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1058,8 +1059,8 @@ func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) MarshalBin
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceReducedThroughputResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceReducedThroughputResponseRecordsItems0Throughput
+func (m *PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceReducedThroughputResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

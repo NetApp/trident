@@ -21,17 +21,17 @@ import (
 type GivebackStatus struct {
 
 	// aggregate
-	Aggregate *GivebackStatusAggregate `json:"aggregate,omitempty"`
+	Aggregate *GivebackStatusInlineAggregate `json:"aggregate,omitempty"`
 
 	// error
-	Error *GivebackStatusError `json:"error,omitempty"`
+	Error *GivebackStatusInlineError `json:"error,omitempty"`
 
 	// Giveback state of the aggregate. <br/>
 	// Possible values include no aggregates to giveback(nothing_to_giveback), failed to disable background disk firmware update(BDFU) on source node(failed_bdfu_source), <br/>
 	// giveback delayed as disk firmware update is in progress on source node(delayed_bdfu_source), performing veto checks(running_checks). <br/>
 	//
 	// Enum: [done failed in_progress not_started nothing_to_giveback failed_bdfu_source failed_bdfu_dest delayed_bdfu_source delayed_bdfu_dest running_checks]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this giveback status
@@ -219,7 +219,7 @@ func (m *GivebackStatus) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -290,25 +290,25 @@ func (m *GivebackStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GivebackStatusAggregate Aggregate name and UUID.
+// GivebackStatusInlineAggregate Aggregate name and UUID.
 //
-// swagger:model GivebackStatusAggregate
-type GivebackStatusAggregate struct {
+// swagger:model giveback_status_inline_aggregate
+type GivebackStatusInlineAggregate struct {
 
 	// links
-	Links *GivebackStatusAggregateLinks `json:"_links,omitempty"`
+	Links *GivebackStatusInlineAggregateInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this giveback status aggregate
-func (m *GivebackStatusAggregate) Validate(formats strfmt.Registry) error {
+// Validate validates this giveback status inline aggregate
+func (m *GivebackStatusInlineAggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -321,7 +321,7 @@ func (m *GivebackStatusAggregate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GivebackStatusAggregate) validateLinks(formats strfmt.Registry) error {
+func (m *GivebackStatusInlineAggregate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -338,8 +338,8 @@ func (m *GivebackStatusAggregate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this giveback status aggregate based on the context it is used
-func (m *GivebackStatusAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this giveback status inline aggregate based on the context it is used
+func (m *GivebackStatusInlineAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -352,7 +352,7 @@ func (m *GivebackStatusAggregate) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *GivebackStatusAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *GivebackStatusInlineAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -367,7 +367,7 @@ func (m *GivebackStatusAggregate) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *GivebackStatusAggregate) MarshalBinary() ([]byte, error) {
+func (m *GivebackStatusInlineAggregate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -375,8 +375,8 @@ func (m *GivebackStatusAggregate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GivebackStatusAggregate) UnmarshalBinary(b []byte) error {
-	var res GivebackStatusAggregate
+func (m *GivebackStatusInlineAggregate) UnmarshalBinary(b []byte) error {
+	var res GivebackStatusInlineAggregate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -384,17 +384,17 @@ func (m *GivebackStatusAggregate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GivebackStatusAggregateLinks giveback status aggregate links
+// GivebackStatusInlineAggregateInlineLinks giveback status inline aggregate inline links
 //
-// swagger:model GivebackStatusAggregateLinks
-type GivebackStatusAggregateLinks struct {
+// swagger:model giveback_status_inline_aggregate_inline__links
+type GivebackStatusInlineAggregateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this giveback status aggregate links
-func (m *GivebackStatusAggregateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this giveback status inline aggregate inline links
+func (m *GivebackStatusInlineAggregateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -407,7 +407,7 @@ func (m *GivebackStatusAggregateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GivebackStatusAggregateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GivebackStatusInlineAggregateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -424,8 +424,8 @@ func (m *GivebackStatusAggregateLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this giveback status aggregate links based on the context it is used
-func (m *GivebackStatusAggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this giveback status inline aggregate inline links based on the context it is used
+func (m *GivebackStatusInlineAggregateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -438,7 +438,7 @@ func (m *GivebackStatusAggregateLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *GivebackStatusAggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GivebackStatusInlineAggregateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -453,7 +453,7 @@ func (m *GivebackStatusAggregateLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *GivebackStatusAggregateLinks) MarshalBinary() ([]byte, error) {
+func (m *GivebackStatusInlineAggregateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -461,8 +461,8 @@ func (m *GivebackStatusAggregateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GivebackStatusAggregateLinks) UnmarshalBinary(b []byte) error {
-	var res GivebackStatusAggregateLinks
+func (m *GivebackStatusInlineAggregateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GivebackStatusInlineAggregateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -470,24 +470,24 @@ func (m *GivebackStatusAggregateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GivebackStatusError Indicates the failed aggregate giveback code and message.
+// GivebackStatusInlineError Indicates the failed aggregate giveback code and message.
 //
-// swagger:model GivebackStatusError
-type GivebackStatusError struct {
+// swagger:model giveback_status_inline_error
+type GivebackStatusInlineError struct {
 
 	// Message code.
 	// Example: 852126
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Detailed message based on the state.
 	// Read Only: true
 	// Enum: [shutdown not_homes_partner not_sfo failed_limbo offline_failed migrating veto communication_err online_timeout online_failed hdd_to_aff_dest]
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this giveback status error
-func (m *GivebackStatusError) Validate(formats strfmt.Registry) error {
+// Validate validates this giveback status inline error
+func (m *GivebackStatusInlineError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMessage(formats); err != nil {
@@ -500,7 +500,7 @@ func (m *GivebackStatusError) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var givebackStatusErrorTypeMessagePropEnum []interface{}
+var givebackStatusInlineErrorTypeMessagePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -508,146 +508,146 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		givebackStatusErrorTypeMessagePropEnum = append(givebackStatusErrorTypeMessagePropEnum, v)
+		givebackStatusInlineErrorTypeMessagePropEnum = append(givebackStatusInlineErrorTypeMessagePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// shutdown
 	// END DEBUGGING
-	// GivebackStatusErrorMessageShutdown captures enum value "shutdown"
-	GivebackStatusErrorMessageShutdown string = "shutdown"
+	// GivebackStatusInlineErrorMessageShutdown captures enum value "shutdown"
+	GivebackStatusInlineErrorMessageShutdown string = "shutdown"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// not_homes_partner
 	// END DEBUGGING
-	// GivebackStatusErrorMessageNotHomesPartner captures enum value "not_homes_partner"
-	GivebackStatusErrorMessageNotHomesPartner string = "not_homes_partner"
+	// GivebackStatusInlineErrorMessageNotHomesPartner captures enum value "not_homes_partner"
+	GivebackStatusInlineErrorMessageNotHomesPartner string = "not_homes_partner"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// not_sfo
 	// END DEBUGGING
-	// GivebackStatusErrorMessageNotSfo captures enum value "not_sfo"
-	GivebackStatusErrorMessageNotSfo string = "not_sfo"
+	// GivebackStatusInlineErrorMessageNotSfo captures enum value "not_sfo"
+	GivebackStatusInlineErrorMessageNotSfo string = "not_sfo"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// failed_limbo
 	// END DEBUGGING
-	// GivebackStatusErrorMessageFailedLimbo captures enum value "failed_limbo"
-	GivebackStatusErrorMessageFailedLimbo string = "failed_limbo"
+	// GivebackStatusInlineErrorMessageFailedLimbo captures enum value "failed_limbo"
+	GivebackStatusInlineErrorMessageFailedLimbo string = "failed_limbo"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// offline_failed
 	// END DEBUGGING
-	// GivebackStatusErrorMessageOfflineFailed captures enum value "offline_failed"
-	GivebackStatusErrorMessageOfflineFailed string = "offline_failed"
+	// GivebackStatusInlineErrorMessageOfflineFailed captures enum value "offline_failed"
+	GivebackStatusInlineErrorMessageOfflineFailed string = "offline_failed"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// migrating
 	// END DEBUGGING
-	// GivebackStatusErrorMessageMigrating captures enum value "migrating"
-	GivebackStatusErrorMessageMigrating string = "migrating"
+	// GivebackStatusInlineErrorMessageMigrating captures enum value "migrating"
+	GivebackStatusInlineErrorMessageMigrating string = "migrating"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// veto
 	// END DEBUGGING
-	// GivebackStatusErrorMessageVeto captures enum value "veto"
-	GivebackStatusErrorMessageVeto string = "veto"
+	// GivebackStatusInlineErrorMessageVeto captures enum value "veto"
+	GivebackStatusInlineErrorMessageVeto string = "veto"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// communication_err
 	// END DEBUGGING
-	// GivebackStatusErrorMessageCommunicationErr captures enum value "communication_err"
-	GivebackStatusErrorMessageCommunicationErr string = "communication_err"
+	// GivebackStatusInlineErrorMessageCommunicationErr captures enum value "communication_err"
+	GivebackStatusInlineErrorMessageCommunicationErr string = "communication_err"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// online_timeout
 	// END DEBUGGING
-	// GivebackStatusErrorMessageOnlineTimeout captures enum value "online_timeout"
-	GivebackStatusErrorMessageOnlineTimeout string = "online_timeout"
+	// GivebackStatusInlineErrorMessageOnlineTimeout captures enum value "online_timeout"
+	GivebackStatusInlineErrorMessageOnlineTimeout string = "online_timeout"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// online_failed
 	// END DEBUGGING
-	// GivebackStatusErrorMessageOnlineFailed captures enum value "online_failed"
-	GivebackStatusErrorMessageOnlineFailed string = "online_failed"
+	// GivebackStatusInlineErrorMessageOnlineFailed captures enum value "online_failed"
+	GivebackStatusInlineErrorMessageOnlineFailed string = "online_failed"
 
 	// BEGIN DEBUGGING
-	// GivebackStatusError
-	// GivebackStatusError
+	// giveback_status_inline_error
+	// GivebackStatusInlineError
 	// message
 	// Message
 	// hdd_to_aff_dest
 	// END DEBUGGING
-	// GivebackStatusErrorMessageHddToAffDest captures enum value "hdd_to_aff_dest"
-	GivebackStatusErrorMessageHddToAffDest string = "hdd_to_aff_dest"
+	// GivebackStatusInlineErrorMessageHddToAffDest captures enum value "hdd_to_aff_dest"
+	GivebackStatusInlineErrorMessageHddToAffDest string = "hdd_to_aff_dest"
 )
 
 // prop value enum
-func (m *GivebackStatusError) validateMessageEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, givebackStatusErrorTypeMessagePropEnum, true); err != nil {
+func (m *GivebackStatusInlineError) validateMessageEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, givebackStatusInlineErrorTypeMessagePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *GivebackStatusError) validateMessage(formats strfmt.Registry) error {
+func (m *GivebackStatusInlineError) validateMessage(formats strfmt.Registry) error {
 	if swag.IsZero(m.Message) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateMessageEnum("error"+"."+"message", "body", m.Message); err != nil {
+	if err := m.validateMessageEnum("error"+"."+"message", "body", *m.Message); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this giveback status error based on the context it is used
-func (m *GivebackStatusError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this giveback status inline error based on the context it is used
+func (m *GivebackStatusInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -664,18 +664,18 @@ func (m *GivebackStatusError) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *GivebackStatusError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *GivebackStatusInlineError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *GivebackStatusError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *GivebackStatusInlineError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -683,7 +683,7 @@ func (m *GivebackStatusError) contextValidateMessage(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *GivebackStatusError) MarshalBinary() ([]byte, error) {
+func (m *GivebackStatusInlineError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -691,8 +691,8 @@ func (m *GivebackStatusError) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GivebackStatusError) UnmarshalBinary(b []byte) error {
-	var res GivebackStatusError
+func (m *GivebackStatusInlineError) UnmarshalBinary(b []byte) error {
+	var res GivebackStatusInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

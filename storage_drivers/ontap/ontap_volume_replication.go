@@ -302,6 +302,7 @@ func getMirrorStatus(
 	}
 
 	// Translate the snapmirror status to a mirror status
+	Logc(ctx).WithField("snapmirror.RelationshipStatus", snapmirror.RelationshipStatus).Debug("Checking snapmirror relationship status.")
 	switch snapmirror.RelationshipStatus {
 	case api.SnapmirrorStatusBreaking:
 		return v1.MirrorStatePromoting, nil
@@ -310,8 +311,9 @@ func getMirrorStatus(
 	case api.SnapmirrorStatusAborting:
 		return v1.MirrorStatePromoting, nil
 	default:
+		Logc(ctx).WithField("snapmirror.State", snapmirror.State).Debug("Checking snapmirror state.")
 		switch snapmirror.State {
-		case api.SnapmirrorStateBroken:
+		case api.SnapmirrorStateBrokenOffZapi, api.SnapmirrorStateBrokenOffRest:
 			if snapmirror.RelationshipStatus == api.SnapmirrorStatusTransferring {
 				return v1.MirrorStateEstablishing, nil
 			}

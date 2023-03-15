@@ -24,17 +24,17 @@ type SplitStatus struct {
 
 	// Specifies the number of pending file clone split operations in the volume.
 	// Read Only: true
-	PendingSplits int64 `json:"pending_splits,omitempty"`
+	PendingSplits *int64 `json:"pending_splits,omitempty"`
 
 	// svm
-	Svm *SplitStatusSvm `json:"svm,omitempty"`
+	Svm *SplitStatusInlineSvm `json:"svm,omitempty"`
 
 	// Specifies the space occupied by unsplit file clones in the volume.
 	// Read Only: true
-	UnsplitCloneSize int64 `json:"unsplit_clone_size,omitempty"`
+	UnsplitCloneSize *int64 `json:"unsplit_clone_size,omitempty"`
 
 	// volume
-	Volume *SplitStatusVolume `json:"volume,omitempty"`
+	Volume *SplitStatusInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this split status
@@ -156,7 +156,7 @@ func (m *SplitStatus) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *SplitStatus) contextValidatePendingSplits(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pending_splits", "body", int64(m.PendingSplits)); err != nil {
+	if err := validate.ReadOnly(ctx, "pending_splits", "body", m.PendingSplits); err != nil {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (m *SplitStatus) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *SplitStatus) contextValidateUnsplitCloneSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "unsplit_clone_size", "body", int64(m.UnsplitCloneSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "unsplit_clone_size", "body", m.UnsplitCloneSize); err != nil {
 		return err
 	}
 
@@ -218,27 +218,27 @@ func (m *SplitStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitStatusSvm split status svm
+// SplitStatusInlineSvm split status inline svm
 //
-// swagger:model SplitStatusSvm
-type SplitStatusSvm struct {
+// swagger:model split_status_inline_svm
+type SplitStatusInlineSvm struct {
 
 	// links
-	Links *SplitStatusSvmLinks `json:"_links,omitempty"`
+	Links *SplitStatusInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this split status svm
-func (m *SplitStatusSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this split status inline svm
+func (m *SplitStatusInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -251,7 +251,7 @@ func (m *SplitStatusSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SplitStatusSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SplitStatusInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -268,8 +268,8 @@ func (m *SplitStatusSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this split status svm based on the context it is used
-func (m *SplitStatusSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this split status inline svm based on the context it is used
+func (m *SplitStatusInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -282,7 +282,7 @@ func (m *SplitStatusSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SplitStatusSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatusInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -297,7 +297,7 @@ func (m *SplitStatusSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SplitStatusSvm) MarshalBinary() ([]byte, error) {
+func (m *SplitStatusInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -305,8 +305,8 @@ func (m *SplitStatusSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SplitStatusSvm) UnmarshalBinary(b []byte) error {
-	var res SplitStatusSvm
+func (m *SplitStatusInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SplitStatusInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -314,17 +314,17 @@ func (m *SplitStatusSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitStatusSvmLinks split status svm links
+// SplitStatusInlineSvmInlineLinks split status inline svm inline links
 //
-// swagger:model SplitStatusSvmLinks
-type SplitStatusSvmLinks struct {
+// swagger:model split_status_inline_svm_inline__links
+type SplitStatusInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this split status svm links
-func (m *SplitStatusSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this split status inline svm inline links
+func (m *SplitStatusInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -337,7 +337,7 @@ func (m *SplitStatusSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SplitStatusSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SplitStatusInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -354,8 +354,8 @@ func (m *SplitStatusSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this split status svm links based on the context it is used
-func (m *SplitStatusSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this split status inline svm inline links based on the context it is used
+func (m *SplitStatusInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -368,7 +368,7 @@ func (m *SplitStatusSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SplitStatusSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatusInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *SplitStatusSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SplitStatusSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SplitStatusInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -391,8 +391,8 @@ func (m *SplitStatusSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SplitStatusSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SplitStatusSvmLinks
+func (m *SplitStatusInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SplitStatusInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -400,25 +400,25 @@ func (m *SplitStatusSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitStatusVolume split status volume
+// SplitStatusInlineVolume split status inline volume
 //
-// swagger:model SplitStatusVolume
-type SplitStatusVolume struct {
+// swagger:model split_status_inline_volume
+type SplitStatusInlineVolume struct {
 
 	// links
-	Links *SplitStatusVolumeLinks `json:"_links,omitempty"`
+	Links *SplitStatusInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this split status volume
-func (m *SplitStatusVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this split status inline volume
+func (m *SplitStatusInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -431,7 +431,7 @@ func (m *SplitStatusVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SplitStatusVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SplitStatusInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -448,8 +448,8 @@ func (m *SplitStatusVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this split status volume based on the context it is used
-func (m *SplitStatusVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this split status inline volume based on the context it is used
+func (m *SplitStatusInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -462,7 +462,7 @@ func (m *SplitStatusVolume) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *SplitStatusVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatusInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -477,7 +477,7 @@ func (m *SplitStatusVolume) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *SplitStatusVolume) MarshalBinary() ([]byte, error) {
+func (m *SplitStatusInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -485,8 +485,8 @@ func (m *SplitStatusVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SplitStatusVolume) UnmarshalBinary(b []byte) error {
-	var res SplitStatusVolume
+func (m *SplitStatusInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SplitStatusInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -494,17 +494,17 @@ func (m *SplitStatusVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitStatusVolumeLinks split status volume links
+// SplitStatusInlineVolumeInlineLinks split status inline volume inline links
 //
-// swagger:model SplitStatusVolumeLinks
-type SplitStatusVolumeLinks struct {
+// swagger:model split_status_inline_volume_inline__links
+type SplitStatusInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this split status volume links
-func (m *SplitStatusVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this split status inline volume inline links
+func (m *SplitStatusInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -517,7 +517,7 @@ func (m *SplitStatusVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SplitStatusVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SplitStatusInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -534,8 +534,8 @@ func (m *SplitStatusVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this split status volume links based on the context it is used
-func (m *SplitStatusVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this split status inline volume inline links based on the context it is used
+func (m *SplitStatusInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -548,7 +548,7 @@ func (m *SplitStatusVolumeLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SplitStatusVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatusInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -563,7 +563,7 @@ func (m *SplitStatusVolumeLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SplitStatusVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SplitStatusInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -571,8 +571,8 @@ func (m *SplitStatusVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SplitStatusVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SplitStatusVolumeLinks
+func (m *SplitStatusInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SplitStatusInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

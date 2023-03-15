@@ -20,13 +20,14 @@ import (
 type NameMappingResponse struct {
 
 	// links
-	Links *NameMappingResponseLinks `json:"_links,omitempty"`
+	Links *NameMappingResponseInlineLinks `json:"_links,omitempty"`
+
+	// name mapping response inline records
+	NameMappingResponseInlineRecords []*NameMapping `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NameMapping `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this name mapping response
@@ -37,7 +38,7 @@ func (m *NameMappingResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNameMappingResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NameMappingResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NameMappingResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NameMappingResponse) validateNameMappingResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NameMappingResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NameMappingResponseInlineRecords); i++ {
+		if swag.IsZero(m.NameMappingResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NameMappingResponseInlineRecords[i] != nil {
+			if err := m.NameMappingResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NameMappingResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNameMappingResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NameMappingResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NameMappingResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NameMappingResponse) contextValidateNameMappingResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NameMappingResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NameMappingResponseInlineRecords[i] != nil {
+			if err := m.NameMappingResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NameMappingResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NameMappingResponseLinks name mapping response links
+// NameMappingResponseInlineLinks name mapping response inline links
 //
-// swagger:model NameMappingResponseLinks
-type NameMappingResponseLinks struct {
+// swagger:model name_mapping_response_inline__links
+type NameMappingResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NameMappingResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this name mapping response links
-func (m *NameMappingResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this name mapping response inline links
+func (m *NameMappingResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NameMappingResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NameMappingResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NameMappingResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NameMappingResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NameMappingResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NameMappingResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NameMappingResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this name mapping response links based on the context it is used
-func (m *NameMappingResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this name mapping response inline links based on the context it is used
+func (m *NameMappingResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NameMappingResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NameMappingResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NameMappingResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NameMappingResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *NameMappingResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NameMappingResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NameMappingResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NameMappingResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NameMappingResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NameMappingResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NameMappingResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NameMappingResponseLinks
+func (m *NameMappingResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NameMappingResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

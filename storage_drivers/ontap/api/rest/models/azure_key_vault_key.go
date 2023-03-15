@@ -23,14 +23,15 @@ type AzureKeyVaultKey struct {
 	// Key identifier of the AKV key encryption key.
 	// Example: https://keyvault1.vault.azure.net/keys/key1
 	// Format: uri
-	KeyID strfmt.URI `json:"key_id,omitempty"`
+	KeyID *strfmt.URI `json:"key_id,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
+	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// svm
-	Svm *AzureKeyVaultKeySvm `json:"svm,omitempty"`
+	Svm *AzureKeyVaultKeyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this azure key vault key
@@ -116,7 +117,7 @@ func (m *AzureKeyVaultKey) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -144,6 +145,10 @@ func (m *AzureKeyVaultKey) validateSvm(formats strfmt.Registry) error {
 func (m *AzureKeyVaultKey) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -151,6 +156,15 @@ func (m *AzureKeyVaultKey) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AzureKeyVaultKey) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -186,27 +200,27 @@ func (m *AzureKeyVaultKey) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AzureKeyVaultKeySvm azure key vault key svm
+// AzureKeyVaultKeyInlineSvm azure key vault key inline svm
 //
-// swagger:model AzureKeyVaultKeySvm
-type AzureKeyVaultKeySvm struct {
+// swagger:model azure_key_vault_key_inline_svm
+type AzureKeyVaultKeyInlineSvm struct {
 
 	// links
-	Links *AzureKeyVaultKeySvmLinks `json:"_links,omitempty"`
+	Links *AzureKeyVaultKeyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this azure key vault key svm
-func (m *AzureKeyVaultKeySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this azure key vault key inline svm
+func (m *AzureKeyVaultKeyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -219,7 +233,7 @@ func (m *AzureKeyVaultKeySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AzureKeyVaultKeySvm) validateLinks(formats strfmt.Registry) error {
+func (m *AzureKeyVaultKeyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -236,8 +250,8 @@ func (m *AzureKeyVaultKeySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this azure key vault key svm based on the context it is used
-func (m *AzureKeyVaultKeySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this azure key vault key inline svm based on the context it is used
+func (m *AzureKeyVaultKeyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -250,7 +264,7 @@ func (m *AzureKeyVaultKeySvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *AzureKeyVaultKeySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AzureKeyVaultKeyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -265,7 +279,7 @@ func (m *AzureKeyVaultKeySvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *AzureKeyVaultKeySvm) MarshalBinary() ([]byte, error) {
+func (m *AzureKeyVaultKeyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -273,8 +287,8 @@ func (m *AzureKeyVaultKeySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AzureKeyVaultKeySvm) UnmarshalBinary(b []byte) error {
-	var res AzureKeyVaultKeySvm
+func (m *AzureKeyVaultKeyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res AzureKeyVaultKeyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -282,17 +296,17 @@ func (m *AzureKeyVaultKeySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AzureKeyVaultKeySvmLinks azure key vault key svm links
+// AzureKeyVaultKeyInlineSvmInlineLinks azure key vault key inline svm inline links
 //
-// swagger:model AzureKeyVaultKeySvmLinks
-type AzureKeyVaultKeySvmLinks struct {
+// swagger:model azure_key_vault_key_inline_svm_inline__links
+type AzureKeyVaultKeyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this azure key vault key svm links
-func (m *AzureKeyVaultKeySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this azure key vault key inline svm inline links
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -305,7 +319,7 @@ func (m *AzureKeyVaultKeySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AzureKeyVaultKeySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -322,8 +336,8 @@ func (m *AzureKeyVaultKeySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this azure key vault key svm links based on the context it is used
-func (m *AzureKeyVaultKeySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this azure key vault key inline svm inline links based on the context it is used
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -336,7 +350,7 @@ func (m *AzureKeyVaultKeySvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *AzureKeyVaultKeySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -351,7 +365,7 @@ func (m *AzureKeyVaultKeySvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *AzureKeyVaultKeySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -359,8 +373,8 @@ func (m *AzureKeyVaultKeySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AzureKeyVaultKeySvmLinks) UnmarshalBinary(b []byte) error {
-	var res AzureKeyVaultKeySvmLinks
+func (m *AzureKeyVaultKeyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AzureKeyVaultKeyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

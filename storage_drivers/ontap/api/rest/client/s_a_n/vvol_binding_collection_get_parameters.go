@@ -66,49 +66,49 @@ type VvolBindingCollectionGetParams struct {
 
 	   Filter by count
 	*/
-	CountQueryParameter *int64
+	Count *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *int64
+	ID *int64
 
 	/* IsOptimal.
 
 	   Filter by is_optimal
 	*/
-	IsOptimalQueryParameter *bool
+	IsOptimal *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProtocolEndpointName.
 
 	   Filter by protocol_endpoint.name
 	*/
-	ProtocolEndpointNameQueryParameter *string
+	ProtocolEndpointName *string
 
 	/* ProtocolEndpointUUID.
 
 	   Filter by protocol_endpoint.uuid
 	*/
-	ProtocolEndpointUUIDQueryParameter *string
+	ProtocolEndpointUUID *string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type VvolBindingCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,31 +124,31 @@ type VvolBindingCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* VvolName.
 
 	   Filter by vvol.name
 	*/
-	VvolNameQueryParameter *string
+	VvolName *string
 
 	/* VvolUUID.
 
 	   Filter by vvol.uuid
 	*/
-	VvolUUIDQueryParameter *string
+	VvolUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *VvolBindingCollectionGetParams) WithDefaults() *VvolBindingCollectionGe
 // All values with no default are reset to their zero value.
 func (o *VvolBindingCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VvolBindingCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *VvolBindingCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCountQueryParameter adds the count to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithCountQueryParameter(count *int64) *VvolBindingCollectionGetParams {
-	o.SetCountQueryParameter(count)
+// WithCount adds the count to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithCount(count *int64) *VvolBindingCollectionGetParams {
+	o.SetCount(count)
 	return o
 }
 
-// SetCountQueryParameter adds the count to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetCountQueryParameter(count *int64) {
-	o.CountQueryParameter = count
+// SetCount adds the count to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetCount(count *int64) {
+	o.Count = count
 }
 
-// WithFieldsQueryParameter adds the fields to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithFieldsQueryParameter(fields []string) *VvolBindingCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithFields(fields []string) *VvolBindingCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDQueryParameter adds the id to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithIDQueryParameter(id *int64) *VvolBindingCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithID(id *int64) *VvolBindingCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetIDQueryParameter(id *int64) {
-	o.IDQueryParameter = id
+// SetID adds the id to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetID(id *int64) {
+	o.ID = id
 }
 
-// WithIsOptimalQueryParameter adds the isOptimal to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithIsOptimalQueryParameter(isOptimal *bool) *VvolBindingCollectionGetParams {
-	o.SetIsOptimalQueryParameter(isOptimal)
+// WithIsOptimal adds the isOptimal to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithIsOptimal(isOptimal *bool) *VvolBindingCollectionGetParams {
+	o.SetIsOptimal(isOptimal)
 	return o
 }
 
-// SetIsOptimalQueryParameter adds the isOptimal to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetIsOptimalQueryParameter(isOptimal *bool) {
-	o.IsOptimalQueryParameter = isOptimal
+// SetIsOptimal adds the isOptimal to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetIsOptimal(isOptimal *bool) {
+	o.IsOptimal = isOptimal
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VvolBindingCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithMaxRecords(maxRecords *int64) *VvolBindingCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VvolBindingCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithOrderBy(orderBy []string) *VvolBindingCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolEndpointNameQueryParameter adds the protocolEndpointName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithProtocolEndpointNameQueryParameter(protocolEndpointName *string) *VvolBindingCollectionGetParams {
-	o.SetProtocolEndpointNameQueryParameter(protocolEndpointName)
+// WithProtocolEndpointName adds the protocolEndpointName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithProtocolEndpointName(protocolEndpointName *string) *VvolBindingCollectionGetParams {
+	o.SetProtocolEndpointName(protocolEndpointName)
 	return o
 }
 
-// SetProtocolEndpointNameQueryParameter adds the protocolEndpointName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetProtocolEndpointNameQueryParameter(protocolEndpointName *string) {
-	o.ProtocolEndpointNameQueryParameter = protocolEndpointName
+// SetProtocolEndpointName adds the protocolEndpointName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetProtocolEndpointName(protocolEndpointName *string) {
+	o.ProtocolEndpointName = protocolEndpointName
 }
 
-// WithProtocolEndpointUUIDQueryParameter adds the protocolEndpointUUID to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithProtocolEndpointUUIDQueryParameter(protocolEndpointUUID *string) *VvolBindingCollectionGetParams {
-	o.SetProtocolEndpointUUIDQueryParameter(protocolEndpointUUID)
+// WithProtocolEndpointUUID adds the protocolEndpointUUID to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithProtocolEndpointUUID(protocolEndpointUUID *string) *VvolBindingCollectionGetParams {
+	o.SetProtocolEndpointUUID(protocolEndpointUUID)
 	return o
 }
 
-// SetProtocolEndpointUUIDQueryParameter adds the protocolEndpointUuid to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetProtocolEndpointUUIDQueryParameter(protocolEndpointUUID *string) {
-	o.ProtocolEndpointUUIDQueryParameter = protocolEndpointUUID
+// SetProtocolEndpointUUID adds the protocolEndpointUuid to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetProtocolEndpointUUID(protocolEndpointUUID *string) {
+	o.ProtocolEndpointUUID = protocolEndpointUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VvolBindingCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithReturnRecords(returnRecords *bool) *VvolBindingCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VvolBindingCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VvolBindingCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *VvolBindingCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithSvmName(svmName *string) *VvolBindingCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *VvolBindingCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithSvmUUID(svmUUID *string) *VvolBindingCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithVvolNameQueryParameter adds the vvolName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithVvolNameQueryParameter(vvolName *string) *VvolBindingCollectionGetParams {
-	o.SetVvolNameQueryParameter(vvolName)
+// WithVvolName adds the vvolName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithVvolName(vvolName *string) *VvolBindingCollectionGetParams {
+	o.SetVvolName(vvolName)
 	return o
 }
 
-// SetVvolNameQueryParameter adds the vvolName to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetVvolNameQueryParameter(vvolName *string) {
-	o.VvolNameQueryParameter = vvolName
+// SetVvolName adds the vvolName to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetVvolName(vvolName *string) {
+	o.VvolName = vvolName
 }
 
-// WithVvolUUIDQueryParameter adds the vvolUUID to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) WithVvolUUIDQueryParameter(vvolUUID *string) *VvolBindingCollectionGetParams {
-	o.SetVvolUUIDQueryParameter(vvolUUID)
+// WithVvolUUID adds the vvolUUID to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) WithVvolUUID(vvolUUID *string) *VvolBindingCollectionGetParams {
+	o.SetVvolUUID(vvolUUID)
 	return o
 }
 
-// SetVvolUUIDQueryParameter adds the vvolUuid to the vvol binding collection get params
-func (o *VvolBindingCollectionGetParams) SetVvolUUIDQueryParameter(vvolUUID *string) {
-	o.VvolUUIDQueryParameter = vvolUUID
+// SetVvolUUID adds the vvolUuid to the vvol binding collection get params
+func (o *VvolBindingCollectionGetParams) SetVvolUUID(vvolUUID *string) {
+	o.VvolUUID = vvolUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +379,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.CountQueryParameter != nil {
+	if o.Count != nil {
 
 		// query param count
 		var qrCount int64
 
-		if o.CountQueryParameter != nil {
-			qrCount = *o.CountQueryParameter
+		if o.Count != nil {
+			qrCount = *o.Count
 		}
 		qCount := swag.FormatInt64(qrCount)
 		if qCount != "" {
@@ -396,7 +396,7 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -407,13 +407,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID int64
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := swag.FormatInt64(qrID)
 		if qID != "" {
@@ -424,13 +424,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IsOptimalQueryParameter != nil {
+	if o.IsOptimal != nil {
 
 		// query param is_optimal
 		var qrIsOptimal bool
 
-		if o.IsOptimalQueryParameter != nil {
-			qrIsOptimal = *o.IsOptimalQueryParameter
+		if o.IsOptimal != nil {
+			qrIsOptimal = *o.IsOptimal
 		}
 		qIsOptimal := swag.FormatBool(qrIsOptimal)
 		if qIsOptimal != "" {
@@ -441,13 +441,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -458,7 +458,7 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +469,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProtocolEndpointNameQueryParameter != nil {
+	if o.ProtocolEndpointName != nil {
 
 		// query param protocol_endpoint.name
 		var qrProtocolEndpointName string
 
-		if o.ProtocolEndpointNameQueryParameter != nil {
-			qrProtocolEndpointName = *o.ProtocolEndpointNameQueryParameter
+		if o.ProtocolEndpointName != nil {
+			qrProtocolEndpointName = *o.ProtocolEndpointName
 		}
 		qProtocolEndpointName := qrProtocolEndpointName
 		if qProtocolEndpointName != "" {
@@ -486,13 +486,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProtocolEndpointUUIDQueryParameter != nil {
+	if o.ProtocolEndpointUUID != nil {
 
 		// query param protocol_endpoint.uuid
 		var qrProtocolEndpointUUID string
 
-		if o.ProtocolEndpointUUIDQueryParameter != nil {
-			qrProtocolEndpointUUID = *o.ProtocolEndpointUUIDQueryParameter
+		if o.ProtocolEndpointUUID != nil {
+			qrProtocolEndpointUUID = *o.ProtocolEndpointUUID
 		}
 		qProtocolEndpointUUID := qrProtocolEndpointUUID
 		if qProtocolEndpointUUID != "" {
@@ -503,13 +503,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -520,13 +520,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -537,13 +537,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -554,13 +554,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -571,13 +571,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VvolNameQueryParameter != nil {
+	if o.VvolName != nil {
 
 		// query param vvol.name
 		var qrVvolName string
 
-		if o.VvolNameQueryParameter != nil {
-			qrVvolName = *o.VvolNameQueryParameter
+		if o.VvolName != nil {
+			qrVvolName = *o.VvolName
 		}
 		qVvolName := qrVvolName
 		if qVvolName != "" {
@@ -588,13 +588,13 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VvolUUIDQueryParameter != nil {
+	if o.VvolUUID != nil {
 
 		// query param vvol.uuid
 		var qrVvolUUID string
 
-		if o.VvolUUIDQueryParameter != nil {
-			qrVvolUUID = *o.VvolUUIDQueryParameter
+		if o.VvolUUID != nil {
+			qrVvolUUID = *o.VvolUUID
 		}
 		qVvolUUID := qrVvolUUID
 		if qVvolUUID != "" {
@@ -613,7 +613,7 @@ func (o *VvolBindingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamVvolBindingCollectionGet binds the parameter fields
 func (o *VvolBindingCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *VvolBindingCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamVvolBindingCollectionGet binds the parameter order_by
 func (o *VvolBindingCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

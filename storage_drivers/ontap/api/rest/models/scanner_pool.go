@@ -27,11 +27,7 @@ type ScannerPool struct {
 	// Example: scanner-1
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
-
-	// Specifies a list of privileged users. A valid form of privileged user-name is "domain-name\user-name". Privileged user-names are stored and treated as case-insensitive strings. Virus scanners must use one of the registered privileged users for connecting to clustered Data ONTAP for exchanging virus-scanning protocol messages and to access file for scanning, remedying and quarantining operations.
-	// Example: ["cifs\\u1","cifs\\u2"]
-	PrivilegedUsers []string `json:"privileged_users,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the role of the scanner pool. The possible values are:
 	//   * primary   - Always active.
@@ -41,9 +37,13 @@ type ScannerPool struct {
 	// Enum: [primary secondary idle]
 	Role *string `json:"role,omitempty"`
 
+	// Specifies a list of privileged users. A valid form of privileged user-name is "domain-name\user-name". Privileged user-names are stored and treated as case-insensitive strings. Virus scanners must use one of the registered privileged users for connecting to clustered Data ONTAP for exchanging virus-scanning protocol messages and to access file for scanning, remedying and quarantining operations.
+	// Example: ["cifs\\u1","cifs\\u2"]
+	ScannerPoolInlinePrivilegedUsers []*string `json:"privileged_users,omitempty"`
+
 	// Specifies a list of IP addresses or FQDN for each Vscan server host names which are allowed to connect to clustered ONTAP.
 	// Example: ["1.1.1.1","10.72.204.27","vmwin204-27.fsct.nb"]
-	Servers []string `json:"servers,omitempty"`
+	ScannerPoolInlineServers []*string `json:"servers,omitempty"`
 }
 
 // Validate validates this scanner pool
@@ -90,11 +90,11 @@ func (m *ScannerPool) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 

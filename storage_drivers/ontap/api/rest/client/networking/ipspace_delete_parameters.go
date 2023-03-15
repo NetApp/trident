@@ -65,7 +65,7 @@ type IpspaceDeleteParams struct {
 
 	   IPspace UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *IpspaceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the ipspace delete params
-func (o *IpspaceDeleteParams) WithUUIDPathParameter(uuid string) *IpspaceDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ipspace delete params
+func (o *IpspaceDeleteParams) WithUUID(uuid string) *IpspaceDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ipspace delete params
-func (o *IpspaceDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ipspace delete params
+func (o *IpspaceDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *IpspaceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

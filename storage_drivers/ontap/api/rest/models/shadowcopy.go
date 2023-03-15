@@ -20,52 +20,52 @@ import (
 type Shadowcopy struct {
 
 	// links
-	Links *ShadowcopyLinks `json:"_links,omitempty"`
+	Links *ShadowcopyInlineLinks `json:"_links,omitempty"`
 
 	// The universally-unique identifier of the client's shadow copy.
 	// Example: abc13450-1f19-40ba-9b82-ebf277517e7e
 	// Read Only: true
-	ClientUUID string `json:"client_uuid,omitempty"`
+	ClientUUID *string `json:"client_uuid,omitempty"`
 
 	// The path of the destination directory. The path is in UTF8 and uses forward
 	// slash as a directory separator. The path is relative to the root of the volume.
 	//
 	// Example: /dir2
-	DestinationDir string `json:"destination_dir,omitempty"`
+	DestinationDir *string `json:"destination_dir,omitempty"`
 
 	// The list of files to shadow copy in the share. The path is in UTF8 and uses forward
 	// slash as a directory separator. The path is relative to the root of the share.
 	//
 	// Example: ["/vhd1","/vhd2"]
-	Files []string `json:"files,omitempty"`
+	ShadowcopyInlineFiles []*string `json:"files,omitempty"`
 
 	// shadowcopy set
-	ShadowcopySet *ShadowcopyShadowcopySet `json:"shadowcopy_set,omitempty"`
+	ShadowcopySet *ShadowcopyInlineShadowcopySet `json:"shadowcopy_set,omitempty"`
 
 	// share
-	Share *ShadowcopyShare `json:"share,omitempty"`
+	Share *ShadowcopyInlineShare `json:"share,omitempty"`
 
 	// The path of the source directory. The path is in UTF8 and uses forward slash
 	// as a directory separator. The path is relative to the root of the volume.
 	//
 	// Example: /dir1
-	SourceDir string `json:"source_dir,omitempty"`
+	SourceDir *string `json:"source_dir,omitempty"`
 
 	// svm
-	Svm *ShadowcopySvm `json:"svm,omitempty"`
+	Svm *ShadowcopyInlineSvm `json:"svm,omitempty"`
 
 	// The universally-unique identifier of the storage's shadow copy.
 	// Example: fef32805-1f19-40ba-9b82-ebf277517e7e
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// volume
-	Volume *ShadowcopyVolume `json:"volume,omitempty"`
+	Volume *ShadowcopyInlineVolume `json:"volume,omitempty"`
 
 	// Specifies what needs to be restored. False specifies the directory only.
 	// True indicates the directory and its content.
 	//
-	WithContent bool `json:"with_content,omitempty"`
+	WithContent *bool `json:"with_content,omitempty"`
 }
 
 // Validate validates this shadowcopy
@@ -237,7 +237,7 @@ func (m *Shadowcopy) contextValidateLinks(ctx context.Context, formats strfmt.Re
 
 func (m *Shadowcopy) contextValidateClientUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "client_uuid", "body", string(m.ClientUUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "client_uuid", "body", m.ClientUUID); err != nil {
 		return err
 	}
 
@@ -288,7 +288,7 @@ func (m *Shadowcopy) contextValidateSvm(ctx context.Context, formats strfmt.Regi
 
 func (m *Shadowcopy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -327,17 +327,17 @@ func (m *Shadowcopy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyLinks shadowcopy links
+// ShadowcopyInlineLinks shadowcopy inline links
 //
-// swagger:model ShadowcopyLinks
-type ShadowcopyLinks struct {
+// swagger:model shadowcopy_inline__links
+type ShadowcopyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shadowcopy links
-func (m *ShadowcopyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline links
+func (m *ShadowcopyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -350,7 +350,7 @@ func (m *ShadowcopyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -367,8 +367,8 @@ func (m *ShadowcopyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy links based on the context it is used
-func (m *ShadowcopyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline links based on the context it is used
+func (m *ShadowcopyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -381,7 +381,7 @@ func (m *ShadowcopyLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ShadowcopyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -396,7 +396,7 @@ func (m *ShadowcopyLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyLinks) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -404,8 +404,8 @@ func (m *ShadowcopyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyLinks) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyLinks
+func (m *ShadowcopyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -413,21 +413,21 @@ func (m *ShadowcopyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyShadowcopySet shadowcopy shadowcopy set
+// ShadowcopyInlineShadowcopySet shadowcopy inline shadowcopy set
 //
-// swagger:model ShadowcopyShadowcopySet
-type ShadowcopyShadowcopySet struct {
+// swagger:model shadowcopy_inline_shadowcopy_set
+type ShadowcopyInlineShadowcopySet struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// uuid
 	// Example: 5f4e19f3-5e2d-11ec-8766-005056a7c134
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this shadowcopy shadowcopy set
-func (m *ShadowcopyShadowcopySet) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline shadowcopy set
+func (m *ShadowcopyInlineShadowcopySet) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -440,7 +440,7 @@ func (m *ShadowcopyShadowcopySet) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyShadowcopySet) validateLinks(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShadowcopySet) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -457,8 +457,8 @@ func (m *ShadowcopyShadowcopySet) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy shadowcopy set based on the context it is used
-func (m *ShadowcopyShadowcopySet) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline shadowcopy set based on the context it is used
+func (m *ShadowcopyInlineShadowcopySet) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -471,7 +471,7 @@ func (m *ShadowcopyShadowcopySet) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ShadowcopyShadowcopySet) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShadowcopySet) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -486,7 +486,7 @@ func (m *ShadowcopyShadowcopySet) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyShadowcopySet) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineShadowcopySet) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -494,8 +494,8 @@ func (m *ShadowcopyShadowcopySet) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyShadowcopySet) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyShadowcopySet
+func (m *ShadowcopyInlineShadowcopySet) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineShadowcopySet
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -503,21 +503,21 @@ func (m *ShadowcopyShadowcopySet) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyShare shadowcopy share
+// ShadowcopyInlineShare shadowcopy inline share
 //
-// swagger:model ShadowcopyShare
-type ShadowcopyShare struct {
+// swagger:model shadowcopy_inline_share
+type ShadowcopyInlineShare struct {
 
 	// links
-	Links *ShadowcopyShareLinks `json:"_links,omitempty"`
+	Links *ShadowcopyInlineShareInlineLinks `json:"_links,omitempty"`
 
 	// Share name
 	// Example: sh1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this shadowcopy share
-func (m *ShadowcopyShare) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline share
+func (m *ShadowcopyInlineShare) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -530,7 +530,7 @@ func (m *ShadowcopyShare) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyShare) validateLinks(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShare) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -547,8 +547,8 @@ func (m *ShadowcopyShare) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy share based on the context it is used
-func (m *ShadowcopyShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline share based on the context it is used
+func (m *ShadowcopyInlineShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -561,7 +561,7 @@ func (m *ShadowcopyShare) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ShadowcopyShare) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShare) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -576,7 +576,7 @@ func (m *ShadowcopyShare) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyShare) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineShare) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -584,8 +584,8 @@ func (m *ShadowcopyShare) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyShare) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyShare
+func (m *ShadowcopyInlineShare) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineShare
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -593,17 +593,17 @@ func (m *ShadowcopyShare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyShareLinks shadowcopy share links
+// ShadowcopyInlineShareInlineLinks shadowcopy inline share inline links
 //
-// swagger:model ShadowcopyShareLinks
-type ShadowcopyShareLinks struct {
+// swagger:model shadowcopy_inline_share_inline__links
+type ShadowcopyInlineShareInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shadowcopy share links
-func (m *ShadowcopyShareLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline share inline links
+func (m *ShadowcopyInlineShareInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -616,7 +616,7 @@ func (m *ShadowcopyShareLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyShareLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShareInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -633,8 +633,8 @@ func (m *ShadowcopyShareLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy share links based on the context it is used
-func (m *ShadowcopyShareLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline share inline links based on the context it is used
+func (m *ShadowcopyInlineShareInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -647,7 +647,7 @@ func (m *ShadowcopyShareLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ShadowcopyShareLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineShareInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -662,7 +662,7 @@ func (m *ShadowcopyShareLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyShareLinks) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineShareInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -670,8 +670,8 @@ func (m *ShadowcopyShareLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyShareLinks) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyShareLinks
+func (m *ShadowcopyInlineShareInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineShareInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -679,27 +679,27 @@ func (m *ShadowcopyShareLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopySvm shadowcopy svm
+// ShadowcopyInlineSvm shadowcopy inline svm
 //
-// swagger:model ShadowcopySvm
-type ShadowcopySvm struct {
+// swagger:model shadowcopy_inline_svm
+type ShadowcopyInlineSvm struct {
 
 	// links
-	Links *ShadowcopySvmLinks `json:"_links,omitempty"`
+	Links *ShadowcopyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this shadowcopy svm
-func (m *ShadowcopySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline svm
+func (m *ShadowcopyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -712,7 +712,7 @@ func (m *ShadowcopySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopySvm) validateLinks(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -729,8 +729,8 @@ func (m *ShadowcopySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy svm based on the context it is used
-func (m *ShadowcopySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline svm based on the context it is used
+func (m *ShadowcopyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -743,7 +743,7 @@ func (m *ShadowcopySvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *ShadowcopySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +758,7 @@ func (m *ShadowcopySvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopySvm) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -766,8 +766,8 @@ func (m *ShadowcopySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopySvm) UnmarshalBinary(b []byte) error {
-	var res ShadowcopySvm
+func (m *ShadowcopyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -775,17 +775,17 @@ func (m *ShadowcopySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopySvmLinks shadowcopy svm links
+// ShadowcopyInlineSvmInlineLinks shadowcopy inline svm inline links
 //
-// swagger:model ShadowcopySvmLinks
-type ShadowcopySvmLinks struct {
+// swagger:model shadowcopy_inline_svm_inline__links
+type ShadowcopyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shadowcopy svm links
-func (m *ShadowcopySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline svm inline links
+func (m *ShadowcopyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -798,7 +798,7 @@ func (m *ShadowcopySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -815,8 +815,8 @@ func (m *ShadowcopySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy svm links based on the context it is used
-func (m *ShadowcopySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline svm inline links based on the context it is used
+func (m *ShadowcopyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -829,7 +829,7 @@ func (m *ShadowcopySvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *ShadowcopySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -844,7 +844,7 @@ func (m *ShadowcopySvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -852,8 +852,8 @@ func (m *ShadowcopySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopySvmLinks) UnmarshalBinary(b []byte) error {
-	var res ShadowcopySvmLinks
+func (m *ShadowcopyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -861,25 +861,25 @@ func (m *ShadowcopySvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyVolume The name of the volume where the source and destination directories reside.
+// ShadowcopyInlineVolume The name of the volume where the source and destination directories reside.
 //
-// swagger:model ShadowcopyVolume
-type ShadowcopyVolume struct {
+// swagger:model shadowcopy_inline_volume
+type ShadowcopyInlineVolume struct {
 
 	// links
-	Links *ShadowcopyVolumeLinks `json:"_links,omitempty"`
+	Links *ShadowcopyInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this shadowcopy volume
-func (m *ShadowcopyVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline volume
+func (m *ShadowcopyInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -892,7 +892,7 @@ func (m *ShadowcopyVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyVolume) validateLinks(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -909,8 +909,8 @@ func (m *ShadowcopyVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy volume based on the context it is used
-func (m *ShadowcopyVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline volume based on the context it is used
+func (m *ShadowcopyInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -923,7 +923,7 @@ func (m *ShadowcopyVolume) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ShadowcopyVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -938,7 +938,7 @@ func (m *ShadowcopyVolume) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyVolume) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -946,8 +946,8 @@ func (m *ShadowcopyVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyVolume) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyVolume
+func (m *ShadowcopyInlineVolume) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -955,17 +955,17 @@ func (m *ShadowcopyVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyVolumeLinks shadowcopy volume links
+// ShadowcopyInlineVolumeInlineLinks shadowcopy inline volume inline links
 //
-// swagger:model ShadowcopyVolumeLinks
-type ShadowcopyVolumeLinks struct {
+// swagger:model shadowcopy_inline_volume_inline__links
+type ShadowcopyInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shadowcopy volume links
-func (m *ShadowcopyVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy inline volume inline links
+func (m *ShadowcopyInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -978,7 +978,7 @@ func (m *ShadowcopyVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShadowcopyInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -995,8 +995,8 @@ func (m *ShadowcopyVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy volume links based on the context it is used
-func (m *ShadowcopyVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy inline volume inline links based on the context it is used
+func (m *ShadowcopyInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1009,7 +1009,7 @@ func (m *ShadowcopyVolumeLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ShadowcopyVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1024,7 +1024,7 @@ func (m *ShadowcopyVolumeLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1032,8 +1032,8 @@ func (m *ShadowcopyVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyVolumeLinks
+func (m *ShadowcopyInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

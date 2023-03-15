@@ -66,31 +66,31 @@ type SnmpTraphostsCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Host.
 
 	   Filter by host
 	*/
-	HostQueryParameter *string
+	Host *string
 
 	/* IPAddress.
 
 	   Filter by ip_address
 	*/
-	IPAddressQueryParameter *string
+	IPAddress *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type SnmpTraphostsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,13 +106,13 @@ type SnmpTraphostsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UserName.
 
 	   Filter by user.name
 	*/
-	UserNameQueryParameter *string
+	UserName *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +132,14 @@ func (o *SnmpTraphostsCollectionGetParams) WithDefaults() *SnmpTraphostsCollecti
 // All values with no default are reset to their zero value.
 func (o *SnmpTraphostsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnmpTraphostsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +181,92 @@ func (o *SnmpTraphostsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnmpTraphostsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithFields(fields []string) *SnmpTraphostsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHostQueryParameter adds the host to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithHostQueryParameter(host *string) *SnmpTraphostsCollectionGetParams {
-	o.SetHostQueryParameter(host)
+// WithHost adds the host to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithHost(host *string) *SnmpTraphostsCollectionGetParams {
+	o.SetHost(host)
 	return o
 }
 
-// SetHostQueryParameter adds the host to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetHostQueryParameter(host *string) {
-	o.HostQueryParameter = host
+// SetHost adds the host to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetHost(host *string) {
+	o.Host = host
 }
 
-// WithIPAddressQueryParameter adds the iPAddress to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithIPAddressQueryParameter(iPAddress *string) *SnmpTraphostsCollectionGetParams {
-	o.SetIPAddressQueryParameter(iPAddress)
+// WithIPAddress adds the iPAddress to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithIPAddress(iPAddress *string) *SnmpTraphostsCollectionGetParams {
+	o.SetIPAddress(iPAddress)
 	return o
 }
 
-// SetIPAddressQueryParameter adds the ipAddress to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetIPAddressQueryParameter(iPAddress *string) {
-	o.IPAddressQueryParameter = iPAddress
+// SetIPAddress adds the ipAddress to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetIPAddress(iPAddress *string) {
+	o.IPAddress = iPAddress
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnmpTraphostsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnmpTraphostsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnmpTraphostsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithOrderBy(orderBy []string) *SnmpTraphostsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnmpTraphostsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnmpTraphostsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpTraphostsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnmpTraphostsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUserNameQueryParameter adds the userName to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithUserNameQueryParameter(userName *string) *SnmpTraphostsCollectionGetParams {
-	o.SetUserNameQueryParameter(userName)
+// WithUserName adds the userName to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithUserName(userName *string) *SnmpTraphostsCollectionGetParams {
+	o.SetUserName(userName)
 	return o
 }
 
-// SetUserNameQueryParameter adds the userName to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetUserNameQueryParameter(userName *string) {
-	o.UserNameQueryParameter = userName
+// SetUserName adds the userName to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) SetUserName(userName *string) {
+	o.UserName = userName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -277,7 +277,7 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -288,13 +288,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.HostQueryParameter != nil {
+	if o.Host != nil {
 
 		// query param host
 		var qrHost string
 
-		if o.HostQueryParameter != nil {
-			qrHost = *o.HostQueryParameter
+		if o.Host != nil {
+			qrHost = *o.Host
 		}
 		qHost := qrHost
 		if qHost != "" {
@@ -305,13 +305,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPAddressQueryParameter != nil {
+	if o.IPAddress != nil {
 
 		// query param ip_address
 		var qrIPAddress string
 
-		if o.IPAddressQueryParameter != nil {
-			qrIPAddress = *o.IPAddressQueryParameter
+		if o.IPAddress != nil {
+			qrIPAddress = *o.IPAddress
 		}
 		qIPAddress := qrIPAddress
 		if qIPAddress != "" {
@@ -322,13 +322,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UserNameQueryParameter != nil {
+	if o.UserName != nil {
 
 		// query param user.name
 		var qrUserName string
 
-		if o.UserNameQueryParameter != nil {
-			qrUserName = *o.UserNameQueryParameter
+		if o.UserName != nil {
+			qrUserName = *o.UserName
 		}
 		qUserName := qrUserName
 		if qUserName != "" {
@@ -409,7 +409,7 @@ func (o *SnmpTraphostsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnmpTraphostsCollectionGet binds the parameter fields
 func (o *SnmpTraphostsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -426,7 +426,7 @@ func (o *SnmpTraphostsCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamSnmpTraphostsCollectionGet binds the parameter order_by
 func (o *SnmpTraphostsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -22,13 +22,14 @@ import (
 type PerformanceS3MetricResponse struct {
 
 	// links
-	Links *PerformanceS3MetricResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceS3MetricResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceS3MetricResponseRecordsItems0 `json:"records,omitempty"`
+	// performance s3 metric response inline records
+	PerformanceS3MetricResponseInlineRecords []*PerformanceS3MetricResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance s3 metric response
@@ -39,7 +40,7 @@ func (m *PerformanceS3MetricResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceS3MetricResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceS3MetricResponse) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *PerformanceS3MetricResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceS3MetricResponse) validatePerformanceS3MetricResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceS3MetricResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceS3MetricResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceS3MetricResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceS3MetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceS3MetricResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceS3MetricResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceS3MetricResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceS3MetricResponse) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponse) contextValidatePerformanceS3MetricResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceS3MetricResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceS3MetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceS3MetricResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceS3MetricResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceS3MetricResponseLinks performance s3 metric response links
+// PerformanceS3MetricResponseInlineLinks performance s3 metric response inline links
 //
-// swagger:model PerformanceS3MetricResponseLinks
-type PerformanceS3MetricResponseLinks struct {
+// swagger:model performance_s3_metric_response_inline__links
+type PerformanceS3MetricResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceS3MetricResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance s3 metric response links
-func (m *PerformanceS3MetricResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline links
+func (m *PerformanceS3MetricResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceS3MetricResponseLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceS3MetricResponseLinks) validateNext(formats strfmt.Registry)
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceS3MetricResponseLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response links based on the context it is used
-func (m *PerformanceS3MetricResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline links based on the context it is used
+func (m *PerformanceS3MetricResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceS3MetricResponseLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceS3MetricResponseLinks) contextValidateNext(ctx context.Conte
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceS3MetricResponseLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceS3MetricResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseLinks
+func (m *PerformanceS3MetricResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *PerformanceS3MetricResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceS3MetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceS3MetricResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput.
 //
-// swagger:model PerformanceS3MetricResponseRecordsItems0
-type PerformanceS3MetricResponseRecordsItems0 struct {
+// swagger:model performance_s3_metric_response_inline_records_inline_array_item
+type PerformanceS3MetricResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *PerformanceS3MetricResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceS3MetricResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceS3MetricResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceS3MetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -323,8 +324,8 @@ type PerformanceS3MetricResponseRecordsItems0 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance s3 metric response records items0
-func (m *PerformanceS3MetricResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline records inline array item
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -361,7 +362,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -378,7 +379,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) validateLinks(formats strfmt.
 	return nil
 }
 
-var performanceS3MetricResponseRecordsItems0TypeDurationPropEnum []interface{}
+var performanceS3MetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -386,95 +387,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceS3MetricResponseRecordsItems0TypeDurationPropEnum = append(performanceS3MetricResponseRecordsItems0TypeDurationPropEnum, v)
+		performanceS3MetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(performanceS3MetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	PerformanceS3MetricResponseRecordsItems0DurationPT15S string = "PT15S"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	PerformanceS3MetricResponseRecordsItems0DurationPT4M string = "PT4M"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	PerformanceS3MetricResponseRecordsItems0DurationPT30M string = "PT30M"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	PerformanceS3MetricResponseRecordsItems0DurationPT2H string = "PT2H"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationP1D captures enum value "P1D"
-	PerformanceS3MetricResponseRecordsItems0DurationP1D string = "P1D"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	PerformanceS3MetricResponseRecordsItems0DurationPT5M string = "PT5M"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceS3MetricResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceS3MetricResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceS3MetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -491,7 +492,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) validateIops(formats strfmt.R
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -508,7 +509,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) validateLatency(formats strfm
 	return nil
 }
 
-var performanceS3MetricResponseRecordsItems0TypeStatusPropEnum []interface{}
+var performanceS3MetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -516,145 +517,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceS3MetricResponseRecordsItems0TypeStatusPropEnum = append(performanceS3MetricResponseRecordsItems0TypeStatusPropEnum, v)
+		performanceS3MetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(performanceS3MetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusOk captures enum value "ok"
-	PerformanceS3MetricResponseRecordsItems0StatusOk string = "ok"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusError captures enum value "error"
-	PerformanceS3MetricResponseRecordsItems0StatusError string = "error"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceS3MetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceS3MetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceS3MetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceS3MetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	PerformanceS3MetricResponseRecordsItems0StatusNotFound string = "not_found"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceS3MetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceS3MetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceS3MetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0
-	// PerformanceS3MetricResponseRecordsItems0
+	// performance_s3_metric_response_inline_records_inline_array_item
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceS3MetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceS3MetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceS3MetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceS3MetricResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceS3MetricResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceS3MetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -671,7 +672,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) validateThroughput(formats st
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -683,8 +684,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0) validateTimestamp(formats str
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response records items0 based on the context it is used
-func (m *PerformanceS3MetricResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline records inline array item based on the context it is used
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -721,7 +722,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -735,16 +736,16 @@ func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateLinks(ctx cont
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +759,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateIops(ctx conte
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -772,16 +773,16 @@ func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateLatency(ctx co
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -795,7 +796,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateThroughput(ctx
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -805,7 +806,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0) contextValidateTimestamp(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -813,8 +814,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseRecordsItems0
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -822,34 +823,34 @@ func (m *PerformanceS3MetricResponseRecordsItems0) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// PerformanceS3MetricResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceS3MetricResponseRecordsItems0Iops
-type PerformanceS3MetricResponseRecordsItems0Iops struct {
+// swagger:model performance_s3_metric_response_inline_records_inline_array_item_inline_iops
+type PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance s3 metric response records items0 iops
-func (m *PerformanceS3MetricResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline records inline array item inline iops
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response records items0 iops based on the context it is used
-func (m *PerformanceS3MetricResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline records inline array item inline iops based on the context it is used
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -859,7 +860,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Iops) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -867,8 +868,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0Iops) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseRecordsItems0Iops
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -876,34 +877,34 @@ func (m *PerformanceS3MetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// PerformanceS3MetricResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceS3MetricResponseRecordsItems0Latency
-type PerformanceS3MetricResponseRecordsItems0Latency struct {
+// swagger:model performance_s3_metric_response_inline_records_inline_array_item_inline_latency
+type PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance s3 metric response records items0 latency
-func (m *PerformanceS3MetricResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline records inline array item inline latency
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response records items0 latency based on the context it is used
-func (m *PerformanceS3MetricResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline records inline array item inline latency based on the context it is used
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -913,7 +914,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Latency) ContextValidate(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -921,8 +922,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0Latency) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseRecordsItems0Latency
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -930,17 +931,17 @@ func (m *PerformanceS3MetricResponseRecordsItems0Latency) UnmarshalBinary(b []by
 	return nil
 }
 
-// PerformanceS3MetricResponseRecordsItems0Links performance s3 metric response records items0 links
+// PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks performance s3 metric response inline records inline array item inline links
 //
-// swagger:model PerformanceS3MetricResponseRecordsItems0Links
-type PerformanceS3MetricResponseRecordsItems0Links struct {
+// swagger:model performance_s3_metric_response_inline_records_inline_array_item_inline__links
+type PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance s3 metric response records items0 links
-func (m *PerformanceS3MetricResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline records inline array item inline links
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -953,7 +954,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) Validate(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -970,8 +971,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) validateSelf(formats str
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response records items0 links based on the context it is used
-func (m *PerformanceS3MetricResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline records inline array item inline links based on the context it is used
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -984,7 +985,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *PerformanceS3MetricResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -999,7 +1000,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) contextValidateSelf(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1007,8 +1008,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseRecordsItems0Links
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1016,34 +1017,34 @@ func (m *PerformanceS3MetricResponseRecordsItems0Links) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceS3MetricResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceS3MetricResponseRecordsItems0Throughput
-type PerformanceS3MetricResponseRecordsItems0Throughput struct {
+// swagger:model performance_s3_metric_response_inline_records_inline_array_item_inline_throughput
+type PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance s3 metric response records items0 throughput
-func (m *PerformanceS3MetricResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance s3 metric response inline records inline array item inline throughput
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance s3 metric response records items0 throughput based on the context it is used
-func (m *PerformanceS3MetricResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance s3 metric response inline records inline array item inline throughput based on the context it is used
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1053,7 +1054,7 @@ func (m *PerformanceS3MetricResponseRecordsItems0Throughput) ContextValidate(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1061,8 +1062,8 @@ func (m *PerformanceS3MetricResponseRecordsItems0Throughput) MarshalBinary() ([]
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceS3MetricResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceS3MetricResponseRecordsItems0Throughput
+func (m *PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceS3MetricResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

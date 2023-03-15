@@ -52,6 +52,10 @@ IPSubnetCreateCreated describes a response with status code 201, with default he
 Created
 */
 type IPSubnetCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this ip subnet create created response has a 2xx status code
@@ -89,6 +93,13 @@ func (o *IPSubnetCreateCreated) String() string {
 
 func (o *IPSubnetCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	return nil
 }
 
@@ -112,6 +123,7 @@ func NewIPSubnetCreateDefault(code int) *IPSubnetCreateDefault {
 | 1377663 | The specified IP address range of subnet in IPspace contains an address already in use by a LIF. |
 | 1377664 | The specified IP address range of subnet in IPspace contains an address already in use by the Service Processor. |
 | 1377673 | The addresses provided must have the same address family. |
+| 1377681 | Cannot update LIF associations for LIF. The broadcast domain of the LIF does not match the broadcast domain of the subnet. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of specified ipspace.uuid |
 | 53282568 | The subnet.address must be specified together with subnet.netmask. |
 | 53282569 | The specified subnet.netmask is not valid. |

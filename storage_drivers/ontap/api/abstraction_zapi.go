@@ -529,8 +529,8 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		SerialNumber:   responseSerial,
 		State:          responseState,
 		VolumeName:     responseVolumeName,
-		SpaceReserved:  ToBoolPointer(responseSpaceReserved),
-		SpaceAllocated: ToBoolPointer(responseSpaceAllocated),
+		SpaceReserved:  utils.Ptr(responseSpaceReserved),
+		SpaceAllocated: utils.Ptr(responseSpaceAllocated),
 	}
 	return lunInfo, nil
 }
@@ -2071,7 +2071,7 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 	if err = azgo.GetError(ctx, snapmirrorResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
-				return nil, NotFoundError(fmt.Sprintf("Error on snapmirror get"))
+				return nil, NotFoundError("Error on snapmirror get")
 			}
 			if !zerr.IsPassed() {
 				Logc(ctx).WithError(err).Error("Error on snapmirror get")

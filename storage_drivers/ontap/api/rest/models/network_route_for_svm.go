@@ -23,7 +23,7 @@ type NetworkRouteForSvm struct {
 
 	// The IP address of the gateway router leading to the destination.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 }
 
 // Validate validates this network route for svm

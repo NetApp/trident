@@ -19,15 +19,15 @@ import (
 // swagger:model error_responses
 type ErrorResponses struct {
 
-	// errors
-	Errors []*Error `json:"errors,omitempty"`
+	// error responses inline errors
+	ErrorResponsesInlineErrors []*Error `json:"errors,omitempty"`
 }
 
 // Validate validates this error responses
 func (m *ErrorResponses) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateErrors(formats); err != nil {
+	if err := m.validateErrorResponsesInlineErrors(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -37,18 +37,18 @@ func (m *ErrorResponses) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ErrorResponses) validateErrors(formats strfmt.Registry) error {
-	if swag.IsZero(m.Errors) { // not required
+func (m *ErrorResponses) validateErrorResponsesInlineErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.ErrorResponsesInlineErrors) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Errors); i++ {
-		if swag.IsZero(m.Errors[i]) { // not required
+	for i := 0; i < len(m.ErrorResponsesInlineErrors); i++ {
+		if swag.IsZero(m.ErrorResponsesInlineErrors[i]) { // not required
 			continue
 		}
 
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].Validate(formats); err != nil {
+		if m.ErrorResponsesInlineErrors[i] != nil {
+			if err := m.ErrorResponsesInlineErrors[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
 				}
@@ -65,7 +65,7 @@ func (m *ErrorResponses) validateErrors(formats strfmt.Registry) error {
 func (m *ErrorResponses) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateErrors(ctx, formats); err != nil {
+	if err := m.contextValidateErrorResponsesInlineErrors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -75,12 +75,12 @@ func (m *ErrorResponses) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *ErrorResponses) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+func (m *ErrorResponses) contextValidateErrorResponsesInlineErrors(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Errors); i++ {
+	for i := 0; i < len(m.ErrorResponsesInlineErrors); i++ {
 
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
+		if m.ErrorResponsesInlineErrors[i] != nil {
+			if err := m.ErrorResponsesInlineErrors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
 				}

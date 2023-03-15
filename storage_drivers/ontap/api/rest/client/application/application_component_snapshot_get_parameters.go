@@ -66,25 +66,25 @@ type ApplicationComponentSnapshotGetParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* ComponentUUID.
 
 	   Application Component UUID
 	*/
-	ComponentUUIDPathParameter string
+	ComponentUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Snapshot UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *ApplicationComponentSnapshotGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentSnapshotGetParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentSnapshotGetParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithComponentUUIDPathParameter adds the componentUUID to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) WithComponentUUIDPathParameter(componentUUID string) *ApplicationComponentSnapshotGetParams {
-	o.SetComponentUUIDPathParameter(componentUUID)
+// WithComponentUUID adds the componentUUID to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) WithComponentUUID(componentUUID string) *ApplicationComponentSnapshotGetParams {
+	o.SetComponentUUID(componentUUID)
 	return o
 }
 
-// SetComponentUUIDPathParameter adds the componentUuid to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) SetComponentUUIDPathParameter(componentUUID string) {
-	o.ComponentUUIDPathParameter = componentUUID
+// SetComponentUUID adds the componentUuid to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) SetComponentUUID(componentUUID string) {
+	o.ComponentUUID = componentUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentSnapshotGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) WithFields(fields []string) *ApplicationComponentSnapshotGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) WithUUIDPathParameter(uuid string) *ApplicationComponentSnapshotGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) WithUUID(uuid string) *ApplicationComponentSnapshotGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,16 +192,16 @@ func (o *ApplicationComponentSnapshotGetParams) WriteToRequest(r runtime.ClientR
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
 	// path param component.uuid
-	if err := r.SetPathParam("component.uuid", o.ComponentUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("component.uuid", o.ComponentUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -213,7 +213,7 @@ func (o *ApplicationComponentSnapshotGetParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *ApplicationComponentSnapshotGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamApplicationComponentSnapshotGet binds the parameter fields
 func (o *ApplicationComponentSnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

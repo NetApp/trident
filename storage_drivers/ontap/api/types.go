@@ -102,7 +102,8 @@ type SnapmirrorState string
 const (
 	SnapmirrorStateUninitialized = SnapmirrorState("uninitialized")
 	SnapmirrorStateSnapmirrored  = SnapmirrorState("snapmirrored")
-	SnapmirrorStateBroken        = SnapmirrorState("broken-off")
+	SnapmirrorStateBrokenOffZapi = SnapmirrorState("broken-off")
+	SnapmirrorStateBrokenOffRest = SnapmirrorState("broken_off")
 	SnapmirrorStateSynchronizing = SnapmirrorState("synchronizing")
 	SnapmirrorStateInSync        = SnapmirrorState("in_sync")
 )

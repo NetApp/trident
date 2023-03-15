@@ -20,17 +20,17 @@ import (
 type NetworkRouteResponse struct {
 
 	// links
-	Links *NetworkRouteResponseLinks `json:"_links,omitempty"`
+	Links *NetworkRouteResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
+	// network route response inline records
+	NetworkRouteResponseInlineRecords []*NetworkRoute `json:"records,omitempty"`
+
 	// Number of records
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NetworkRoute `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this network route response
@@ -45,7 +45,7 @@ func (m *NetworkRouteResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNetworkRouteResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,18 +89,18 @@ func (m *NetworkRouteResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NetworkRouteResponse) validateNetworkRouteResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetworkRouteResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NetworkRouteResponseInlineRecords); i++ {
+		if swag.IsZero(m.NetworkRouteResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NetworkRouteResponseInlineRecords[i] != nil {
+			if err := m.NetworkRouteResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -125,7 +125,7 @@ func (m *NetworkRouteResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNetworkRouteResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -163,12 +163,12 @@ func (m *NetworkRouteResponse) contextValidateError(ctx context.Context, formats
 	return nil
 }
 
-func (m *NetworkRouteResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteResponse) contextValidateNetworkRouteResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NetworkRouteResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NetworkRouteResponseInlineRecords[i] != nil {
+			if err := m.NetworkRouteResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -199,10 +199,10 @@ func (m *NetworkRouteResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteResponseLinks network route response links
+// NetworkRouteResponseInlineLinks network route response inline links
 //
-// swagger:model NetworkRouteResponseLinks
-type NetworkRouteResponseLinks struct {
+// swagger:model network_route_response_inline__links
+type NetworkRouteResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -211,8 +211,8 @@ type NetworkRouteResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network route response links
-func (m *NetworkRouteResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network route response inline links
+func (m *NetworkRouteResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -229,7 +229,7 @@ func (m *NetworkRouteResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NetworkRouteResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -246,7 +246,7 @@ func (m *NetworkRouteResponseLinks) validateNext(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NetworkRouteResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkRouteResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -263,8 +263,8 @@ func (m *NetworkRouteResponseLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this network route response links based on the context it is used
-func (m *NetworkRouteResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route response inline links based on the context it is used
+func (m *NetworkRouteResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -281,7 +281,7 @@ func (m *NetworkRouteResponseLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NetworkRouteResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -295,7 +295,7 @@ func (m *NetworkRouteResponseLinks) contextValidateNext(ctx context.Context, for
 	return nil
 }
 
-func (m *NetworkRouteResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -310,7 +310,7 @@ func (m *NetworkRouteResponseLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -318,8 +318,8 @@ func (m *NetworkRouteResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteResponseLinks
+func (m *NetworkRouteResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

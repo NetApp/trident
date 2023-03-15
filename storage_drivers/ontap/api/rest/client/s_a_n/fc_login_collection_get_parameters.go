@@ -66,85 +66,85 @@ type FcLoginCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupsName.
 
 	   Filter by igroups.name
 	*/
-	IgroupsNameQueryParameter *string
+	IgroupsName *string
 
 	/* IgroupsUUID.
 
 	   Filter by igroups.uuid
 	*/
-	IgroupsUUIDQueryParameter *string
+	IgroupsUUID *string
 
 	/* InitiatorAliases.
 
 	   Filter by initiator.aliases
 	*/
-	InitiatorAliasesQueryParameter *string
+	InitiatorAliases *string
 
 	/* InitiatorComment.
 
 	   Filter by initiator.comment
 	*/
-	InitiatorCommentQueryParameter *string
+	InitiatorComment *string
 
 	/* InitiatorPortAddress.
 
 	   Filter by initiator.port_address
 	*/
-	InitiatorPortAddressQueryParameter *string
+	InitiatorPortAddress *string
 
 	/* InitiatorWwnn.
 
 	   Filter by initiator.wwnn
 	*/
-	InitiatorWwnnQueryParameter *string
+	InitiatorWwnn *string
 
 	/* InitiatorWwpn.
 
 	   Filter by initiator.wwpn
 	*/
-	InitiatorWwpnQueryParameter *string
+	InitiatorWwpn *string
 
 	/* InterfaceName.
 
 	   Filter by interface.name
 	*/
-	InterfaceNameQueryParameter *string
+	InterfaceName *string
 
 	/* InterfaceUUID.
 
 	   Filter by interface.uuid
 	*/
-	InterfaceUUIDQueryParameter *string
+	InterfaceUUID *string
 
 	/* InterfaceWwpn.
 
 	   Filter by interface.wwpn
 	*/
-	InterfaceWwpnQueryParameter *string
+	InterfaceWwpn *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -152,7 +152,7 @@ type FcLoginCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -160,19 +160,19 @@ type FcLoginCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -192,14 +192,14 @@ func (o *FcLoginCollectionGetParams) WithDefaults() *FcLoginCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *FcLoginCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FcLoginCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -241,202 +241,202 @@ func (o *FcLoginCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithFieldsQueryParameter(fields []string) *FcLoginCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithFields(fields []string) *FcLoginCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupsNameQueryParameter adds the igroupsName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithIgroupsNameQueryParameter(igroupsName *string) *FcLoginCollectionGetParams {
-	o.SetIgroupsNameQueryParameter(igroupsName)
+// WithIgroupsName adds the igroupsName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithIgroupsName(igroupsName *string) *FcLoginCollectionGetParams {
+	o.SetIgroupsName(igroupsName)
 	return o
 }
 
-// SetIgroupsNameQueryParameter adds the igroupsName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetIgroupsNameQueryParameter(igroupsName *string) {
-	o.IgroupsNameQueryParameter = igroupsName
+// SetIgroupsName adds the igroupsName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetIgroupsName(igroupsName *string) {
+	o.IgroupsName = igroupsName
 }
 
-// WithIgroupsUUIDQueryParameter adds the igroupsUUID to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithIgroupsUUIDQueryParameter(igroupsUUID *string) *FcLoginCollectionGetParams {
-	o.SetIgroupsUUIDQueryParameter(igroupsUUID)
+// WithIgroupsUUID adds the igroupsUUID to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithIgroupsUUID(igroupsUUID *string) *FcLoginCollectionGetParams {
+	o.SetIgroupsUUID(igroupsUUID)
 	return o
 }
 
-// SetIgroupsUUIDQueryParameter adds the igroupsUuid to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetIgroupsUUIDQueryParameter(igroupsUUID *string) {
-	o.IgroupsUUIDQueryParameter = igroupsUUID
+// SetIgroupsUUID adds the igroupsUuid to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetIgroupsUUID(igroupsUUID *string) {
+	o.IgroupsUUID = igroupsUUID
 }
 
-// WithInitiatorAliasesQueryParameter adds the initiatorAliases to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInitiatorAliasesQueryParameter(initiatorAliases *string) *FcLoginCollectionGetParams {
-	o.SetInitiatorAliasesQueryParameter(initiatorAliases)
+// WithInitiatorAliases adds the initiatorAliases to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInitiatorAliases(initiatorAliases *string) *FcLoginCollectionGetParams {
+	o.SetInitiatorAliases(initiatorAliases)
 	return o
 }
 
-// SetInitiatorAliasesQueryParameter adds the initiatorAliases to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInitiatorAliasesQueryParameter(initiatorAliases *string) {
-	o.InitiatorAliasesQueryParameter = initiatorAliases
+// SetInitiatorAliases adds the initiatorAliases to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInitiatorAliases(initiatorAliases *string) {
+	o.InitiatorAliases = initiatorAliases
 }
 
-// WithInitiatorCommentQueryParameter adds the initiatorComment to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInitiatorCommentQueryParameter(initiatorComment *string) *FcLoginCollectionGetParams {
-	o.SetInitiatorCommentQueryParameter(initiatorComment)
+// WithInitiatorComment adds the initiatorComment to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInitiatorComment(initiatorComment *string) *FcLoginCollectionGetParams {
+	o.SetInitiatorComment(initiatorComment)
 	return o
 }
 
-// SetInitiatorCommentQueryParameter adds the initiatorComment to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInitiatorCommentQueryParameter(initiatorComment *string) {
-	o.InitiatorCommentQueryParameter = initiatorComment
+// SetInitiatorComment adds the initiatorComment to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInitiatorComment(initiatorComment *string) {
+	o.InitiatorComment = initiatorComment
 }
 
-// WithInitiatorPortAddressQueryParameter adds the initiatorPortAddress to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInitiatorPortAddressQueryParameter(initiatorPortAddress *string) *FcLoginCollectionGetParams {
-	o.SetInitiatorPortAddressQueryParameter(initiatorPortAddress)
+// WithInitiatorPortAddress adds the initiatorPortAddress to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInitiatorPortAddress(initiatorPortAddress *string) *FcLoginCollectionGetParams {
+	o.SetInitiatorPortAddress(initiatorPortAddress)
 	return o
 }
 
-// SetInitiatorPortAddressQueryParameter adds the initiatorPortAddress to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInitiatorPortAddressQueryParameter(initiatorPortAddress *string) {
-	o.InitiatorPortAddressQueryParameter = initiatorPortAddress
+// SetInitiatorPortAddress adds the initiatorPortAddress to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInitiatorPortAddress(initiatorPortAddress *string) {
+	o.InitiatorPortAddress = initiatorPortAddress
 }
 
-// WithInitiatorWwnnQueryParameter adds the initiatorWwnn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInitiatorWwnnQueryParameter(initiatorWwnn *string) *FcLoginCollectionGetParams {
-	o.SetInitiatorWwnnQueryParameter(initiatorWwnn)
+// WithInitiatorWwnn adds the initiatorWwnn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInitiatorWwnn(initiatorWwnn *string) *FcLoginCollectionGetParams {
+	o.SetInitiatorWwnn(initiatorWwnn)
 	return o
 }
 
-// SetInitiatorWwnnQueryParameter adds the initiatorWwnn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInitiatorWwnnQueryParameter(initiatorWwnn *string) {
-	o.InitiatorWwnnQueryParameter = initiatorWwnn
+// SetInitiatorWwnn adds the initiatorWwnn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInitiatorWwnn(initiatorWwnn *string) {
+	o.InitiatorWwnn = initiatorWwnn
 }
 
-// WithInitiatorWwpnQueryParameter adds the initiatorWwpn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInitiatorWwpnQueryParameter(initiatorWwpn *string) *FcLoginCollectionGetParams {
-	o.SetInitiatorWwpnQueryParameter(initiatorWwpn)
+// WithInitiatorWwpn adds the initiatorWwpn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInitiatorWwpn(initiatorWwpn *string) *FcLoginCollectionGetParams {
+	o.SetInitiatorWwpn(initiatorWwpn)
 	return o
 }
 
-// SetInitiatorWwpnQueryParameter adds the initiatorWwpn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInitiatorWwpnQueryParameter(initiatorWwpn *string) {
-	o.InitiatorWwpnQueryParameter = initiatorWwpn
+// SetInitiatorWwpn adds the initiatorWwpn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInitiatorWwpn(initiatorWwpn *string) {
+	o.InitiatorWwpn = initiatorWwpn
 }
 
-// WithInterfaceNameQueryParameter adds the interfaceName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *FcLoginCollectionGetParams {
-	o.SetInterfaceNameQueryParameter(interfaceName)
+// WithInterfaceName adds the interfaceName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInterfaceName(interfaceName *string) *FcLoginCollectionGetParams {
+	o.SetInterfaceName(interfaceName)
 	return o
 }
 
-// SetInterfaceNameQueryParameter adds the interfaceName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
-	o.InterfaceNameQueryParameter = interfaceName
+// SetInterfaceName adds the interfaceName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInterfaceName(interfaceName *string) {
+	o.InterfaceName = interfaceName
 }
 
-// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *FcLoginCollectionGetParams {
-	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInterfaceUUID(interfaceUUID *string) *FcLoginCollectionGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
-	o.InterfaceUUIDQueryParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInterfaceUUID(interfaceUUID *string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
-// WithInterfaceWwpnQueryParameter adds the interfaceWwpn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithInterfaceWwpnQueryParameter(interfaceWwpn *string) *FcLoginCollectionGetParams {
-	o.SetInterfaceWwpnQueryParameter(interfaceWwpn)
+// WithInterfaceWwpn adds the interfaceWwpn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithInterfaceWwpn(interfaceWwpn *string) *FcLoginCollectionGetParams {
+	o.SetInterfaceWwpn(interfaceWwpn)
 	return o
 }
 
-// SetInterfaceWwpnQueryParameter adds the interfaceWwpn to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetInterfaceWwpnQueryParameter(interfaceWwpn *string) {
-	o.InterfaceWwpnQueryParameter = interfaceWwpn
+// SetInterfaceWwpn adds the interfaceWwpn to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetInterfaceWwpn(interfaceWwpn *string) {
+	o.InterfaceWwpn = interfaceWwpn
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FcLoginCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithMaxRecords(maxRecords *int64) *FcLoginCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FcLoginCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithOrderBy(orderBy []string) *FcLoginCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithProtocolQueryParameter(protocol *string) *FcLoginCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithProtocol(protocol *string) *FcLoginCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcLoginCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithReturnRecords(returnRecords *bool) *FcLoginCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FcLoginCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FcLoginCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *FcLoginCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithSvmName(svmName *string) *FcLoginCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the fc login collection get params
-func (o *FcLoginCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *FcLoginCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fc login collection get params
+func (o *FcLoginCollectionGetParams) WithSvmUUID(svmUUID *string) *FcLoginCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the fc login collection get params
-func (o *FcLoginCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fc login collection get params
+func (o *FcLoginCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -447,7 +447,7 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IgroupsNameQueryParameter != nil {
+	if o.IgroupsName != nil {
 
 		// query param igroups.name
 		var qrIgroupsName string
 
-		if o.IgroupsNameQueryParameter != nil {
-			qrIgroupsName = *o.IgroupsNameQueryParameter
+		if o.IgroupsName != nil {
+			qrIgroupsName = *o.IgroupsName
 		}
 		qIgroupsName := qrIgroupsName
 		if qIgroupsName != "" {
@@ -475,13 +475,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IgroupsUUIDQueryParameter != nil {
+	if o.IgroupsUUID != nil {
 
 		// query param igroups.uuid
 		var qrIgroupsUUID string
 
-		if o.IgroupsUUIDQueryParameter != nil {
-			qrIgroupsUUID = *o.IgroupsUUIDQueryParameter
+		if o.IgroupsUUID != nil {
+			qrIgroupsUUID = *o.IgroupsUUID
 		}
 		qIgroupsUUID := qrIgroupsUUID
 		if qIgroupsUUID != "" {
@@ -492,13 +492,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InitiatorAliasesQueryParameter != nil {
+	if o.InitiatorAliases != nil {
 
 		// query param initiator.aliases
 		var qrInitiatorAliases string
 
-		if o.InitiatorAliasesQueryParameter != nil {
-			qrInitiatorAliases = *o.InitiatorAliasesQueryParameter
+		if o.InitiatorAliases != nil {
+			qrInitiatorAliases = *o.InitiatorAliases
 		}
 		qInitiatorAliases := qrInitiatorAliases
 		if qInitiatorAliases != "" {
@@ -509,13 +509,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InitiatorCommentQueryParameter != nil {
+	if o.InitiatorComment != nil {
 
 		// query param initiator.comment
 		var qrInitiatorComment string
 
-		if o.InitiatorCommentQueryParameter != nil {
-			qrInitiatorComment = *o.InitiatorCommentQueryParameter
+		if o.InitiatorComment != nil {
+			qrInitiatorComment = *o.InitiatorComment
 		}
 		qInitiatorComment := qrInitiatorComment
 		if qInitiatorComment != "" {
@@ -526,13 +526,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InitiatorPortAddressQueryParameter != nil {
+	if o.InitiatorPortAddress != nil {
 
 		// query param initiator.port_address
 		var qrInitiatorPortAddress string
 
-		if o.InitiatorPortAddressQueryParameter != nil {
-			qrInitiatorPortAddress = *o.InitiatorPortAddressQueryParameter
+		if o.InitiatorPortAddress != nil {
+			qrInitiatorPortAddress = *o.InitiatorPortAddress
 		}
 		qInitiatorPortAddress := qrInitiatorPortAddress
 		if qInitiatorPortAddress != "" {
@@ -543,13 +543,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InitiatorWwnnQueryParameter != nil {
+	if o.InitiatorWwnn != nil {
 
 		// query param initiator.wwnn
 		var qrInitiatorWwnn string
 
-		if o.InitiatorWwnnQueryParameter != nil {
-			qrInitiatorWwnn = *o.InitiatorWwnnQueryParameter
+		if o.InitiatorWwnn != nil {
+			qrInitiatorWwnn = *o.InitiatorWwnn
 		}
 		qInitiatorWwnn := qrInitiatorWwnn
 		if qInitiatorWwnn != "" {
@@ -560,13 +560,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InitiatorWwpnQueryParameter != nil {
+	if o.InitiatorWwpn != nil {
 
 		// query param initiator.wwpn
 		var qrInitiatorWwpn string
 
-		if o.InitiatorWwpnQueryParameter != nil {
-			qrInitiatorWwpn = *o.InitiatorWwpnQueryParameter
+		if o.InitiatorWwpn != nil {
+			qrInitiatorWwpn = *o.InitiatorWwpn
 		}
 		qInitiatorWwpn := qrInitiatorWwpn
 		if qInitiatorWwpn != "" {
@@ -577,13 +577,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceNameQueryParameter != nil {
+	if o.InterfaceName != nil {
 
 		// query param interface.name
 		var qrInterfaceName string
 
-		if o.InterfaceNameQueryParameter != nil {
-			qrInterfaceName = *o.InterfaceNameQueryParameter
+		if o.InterfaceName != nil {
+			qrInterfaceName = *o.InterfaceName
 		}
 		qInterfaceName := qrInterfaceName
 		if qInterfaceName != "" {
@@ -594,13 +594,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceUUIDQueryParameter != nil {
+	if o.InterfaceUUID != nil {
 
 		// query param interface.uuid
 		var qrInterfaceUUID string
 
-		if o.InterfaceUUIDQueryParameter != nil {
-			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		if o.InterfaceUUID != nil {
+			qrInterfaceUUID = *o.InterfaceUUID
 		}
 		qInterfaceUUID := qrInterfaceUUID
 		if qInterfaceUUID != "" {
@@ -611,13 +611,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceWwpnQueryParameter != nil {
+	if o.InterfaceWwpn != nil {
 
 		// query param interface.wwpn
 		var qrInterfaceWwpn string
 
-		if o.InterfaceWwpnQueryParameter != nil {
-			qrInterfaceWwpn = *o.InterfaceWwpnQueryParameter
+		if o.InterfaceWwpn != nil {
+			qrInterfaceWwpn = *o.InterfaceWwpn
 		}
 		qInterfaceWwpn := qrInterfaceWwpn
 		if qInterfaceWwpn != "" {
@@ -628,13 +628,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -645,7 +645,7 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -656,13 +656,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -673,13 +673,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -690,13 +690,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -707,13 +707,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -724,13 +724,13 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -749,7 +749,7 @@ func (o *FcLoginCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamFcLoginCollectionGet binds the parameter fields
 func (o *FcLoginCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -766,7 +766,7 @@ func (o *FcLoginCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamFcLoginCollectionGet binds the parameter order_by
 func (o *FcLoginCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

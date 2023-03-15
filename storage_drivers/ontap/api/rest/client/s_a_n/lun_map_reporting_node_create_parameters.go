@@ -69,7 +69,7 @@ type LunMapReportingNodeCreateParams struct {
 	   The unique identifier of the igroup.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* Info.
 
@@ -83,13 +83,13 @@ type LunMapReportingNodeCreateParams struct {
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -109,11 +109,11 @@ func (o *LunMapReportingNodeCreateParams) WithDefaults() *LunMapReportingNodeCre
 // All values with no default are reset to their zero value.
 func (o *LunMapReportingNodeCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := LunMapReportingNodeCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +155,15 @@ func (o *LunMapReportingNodeCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) WithIgroupUUIDPathParameter(igroupUUID string) *LunMapReportingNodeCreateParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) WithIgroupUUID(igroupUUID string) *LunMapReportingNodeCreateParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
 // WithInfo adds the info to the lun map reporting node create params
@@ -177,26 +177,26 @@ func (o *LunMapReportingNodeCreateParams) SetInfo(info *models.LunMapReportingNo
 	o.Info = info
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) WithLunUUIDPathParameter(lunUUID string) *LunMapReportingNodeCreateParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) WithLunUUID(lunUUID string) *LunMapReportingNodeCreateParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunMapReportingNodeCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) WithReturnRecords(returnRecords *bool) *LunMapReportingNodeCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun map reporting node create params
-func (o *LunMapReportingNodeCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun map reporting node create params
+func (o *LunMapReportingNodeCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -208,7 +208,7 @@ func (o *LunMapReportingNodeCreateParams) WriteToRequest(r runtime.ClientRequest
 	var res []error
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -218,17 +218,17 @@ func (o *LunMapReportingNodeCreateParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

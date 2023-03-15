@@ -52,6 +52,11 @@ S3PolicyCreateCreated describes a response with status code 201, with default he
 Created
 */
 type S3PolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.S3PolicyResponse
 }
 
@@ -93,6 +98,13 @@ func (o *S3PolicyCreateCreated) GetPayload() *models.S3PolicyResponse {
 }
 
 func (o *S3PolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.S3PolicyResponse)
 

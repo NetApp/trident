@@ -73,21 +73,21 @@ type IgroupNestedDeleteParams struct {
 	<b>This parameter should be used with caution.</b>
 
 	*/
-	AllowDeleteWhileMappedQueryParameter *bool
+	AllowDeleteWhileMapped *bool
 
 	/* IgroupUUID.
 
 	   The unique identifier of the parent initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* UUID.
 
 	   The unique identifier of the nested initiator group.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -107,11 +107,11 @@ func (o *IgroupNestedDeleteParams) WithDefaults() *IgroupNestedDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *IgroupNestedDeleteParams) SetDefaults() {
 	var (
-		allowDeleteWhileMappedQueryParameterDefault = bool(false)
+		allowDeleteWhileMappedDefault = bool(false)
 	)
 
 	val := IgroupNestedDeleteParams{
-		AllowDeleteWhileMappedQueryParameter: &allowDeleteWhileMappedQueryParameterDefault,
+		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
 	}
 
 	val.timeout = o.timeout
@@ -153,37 +153,37 @@ func (o *IgroupNestedDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) WithAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) *IgroupNestedDeleteParams {
-	o.SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped)
+// WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *IgroupNestedDeleteParams {
+	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
 	return o
 }
 
-// SetAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) {
-	o.AllowDeleteWhileMappedQueryParameter = allowDeleteWhileMapped
+// SetAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) {
+	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupNestedDeleteParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) WithIgroupUUID(igroupUUID string) *IgroupNestedDeleteParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) WithUUIDPathParameter(uuid string) *IgroupNestedDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) WithUUID(uuid string) *IgroupNestedDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the igroup nested delete params
-func (o *IgroupNestedDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the igroup nested delete params
+func (o *IgroupNestedDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,13 +194,13 @@ func (o *IgroupNestedDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.AllowDeleteWhileMappedQueryParameter != nil {
+	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
 		var qrAllowDeleteWhileMapped bool
 
-		if o.AllowDeleteWhileMappedQueryParameter != nil {
-			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMappedQueryParameter
+		if o.AllowDeleteWhileMapped != nil {
+			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMapped
 		}
 		qAllowDeleteWhileMapped := swag.FormatBool(qrAllowDeleteWhileMapped)
 		if qAllowDeleteWhileMapped != "" {
@@ -212,12 +212,12 @@ func (o *IgroupNestedDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

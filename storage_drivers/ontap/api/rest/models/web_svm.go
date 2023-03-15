@@ -20,19 +20,19 @@ import (
 type WebSvm struct {
 
 	// links
-	Links *WebSvmLinks `json:"_links,omitempty"`
+	Links *WebSvmInlineLinks `json:"_links,omitempty"`
 
 	// certificate
-	Certificate *WebSvmCertificate `json:"certificate,omitempty"`
+	Certificate *WebSvmInlineCertificate `json:"certificate,omitempty"`
 
 	// Indicates whether client authentication is enabled.
-	ClientEnabled bool `json:"client_enabled,omitempty"`
+	ClientEnabled *bool `json:"client_enabled,omitempty"`
 
 	// Indicates whether online certificate status protocol verification is enabled.
-	OcspEnabled bool `json:"ocsp_enabled,omitempty"`
+	OcspEnabled *bool `json:"ocsp_enabled,omitempty"`
 
 	// svm
-	Svm *WebSvmSvm `json:"svm,omitempty"`
+	Svm *WebSvmInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this web svm
@@ -190,26 +190,26 @@ func (m *WebSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmCertificate Certificate used by cluster and node management interfaces for TLS connection requests.
+// WebSvmInlineCertificate Certificate used by cluster and node management interfaces for TLS connection requests.
 //
-// swagger:model WebSvmCertificate
-type WebSvmCertificate struct {
+// swagger:model web_svm_inline_certificate
+type WebSvmInlineCertificate struct {
 
 	// links
-	Links *WebSvmCertificateLinks `json:"_links,omitempty"`
+	Links *WebSvmInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
 	// Example: cert1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this web svm certificate
-func (m *WebSvmCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this web svm inline certificate
+func (m *WebSvmInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -222,7 +222,7 @@ func (m *WebSvmCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebSvmCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *WebSvmInlineCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -239,8 +239,8 @@ func (m *WebSvmCertificate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web svm certificate based on the context it is used
-func (m *WebSvmCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web svm inline certificate based on the context it is used
+func (m *WebSvmInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -257,7 +257,7 @@ func (m *WebSvmCertificate) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *WebSvmCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -271,9 +271,9 @@ func (m *WebSvmCertificate) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *WebSvmCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -281,7 +281,7 @@ func (m *WebSvmCertificate) contextValidateName(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *WebSvmCertificate) MarshalBinary() ([]byte, error) {
+func (m *WebSvmInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -289,8 +289,8 @@ func (m *WebSvmCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebSvmCertificate) UnmarshalBinary(b []byte) error {
-	var res WebSvmCertificate
+func (m *WebSvmInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res WebSvmInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -298,17 +298,17 @@ func (m *WebSvmCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmCertificateLinks web svm certificate links
+// WebSvmInlineCertificateInlineLinks web svm inline certificate inline links
 //
-// swagger:model WebSvmCertificateLinks
-type WebSvmCertificateLinks struct {
+// swagger:model web_svm_inline_certificate_inline__links
+type WebSvmInlineCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this web svm certificate links
-func (m *WebSvmCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this web svm inline certificate inline links
+func (m *WebSvmInlineCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -321,7 +321,7 @@ func (m *WebSvmCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebSvmCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WebSvmInlineCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -338,8 +338,8 @@ func (m *WebSvmCertificateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web svm certificate links based on the context it is used
-func (m *WebSvmCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web svm inline certificate inline links based on the context it is used
+func (m *WebSvmInlineCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -352,7 +352,7 @@ func (m *WebSvmCertificateLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *WebSvmCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -367,7 +367,7 @@ func (m *WebSvmCertificateLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *WebSvmCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *WebSvmInlineCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -375,8 +375,8 @@ func (m *WebSvmCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebSvmCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res WebSvmCertificateLinks
+func (m *WebSvmInlineCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WebSvmInlineCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -384,17 +384,17 @@ func (m *WebSvmCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmLinks web svm links
+// WebSvmInlineLinks web svm inline links
 //
-// swagger:model WebSvmLinks
-type WebSvmLinks struct {
+// swagger:model web_svm_inline__links
+type WebSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this web svm links
-func (m *WebSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this web svm inline links
+func (m *WebSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -407,7 +407,7 @@ func (m *WebSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WebSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -424,8 +424,8 @@ func (m *WebSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web svm links based on the context it is used
-func (m *WebSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web svm inline links based on the context it is used
+func (m *WebSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -438,7 +438,7 @@ func (m *WebSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *WebSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -453,7 +453,7 @@ func (m *WebSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *WebSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *WebSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -461,8 +461,8 @@ func (m *WebSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebSvmLinks) UnmarshalBinary(b []byte) error {
-	var res WebSvmLinks
+func (m *WebSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WebSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -470,27 +470,27 @@ func (m *WebSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmSvm web svm svm
+// WebSvmInlineSvm web svm inline svm
 //
-// swagger:model WebSvmSvm
-type WebSvmSvm struct {
+// swagger:model web_svm_inline_svm
+type WebSvmInlineSvm struct {
 
 	// links
-	Links *WebSvmSvmLinks `json:"_links,omitempty"`
+	Links *WebSvmInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this web svm svm
-func (m *WebSvmSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this web svm inline svm
+func (m *WebSvmInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -503,7 +503,7 @@ func (m *WebSvmSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebSvmSvm) validateLinks(formats strfmt.Registry) error {
+func (m *WebSvmInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -520,8 +520,8 @@ func (m *WebSvmSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web svm svm based on the context it is used
-func (m *WebSvmSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web svm inline svm based on the context it is used
+func (m *WebSvmInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -534,7 +534,7 @@ func (m *WebSvmSvm) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *WebSvmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -549,7 +549,7 @@ func (m *WebSvmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *WebSvmSvm) MarshalBinary() ([]byte, error) {
+func (m *WebSvmInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -557,8 +557,8 @@ func (m *WebSvmSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebSvmSvm) UnmarshalBinary(b []byte) error {
-	var res WebSvmSvm
+func (m *WebSvmInlineSvm) UnmarshalBinary(b []byte) error {
+	var res WebSvmInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -566,17 +566,17 @@ func (m *WebSvmSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmSvmLinks web svm svm links
+// WebSvmInlineSvmInlineLinks web svm inline svm inline links
 //
-// swagger:model WebSvmSvmLinks
-type WebSvmSvmLinks struct {
+// swagger:model web_svm_inline_svm_inline__links
+type WebSvmInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this web svm svm links
-func (m *WebSvmSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this web svm inline svm inline links
+func (m *WebSvmInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -589,7 +589,7 @@ func (m *WebSvmSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WebSvmInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -606,8 +606,8 @@ func (m *WebSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web svm svm links based on the context it is used
-func (m *WebSvmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web svm inline svm inline links based on the context it is used
+func (m *WebSvmInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -620,7 +620,7 @@ func (m *WebSvmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *WebSvmSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebSvmInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -635,7 +635,7 @@ func (m *WebSvmSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *WebSvmSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *WebSvmInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -643,8 +643,8 @@ func (m *WebSvmSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebSvmSvmLinks) UnmarshalBinary(b []byte) error {
-	var res WebSvmSvmLinks
+func (m *WebSvmInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WebSvmInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

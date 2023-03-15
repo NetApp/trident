@@ -70,7 +70,7 @@ type NetworkIPInterfaceModifyParams struct {
 
 	   IP interface UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *NetworkIPInterfaceModifyParams) SetInfo(info *models.IPInterface) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the network ip interface modify params
-func (o *NetworkIPInterfaceModifyParams) WithUUIDPathParameter(uuid string) *NetworkIPInterfaceModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ip interface modify params
+func (o *NetworkIPInterfaceModifyParams) WithUUID(uuid string) *NetworkIPInterfaceModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ip interface modify params
-func (o *NetworkIPInterfaceModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ip interface modify params
+func (o *NetworkIPInterfaceModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *NetworkIPInterfaceModifyParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

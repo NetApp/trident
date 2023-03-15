@@ -66,145 +66,145 @@ type PlexCollectionGetParams struct {
 
 	   Filter by aggregate.name
 	*/
-	AggregateNameQueryParameter *string
+	AggregateName *string
 
 	/* AggregateUUID.
 
 	   Aggregate UUID
 	*/
-	AggregateUUIDPathParameter string
+	AggregateUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* Online.
 
 	   Filter by online
 	*/
-	OnlineQueryParameter *bool
+	Online *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Pool.
 
 	   Filter by pool
 	*/
-	PoolQueryParameter *string
+	Pool *string
 
 	/* RaidGroupsCacheTier.
 
 	   Filter by raid_groups.cache_tier
 	*/
-	RaIDGroupsCacheTierQueryParameter *bool
+	RaidGroupsCacheTier *bool
 
 	/* RaidGroupsDegraded.
 
 	   Filter by raid_groups.degraded
 	*/
-	RaIDGroupsDegradedQueryParameter *bool
+	RaidGroupsDegraded *bool
 
 	/* RaidGroupsDisksDiskName.
 
 	   Filter by raid_groups.disks.disk.name
 	*/
-	RaIDGroupsDisksDiskNameQueryParameter *string
+	RaidGroupsDisksDiskName *string
 
 	/* RaidGroupsDisksPosition.
 
 	   Filter by raid_groups.disks.position
 	*/
-	RaIDGroupsDisksPositionQueryParameter *string
+	RaidGroupsDisksPosition *string
 
 	/* RaidGroupsDisksState.
 
 	   Filter by raid_groups.disks.state
 	*/
-	RaIDGroupsDisksStateQueryParameter *string
+	RaidGroupsDisksState *string
 
 	/* RaidGroupsDisksType.
 
 	   Filter by raid_groups.disks.type
 	*/
-	RaIDGroupsDisksTypeQueryParameter *string
+	RaidGroupsDisksType *string
 
 	/* RaidGroupsDisksUsableSize.
 
 	   Filter by raid_groups.disks.usable_size
 	*/
-	RaIDGroupsDisksUsableSizeQueryParameter *int64
+	RaidGroupsDisksUsableSize *int64
 
 	/* RaidGroupsName.
 
 	   Filter by raid_groups.name
 	*/
-	RaIDGroupsNameQueryParameter *string
+	RaidGroupsName *string
 
 	/* RaidGroupsRaidType.
 
 	   Filter by raid_groups.raid_type
 	*/
-	RaIDGroupsRaIDTypeQueryParameter *string
+	RaidGroupsRaidType *string
 
 	/* RaidGroupsRecomputingParityActive.
 
 	   Filter by raid_groups.recomputing_parity.active
 	*/
-	RaIDGroupsRecomputingParityActiveQueryParameter *bool
+	RaidGroupsRecomputingParityActive *bool
 
 	/* RaidGroupsRecomputingParityPercent.
 
 	   Filter by raid_groups.recomputing_parity.percent
 	*/
-	RaIDGroupsRecomputingParityPercentQueryParameter *int64
+	RaidGroupsRecomputingParityPercent *int64
 
 	/* RaidGroupsReconstructActive.
 
 	   Filter by raid_groups.reconstruct.active
 	*/
-	RaIDGroupsReconstructActiveQueryParameter *bool
+	RaidGroupsReconstructActive *bool
 
 	/* RaidGroupsReconstructPercent.
 
 	   Filter by raid_groups.reconstruct.percent
 	*/
-	RaIDGroupsReconstructPercentQueryParameter *int64
+	RaidGroupsReconstructPercent *int64
 
 	/* ResyncActive.
 
 	   Filter by resync.active
 	*/
-	ResyncActiveQueryParameter *bool
+	ResyncActive *bool
 
 	/* ResyncLevel.
 
 	   Filter by resync.level
 	*/
-	ResyncLevelQueryParameter *string
+	ResyncLevel *string
 
 	/* ResyncPercent.
 
 	   Filter by resync.percent
 	*/
-	ResyncPercentQueryParameter *int64
+	ResyncPercent *int64
 
 	/* ReturnRecords.
 
@@ -212,7 +212,7 @@ type PlexCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -220,13 +220,13 @@ type PlexCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -246,14 +246,14 @@ func (o *PlexCollectionGetParams) WithDefaults() *PlexCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *PlexCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PlexCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -295,301 +295,301 @@ func (o *PlexCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregateNameQueryParameter adds the aggregateName to the plex collection get params
-func (o *PlexCollectionGetParams) WithAggregateNameQueryParameter(aggregateName *string) *PlexCollectionGetParams {
-	o.SetAggregateNameQueryParameter(aggregateName)
+// WithAggregateName adds the aggregateName to the plex collection get params
+func (o *PlexCollectionGetParams) WithAggregateName(aggregateName *string) *PlexCollectionGetParams {
+	o.SetAggregateName(aggregateName)
 	return o
 }
 
-// SetAggregateNameQueryParameter adds the aggregateName to the plex collection get params
-func (o *PlexCollectionGetParams) SetAggregateNameQueryParameter(aggregateName *string) {
-	o.AggregateNameQueryParameter = aggregateName
+// SetAggregateName adds the aggregateName to the plex collection get params
+func (o *PlexCollectionGetParams) SetAggregateName(aggregateName *string) {
+	o.AggregateName = aggregateName
 }
 
-// WithAggregateUUIDPathParameter adds the aggregateUUID to the plex collection get params
-func (o *PlexCollectionGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *PlexCollectionGetParams {
-	o.SetAggregateUUIDPathParameter(aggregateUUID)
+// WithAggregateUUID adds the aggregateUUID to the plex collection get params
+func (o *PlexCollectionGetParams) WithAggregateUUID(aggregateUUID string) *PlexCollectionGetParams {
+	o.SetAggregateUUID(aggregateUUID)
 	return o
 }
 
-// SetAggregateUUIDPathParameter adds the aggregateUuid to the plex collection get params
-func (o *PlexCollectionGetParams) SetAggregateUUIDPathParameter(aggregateUUID string) {
-	o.AggregateUUIDPathParameter = aggregateUUID
+// SetAggregateUUID adds the aggregateUuid to the plex collection get params
+func (o *PlexCollectionGetParams) SetAggregateUUID(aggregateUUID string) {
+	o.AggregateUUID = aggregateUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the plex collection get params
-func (o *PlexCollectionGetParams) WithFieldsQueryParameter(fields []string) *PlexCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the plex collection get params
+func (o *PlexCollectionGetParams) WithFields(fields []string) *PlexCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the plex collection get params
-func (o *PlexCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the plex collection get params
+func (o *PlexCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the plex collection get params
-func (o *PlexCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PlexCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the plex collection get params
+func (o *PlexCollectionGetParams) WithMaxRecords(maxRecords *int64) *PlexCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the plex collection get params
-func (o *PlexCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the plex collection get params
+func (o *PlexCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the plex collection get params
-func (o *PlexCollectionGetParams) WithNameQueryParameter(name *string) *PlexCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the plex collection get params
+func (o *PlexCollectionGetParams) WithName(name *string) *PlexCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the plex collection get params
-func (o *PlexCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the plex collection get params
+func (o *PlexCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOnlineQueryParameter adds the online to the plex collection get params
-func (o *PlexCollectionGetParams) WithOnlineQueryParameter(online *bool) *PlexCollectionGetParams {
-	o.SetOnlineQueryParameter(online)
+// WithOnline adds the online to the plex collection get params
+func (o *PlexCollectionGetParams) WithOnline(online *bool) *PlexCollectionGetParams {
+	o.SetOnline(online)
 	return o
 }
 
-// SetOnlineQueryParameter adds the online to the plex collection get params
-func (o *PlexCollectionGetParams) SetOnlineQueryParameter(online *bool) {
-	o.OnlineQueryParameter = online
+// SetOnline adds the online to the plex collection get params
+func (o *PlexCollectionGetParams) SetOnline(online *bool) {
+	o.Online = online
 }
 
-// WithOrderByQueryParameter adds the orderBy to the plex collection get params
-func (o *PlexCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PlexCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the plex collection get params
+func (o *PlexCollectionGetParams) WithOrderBy(orderBy []string) *PlexCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the plex collection get params
-func (o *PlexCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the plex collection get params
+func (o *PlexCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPoolQueryParameter adds the pool to the plex collection get params
-func (o *PlexCollectionGetParams) WithPoolQueryParameter(pool *string) *PlexCollectionGetParams {
-	o.SetPoolQueryParameter(pool)
+// WithPool adds the pool to the plex collection get params
+func (o *PlexCollectionGetParams) WithPool(pool *string) *PlexCollectionGetParams {
+	o.SetPool(pool)
 	return o
 }
 
-// SetPoolQueryParameter adds the pool to the plex collection get params
-func (o *PlexCollectionGetParams) SetPoolQueryParameter(pool *string) {
-	o.PoolQueryParameter = pool
+// SetPool adds the pool to the plex collection get params
+func (o *PlexCollectionGetParams) SetPool(pool *string) {
+	o.Pool = pool
 }
 
-// WithRaIDGroupsCacheTierQueryParameter adds the raidGroupsCacheTier to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsCacheTierQueryParameter(raidGroupsCacheTier *bool) *PlexCollectionGetParams {
-	o.SetRaIDGroupsCacheTierQueryParameter(raidGroupsCacheTier)
+// WithRaidGroupsCacheTier adds the raidGroupsCacheTier to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsCacheTier(raidGroupsCacheTier *bool) *PlexCollectionGetParams {
+	o.SetRaidGroupsCacheTier(raidGroupsCacheTier)
 	return o
 }
 
-// SetRaIDGroupsCacheTierQueryParameter adds the raidGroupsCacheTier to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsCacheTierQueryParameter(raidGroupsCacheTier *bool) {
-	o.RaIDGroupsCacheTierQueryParameter = raidGroupsCacheTier
+// SetRaidGroupsCacheTier adds the raidGroupsCacheTier to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsCacheTier(raidGroupsCacheTier *bool) {
+	o.RaidGroupsCacheTier = raidGroupsCacheTier
 }
 
-// WithRaIDGroupsDegradedQueryParameter adds the raidGroupsDegraded to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDegradedQueryParameter(raidGroupsDegraded *bool) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDegradedQueryParameter(raidGroupsDegraded)
+// WithRaidGroupsDegraded adds the raidGroupsDegraded to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDegraded(raidGroupsDegraded *bool) *PlexCollectionGetParams {
+	o.SetRaidGroupsDegraded(raidGroupsDegraded)
 	return o
 }
 
-// SetRaIDGroupsDegradedQueryParameter adds the raidGroupsDegraded to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDegradedQueryParameter(raidGroupsDegraded *bool) {
-	o.RaIDGroupsDegradedQueryParameter = raidGroupsDegraded
+// SetRaidGroupsDegraded adds the raidGroupsDegraded to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDegraded(raidGroupsDegraded *bool) {
+	o.RaidGroupsDegraded = raidGroupsDegraded
 }
 
-// WithRaIDGroupsDisksDiskNameQueryParameter adds the raidGroupsDisksDiskName to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDisksDiskNameQueryParameter(raidGroupsDisksDiskName *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDisksDiskNameQueryParameter(raidGroupsDisksDiskName)
+// WithRaidGroupsDisksDiskName adds the raidGroupsDisksDiskName to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDisksDiskName(raidGroupsDisksDiskName *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsDisksDiskName(raidGroupsDisksDiskName)
 	return o
 }
 
-// SetRaIDGroupsDisksDiskNameQueryParameter adds the raidGroupsDisksDiskName to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDisksDiskNameQueryParameter(raidGroupsDisksDiskName *string) {
-	o.RaIDGroupsDisksDiskNameQueryParameter = raidGroupsDisksDiskName
+// SetRaidGroupsDisksDiskName adds the raidGroupsDisksDiskName to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDisksDiskName(raidGroupsDisksDiskName *string) {
+	o.RaidGroupsDisksDiskName = raidGroupsDisksDiskName
 }
 
-// WithRaIDGroupsDisksPositionQueryParameter adds the raidGroupsDisksPosition to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDisksPositionQueryParameter(raidGroupsDisksPosition *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDisksPositionQueryParameter(raidGroupsDisksPosition)
+// WithRaidGroupsDisksPosition adds the raidGroupsDisksPosition to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDisksPosition(raidGroupsDisksPosition *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsDisksPosition(raidGroupsDisksPosition)
 	return o
 }
 
-// SetRaIDGroupsDisksPositionQueryParameter adds the raidGroupsDisksPosition to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDisksPositionQueryParameter(raidGroupsDisksPosition *string) {
-	o.RaIDGroupsDisksPositionQueryParameter = raidGroupsDisksPosition
+// SetRaidGroupsDisksPosition adds the raidGroupsDisksPosition to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDisksPosition(raidGroupsDisksPosition *string) {
+	o.RaidGroupsDisksPosition = raidGroupsDisksPosition
 }
 
-// WithRaIDGroupsDisksStateQueryParameter adds the raidGroupsDisksState to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDisksStateQueryParameter(raidGroupsDisksState *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDisksStateQueryParameter(raidGroupsDisksState)
+// WithRaidGroupsDisksState adds the raidGroupsDisksState to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDisksState(raidGroupsDisksState *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsDisksState(raidGroupsDisksState)
 	return o
 }
 
-// SetRaIDGroupsDisksStateQueryParameter adds the raidGroupsDisksState to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDisksStateQueryParameter(raidGroupsDisksState *string) {
-	o.RaIDGroupsDisksStateQueryParameter = raidGroupsDisksState
+// SetRaidGroupsDisksState adds the raidGroupsDisksState to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDisksState(raidGroupsDisksState *string) {
+	o.RaidGroupsDisksState = raidGroupsDisksState
 }
 
-// WithRaIDGroupsDisksTypeQueryParameter adds the raidGroupsDisksType to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDisksTypeQueryParameter(raidGroupsDisksType *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDisksTypeQueryParameter(raidGroupsDisksType)
+// WithRaidGroupsDisksType adds the raidGroupsDisksType to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDisksType(raidGroupsDisksType *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsDisksType(raidGroupsDisksType)
 	return o
 }
 
-// SetRaIDGroupsDisksTypeQueryParameter adds the raidGroupsDisksType to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDisksTypeQueryParameter(raidGroupsDisksType *string) {
-	o.RaIDGroupsDisksTypeQueryParameter = raidGroupsDisksType
+// SetRaidGroupsDisksType adds the raidGroupsDisksType to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDisksType(raidGroupsDisksType *string) {
+	o.RaidGroupsDisksType = raidGroupsDisksType
 }
 
-// WithRaIDGroupsDisksUsableSizeQueryParameter adds the raidGroupsDisksUsableSize to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsDisksUsableSizeQueryParameter(raidGroupsDisksUsableSize *int64) *PlexCollectionGetParams {
-	o.SetRaIDGroupsDisksUsableSizeQueryParameter(raidGroupsDisksUsableSize)
+// WithRaidGroupsDisksUsableSize adds the raidGroupsDisksUsableSize to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsDisksUsableSize(raidGroupsDisksUsableSize *int64) *PlexCollectionGetParams {
+	o.SetRaidGroupsDisksUsableSize(raidGroupsDisksUsableSize)
 	return o
 }
 
-// SetRaIDGroupsDisksUsableSizeQueryParameter adds the raidGroupsDisksUsableSize to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsDisksUsableSizeQueryParameter(raidGroupsDisksUsableSize *int64) {
-	o.RaIDGroupsDisksUsableSizeQueryParameter = raidGroupsDisksUsableSize
+// SetRaidGroupsDisksUsableSize adds the raidGroupsDisksUsableSize to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsDisksUsableSize(raidGroupsDisksUsableSize *int64) {
+	o.RaidGroupsDisksUsableSize = raidGroupsDisksUsableSize
 }
 
-// WithRaIDGroupsNameQueryParameter adds the raidGroupsName to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsNameQueryParameter(raidGroupsName *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsNameQueryParameter(raidGroupsName)
+// WithRaidGroupsName adds the raidGroupsName to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsName(raidGroupsName *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsName(raidGroupsName)
 	return o
 }
 
-// SetRaIDGroupsNameQueryParameter adds the raidGroupsName to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsNameQueryParameter(raidGroupsName *string) {
-	o.RaIDGroupsNameQueryParameter = raidGroupsName
+// SetRaidGroupsName adds the raidGroupsName to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsName(raidGroupsName *string) {
+	o.RaidGroupsName = raidGroupsName
 }
 
-// WithRaIDGroupsRaIDTypeQueryParameter adds the raidGroupsRaidType to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType *string) *PlexCollectionGetParams {
-	o.SetRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType)
+// WithRaidGroupsRaidType adds the raidGroupsRaidType to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsRaidType(raidGroupsRaidType *string) *PlexCollectionGetParams {
+	o.SetRaidGroupsRaidType(raidGroupsRaidType)
 	return o
 }
 
-// SetRaIDGroupsRaIDTypeQueryParameter adds the raidGroupsRaidType to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType *string) {
-	o.RaIDGroupsRaIDTypeQueryParameter = raidGroupsRaidType
+// SetRaidGroupsRaidType adds the raidGroupsRaidType to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsRaidType(raidGroupsRaidType *string) {
+	o.RaidGroupsRaidType = raidGroupsRaidType
 }
 
-// WithRaIDGroupsRecomputingParityActiveQueryParameter adds the raidGroupsRecomputingParityActive to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsRecomputingParityActiveQueryParameter(raidGroupsRecomputingParityActive *bool) *PlexCollectionGetParams {
-	o.SetRaIDGroupsRecomputingParityActiveQueryParameter(raidGroupsRecomputingParityActive)
+// WithRaidGroupsRecomputingParityActive adds the raidGroupsRecomputingParityActive to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsRecomputingParityActive(raidGroupsRecomputingParityActive *bool) *PlexCollectionGetParams {
+	o.SetRaidGroupsRecomputingParityActive(raidGroupsRecomputingParityActive)
 	return o
 }
 
-// SetRaIDGroupsRecomputingParityActiveQueryParameter adds the raidGroupsRecomputingParityActive to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsRecomputingParityActiveQueryParameter(raidGroupsRecomputingParityActive *bool) {
-	o.RaIDGroupsRecomputingParityActiveQueryParameter = raidGroupsRecomputingParityActive
+// SetRaidGroupsRecomputingParityActive adds the raidGroupsRecomputingParityActive to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsRecomputingParityActive(raidGroupsRecomputingParityActive *bool) {
+	o.RaidGroupsRecomputingParityActive = raidGroupsRecomputingParityActive
 }
 
-// WithRaIDGroupsRecomputingParityPercentQueryParameter adds the raidGroupsRecomputingParityPercent to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsRecomputingParityPercentQueryParameter(raidGroupsRecomputingParityPercent *int64) *PlexCollectionGetParams {
-	o.SetRaIDGroupsRecomputingParityPercentQueryParameter(raidGroupsRecomputingParityPercent)
+// WithRaidGroupsRecomputingParityPercent adds the raidGroupsRecomputingParityPercent to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsRecomputingParityPercent(raidGroupsRecomputingParityPercent *int64) *PlexCollectionGetParams {
+	o.SetRaidGroupsRecomputingParityPercent(raidGroupsRecomputingParityPercent)
 	return o
 }
 
-// SetRaIDGroupsRecomputingParityPercentQueryParameter adds the raidGroupsRecomputingParityPercent to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsRecomputingParityPercentQueryParameter(raidGroupsRecomputingParityPercent *int64) {
-	o.RaIDGroupsRecomputingParityPercentQueryParameter = raidGroupsRecomputingParityPercent
+// SetRaidGroupsRecomputingParityPercent adds the raidGroupsRecomputingParityPercent to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsRecomputingParityPercent(raidGroupsRecomputingParityPercent *int64) {
+	o.RaidGroupsRecomputingParityPercent = raidGroupsRecomputingParityPercent
 }
 
-// WithRaIDGroupsReconstructActiveQueryParameter adds the raidGroupsReconstructActive to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsReconstructActiveQueryParameter(raidGroupsReconstructActive *bool) *PlexCollectionGetParams {
-	o.SetRaIDGroupsReconstructActiveQueryParameter(raidGroupsReconstructActive)
+// WithRaidGroupsReconstructActive adds the raidGroupsReconstructActive to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsReconstructActive(raidGroupsReconstructActive *bool) *PlexCollectionGetParams {
+	o.SetRaidGroupsReconstructActive(raidGroupsReconstructActive)
 	return o
 }
 
-// SetRaIDGroupsReconstructActiveQueryParameter adds the raidGroupsReconstructActive to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsReconstructActiveQueryParameter(raidGroupsReconstructActive *bool) {
-	o.RaIDGroupsReconstructActiveQueryParameter = raidGroupsReconstructActive
+// SetRaidGroupsReconstructActive adds the raidGroupsReconstructActive to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsReconstructActive(raidGroupsReconstructActive *bool) {
+	o.RaidGroupsReconstructActive = raidGroupsReconstructActive
 }
 
-// WithRaIDGroupsReconstructPercentQueryParameter adds the raidGroupsReconstructPercent to the plex collection get params
-func (o *PlexCollectionGetParams) WithRaIDGroupsReconstructPercentQueryParameter(raidGroupsReconstructPercent *int64) *PlexCollectionGetParams {
-	o.SetRaIDGroupsReconstructPercentQueryParameter(raidGroupsReconstructPercent)
+// WithRaidGroupsReconstructPercent adds the raidGroupsReconstructPercent to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaidGroupsReconstructPercent(raidGroupsReconstructPercent *int64) *PlexCollectionGetParams {
+	o.SetRaidGroupsReconstructPercent(raidGroupsReconstructPercent)
 	return o
 }
 
-// SetRaIDGroupsReconstructPercentQueryParameter adds the raidGroupsReconstructPercent to the plex collection get params
-func (o *PlexCollectionGetParams) SetRaIDGroupsReconstructPercentQueryParameter(raidGroupsReconstructPercent *int64) {
-	o.RaIDGroupsReconstructPercentQueryParameter = raidGroupsReconstructPercent
+// SetRaidGroupsReconstructPercent adds the raidGroupsReconstructPercent to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaidGroupsReconstructPercent(raidGroupsReconstructPercent *int64) {
+	o.RaidGroupsReconstructPercent = raidGroupsReconstructPercent
 }
 
-// WithResyncActiveQueryParameter adds the resyncActive to the plex collection get params
-func (o *PlexCollectionGetParams) WithResyncActiveQueryParameter(resyncActive *bool) *PlexCollectionGetParams {
-	o.SetResyncActiveQueryParameter(resyncActive)
+// WithResyncActive adds the resyncActive to the plex collection get params
+func (o *PlexCollectionGetParams) WithResyncActive(resyncActive *bool) *PlexCollectionGetParams {
+	o.SetResyncActive(resyncActive)
 	return o
 }
 
-// SetResyncActiveQueryParameter adds the resyncActive to the plex collection get params
-func (o *PlexCollectionGetParams) SetResyncActiveQueryParameter(resyncActive *bool) {
-	o.ResyncActiveQueryParameter = resyncActive
+// SetResyncActive adds the resyncActive to the plex collection get params
+func (o *PlexCollectionGetParams) SetResyncActive(resyncActive *bool) {
+	o.ResyncActive = resyncActive
 }
 
-// WithResyncLevelQueryParameter adds the resyncLevel to the plex collection get params
-func (o *PlexCollectionGetParams) WithResyncLevelQueryParameter(resyncLevel *string) *PlexCollectionGetParams {
-	o.SetResyncLevelQueryParameter(resyncLevel)
+// WithResyncLevel adds the resyncLevel to the plex collection get params
+func (o *PlexCollectionGetParams) WithResyncLevel(resyncLevel *string) *PlexCollectionGetParams {
+	o.SetResyncLevel(resyncLevel)
 	return o
 }
 
-// SetResyncLevelQueryParameter adds the resyncLevel to the plex collection get params
-func (o *PlexCollectionGetParams) SetResyncLevelQueryParameter(resyncLevel *string) {
-	o.ResyncLevelQueryParameter = resyncLevel
+// SetResyncLevel adds the resyncLevel to the plex collection get params
+func (o *PlexCollectionGetParams) SetResyncLevel(resyncLevel *string) {
+	o.ResyncLevel = resyncLevel
 }
 
-// WithResyncPercentQueryParameter adds the resyncPercent to the plex collection get params
-func (o *PlexCollectionGetParams) WithResyncPercentQueryParameter(resyncPercent *int64) *PlexCollectionGetParams {
-	o.SetResyncPercentQueryParameter(resyncPercent)
+// WithResyncPercent adds the resyncPercent to the plex collection get params
+func (o *PlexCollectionGetParams) WithResyncPercent(resyncPercent *int64) *PlexCollectionGetParams {
+	o.SetResyncPercent(resyncPercent)
 	return o
 }
 
-// SetResyncPercentQueryParameter adds the resyncPercent to the plex collection get params
-func (o *PlexCollectionGetParams) SetResyncPercentQueryParameter(resyncPercent *int64) {
-	o.ResyncPercentQueryParameter = resyncPercent
+// SetResyncPercent adds the resyncPercent to the plex collection get params
+func (o *PlexCollectionGetParams) SetResyncPercent(resyncPercent *int64) {
+	o.ResyncPercent = resyncPercent
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the plex collection get params
-func (o *PlexCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PlexCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the plex collection get params
+func (o *PlexCollectionGetParams) WithReturnRecords(returnRecords *bool) *PlexCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the plex collection get params
-func (o *PlexCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the plex collection get params
+func (o *PlexCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the plex collection get params
-func (o *PlexCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PlexCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the plex collection get params
+func (o *PlexCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PlexCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the plex collection get params
-func (o *PlexCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the plex collection get params
+func (o *PlexCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the plex collection get params
-func (o *PlexCollectionGetParams) WithStateQueryParameter(state *string) *PlexCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the plex collection get params
+func (o *PlexCollectionGetParams) WithState(state *string) *PlexCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the plex collection get params
-func (o *PlexCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the plex collection get params
+func (o *PlexCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -600,13 +600,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.AggregateNameQueryParameter != nil {
+	if o.AggregateName != nil {
 
 		// query param aggregate.name
 		var qrAggregateName string
 
-		if o.AggregateNameQueryParameter != nil {
-			qrAggregateName = *o.AggregateNameQueryParameter
+		if o.AggregateName != nil {
+			qrAggregateName = *o.AggregateName
 		}
 		qAggregateName := qrAggregateName
 		if qAggregateName != "" {
@@ -618,11 +618,11 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param aggregate.uuid
-	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -633,13 +633,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -650,13 +650,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -667,13 +667,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OnlineQueryParameter != nil {
+	if o.Online != nil {
 
 		// query param online
 		var qrOnline bool
 
-		if o.OnlineQueryParameter != nil {
-			qrOnline = *o.OnlineQueryParameter
+		if o.Online != nil {
+			qrOnline = *o.Online
 		}
 		qOnline := swag.FormatBool(qrOnline)
 		if qOnline != "" {
@@ -684,7 +684,7 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -695,13 +695,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PoolQueryParameter != nil {
+	if o.Pool != nil {
 
 		// query param pool
 		var qrPool string
 
-		if o.PoolQueryParameter != nil {
-			qrPool = *o.PoolQueryParameter
+		if o.Pool != nil {
+			qrPool = *o.Pool
 		}
 		qPool := qrPool
 		if qPool != "" {
@@ -712,13 +712,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsCacheTierQueryParameter != nil {
+	if o.RaidGroupsCacheTier != nil {
 
 		// query param raid_groups.cache_tier
 		var qrRaidGroupsCacheTier bool
 
-		if o.RaIDGroupsCacheTierQueryParameter != nil {
-			qrRaidGroupsCacheTier = *o.RaIDGroupsCacheTierQueryParameter
+		if o.RaidGroupsCacheTier != nil {
+			qrRaidGroupsCacheTier = *o.RaidGroupsCacheTier
 		}
 		qRaidGroupsCacheTier := swag.FormatBool(qrRaidGroupsCacheTier)
 		if qRaidGroupsCacheTier != "" {
@@ -729,13 +729,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDegradedQueryParameter != nil {
+	if o.RaidGroupsDegraded != nil {
 
 		// query param raid_groups.degraded
 		var qrRaidGroupsDegraded bool
 
-		if o.RaIDGroupsDegradedQueryParameter != nil {
-			qrRaidGroupsDegraded = *o.RaIDGroupsDegradedQueryParameter
+		if o.RaidGroupsDegraded != nil {
+			qrRaidGroupsDegraded = *o.RaidGroupsDegraded
 		}
 		qRaidGroupsDegraded := swag.FormatBool(qrRaidGroupsDegraded)
 		if qRaidGroupsDegraded != "" {
@@ -746,13 +746,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDisksDiskNameQueryParameter != nil {
+	if o.RaidGroupsDisksDiskName != nil {
 
 		// query param raid_groups.disks.disk.name
 		var qrRaidGroupsDisksDiskName string
 
-		if o.RaIDGroupsDisksDiskNameQueryParameter != nil {
-			qrRaidGroupsDisksDiskName = *o.RaIDGroupsDisksDiskNameQueryParameter
+		if o.RaidGroupsDisksDiskName != nil {
+			qrRaidGroupsDisksDiskName = *o.RaidGroupsDisksDiskName
 		}
 		qRaidGroupsDisksDiskName := qrRaidGroupsDisksDiskName
 		if qRaidGroupsDisksDiskName != "" {
@@ -763,13 +763,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDisksPositionQueryParameter != nil {
+	if o.RaidGroupsDisksPosition != nil {
 
 		// query param raid_groups.disks.position
 		var qrRaidGroupsDisksPosition string
 
-		if o.RaIDGroupsDisksPositionQueryParameter != nil {
-			qrRaidGroupsDisksPosition = *o.RaIDGroupsDisksPositionQueryParameter
+		if o.RaidGroupsDisksPosition != nil {
+			qrRaidGroupsDisksPosition = *o.RaidGroupsDisksPosition
 		}
 		qRaidGroupsDisksPosition := qrRaidGroupsDisksPosition
 		if qRaidGroupsDisksPosition != "" {
@@ -780,13 +780,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDisksStateQueryParameter != nil {
+	if o.RaidGroupsDisksState != nil {
 
 		// query param raid_groups.disks.state
 		var qrRaidGroupsDisksState string
 
-		if o.RaIDGroupsDisksStateQueryParameter != nil {
-			qrRaidGroupsDisksState = *o.RaIDGroupsDisksStateQueryParameter
+		if o.RaidGroupsDisksState != nil {
+			qrRaidGroupsDisksState = *o.RaidGroupsDisksState
 		}
 		qRaidGroupsDisksState := qrRaidGroupsDisksState
 		if qRaidGroupsDisksState != "" {
@@ -797,13 +797,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDisksTypeQueryParameter != nil {
+	if o.RaidGroupsDisksType != nil {
 
 		// query param raid_groups.disks.type
 		var qrRaidGroupsDisksType string
 
-		if o.RaIDGroupsDisksTypeQueryParameter != nil {
-			qrRaidGroupsDisksType = *o.RaIDGroupsDisksTypeQueryParameter
+		if o.RaidGroupsDisksType != nil {
+			qrRaidGroupsDisksType = *o.RaidGroupsDisksType
 		}
 		qRaidGroupsDisksType := qrRaidGroupsDisksType
 		if qRaidGroupsDisksType != "" {
@@ -814,13 +814,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsDisksUsableSizeQueryParameter != nil {
+	if o.RaidGroupsDisksUsableSize != nil {
 
 		// query param raid_groups.disks.usable_size
 		var qrRaidGroupsDisksUsableSize int64
 
-		if o.RaIDGroupsDisksUsableSizeQueryParameter != nil {
-			qrRaidGroupsDisksUsableSize = *o.RaIDGroupsDisksUsableSizeQueryParameter
+		if o.RaidGroupsDisksUsableSize != nil {
+			qrRaidGroupsDisksUsableSize = *o.RaidGroupsDisksUsableSize
 		}
 		qRaidGroupsDisksUsableSize := swag.FormatInt64(qrRaidGroupsDisksUsableSize)
 		if qRaidGroupsDisksUsableSize != "" {
@@ -831,13 +831,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsNameQueryParameter != nil {
+	if o.RaidGroupsName != nil {
 
 		// query param raid_groups.name
 		var qrRaidGroupsName string
 
-		if o.RaIDGroupsNameQueryParameter != nil {
-			qrRaidGroupsName = *o.RaIDGroupsNameQueryParameter
+		if o.RaidGroupsName != nil {
+			qrRaidGroupsName = *o.RaidGroupsName
 		}
 		qRaidGroupsName := qrRaidGroupsName
 		if qRaidGroupsName != "" {
@@ -848,13 +848,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsRaIDTypeQueryParameter != nil {
+	if o.RaidGroupsRaidType != nil {
 
 		// query param raid_groups.raid_type
 		var qrRaidGroupsRaidType string
 
-		if o.RaIDGroupsRaIDTypeQueryParameter != nil {
-			qrRaidGroupsRaidType = *o.RaIDGroupsRaIDTypeQueryParameter
+		if o.RaidGroupsRaidType != nil {
+			qrRaidGroupsRaidType = *o.RaidGroupsRaidType
 		}
 		qRaidGroupsRaidType := qrRaidGroupsRaidType
 		if qRaidGroupsRaidType != "" {
@@ -865,13 +865,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsRecomputingParityActiveQueryParameter != nil {
+	if o.RaidGroupsRecomputingParityActive != nil {
 
 		// query param raid_groups.recomputing_parity.active
 		var qrRaidGroupsRecomputingParityActive bool
 
-		if o.RaIDGroupsRecomputingParityActiveQueryParameter != nil {
-			qrRaidGroupsRecomputingParityActive = *o.RaIDGroupsRecomputingParityActiveQueryParameter
+		if o.RaidGroupsRecomputingParityActive != nil {
+			qrRaidGroupsRecomputingParityActive = *o.RaidGroupsRecomputingParityActive
 		}
 		qRaidGroupsRecomputingParityActive := swag.FormatBool(qrRaidGroupsRecomputingParityActive)
 		if qRaidGroupsRecomputingParityActive != "" {
@@ -882,13 +882,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsRecomputingParityPercentQueryParameter != nil {
+	if o.RaidGroupsRecomputingParityPercent != nil {
 
 		// query param raid_groups.recomputing_parity.percent
 		var qrRaidGroupsRecomputingParityPercent int64
 
-		if o.RaIDGroupsRecomputingParityPercentQueryParameter != nil {
-			qrRaidGroupsRecomputingParityPercent = *o.RaIDGroupsRecomputingParityPercentQueryParameter
+		if o.RaidGroupsRecomputingParityPercent != nil {
+			qrRaidGroupsRecomputingParityPercent = *o.RaidGroupsRecomputingParityPercent
 		}
 		qRaidGroupsRecomputingParityPercent := swag.FormatInt64(qrRaidGroupsRecomputingParityPercent)
 		if qRaidGroupsRecomputingParityPercent != "" {
@@ -899,13 +899,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsReconstructActiveQueryParameter != nil {
+	if o.RaidGroupsReconstructActive != nil {
 
 		// query param raid_groups.reconstruct.active
 		var qrRaidGroupsReconstructActive bool
 
-		if o.RaIDGroupsReconstructActiveQueryParameter != nil {
-			qrRaidGroupsReconstructActive = *o.RaIDGroupsReconstructActiveQueryParameter
+		if o.RaidGroupsReconstructActive != nil {
+			qrRaidGroupsReconstructActive = *o.RaidGroupsReconstructActive
 		}
 		qRaidGroupsReconstructActive := swag.FormatBool(qrRaidGroupsReconstructActive)
 		if qRaidGroupsReconstructActive != "" {
@@ -916,13 +916,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RaIDGroupsReconstructPercentQueryParameter != nil {
+	if o.RaidGroupsReconstructPercent != nil {
 
 		// query param raid_groups.reconstruct.percent
 		var qrRaidGroupsReconstructPercent int64
 
-		if o.RaIDGroupsReconstructPercentQueryParameter != nil {
-			qrRaidGroupsReconstructPercent = *o.RaIDGroupsReconstructPercentQueryParameter
+		if o.RaidGroupsReconstructPercent != nil {
+			qrRaidGroupsReconstructPercent = *o.RaidGroupsReconstructPercent
 		}
 		qRaidGroupsReconstructPercent := swag.FormatInt64(qrRaidGroupsReconstructPercent)
 		if qRaidGroupsReconstructPercent != "" {
@@ -933,13 +933,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ResyncActiveQueryParameter != nil {
+	if o.ResyncActive != nil {
 
 		// query param resync.active
 		var qrResyncActive bool
 
-		if o.ResyncActiveQueryParameter != nil {
-			qrResyncActive = *o.ResyncActiveQueryParameter
+		if o.ResyncActive != nil {
+			qrResyncActive = *o.ResyncActive
 		}
 		qResyncActive := swag.FormatBool(qrResyncActive)
 		if qResyncActive != "" {
@@ -950,13 +950,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ResyncLevelQueryParameter != nil {
+	if o.ResyncLevel != nil {
 
 		// query param resync.level
 		var qrResyncLevel string
 
-		if o.ResyncLevelQueryParameter != nil {
-			qrResyncLevel = *o.ResyncLevelQueryParameter
+		if o.ResyncLevel != nil {
+			qrResyncLevel = *o.ResyncLevel
 		}
 		qResyncLevel := qrResyncLevel
 		if qResyncLevel != "" {
@@ -967,13 +967,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ResyncPercentQueryParameter != nil {
+	if o.ResyncPercent != nil {
 
 		// query param resync.percent
 		var qrResyncPercent int64
 
-		if o.ResyncPercentQueryParameter != nil {
-			qrResyncPercent = *o.ResyncPercentQueryParameter
+		if o.ResyncPercent != nil {
+			qrResyncPercent = *o.ResyncPercent
 		}
 		qResyncPercent := swag.FormatInt64(qrResyncPercent)
 		if qResyncPercent != "" {
@@ -984,13 +984,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1001,13 +1001,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1018,13 +1018,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1043,7 +1043,7 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamPlexCollectionGet binds the parameter fields
 func (o *PlexCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1060,7 +1060,7 @@ func (o *PlexCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamPlexCollectionGet binds the parameter order_by
 func (o *PlexCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

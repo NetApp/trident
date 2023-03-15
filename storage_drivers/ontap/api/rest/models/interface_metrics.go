@@ -21,21 +21,21 @@ import (
 type InterfaceMetrics struct {
 
 	// links
-	Links *InterfaceMetricsLinks `json:"_links,omitempty"`
+	Links *InterfaceMetricsInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *InterfaceMetricsThroughput `json:"throughput,omitempty"`
+	Throughput *InterfaceMetricsInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -45,7 +45,7 @@ type InterfaceMetrics struct {
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this interface metrics
@@ -184,7 +184,7 @@ func (m *InterfaceMetrics) validateDuration(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -320,7 +320,7 @@ func (m *InterfaceMetrics) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -408,7 +408,7 @@ func (m *InterfaceMetrics) contextValidateThroughput(ctx context.Context, format
 
 func (m *InterfaceMetrics) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -433,17 +433,17 @@ func (m *InterfaceMetrics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceMetricsLinks interface metrics links
+// InterfaceMetricsInlineLinks interface metrics inline links
 //
-// swagger:model InterfaceMetricsLinks
-type InterfaceMetricsLinks struct {
+// swagger:model interface_metrics_inline__links
+type InterfaceMetricsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this interface metrics links
-func (m *InterfaceMetricsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics inline links
+func (m *InterfaceMetricsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -456,7 +456,7 @@ func (m *InterfaceMetricsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *InterfaceMetricsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *InterfaceMetricsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -473,8 +473,8 @@ func (m *InterfaceMetricsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this interface metrics links based on the context it is used
-func (m *InterfaceMetricsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this interface metrics inline links based on the context it is used
+func (m *InterfaceMetricsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -487,7 +487,7 @@ func (m *InterfaceMetricsLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *InterfaceMetricsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *InterfaceMetricsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -502,7 +502,7 @@ func (m *InterfaceMetricsLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsLinks) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -510,8 +510,8 @@ func (m *InterfaceMetricsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsLinks) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsLinks
+func (m *InterfaceMetricsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -519,36 +519,36 @@ func (m *InterfaceMetricsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceMetricsThroughput The rate of throughput bytes per second observed at the interface.
+// InterfaceMetricsInlineThroughput The rate of throughput bytes per second observed at the interface.
 //
-// swagger:model InterfaceMetricsThroughput
-type InterfaceMetricsThroughput struct {
+// swagger:model interface_metrics_inline_throughput
+type InterfaceMetricsInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this interface metrics throughput
-func (m *InterfaceMetricsThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this interface metrics inline throughput
+func (m *InterfaceMetricsInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this interface metrics throughput based on context it is used
-func (m *InterfaceMetricsThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this interface metrics inline throughput based on context it is used
+func (m *InterfaceMetricsInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *InterfaceMetricsThroughput) MarshalBinary() ([]byte, error) {
+func (m *InterfaceMetricsInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -556,8 +556,8 @@ func (m *InterfaceMetricsThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *InterfaceMetricsThroughput) UnmarshalBinary(b []byte) error {
-	var res InterfaceMetricsThroughput
+func (m *InterfaceMetricsInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res InterfaceMetricsInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

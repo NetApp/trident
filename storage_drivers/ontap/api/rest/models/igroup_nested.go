@@ -21,26 +21,26 @@ import (
 type IgroupNested struct {
 
 	// links
-	Links *IgroupNestedLinks `json:"_links,omitempty"`
+	Links *IgroupNestedInlineLinks `json:"_links,omitempty"`
 
 	// igroup
-	Igroup *IgroupNestedIgroup `json:"igroup,omitempty"`
+	Igroup *IgroupNestedInlineIgroup `json:"igroup,omitempty"`
+
+	// An array of initiator groups specified to add multiple nested initiator groups to an initiator group in a single API call. Not allowed when the `name` property is used.
+	//
+	IgroupNestedInlineRecords []*IgroupNestedInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
-
-	// An array of initiator groups specified to add multiple nested initiator groups to an initiator group in a single API call. Not allowed when the `name` property is used.
-	//
-	Records []*IgroupNestedRecordsItems0 `json:"records,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this igroup nested
@@ -55,11 +55,11 @@ func (m *IgroupNested) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateName(formats); err != nil {
+	if err := m.validateIgroupNestedInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -103,34 +103,18 @@ func (m *IgroupNested) validateIgroup(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupNested) validateName(formats strfmt.Registry) error {
-	if swag.IsZero(m.Name) { // not required
+func (m *IgroupNested) validateIgroupNestedInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.IgroupNestedInlineRecords) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *IgroupNested) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.IgroupNestedInlineRecords); i++ {
+		if swag.IsZero(m.IgroupNestedInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.IgroupNestedInlineRecords[i] != nil {
+			if err := m.IgroupNestedInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -138,6 +122,22 @@ func (m *IgroupNested) validateRecords(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *IgroupNested) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
+		return err
 	}
 
 	return nil
@@ -155,7 +155,7 @@ func (m *IgroupNested) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateIgroupNestedInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -193,12 +193,12 @@ func (m *IgroupNested) contextValidateIgroup(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IgroupNested) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNested) contextValidateIgroupNestedInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.IgroupNestedInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.IgroupNestedInlineRecords[i] != nil {
+			if err := m.IgroupNestedInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -229,23 +229,23 @@ func (m *IgroupNested) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupNestedIgroup igroup nested igroup
+// IgroupNestedInlineIgroup igroup nested inline igroup
 //
-// swagger:model IgroupNestedIgroup
-type IgroupNestedIgroup struct {
+// swagger:model igroup_nested_inline_igroup
+type IgroupNestedInlineIgroup struct {
 
 	// links
-	Links *IgroupNestedIgroupLinks `json:"_links,omitempty"`
+	Links *IgroupNestedInlineIgroupInlineLinks `json:"_links,omitempty"`
 
 	// The unique identifier of the parent initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this igroup nested igroup
-func (m *IgroupNestedIgroup) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup nested inline igroup
+func (m *IgroupNestedInlineIgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -258,7 +258,7 @@ func (m *IgroupNestedIgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupNestedIgroup) validateLinks(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineIgroup) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -275,8 +275,8 @@ func (m *IgroupNestedIgroup) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this igroup nested igroup based on the context it is used
-func (m *IgroupNestedIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup nested inline igroup based on the context it is used
+func (m *IgroupNestedInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -293,7 +293,7 @@ func (m *IgroupNestedIgroup) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IgroupNestedIgroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineIgroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -307,9 +307,9 @@ func (m *IgroupNestedIgroup) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IgroupNestedIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -317,7 +317,7 @@ func (m *IgroupNestedIgroup) contextValidateUUID(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupNestedIgroup) MarshalBinary() ([]byte, error) {
+func (m *IgroupNestedInlineIgroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -325,8 +325,8 @@ func (m *IgroupNestedIgroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupNestedIgroup) UnmarshalBinary(b []byte) error {
-	var res IgroupNestedIgroup
+func (m *IgroupNestedInlineIgroup) UnmarshalBinary(b []byte) error {
+	var res IgroupNestedInlineIgroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -334,17 +334,17 @@ func (m *IgroupNestedIgroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupNestedIgroupLinks igroup nested igroup links
+// IgroupNestedInlineIgroupInlineLinks igroup nested inline igroup inline links
 //
-// swagger:model IgroupNestedIgroupLinks
-type IgroupNestedIgroupLinks struct {
+// swagger:model igroup_nested_inline_igroup_inline__links
+type IgroupNestedInlineIgroupInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup nested igroup links
-func (m *IgroupNestedIgroupLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup nested inline igroup inline links
+func (m *IgroupNestedInlineIgroupInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -357,7 +357,7 @@ func (m *IgroupNestedIgroupLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupNestedIgroupLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineIgroupInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -374,8 +374,8 @@ func (m *IgroupNestedIgroupLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this igroup nested igroup links based on the context it is used
-func (m *IgroupNestedIgroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup nested inline igroup inline links based on the context it is used
+func (m *IgroupNestedInlineIgroupInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -388,7 +388,7 @@ func (m *IgroupNestedIgroupLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IgroupNestedIgroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineIgroupInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -403,7 +403,7 @@ func (m *IgroupNestedIgroupLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupNestedIgroupLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupNestedInlineIgroupInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -411,8 +411,8 @@ func (m *IgroupNestedIgroupLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupNestedIgroupLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupNestedIgroupLinks
+func (m *IgroupNestedInlineIgroupInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupNestedInlineIgroupInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -420,17 +420,17 @@ func (m *IgroupNestedIgroupLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupNestedLinks igroup nested links
+// IgroupNestedInlineLinks igroup nested inline links
 //
-// swagger:model IgroupNestedLinks
-type IgroupNestedLinks struct {
+// swagger:model igroup_nested_inline__links
+type IgroupNestedInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup nested links
-func (m *IgroupNestedLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup nested inline links
+func (m *IgroupNestedInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -443,7 +443,7 @@ func (m *IgroupNestedLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupNestedLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -460,8 +460,8 @@ func (m *IgroupNestedLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this igroup nested links based on the context it is used
-func (m *IgroupNestedLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup nested inline links based on the context it is used
+func (m *IgroupNestedInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -474,7 +474,7 @@ func (m *IgroupNestedLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *IgroupNestedLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -489,7 +489,7 @@ func (m *IgroupNestedLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupNestedLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupNestedInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,8 +497,8 @@ func (m *IgroupNestedLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupNestedLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupNestedLinks
+func (m *IgroupNestedInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupNestedInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -506,29 +506,29 @@ func (m *IgroupNestedLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupNestedRecordsItems0 igroup nested records items0
+// IgroupNestedInlineRecordsInlineArrayItem igroup nested inline records inline array item
 //
-// swagger:model IgroupNestedRecordsItems0
-type IgroupNestedRecordsItems0 struct {
+// swagger:model igroup_nested_inline_records_inline_array_item
+type IgroupNestedInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *IgroupNestedRecordsItems0Links `json:"_links,omitempty"`
+	Links *IgroupNestedInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this igroup nested records items0
-func (m *IgroupNestedRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup nested inline records inline array item
+func (m *IgroupNestedInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -545,7 +545,7 @@ func (m *IgroupNestedRecordsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupNestedRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -562,24 +562,24 @@ func (m *IgroupNestedRecordsItems0) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *IgroupNestedRecordsItems0) validateName(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineRecordsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this igroup nested records items0 based on the context it is used
-func (m *IgroupNestedRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup nested inline records inline array item based on the context it is used
+func (m *IgroupNestedInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -592,7 +592,7 @@ func (m *IgroupNestedRecordsItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *IgroupNestedRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -607,7 +607,7 @@ func (m *IgroupNestedRecordsItems0) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupNestedRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *IgroupNestedInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -615,8 +615,8 @@ func (m *IgroupNestedRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupNestedRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res IgroupNestedRecordsItems0
+func (m *IgroupNestedInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res IgroupNestedInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -624,17 +624,17 @@ func (m *IgroupNestedRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupNestedRecordsItems0Links igroup nested records items0 links
+// IgroupNestedInlineRecordsInlineArrayItemInlineLinks igroup nested inline records inline array item inline links
 //
-// swagger:model IgroupNestedRecordsItems0Links
-type IgroupNestedRecordsItems0Links struct {
+// swagger:model igroup_nested_inline_records_inline_array_item_inline__links
+type IgroupNestedInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup nested records items0 links
-func (m *IgroupNestedRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup nested inline records inline array item inline links
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -647,7 +647,7 @@ func (m *IgroupNestedRecordsItems0Links) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *IgroupNestedRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -664,8 +664,8 @@ func (m *IgroupNestedRecordsItems0Links) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this igroup nested records items0 links based on the context it is used
-func (m *IgroupNestedRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup nested inline records inline array item inline links based on the context it is used
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -678,7 +678,7 @@ func (m *IgroupNestedRecordsItems0Links) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *IgroupNestedRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -693,7 +693,7 @@ func (m *IgroupNestedRecordsItems0Links) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupNestedRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -701,8 +701,8 @@ func (m *IgroupNestedRecordsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupNestedRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res IgroupNestedRecordsItems0Links
+func (m *IgroupNestedInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupNestedInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

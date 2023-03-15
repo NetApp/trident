@@ -73,7 +73,7 @@ type AutoUpdateConfigurationModifyParams struct {
 
 	   Unique identifier for configuration record.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *AutoUpdateConfigurationModifyParams) SetInfo(info *models.AutoUpdateCon
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the auto update configuration modify params
-func (o *AutoUpdateConfigurationModifyParams) WithUUIDPathParameter(uuid string) *AutoUpdateConfigurationModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the auto update configuration modify params
+func (o *AutoUpdateConfigurationModifyParams) WithUUID(uuid string) *AutoUpdateConfigurationModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the auto update configuration modify params
-func (o *AutoUpdateConfigurationModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the auto update configuration modify params
+func (o *AutoUpdateConfigurationModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *AutoUpdateConfigurationModifyParams) WriteToRequest(r runtime.ClientReq
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

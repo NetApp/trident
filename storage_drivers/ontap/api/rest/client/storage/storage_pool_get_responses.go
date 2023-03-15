@@ -119,6 +119,7 @@ func NewStoragePoolGetDefault(code int) *StoragePoolGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 11206662 | There is no storage pool matching the specified UUID or name. |
+| 11215856 | The specified storage pool is not healthy. |
 */
 type StoragePoolGetDefault struct {
 	_statusCode int

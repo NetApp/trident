@@ -22,14 +22,15 @@ type GcpKmsKey struct {
 
 	// Key identifier of the Google Cloud KMS key encryption key.
 	// Example: cryptokey1
-	KeyName string `json:"key_name,omitempty"`
+	KeyName *string `json:"key_name,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
+	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// svm
-	Svm *GcpKmsKeySvm `json:"svm,omitempty"`
+	Svm *GcpKmsKeyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this gcp kms key
@@ -99,7 +100,7 @@ func (m *GcpKmsKey) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -127,6 +128,10 @@ func (m *GcpKmsKey) validateSvm(formats strfmt.Registry) error {
 func (m *GcpKmsKey) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -134,6 +139,15 @@ func (m *GcpKmsKey) ContextValidate(ctx context.Context, formats strfmt.Registry
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *GcpKmsKey) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -169,27 +183,27 @@ func (m *GcpKmsKey) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsKeySvm gcp kms key svm
+// GcpKmsKeyInlineSvm gcp kms key inline svm
 //
-// swagger:model GcpKmsKeySvm
-type GcpKmsKeySvm struct {
+// swagger:model gcp_kms_key_inline_svm
+type GcpKmsKeyInlineSvm struct {
 
 	// links
-	Links *GcpKmsKeySvmLinks `json:"_links,omitempty"`
+	Links *GcpKmsKeyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this gcp kms key svm
-func (m *GcpKmsKeySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms key inline svm
+func (m *GcpKmsKeyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -202,7 +216,7 @@ func (m *GcpKmsKeySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKmsKeySvm) validateLinks(formats strfmt.Registry) error {
+func (m *GcpKmsKeyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -219,8 +233,8 @@ func (m *GcpKmsKeySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this gcp kms key svm based on the context it is used
-func (m *GcpKmsKeySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms key inline svm based on the context it is used
+func (m *GcpKmsKeyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -233,7 +247,7 @@ func (m *GcpKmsKeySvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *GcpKmsKeySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsKeyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -248,7 +262,7 @@ func (m *GcpKmsKeySvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsKeySvm) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsKeyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -256,8 +270,8 @@ func (m *GcpKmsKeySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsKeySvm) UnmarshalBinary(b []byte) error {
-	var res GcpKmsKeySvm
+func (m *GcpKmsKeyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res GcpKmsKeyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -265,17 +279,17 @@ func (m *GcpKmsKeySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsKeySvmLinks gcp kms key svm links
+// GcpKmsKeyInlineSvmInlineLinks gcp kms key inline svm inline links
 //
-// swagger:model GcpKmsKeySvmLinks
-type GcpKmsKeySvmLinks struct {
+// swagger:model gcp_kms_key_inline_svm_inline__links
+type GcpKmsKeyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this gcp kms key svm links
-func (m *GcpKmsKeySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms key inline svm inline links
+func (m *GcpKmsKeyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -288,7 +302,7 @@ func (m *GcpKmsKeySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKmsKeySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GcpKmsKeyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -305,8 +319,8 @@ func (m *GcpKmsKeySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this gcp kms key svm links based on the context it is used
-func (m *GcpKmsKeySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms key inline svm inline links based on the context it is used
+func (m *GcpKmsKeyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -319,7 +333,7 @@ func (m *GcpKmsKeySvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *GcpKmsKeySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsKeyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -334,7 +348,7 @@ func (m *GcpKmsKeySvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsKeySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsKeyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -342,8 +356,8 @@ func (m *GcpKmsKeySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsKeySvmLinks) UnmarshalBinary(b []byte) error {
-	var res GcpKmsKeySvmLinks
+func (m *GcpKmsKeyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GcpKmsKeyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

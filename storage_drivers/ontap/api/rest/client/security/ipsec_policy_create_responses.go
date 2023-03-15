@@ -52,6 +52,11 @@ IpsecPolicyCreateCreated describes a response with status code 201, with default
 Created
 */
 type IpsecPolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.IpsecPolicyResponse
 }
 
@@ -93,6 +98,13 @@ func (o *IpsecPolicyCreateCreated) GetPayload() *models.IpsecPolicyResponse {
 }
 
 func (o *IpsecPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.IpsecPolicyResponse)
 
@@ -141,6 +153,7 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257137 | A pre-shared key is not needed for the PKI authentication method. |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
+| 66257396 | IPsec is not supported for the admin SVM in a MetroCluster configuration. |
 */
 type IpsecPolicyCreateDefault struct {
 	_statusCode int

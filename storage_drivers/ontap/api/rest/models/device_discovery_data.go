@@ -23,41 +23,41 @@ type DeviceDiscoveryData struct {
 
 	// The list of the capabilities of the discovered device.
 	// Example: ["router","switch"]
-	Capabilities []string `json:"capabilities,omitempty"`
+	Capabilities []*string `json:"capabilities,omitempty"`
 
 	// Identifier associated with this specific discovered device, useful for locating the device in a data center.
-	ChassisID string `json:"chassis_id,omitempty"`
+	ChassisID *string `json:"chassis_id,omitempty"`
 
 	// The IP addresses on the discovered device.
 	// Example: ["192.168.100.24","192.168.100.26"]
-	IPAddresses []IPAddressReadonly `json:"ip_addresses,omitempty"`
+	DeviceDiscoveryDataInlineIPAddresses []*IPAddressReadonly `json:"ip_addresses,omitempty"`
 
 	// Name of the discovered device.
 	// Example: ETY-R1S4-510Q13.datacenter.example.com
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Hardware platform of the discovered device.
 	// Example: 93180YC-EX
-	Platform string `json:"platform,omitempty"`
+	Platform *string `json:"platform,omitempty"`
 
 	// The protocol used to identify the discovered device. This can have a value of CDP or LLDP.
 	// Example: cdp
 	// Enum: [cdp lldp]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// The number of seconds until the discovered device entry expires and is removed.
-	RemainingHoldTime int64 `json:"remaining_hold_time,omitempty"`
+	RemainingHoldTime *int64 `json:"remaining_hold_time,omitempty"`
 
 	// The name of the remote port on the discovered device. The format is dependent on the reporting device.
 	// Example: FastEthernet0/12
-	RemotePort string `json:"remote_port,omitempty"`
+	RemotePort *string `json:"remote_port,omitempty"`
 
 	// Additional name used to identifiy a specific piece of equipment.
-	SystemName string `json:"system_name,omitempty"`
+	SystemName *string `json:"system_name,omitempty"`
 
 	// The version of the software running on the discovered device.
 	// Example: Cisco Nexus Operating System (NX-OS) Software, Version 8.1
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this device discovery data
@@ -68,7 +68,7 @@ func (m *DeviceDiscoveryData) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIPAddresses(formats); err != nil {
+	if err := m.validateDeviceDiscoveryDataInlineIPAddresses(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -107,9 +107,12 @@ func (m *DeviceDiscoveryData) validateCapabilities(formats strfmt.Registry) erro
 	}
 
 	for i := 0; i < len(m.Capabilities); i++ {
+		if swag.IsZero(m.Capabilities[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateCapabilitiesItemsEnum("capabilities"+"."+strconv.Itoa(i), "body", m.Capabilities[i]); err != nil {
+		if err := m.validateCapabilitiesItemsEnum("capabilities"+"."+strconv.Itoa(i), "body", *m.Capabilities[i]); err != nil {
 			return err
 		}
 
@@ -118,18 +121,23 @@ func (m *DeviceDiscoveryData) validateCapabilities(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *DeviceDiscoveryData) validateIPAddresses(formats strfmt.Registry) error {
-	if swag.IsZero(m.IPAddresses) { // not required
+func (m *DeviceDiscoveryData) validateDeviceDiscoveryDataInlineIPAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.DeviceDiscoveryDataInlineIPAddresses) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.IPAddresses); i++ {
+	for i := 0; i < len(m.DeviceDiscoveryDataInlineIPAddresses); i++ {
+		if swag.IsZero(m.DeviceDiscoveryDataInlineIPAddresses[i]) { // not required
+			continue
+		}
 
-		if err := m.IPAddresses[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+		if m.DeviceDiscoveryDataInlineIPAddresses[i] != nil {
+			if err := m.DeviceDiscoveryDataInlineIPAddresses[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -186,7 +194,7 @@ func (m *DeviceDiscoveryData) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -197,7 +205,7 @@ func (m *DeviceDiscoveryData) validateProtocol(formats strfmt.Registry) error {
 func (m *DeviceDiscoveryData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateIPAddresses(ctx, formats); err != nil {
+	if err := m.contextValidateDeviceDiscoveryDataInlineIPAddresses(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -207,15 +215,17 @@ func (m *DeviceDiscoveryData) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *DeviceDiscoveryData) contextValidateIPAddresses(ctx context.Context, formats strfmt.Registry) error {
+func (m *DeviceDiscoveryData) contextValidateDeviceDiscoveryDataInlineIPAddresses(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.IPAddresses); i++ {
+	for i := 0; i < len(m.DeviceDiscoveryDataInlineIPAddresses); i++ {
 
-		if err := m.IPAddresses[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+		if m.DeviceDiscoveryDataInlineIPAddresses[i] != nil {
+			if err := m.DeviceDiscoveryDataInlineIPAddresses[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}

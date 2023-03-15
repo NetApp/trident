@@ -66,25 +66,31 @@ type CifsDomainPreferredDcCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Fqdn.
 
 	   Filter by fqdn
 	*/
-	FqdnQueryParameter *string
+	Fqdn *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
+
+	/* NeedStatus.
+
+	   Retrieves the status of the preferred DCs.
+	*/
+	NeedStatus *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +98,7 @@ type CifsDomainPreferredDcCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,19 +106,31 @@ type CifsDomainPreferredDcCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServerIP.
 
 	   Filter by server_ip
 	*/
-	ServerIPQueryParameter *string
+	ServerIP *string
+
+	/* StatusDetails.
+
+	   Filter by status.details
+	*/
+	StatusDetails *string
+
+	/* StatusReachable.
+
+	   Filter by status.reachable
+	*/
+	StatusReachable *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +150,17 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WithDefaults() *CifsDomainPre
 // All values with no default are reset to their zero value.
 func (o *CifsDomainPreferredDcCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		needStatusDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnRecordsDefault = bool(true)
+
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsDomainPreferredDcCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		NeedStatus:    &needStatusDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +202,125 @@ func (o *CifsDomainPreferredDcCollectionGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithFields(fields []string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFqdnQueryParameter adds the fqdn to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithFqdnQueryParameter(fqdn *string) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetFqdnQueryParameter(fqdn)
+// WithFqdn adds the fqdn to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithFqdn(fqdn *string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetFqdn(fqdn)
 	return o
 }
 
-// SetFqdnQueryParameter adds the fqdn to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetFqdnQueryParameter(fqdn *string) {
-	o.FqdnQueryParameter = fqdn
+// SetFqdn adds the fqdn to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetFqdn(fqdn *string) {
+	o.Fqdn = fqdn
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithNeedStatus adds the needStatus to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithNeedStatus(needStatus *bool) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetNeedStatus(needStatus)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetNeedStatus adds the needStatus to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetNeedStatus(needStatus *bool) {
+	o.NeedStatus = needStatus
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithOrderBy adds the orderBy to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithOrderBy(orderBy []string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetOrderBy adds the orderBy to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnRecords adds the returnRecords to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnRecords adds the returnRecords to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithServerIPQueryParameter adds the serverIP to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithServerIPQueryParameter(serverIP *string) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetServerIPQueryParameter(serverIP)
+// WithReturnTimeout adds the returnTimeout to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetServerIPQueryParameter adds the serverIp to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetServerIPQueryParameter(serverIP *string) {
-	o.ServerIPQueryParameter = serverIP
+// SetReturnTimeout adds the returnTimeout to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsDomainPreferredDcCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithServerIP adds the serverIP to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithServerIP(serverIP *string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs domain preferred dc collection get params
-func (o *CifsDomainPreferredDcCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetServerIP adds the serverIp to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetServerIP(serverIP *string) {
+	o.ServerIP = serverIP
+}
+
+// WithStatusDetails adds the statusDetails to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithStatusDetails(statusDetails *string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetStatusDetails(statusDetails)
+	return o
+}
+
+// SetStatusDetails adds the statusDetails to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetStatusDetails(statusDetails *string) {
+	o.StatusDetails = statusDetails
+}
+
+// WithStatusReachable adds the statusReachable to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithStatusReachable(statusReachable *bool) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetStatusReachable(statusReachable)
+	return o
+}
+
+// SetStatusReachable adds the statusReachable to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetStatusReachable(statusReachable *bool) {
+	o.StatusReachable = statusReachable
+}
+
+// WithSvmUUID adds the svmUUID to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) WithSvmUUID(svmUUID string) *CifsDomainPreferredDcCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the cifs domain preferred dc collection get params
+func (o *CifsDomainPreferredDcCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -277,7 +331,7 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -288,13 +342,13 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FqdnQueryParameter != nil {
+	if o.Fqdn != nil {
 
 		// query param fqdn
 		var qrFqdn string
 
-		if o.FqdnQueryParameter != nil {
-			qrFqdn = *o.FqdnQueryParameter
+		if o.Fqdn != nil {
+			qrFqdn = *o.Fqdn
 		}
 		qFqdn := qrFqdn
 		if qFqdn != "" {
@@ -305,13 +359,13 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -322,7 +376,24 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.NeedStatus != nil {
+
+		// query param need_status
+		var qrNeedStatus bool
+
+		if o.NeedStatus != nil {
+			qrNeedStatus = *o.NeedStatus
+		}
+		qNeedStatus := swag.FormatBool(qrNeedStatus)
+		if qNeedStatus != "" {
+
+			if err := r.SetQueryParam("need_status", qNeedStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -333,13 +404,13 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -350,13 +421,13 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -367,13 +438,13 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ServerIPQueryParameter != nil {
+	if o.ServerIP != nil {
 
 		// query param server_ip
 		var qrServerIP string
 
-		if o.ServerIPQueryParameter != nil {
-			qrServerIP = *o.ServerIPQueryParameter
+		if o.ServerIP != nil {
+			qrServerIP = *o.ServerIP
 		}
 		qServerIP := qrServerIP
 		if qServerIP != "" {
@@ -384,8 +455,42 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
+	if o.StatusDetails != nil {
+
+		// query param status.details
+		var qrStatusDetails string
+
+		if o.StatusDetails != nil {
+			qrStatusDetails = *o.StatusDetails
+		}
+		qStatusDetails := qrStatusDetails
+		if qStatusDetails != "" {
+
+			if err := r.SetQueryParam("status.details", qStatusDetails); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusReachable != nil {
+
+		// query param status.reachable
+		var qrStatusReachable bool
+
+		if o.StatusReachable != nil {
+			qrStatusReachable = *o.StatusReachable
+		}
+		qStatusReachable := swag.FormatBool(qrStatusReachable)
+		if qStatusReachable != "" {
+
+			if err := r.SetQueryParam("status.reachable", qStatusReachable); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -397,7 +502,7 @@ func (o *CifsDomainPreferredDcCollectionGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamCifsDomainPreferredDcCollectionGet binds the parameter fields
 func (o *CifsDomainPreferredDcCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -414,7 +519,7 @@ func (o *CifsDomainPreferredDcCollectionGetParams) bindParamFields(formats strfm
 
 // bindParamCifsDomainPreferredDcCollectionGet binds the parameter order_by
 func (o *CifsDomainPreferredDcCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

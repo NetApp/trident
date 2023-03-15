@@ -66,523 +66,583 @@ type AggregateCollectionGetParams struct {
 
 	   Filter by block_storage.hybrid_cache.disk_count
 	*/
-	BlockStorageHybrIDCacheDiskCountQueryParameter *int64
+	BlockStorageHybridCacheDiskCount *int64
+
+	/* BlockStorageHybridCacheDiskType.
+
+	   Filter by block_storage.hybrid_cache.disk_type
+	*/
+	BlockStorageHybridCacheDiskType *string
 
 	/* BlockStorageHybridCacheEnabled.
 
 	   Filter by block_storage.hybrid_cache.enabled
 	*/
-	BlockStorageHybrIDCacheEnabledQueryParameter *bool
+	BlockStorageHybridCacheEnabled *bool
+
+	/* BlockStorageHybridCacheRaidSize.
+
+	   Filter by block_storage.hybrid_cache.raid_size
+	*/
+	BlockStorageHybridCacheRaidSize *int64
 
 	/* BlockStorageHybridCacheRaidType.
 
 	   Filter by block_storage.hybrid_cache.raid_type
 	*/
-	BlockStorageHybrIDCacheRaIDTypeQueryParameter *string
+	BlockStorageHybridCacheRaidType *string
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.added_data_disk_count
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount *int64
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.added_parity_disk_count
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount *int64
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.existing_data_disk_count
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount *int64
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.existing_parity_disk_count
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount *int64
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsIsPartition.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.is_partition
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsIsPartition *bool
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsName.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.name
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsName *string
+
+	/* BlockStorageHybridCacheSimulatedRaidGroupsUsableSize.
+
+	   Filter by block_storage.hybrid_cache.simulated_raid_groups.usable_size
+	*/
+	BlockStorageHybridCacheSimulatedRaidGroupsUsableSize *int64
 
 	/* BlockStorageHybridCacheSize.
 
 	   Filter by block_storage.hybrid_cache.size
 	*/
-	BlockStorageHybrIDCacheSizeQueryParameter *int64
+	BlockStorageHybridCacheSize *int64
 
 	/* BlockStorageHybridCacheStoragePoolsAllocationUnitsCount.
 
 	   Filter by block_storage.hybrid_cache.storage_pools.allocation_units_count
 	*/
-	BlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter *int64
+	BlockStorageHybridCacheStoragePoolsAllocationUnitsCount *int64
 
 	/* BlockStorageHybridCacheStoragePoolsStoragePoolName.
 
 	   Filter by block_storage.hybrid_cache.storage_pools.storage_pool.name
 	*/
-	BlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter *string
+	BlockStorageHybridCacheStoragePoolsStoragePoolName *string
 
 	/* BlockStorageHybridCacheStoragePoolsStoragePoolUUID.
 
 	   Filter by block_storage.hybrid_cache.storage_pools.storage_pool.uuid
 	*/
-	BlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter *string
+	BlockStorageHybridCacheStoragePoolsStoragePoolUUID *string
 
 	/* BlockStorageHybridCacheUsed.
 
 	   Filter by block_storage.hybrid_cache.used
 	*/
-	BlockStorageHybrIDCacheUsedQueryParameter *int64
+	BlockStorageHybridCacheUsed *int64
 
 	/* BlockStorageMirrorEnabled.
 
 	   Filter by block_storage.mirror.enabled
 	*/
-	BlockStorageMirrorEnabledQueryParameter *bool
+	BlockStorageMirrorEnabled *bool
 
 	/* BlockStorageMirrorState.
 
 	   Filter by block_storage.mirror.state
 	*/
-	BlockStorageMirrorStateQueryParameter *string
+	BlockStorageMirrorState *string
 
 	/* BlockStoragePlexesName.
 
 	   Filter by block_storage.plexes.name
 	*/
-	BlockStoragePlexesNameQueryParameter *string
+	BlockStoragePlexesName *string
 
 	/* BlockStoragePrimaryChecksumStyle.
 
 	   Filter by block_storage.primary.checksum_style
 	*/
-	BlockStoragePrimaryChecksumStyleQueryParameter *string
+	BlockStoragePrimaryChecksumStyle *string
 
 	/* BlockStoragePrimaryDiskClass.
 
 	   Filter by block_storage.primary.disk_class
 	*/
-	BlockStoragePrimaryDiskClassQueryParameter *string
+	BlockStoragePrimaryDiskClass *string
 
 	/* BlockStoragePrimaryDiskCount.
 
 	   Filter by block_storage.primary.disk_count
 	*/
-	BlockStoragePrimaryDiskCountQueryParameter *int64
+	BlockStoragePrimaryDiskCount *int64
 
 	/* BlockStoragePrimaryDiskType.
 
 	   Filter by block_storage.primary.disk_type
 	*/
-	BlockStoragePrimaryDiskTypeQueryParameter *string
+	BlockStoragePrimaryDiskType *string
 
 	/* BlockStoragePrimaryRaidSize.
 
 	   Filter by block_storage.primary.raid_size
 	*/
-	BlockStoragePrimaryRaIDSizeQueryParameter *int64
+	BlockStoragePrimaryRaidSize *int64
 
 	/* BlockStoragePrimaryRaidType.
 
 	   Filter by block_storage.primary.raid_type
 	*/
-	BlockStoragePrimaryRaIDTypeQueryParameter *string
+	BlockStoragePrimaryRaidType *string
 
 	/* BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.added_data_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.added_parity_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsDataDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.data_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsDataDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.existing_data_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.existing_parity_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsIsPartition.
 
 	   Filter by block_storage.primary.simulated_raid_groups.is_partition
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter *bool
+	BlockStoragePrimarySimulatedRaidGroupsIsPartition *bool
 
 	/* BlockStoragePrimarySimulatedRaidGroupsName.
 
 	   Filter by block_storage.primary.simulated_raid_groups.name
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter *string
+	BlockStoragePrimarySimulatedRaidGroupsName *string
 
 	/* BlockStoragePrimarySimulatedRaidGroupsParityDiskCount.
 
 	   Filter by block_storage.primary.simulated_raid_groups.parity_disk_count
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsParityDiskCount *int64
 
 	/* BlockStoragePrimarySimulatedRaidGroupsRaidType.
 
 	   Filter by block_storage.primary.simulated_raid_groups.raid_type
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter *string
+	BlockStoragePrimarySimulatedRaidGroupsRaidType *string
 
 	/* BlockStoragePrimarySimulatedRaidGroupsUsableSize.
 
 	   Filter by block_storage.primary.simulated_raid_groups.usable_size
 	*/
-	BlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter *int64
+	BlockStoragePrimarySimulatedRaidGroupsUsableSize *int64
 
 	/* BlockStorageStorageType.
 
 	   Filter by block_storage.storage_type
 	*/
-	BlockStorageStorageTypeQueryParameter *string
+	BlockStorageStorageType *string
 
 	/* BlockStorageUsesPartitions.
 
 	   Filter by block_storage.uses_partitions
 	*/
-	BlockStorageUsesPartitionsQueryParameter *bool
+	BlockStorageUsesPartitions *bool
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* DataEncryptionDriveProtectionEnabled.
 
 	   Filter by data_encryption.drive_protection_enabled
 	*/
-	DataEncryptionDriveProtectionEnabledQueryParameter *bool
+	DataEncryptionDriveProtectionEnabled *bool
 
 	/* DataEncryptionSoftwareEncryptionEnabled.
 
 	   Filter by data_encryption.software_encryption_enabled
 	*/
-	DataEncryptionSoftwareEncryptionEnabledQueryParameter *bool
+	DataEncryptionSoftwareEncryptionEnabled *bool
 
 	/* DrHomeNodeName.
 
 	   Filter by dr_home_node.name
 	*/
-	DrHomeNodeNameQueryParameter *string
+	DrHomeNodeName *string
 
 	/* DrHomeNodeUUID.
 
 	   Filter by dr_home_node.uuid
 	*/
-	DrHomeNodeUUIDQueryParameter *string
+	DrHomeNodeUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* FlashPoolEligible.
+
+	   If set to 'true' along with show_spares, the spares object is restricted to return spare groups that are compatible with whole disk based flash pool creation. The default setting is 'false'.
+	*/
+	FlashPoolEligible *bool
 
 	/* HomeNodeName.
 
 	   Filter by home_node.name
 	*/
-	HomeNodeNameQueryParameter *string
+	HomeNodeName *string
 
 	/* HomeNodeUUID.
 
 	   Filter by home_node.uuid
 	*/
-	HomeNodeUUIDQueryParameter *string
+	HomeNodeUUID *string
 
 	/* InactiveDataReportingEnabled.
 
 	   Filter by inactive_data_reporting.enabled
 	*/
-	InactiveDataReportingEnabledQueryParameter *bool
+	InactiveDataReportingEnabled *bool
 
 	/* InactiveDataReportingStartTime.
 
 	   Filter by inactive_data_reporting.start_time
 	*/
-	InactiveDataReportingStartTimeQueryParameter *string
+	InactiveDataReportingStartTime *string
 
 	/* InodeAttributesFilePrivateCapacity.
 
 	   Filter by inode_attributes.file_private_capacity
 	*/
-	InodeAttributesFilePrivateCapacityQueryParameter *int64
+	InodeAttributesFilePrivateCapacity *int64
 
 	/* InodeAttributesFilePublicCapacity.
 
 	   Filter by inode_attributes.file_public_capacity
 	*/
-	InodeAttributesFilePublicCapacityQueryParameter *int64
+	InodeAttributesFilePublicCapacity *int64
 
 	/* InodeAttributesFilesPrivateUsed.
 
 	   Filter by inode_attributes.files_private_used
 	*/
-	InodeAttributesFilesPrivateUsedQueryParameter *int64
+	InodeAttributesFilesPrivateUsed *int64
 
 	/* InodeAttributesFilesTotal.
 
 	   Filter by inode_attributes.files_total
 	*/
-	InodeAttributesFilesTotalQueryParameter *int64
+	InodeAttributesFilesTotal *int64
 
 	/* InodeAttributesFilesUsed.
 
 	   Filter by inode_attributes.files_used
 	*/
-	InodeAttributesFilesUsedQueryParameter *int64
+	InodeAttributesFilesUsed *int64
 
 	/* InodeAttributesMaxFilesAvailable.
 
 	   Filter by inode_attributes.max_files_available
 	*/
-	InodeAttributesMaxFilesAvailableQueryParameter *int64
+	InodeAttributesMaxFilesAvailable *int64
 
 	/* InodeAttributesMaxFilesPossible.
 
 	   Filter by inode_attributes.max_files_possible
 	*/
-	InodeAttributesMaxFilesPossibleQueryParameter *int64
+	InodeAttributesMaxFilesPossible *int64
 
 	/* InodeAttributesMaxFilesUsed.
 
 	   Filter by inode_attributes.max_files_used
 	*/
-	InodeAttributesMaxFilesUsedQueryParameter *int64
+	InodeAttributesMaxFilesUsed *int64
 
 	/* InodeAttributesUsedPercent.
 
 	   Filter by inode_attributes.used_percent
 	*/
-	InodeAttributesUsedPercentQueryParameter *int64
+	InodeAttributesUsedPercent *int64
 
 	/* InodeAttributesVersion.
 
 	   Filter by inode_attributes.version
 	*/
-	InodeAttributesVersionQueryParameter *int64
+	InodeAttributesVersion *int64
 
 	/* IsSpareLow.
 
 	   Filter by is_spare_low
 	*/
-	IsSpareLowQueryParameter *bool
+	IsSpareLow *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputOther.
 
 	   Filter by metric.throughput.other
 	*/
-	MetricThroughputOtherQueryParameter *int64
+	MetricThroughputOther *int64
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Recommend.
 
 	   If set to 'true', it queries the system for the recommended optimal layout for creating new aggregates. The default setting is 'false'.
 	*/
-	RecommendQueryParameter *bool
+	Recommend *bool
 
 	/* RecommendationSparesChecksumStyle.
 
 	   Filter by recommendation_spares.checksum_style
 	*/
-	RecommendationSparesChecksumStyleQueryParameter *string
+	RecommendationSparesChecksumStyle *string
 
 	/* RecommendationSparesDiskClass.
 
 	   Filter by recommendation_spares.disk_class
 	*/
-	RecommendationSparesDiskClassQueryParameter *string
+	RecommendationSparesDiskClass *string
 
 	/* RecommendationSparesDiskType.
 
 	   Filter by recommendation_spares.disk_type
 	*/
-	RecommendationSparesDiskTypeQueryParameter *string
+	RecommendationSparesDiskType *string
 
 	/* RecommendationSparesIsPartition.
 
 	   Filter by recommendation_spares.is_partition
 	*/
-	RecommendationSparesIsPartitionQueryParameter *bool
+	RecommendationSparesIsPartition *bool
 
 	/* RecommendationSparesLayoutRequirementsAggregateMinDisks.
 
 	   Filter by recommendation_spares.layout_requirements.aggregate_min_disks
 	*/
-	RecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter *int64
+	RecommendationSparesLayoutRequirementsAggregateMinDisks *int64
 
 	/* RecommendationSparesLayoutRequirementsDefault.
 
 	   Filter by recommendation_spares.layout_requirements.default
 	*/
-	RecommendationSparesLayoutRequirementsDefaultQueryParameter *bool
+	RecommendationSparesLayoutRequirementsDefault *bool
 
 	/* RecommendationSparesLayoutRequirementsRaidGroupDefault.
 
 	   Filter by recommendation_spares.layout_requirements.raid_group.default
 	*/
-	RecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter *int64
+	RecommendationSparesLayoutRequirementsRaidGroupDefault *int64
 
 	/* RecommendationSparesLayoutRequirementsRaidGroupMax.
 
 	   Filter by recommendation_spares.layout_requirements.raid_group.max
 	*/
-	RecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter *int64
+	RecommendationSparesLayoutRequirementsRaidGroupMax *int64
 
 	/* RecommendationSparesLayoutRequirementsRaidGroupMin.
 
 	   Filter by recommendation_spares.layout_requirements.raid_group.min
 	*/
-	RecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter *int64
+	RecommendationSparesLayoutRequirementsRaidGroupMin *int64
 
 	/* RecommendationSparesLayoutRequirementsRaidType.
 
 	   Filter by recommendation_spares.layout_requirements.raid_type
 	*/
-	RecommendationSparesLayoutRequirementsRaIDTypeQueryParameter *string
+	RecommendationSparesLayoutRequirementsRaidType *string
 
 	/* RecommendationSparesNodeName.
 
 	   Filter by recommendation_spares.node.name
 	*/
-	RecommendationSparesNodeNameQueryParameter *string
+	RecommendationSparesNodeName *string
 
 	/* RecommendationSparesNodeUUID.
 
 	   Filter by recommendation_spares.node.uuid
 	*/
-	RecommendationSparesNodeUUIDQueryParameter *string
+	RecommendationSparesNodeUUID *string
 
 	/* RecommendationSparesSize.
 
 	   Filter by recommendation_spares.size
 	*/
-	RecommendationSparesSizeQueryParameter *int64
+	RecommendationSparesSize *int64
 
 	/* RecommendationSparesSyncmirrorPool.
 
 	   Filter by recommendation_spares.syncmirror_pool
 	*/
-	RecommendationSparesSyncmirrorPoolQueryParameter *string
+	RecommendationSparesSyncmirrorPool *string
 
 	/* RecommendationSparesTotal.
 
 	   Filter by recommendation_spares.total
 	*/
-	RecommendationSparesTotalQueryParameter *int64
+	RecommendationSparesTotal *int64
 
 	/* RecommendationSparesUsable.
 
 	   Filter by recommendation_spares.usable
 	*/
-	RecommendationSparesUsableQueryParameter *int64
+	RecommendationSparesUsable *int64
 
 	/* ReturnRecords.
 
@@ -590,7 +650,7 @@ type AggregateCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -598,361 +658,385 @@ type AggregateCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ShowSpares.
 
 	   If set to 'true', the spares object is returned instead of records to show the spare groups in the cluster. The default setting is 'false'.
 	*/
-	ShowSparesQueryParameter *bool
+	ShowSpares *bool
 
 	/* SidlEnabled.
 
 	   Filter by sidl_enabled
 	*/
-	SidlEnabledQueryParameter *bool
+	SidlEnabled *bool
 
 	/* SnaplockType.
 
 	   Filter by snaplock_type
 	*/
-	SnaplockTypeQueryParameter *string
+	SnaplockType *string
 
 	/* SnapshotFilesTotal.
 
 	   Filter by snapshot.files_total
 	*/
-	SnapshotFilesTotalQueryParameter *int64
+	SnapshotFilesTotal *int64
 
 	/* SnapshotFilesUsed.
 
 	   Filter by snapshot.files_used
 	*/
-	SnapshotFilesUsedQueryParameter *int64
+	SnapshotFilesUsed *int64
 
 	/* SnapshotMaxFilesAvailable.
 
 	   Filter by snapshot.max_files_available
 	*/
-	SnapshotMaxFilesAvailableQueryParameter *int64
+	SnapshotMaxFilesAvailable *int64
 
 	/* SnapshotMaxFilesUsed.
 
 	   Filter by snapshot.max_files_used
 	*/
-	SnapshotMaxFilesUsedQueryParameter *int64
+	SnapshotMaxFilesUsed *int64
 
 	/* SpaceBlockStorageAggregateMetadata.
 
 	   Filter by space.block_storage.aggregate_metadata
 	*/
-	SpaceBlockStorageAggregateMetadataQueryParameter *int64
+	SpaceBlockStorageAggregateMetadata *int64
 
 	/* SpaceBlockStorageAggregateMetadataPercent.
 
 	   Filter by space.block_storage.aggregate_metadata_percent
 	*/
-	SpaceBlockStorageAggregateMetadataPercentQueryParameter *int64
+	SpaceBlockStorageAggregateMetadataPercent *int64
 
 	/* SpaceBlockStorageAvailable.
 
 	   Filter by space.block_storage.available
 	*/
-	SpaceBlockStorageAvailableQueryParameter *int64
+	SpaceBlockStorageAvailable *int64
 
 	/* SpaceBlockStorageDataCompactedCount.
 
 	   Filter by space.block_storage.data_compacted_count
 	*/
-	SpaceBlockStorageDataCompactedCountQueryParameter *int64
+	SpaceBlockStorageDataCompactedCount *int64
 
 	/* SpaceBlockStorageDataCompactionSpaceSaved.
 
 	   Filter by space.block_storage.data_compaction_space_saved
 	*/
-	SpaceBlockStorageDataCompactionSpaceSavedQueryParameter *int64
+	SpaceBlockStorageDataCompactionSpaceSaved *int64
 
 	/* SpaceBlockStorageDataCompactionSpaceSavedPercent.
 
 	   Filter by space.block_storage.data_compaction_space_saved_percent
 	*/
-	SpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter *int64
+	SpaceBlockStorageDataCompactionSpaceSavedPercent *int64
 
 	/* SpaceBlockStorageFullThresholdPercent.
 
 	   Filter by space.block_storage.full_threshold_percent
 	*/
-	SpaceBlockStorageFullThresholdPercentQueryParameter *int64
+	SpaceBlockStorageFullThresholdPercent *int64
 
 	/* SpaceBlockStorageInactiveUserData.
 
 	   Filter by space.block_storage.inactive_user_data
 	*/
-	SpaceBlockStorageInactiveUserDataQueryParameter *int64
+	SpaceBlockStorageInactiveUserData *int64
 
 	/* SpaceBlockStorageInactiveUserDataPercent.
 
 	   Filter by space.block_storage.inactive_user_data_percent
 	*/
-	SpaceBlockStorageInactiveUserDataPercentQueryParameter *int64
+	SpaceBlockStorageInactiveUserDataPercent *int64
 
 	/* SpaceBlockStoragePhysicalUsed.
 
 	   Filter by space.block_storage.physical_used
 	*/
-	SpaceBlockStoragePhysicalUsedQueryParameter *int64
+	SpaceBlockStoragePhysicalUsed *int64
 
 	/* SpaceBlockStoragePhysicalUsedPercent.
 
 	   Filter by space.block_storage.physical_used_percent
 	*/
-	SpaceBlockStoragePhysicalUsedPercentQueryParameter *int64
+	SpaceBlockStoragePhysicalUsedPercent *int64
 
 	/* SpaceBlockStorageSize.
 
 	   Filter by space.block_storage.size
 	*/
-	SpaceBlockStorageSizeQueryParameter *int64
+	SpaceBlockStorageSize *int64
 
 	/* SpaceBlockStorageUsed.
 
 	   Filter by space.block_storage.used
 	*/
-	SpaceBlockStorageUsedQueryParameter *int64
+	SpaceBlockStorageUsed *int64
 
 	/* SpaceBlockStorageUsedIncludingSnapshotReserve.
 
 	   Filter by space.block_storage.used_including_snapshot_reserve
 	*/
-	SpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter *int64
+	SpaceBlockStorageUsedIncludingSnapshotReserve *int64
 
 	/* SpaceBlockStorageUsedIncludingSnapshotReservePercent.
 
 	   Filter by space.block_storage.used_including_snapshot_reserve_percent
 	*/
-	SpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter *int64
+	SpaceBlockStorageUsedIncludingSnapshotReservePercent *int64
 
 	/* SpaceBlockStorageVolumeDeduplicationSharedCount.
 
 	   Filter by space.block_storage.volume_deduplication_shared_count
 	*/
-	SpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter *int64
+	SpaceBlockStorageVolumeDeduplicationSharedCount *int64
 
 	/* SpaceBlockStorageVolumeDeduplicationSpaceSaved.
 
 	   Filter by space.block_storage.volume_deduplication_space_saved
 	*/
-	SpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter *int64
+	SpaceBlockStorageVolumeDeduplicationSpaceSaved *int64
 
 	/* SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent.
 
 	   Filter by space.block_storage.volume_deduplication_space_saved_percent
 	*/
-	SpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter *int64
+	SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent *int64
 
 	/* SpaceBlockStorageVolumeFootprintsPercent.
 
 	   Filter by space.block_storage.volume_footprints_percent
 	*/
-	SpaceBlockStorageVolumeFootprintsPercentQueryParameter *int64
+	SpaceBlockStorageVolumeFootprintsPercent *int64
 
 	/* SpaceCloudStorageUsed.
 
 	   Filter by space.cloud_storage.used
 	*/
-	SpaceCloudStorageUsedQueryParameter *int64
+	SpaceCloudStorageUsed *int64
+
+	/* SpaceEfficiencyAutoAdaptiveCompressionSavings.
+
+	   Filter by space.efficiency.auto_adaptive_compression_savings
+	*/
+	SpaceEfficiencyAutoAdaptiveCompressionSavings *bool
+
+	/* SpaceEfficiencyCrossVolumeBackgroundDedupe.
+
+	   Filter by space.efficiency.cross_volume_background_dedupe
+	*/
+	SpaceEfficiencyCrossVolumeBackgroundDedupe *bool
+
+	/* SpaceEfficiencyCrossVolumeDedupeSavings.
+
+	   Filter by space.efficiency.cross_volume_dedupe_savings
+	*/
+	SpaceEfficiencyCrossVolumeDedupeSavings *bool
+
+	/* SpaceEfficiencyCrossVolumeInlineDedupe.
+
+	   Filter by space.efficiency.cross_volume_inline_dedupe
+	*/
+	SpaceEfficiencyCrossVolumeInlineDedupe *bool
 
 	/* SpaceEfficiencyLogicalUsed.
 
 	   Filter by space.efficiency.logical_used
 	*/
-	SpaceEfficiencyLogicalUsedQueryParameter *int64
+	SpaceEfficiencyLogicalUsed *int64
 
 	/* SpaceEfficiencyRatio.
 
 	   Filter by space.efficiency.ratio
 	*/
-	SpaceEfficiencyRatioQueryParameter *float64
+	SpaceEfficiencyRatio *float64
 
 	/* SpaceEfficiencySavings.
 
 	   Filter by space.efficiency.savings
 	*/
-	SpaceEfficiencySavingsQueryParameter *int64
+	SpaceEfficiencySavings *int64
 
 	/* SpaceEfficiencyWithoutSnapshotsLogicalUsed.
 
 	   Filter by space.efficiency_without_snapshots.logical_used
 	*/
-	SpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter *int64
+	SpaceEfficiencyWithoutSnapshotsLogicalUsed *int64
 
 	/* SpaceEfficiencyWithoutSnapshotsRatio.
 
 	   Filter by space.efficiency_without_snapshots.ratio
 	*/
-	SpaceEfficiencyWithoutSnapshotsRatioQueryParameter *float64
+	SpaceEfficiencyWithoutSnapshotsRatio *float64
 
 	/* SpaceEfficiencyWithoutSnapshotsSavings.
 
 	   Filter by space.efficiency_without_snapshots.savings
 	*/
-	SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter *int64
+	SpaceEfficiencyWithoutSnapshotsSavings *int64
 
 	/* SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed.
 
 	   Filter by space.efficiency_without_snapshots_flexclones.logical_used
 	*/
-	SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter *int64
+	SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64
 
 	/* SpaceEfficiencyWithoutSnapshotsFlexclonesRatio.
 
 	   Filter by space.efficiency_without_snapshots_flexclones.ratio
 	*/
-	SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter *float64
+	SpaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64
 
 	/* SpaceEfficiencyWithoutSnapshotsFlexclonesSavings.
 
 	   Filter by space.efficiency_without_snapshots_flexclones.savings
 	*/
-	SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter *int64
+	SpaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64
 
 	/* SpaceFootprint.
 
 	   Filter by space.footprint
 	*/
-	SpaceFootprintQueryParameter *int64
+	SpaceFootprint *int64
 
 	/* SpaceSnapshotAvailable.
 
 	   Filter by space.snapshot.available
 	*/
-	SpaceSnapshotAvailableQueryParameter *int64
+	SpaceSnapshotAvailable *int64
 
 	/* SpaceSnapshotReservePercent.
 
 	   Filter by space.snapshot.reserve_percent
 	*/
-	SpaceSnapshotReservePercentQueryParameter *int64
+	SpaceSnapshotReservePercent *int64
 
 	/* SpaceSnapshotTotal.
 
 	   Filter by space.snapshot.total
 	*/
-	SpaceSnapshotTotalQueryParameter *int64
+	SpaceSnapshotTotal *int64
 
 	/* SpaceSnapshotUsed.
 
 	   Filter by space.snapshot.used
 	*/
-	SpaceSnapshotUsedQueryParameter *int64
+	SpaceSnapshotUsed *int64
 
 	/* SpaceSnapshotUsedPercent.
 
 	   Filter by space.snapshot.used_percent
 	*/
-	SpaceSnapshotUsedPercentQueryParameter *int64
+	SpaceSnapshotUsedPercent *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawOther.
 
 	   Filter by statistics.throughput_raw.other
 	*/
-	StatisticsThroughputRawOtherQueryParameter *int64
+	StatisticsThroughputRawOther *int64
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VolumeCount.
 
 	   Filter by volume-count
 	*/
-	VolumeCountQueryParameter *int64
+	VolumeCount *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -972,14 +1056,14 @@ func (o *AggregateCollectionGetParams) WithDefaults() *AggregateCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *AggregateCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AggregateCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -1021,1632 +1105,1786 @@ func (o *AggregateCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBlockStorageHybrIDCacheDiskCountQueryParameter adds the blockStorageHybridCacheDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheDiskCountQueryParameter(blockStorageHybridCacheDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheDiskCountQueryParameter(blockStorageHybridCacheDiskCount)
+// WithBlockStorageHybridCacheDiskCount adds the blockStorageHybridCacheDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheDiskCount(blockStorageHybridCacheDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheDiskCount(blockStorageHybridCacheDiskCount)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheDiskCountQueryParameter adds the blockStorageHybridCacheDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheDiskCountQueryParameter(blockStorageHybridCacheDiskCount *int64) {
-	o.BlockStorageHybrIDCacheDiskCountQueryParameter = blockStorageHybridCacheDiskCount
+// SetBlockStorageHybridCacheDiskCount adds the blockStorageHybridCacheDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheDiskCount(blockStorageHybridCacheDiskCount *int64) {
+	o.BlockStorageHybridCacheDiskCount = blockStorageHybridCacheDiskCount
 }
 
-// WithBlockStorageHybrIDCacheEnabledQueryParameter adds the blockStorageHybridCacheEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheEnabledQueryParameter(blockStorageHybridCacheEnabled *bool) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheEnabledQueryParameter(blockStorageHybridCacheEnabled)
+// WithBlockStorageHybridCacheDiskType adds the blockStorageHybridCacheDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheDiskType(blockStorageHybridCacheDiskType *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheDiskType(blockStorageHybridCacheDiskType)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheEnabledQueryParameter adds the blockStorageHybridCacheEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheEnabledQueryParameter(blockStorageHybridCacheEnabled *bool) {
-	o.BlockStorageHybrIDCacheEnabledQueryParameter = blockStorageHybridCacheEnabled
+// SetBlockStorageHybridCacheDiskType adds the blockStorageHybridCacheDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheDiskType(blockStorageHybridCacheDiskType *string) {
+	o.BlockStorageHybridCacheDiskType = blockStorageHybridCacheDiskType
 }
 
-// WithBlockStorageHybrIDCacheRaIDTypeQueryParameter adds the blockStorageHybridCacheRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheRaIDTypeQueryParameter(blockStorageHybridCacheRaidType *string) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheRaIDTypeQueryParameter(blockStorageHybridCacheRaidType)
+// WithBlockStorageHybridCacheEnabled adds the blockStorageHybridCacheEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheEnabled(blockStorageHybridCacheEnabled *bool) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheEnabled(blockStorageHybridCacheEnabled)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheRaIDTypeQueryParameter adds the blockStorageHybridCacheRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheRaIDTypeQueryParameter(blockStorageHybridCacheRaidType *string) {
-	o.BlockStorageHybrIDCacheRaIDTypeQueryParameter = blockStorageHybridCacheRaidType
+// SetBlockStorageHybridCacheEnabled adds the blockStorageHybridCacheEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheEnabled(blockStorageHybridCacheEnabled *bool) {
+	o.BlockStorageHybridCacheEnabled = blockStorageHybridCacheEnabled
 }
 
-// WithBlockStorageHybrIDCacheSizeQueryParameter adds the blockStorageHybridCacheSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheSizeQueryParameter(blockStorageHybridCacheSize *int64) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheSizeQueryParameter(blockStorageHybridCacheSize)
+// WithBlockStorageHybridCacheRaidSize adds the blockStorageHybridCacheRaidSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheRaidSize(blockStorageHybridCacheRaidSize *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheRaidSize(blockStorageHybridCacheRaidSize)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheSizeQueryParameter adds the blockStorageHybridCacheSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheSizeQueryParameter(blockStorageHybridCacheSize *int64) {
-	o.BlockStorageHybrIDCacheSizeQueryParameter = blockStorageHybridCacheSize
+// SetBlockStorageHybridCacheRaidSize adds the blockStorageHybridCacheRaidSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheRaidSize(blockStorageHybridCacheRaidSize *int64) {
+	o.BlockStorageHybridCacheRaidSize = blockStorageHybridCacheRaidSize
 }
 
-// WithBlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter adds the blockStorageHybridCacheStoragePoolsAllocationUnitsCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter(blockStorageHybridCacheStoragePoolsAllocationUnitsCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter(blockStorageHybridCacheStoragePoolsAllocationUnitsCount)
+// WithBlockStorageHybridCacheRaidType adds the blockStorageHybridCacheRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheRaidType(blockStorageHybridCacheRaidType *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheRaidType(blockStorageHybridCacheRaidType)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter adds the blockStorageHybridCacheStoragePoolsAllocationUnitsCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter(blockStorageHybridCacheStoragePoolsAllocationUnitsCount *int64) {
-	o.BlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter = blockStorageHybridCacheStoragePoolsAllocationUnitsCount
+// SetBlockStorageHybridCacheRaidType adds the blockStorageHybridCacheRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheRaidType(blockStorageHybridCacheRaidType *string) {
+	o.BlockStorageHybridCacheRaidType = blockStorageHybridCacheRaidType
 }
 
-// WithBlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter adds the blockStorageHybridCacheStoragePoolsStoragePoolName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolName *string) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolName)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter adds the blockStorageHybridCacheStoragePoolsStoragePoolName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolName *string) {
-	o.BlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter = blockStorageHybridCacheStoragePoolsStoragePoolName
+// SetBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount *int64) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount = blockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount
 }
 
-// WithBlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter adds the blockStorageHybridCacheStoragePoolsStoragePoolUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolUUID *string) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolUUID)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter adds the blockStorageHybridCacheStoragePoolsStoragePoolUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter(blockStorageHybridCacheStoragePoolsStoragePoolUUID *string) {
-	o.BlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter = blockStorageHybridCacheStoragePoolsStoragePoolUUID
+// SetBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount *int64) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount = blockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount
 }
 
-// WithBlockStorageHybrIDCacheUsedQueryParameter adds the blockStorageHybridCacheUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageHybrIDCacheUsedQueryParameter(blockStorageHybridCacheUsed *int64) *AggregateCollectionGetParams {
-	o.SetBlockStorageHybrIDCacheUsedQueryParameter(blockStorageHybridCacheUsed)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount)
 	return o
 }
 
-// SetBlockStorageHybrIDCacheUsedQueryParameter adds the blockStorageHybridCacheUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageHybrIDCacheUsedQueryParameter(blockStorageHybridCacheUsed *int64) {
-	o.BlockStorageHybrIDCacheUsedQueryParameter = blockStorageHybridCacheUsed
+// SetBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount *int64) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount = blockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount
 }
 
-// WithBlockStorageMirrorEnabledQueryParameter adds the blockStorageMirrorEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageMirrorEnabledQueryParameter(blockStorageMirrorEnabled *bool) *AggregateCollectionGetParams {
-	o.SetBlockStorageMirrorEnabledQueryParameter(blockStorageMirrorEnabled)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount)
 	return o
 }
 
-// SetBlockStorageMirrorEnabledQueryParameter adds the blockStorageMirrorEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageMirrorEnabledQueryParameter(blockStorageMirrorEnabled *bool) {
-	o.BlockStorageMirrorEnabledQueryParameter = blockStorageMirrorEnabled
+// SetBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount adds the blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount(blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount *int64) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount = blockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount
 }
 
-// WithBlockStorageMirrorStateQueryParameter adds the blockStorageMirrorState to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageMirrorStateQueryParameter(blockStorageMirrorState *string) *AggregateCollectionGetParams {
-	o.SetBlockStorageMirrorStateQueryParameter(blockStorageMirrorState)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsIsPartition adds the blockStorageHybridCacheSimulatedRaidGroupsIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsIsPartition(blockStorageHybridCacheSimulatedRaidGroupsIsPartition *bool) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsIsPartition(blockStorageHybridCacheSimulatedRaidGroupsIsPartition)
 	return o
 }
 
-// SetBlockStorageMirrorStateQueryParameter adds the blockStorageMirrorState to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageMirrorStateQueryParameter(blockStorageMirrorState *string) {
-	o.BlockStorageMirrorStateQueryParameter = blockStorageMirrorState
+// SetBlockStorageHybridCacheSimulatedRaidGroupsIsPartition adds the blockStorageHybridCacheSimulatedRaidGroupsIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsIsPartition(blockStorageHybridCacheSimulatedRaidGroupsIsPartition *bool) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsIsPartition = blockStorageHybridCacheSimulatedRaidGroupsIsPartition
 }
 
-// WithBlockStoragePlexesNameQueryParameter adds the blockStoragePlexesName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePlexesNameQueryParameter(blockStoragePlexesName *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePlexesNameQueryParameter(blockStoragePlexesName)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsName adds the blockStorageHybridCacheSimulatedRaidGroupsName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsName(blockStorageHybridCacheSimulatedRaidGroupsName *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsName(blockStorageHybridCacheSimulatedRaidGroupsName)
 	return o
 }
 
-// SetBlockStoragePlexesNameQueryParameter adds the blockStoragePlexesName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePlexesNameQueryParameter(blockStoragePlexesName *string) {
-	o.BlockStoragePlexesNameQueryParameter = blockStoragePlexesName
+// SetBlockStorageHybridCacheSimulatedRaidGroupsName adds the blockStorageHybridCacheSimulatedRaidGroupsName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsName(blockStorageHybridCacheSimulatedRaidGroupsName *string) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsName = blockStorageHybridCacheSimulatedRaidGroupsName
 }
 
-// WithBlockStoragePrimaryChecksumStyleQueryParameter adds the blockStoragePrimaryChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryChecksumStyleQueryParameter(blockStoragePrimaryChecksumStyle *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryChecksumStyleQueryParameter(blockStoragePrimaryChecksumStyle)
+// WithBlockStorageHybridCacheSimulatedRaidGroupsUsableSize adds the blockStorageHybridCacheSimulatedRaidGroupsUsableSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSimulatedRaidGroupsUsableSize(blockStorageHybridCacheSimulatedRaidGroupsUsableSize *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSimulatedRaidGroupsUsableSize(blockStorageHybridCacheSimulatedRaidGroupsUsableSize)
 	return o
 }
 
-// SetBlockStoragePrimaryChecksumStyleQueryParameter adds the blockStoragePrimaryChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryChecksumStyleQueryParameter(blockStoragePrimaryChecksumStyle *string) {
-	o.BlockStoragePrimaryChecksumStyleQueryParameter = blockStoragePrimaryChecksumStyle
+// SetBlockStorageHybridCacheSimulatedRaidGroupsUsableSize adds the blockStorageHybridCacheSimulatedRaidGroupsUsableSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSimulatedRaidGroupsUsableSize(blockStorageHybridCacheSimulatedRaidGroupsUsableSize *int64) {
+	o.BlockStorageHybridCacheSimulatedRaidGroupsUsableSize = blockStorageHybridCacheSimulatedRaidGroupsUsableSize
 }
 
-// WithBlockStoragePrimaryDiskClassQueryParameter adds the blockStoragePrimaryDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskClassQueryParameter(blockStoragePrimaryDiskClass *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryDiskClassQueryParameter(blockStoragePrimaryDiskClass)
+// WithBlockStorageHybridCacheSize adds the blockStorageHybridCacheSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheSize(blockStorageHybridCacheSize *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheSize(blockStorageHybridCacheSize)
 	return o
 }
 
-// SetBlockStoragePrimaryDiskClassQueryParameter adds the blockStoragePrimaryDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskClassQueryParameter(blockStoragePrimaryDiskClass *string) {
-	o.BlockStoragePrimaryDiskClassQueryParameter = blockStoragePrimaryDiskClass
+// SetBlockStorageHybridCacheSize adds the blockStorageHybridCacheSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheSize(blockStorageHybridCacheSize *int64) {
+	o.BlockStorageHybridCacheSize = blockStorageHybridCacheSize
 }
 
-// WithBlockStoragePrimaryDiskCountQueryParameter adds the blockStoragePrimaryDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskCountQueryParameter(blockStoragePrimaryDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryDiskCountQueryParameter(blockStoragePrimaryDiskCount)
+// WithBlockStorageHybridCacheStoragePoolsAllocationUnitsCount adds the blockStorageHybridCacheStoragePoolsAllocationUnitsCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheStoragePoolsAllocationUnitsCount(blockStorageHybridCacheStoragePoolsAllocationUnitsCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheStoragePoolsAllocationUnitsCount(blockStorageHybridCacheStoragePoolsAllocationUnitsCount)
 	return o
 }
 
-// SetBlockStoragePrimaryDiskCountQueryParameter adds the blockStoragePrimaryDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskCountQueryParameter(blockStoragePrimaryDiskCount *int64) {
-	o.BlockStoragePrimaryDiskCountQueryParameter = blockStoragePrimaryDiskCount
+// SetBlockStorageHybridCacheStoragePoolsAllocationUnitsCount adds the blockStorageHybridCacheStoragePoolsAllocationUnitsCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheStoragePoolsAllocationUnitsCount(blockStorageHybridCacheStoragePoolsAllocationUnitsCount *int64) {
+	o.BlockStorageHybridCacheStoragePoolsAllocationUnitsCount = blockStorageHybridCacheStoragePoolsAllocationUnitsCount
 }
 
-// WithBlockStoragePrimaryDiskTypeQueryParameter adds the blockStoragePrimaryDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskTypeQueryParameter(blockStoragePrimaryDiskType *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryDiskTypeQueryParameter(blockStoragePrimaryDiskType)
+// WithBlockStorageHybridCacheStoragePoolsStoragePoolName adds the blockStorageHybridCacheStoragePoolsStoragePoolName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheStoragePoolsStoragePoolName(blockStorageHybridCacheStoragePoolsStoragePoolName *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheStoragePoolsStoragePoolName(blockStorageHybridCacheStoragePoolsStoragePoolName)
 	return o
 }
 
-// SetBlockStoragePrimaryDiskTypeQueryParameter adds the blockStoragePrimaryDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskTypeQueryParameter(blockStoragePrimaryDiskType *string) {
-	o.BlockStoragePrimaryDiskTypeQueryParameter = blockStoragePrimaryDiskType
+// SetBlockStorageHybridCacheStoragePoolsStoragePoolName adds the blockStorageHybridCacheStoragePoolsStoragePoolName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheStoragePoolsStoragePoolName(blockStorageHybridCacheStoragePoolsStoragePoolName *string) {
+	o.BlockStorageHybridCacheStoragePoolsStoragePoolName = blockStorageHybridCacheStoragePoolsStoragePoolName
 }
 
-// WithBlockStoragePrimaryRaIDSizeQueryParameter adds the blockStoragePrimaryRaidSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryRaIDSizeQueryParameter(blockStoragePrimaryRaidSize *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryRaIDSizeQueryParameter(blockStoragePrimaryRaidSize)
+// WithBlockStorageHybridCacheStoragePoolsStoragePoolUUID adds the blockStorageHybridCacheStoragePoolsStoragePoolUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheStoragePoolsStoragePoolUUID(blockStorageHybridCacheStoragePoolsStoragePoolUUID *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheStoragePoolsStoragePoolUUID(blockStorageHybridCacheStoragePoolsStoragePoolUUID)
 	return o
 }
 
-// SetBlockStoragePrimaryRaIDSizeQueryParameter adds the blockStoragePrimaryRaidSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryRaIDSizeQueryParameter(blockStoragePrimaryRaidSize *int64) {
-	o.BlockStoragePrimaryRaIDSizeQueryParameter = blockStoragePrimaryRaidSize
+// SetBlockStorageHybridCacheStoragePoolsStoragePoolUUID adds the blockStorageHybridCacheStoragePoolsStoragePoolUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheStoragePoolsStoragePoolUUID(blockStorageHybridCacheStoragePoolsStoragePoolUUID *string) {
+	o.BlockStorageHybridCacheStoragePoolsStoragePoolUUID = blockStorageHybridCacheStoragePoolsStoragePoolUUID
 }
 
-// WithBlockStoragePrimaryRaIDTypeQueryParameter adds the blockStoragePrimaryRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryRaIDTypeQueryParameter(blockStoragePrimaryRaidType *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimaryRaIDTypeQueryParameter(blockStoragePrimaryRaidType)
+// WithBlockStorageHybridCacheUsed adds the blockStorageHybridCacheUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageHybridCacheUsed(blockStorageHybridCacheUsed *int64) *AggregateCollectionGetParams {
+	o.SetBlockStorageHybridCacheUsed(blockStorageHybridCacheUsed)
 	return o
 }
 
-// SetBlockStoragePrimaryRaIDTypeQueryParameter adds the blockStoragePrimaryRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryRaIDTypeQueryParameter(blockStoragePrimaryRaidType *string) {
-	o.BlockStoragePrimaryRaIDTypeQueryParameter = blockStoragePrimaryRaidType
+// SetBlockStorageHybridCacheUsed adds the blockStorageHybridCacheUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageHybridCacheUsed(blockStorageHybridCacheUsed *int64) {
+	o.BlockStorageHybridCacheUsed = blockStorageHybridCacheUsed
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount)
+// WithBlockStorageMirrorEnabled adds the blockStorageMirrorEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageMirrorEnabled(blockStorageMirrorEnabled *bool) *AggregateCollectionGetParams {
+	o.SetBlockStorageMirrorEnabled(blockStorageMirrorEnabled)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount
+// SetBlockStorageMirrorEnabled adds the blockStorageMirrorEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageMirrorEnabled(blockStorageMirrorEnabled *bool) {
+	o.BlockStorageMirrorEnabled = blockStorageMirrorEnabled
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount)
+// WithBlockStorageMirrorState adds the blockStorageMirrorState to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageMirrorState(blockStorageMirrorState *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageMirrorState(blockStorageMirrorState)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount
+// SetBlockStorageMirrorState adds the blockStorageMirrorState to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageMirrorState(blockStorageMirrorState *string) {
+	o.BlockStorageMirrorState = blockStorageMirrorState
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsDataDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsDataDiskCount)
+// WithBlockStoragePlexesName adds the blockStoragePlexesName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePlexesName(blockStoragePlexesName *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePlexesName(blockStoragePlexesName)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsDataDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsDataDiskCount
+// SetBlockStoragePlexesName adds the blockStoragePlexesName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePlexesName(blockStoragePlexesName *string) {
+	o.BlockStoragePlexesName = blockStoragePlexesName
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount)
+// WithBlockStoragePrimaryChecksumStyle adds the blockStoragePrimaryChecksumStyle to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryChecksumStyle(blockStoragePrimaryChecksumStyle *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryChecksumStyle(blockStoragePrimaryChecksumStyle)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount
+// SetBlockStoragePrimaryChecksumStyle adds the blockStoragePrimaryChecksumStyle to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryChecksumStyle(blockStoragePrimaryChecksumStyle *string) {
+	o.BlockStoragePrimaryChecksumStyle = blockStoragePrimaryChecksumStyle
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount)
+// WithBlockStoragePrimaryDiskClass adds the blockStoragePrimaryDiskClass to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskClass(blockStoragePrimaryDiskClass *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryDiskClass(blockStoragePrimaryDiskClass)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount
+// SetBlockStoragePrimaryDiskClass adds the blockStoragePrimaryDiskClass to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskClass(blockStoragePrimaryDiskClass *string) {
+	o.BlockStoragePrimaryDiskClass = blockStoragePrimaryDiskClass
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter(blockStoragePrimarySimulatedRaidGroupsIsPartition *bool) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter(blockStoragePrimarySimulatedRaidGroupsIsPartition)
+// WithBlockStoragePrimaryDiskCount adds the blockStoragePrimaryDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskCount(blockStoragePrimaryDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryDiskCount(blockStoragePrimaryDiskCount)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter(blockStoragePrimarySimulatedRaidGroupsIsPartition *bool) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter = blockStoragePrimarySimulatedRaidGroupsIsPartition
+// SetBlockStoragePrimaryDiskCount adds the blockStoragePrimaryDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskCount(blockStoragePrimaryDiskCount *int64) {
+	o.BlockStoragePrimaryDiskCount = blockStoragePrimaryDiskCount
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter(blockStoragePrimarySimulatedRaidGroupsName *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter(blockStoragePrimarySimulatedRaidGroupsName)
+// WithBlockStoragePrimaryDiskType adds the blockStoragePrimaryDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryDiskType(blockStoragePrimaryDiskType *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryDiskType(blockStoragePrimaryDiskType)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter(blockStoragePrimarySimulatedRaidGroupsName *string) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter = blockStoragePrimarySimulatedRaidGroupsName
+// SetBlockStoragePrimaryDiskType adds the blockStoragePrimaryDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryDiskType(blockStoragePrimaryDiskType *string) {
+	o.BlockStoragePrimaryDiskType = blockStoragePrimaryDiskType
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsParityDiskCount *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsParityDiskCount)
+// WithBlockStoragePrimaryRaidSize adds the blockStoragePrimaryRaidSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryRaidSize(blockStoragePrimaryRaidSize *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryRaidSize(blockStoragePrimaryRaidSize)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsParityDiskCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter(blockStoragePrimarySimulatedRaidGroupsParityDiskCount *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter = blockStoragePrimarySimulatedRaidGroupsParityDiskCount
+// SetBlockStoragePrimaryRaidSize adds the blockStoragePrimaryRaidSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryRaidSize(blockStoragePrimaryRaidSize *int64) {
+	o.BlockStoragePrimaryRaidSize = blockStoragePrimaryRaidSize
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter(blockStoragePrimarySimulatedRaidGroupsRaidType *string) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter(blockStoragePrimarySimulatedRaidGroupsRaidType)
+// WithBlockStoragePrimaryRaidType adds the blockStoragePrimaryRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimaryRaidType(blockStoragePrimaryRaidType *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimaryRaidType(blockStoragePrimaryRaidType)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter(blockStoragePrimarySimulatedRaidGroupsRaidType *string) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter = blockStoragePrimarySimulatedRaidGroupsRaidType
+// SetBlockStoragePrimaryRaidType adds the blockStoragePrimaryRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimaryRaidType(blockStoragePrimaryRaidType *string) {
+	o.BlockStoragePrimaryRaidType = blockStoragePrimaryRaidType
 }
 
-// WithBlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsUsableSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter(blockStoragePrimarySimulatedRaidGroupsUsableSize *int64) *AggregateCollectionGetParams {
-	o.SetBlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter(blockStoragePrimarySimulatedRaidGroupsUsableSize)
+// WithBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount)
 	return o
 }
 
-// SetBlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter adds the blockStoragePrimarySimulatedRaidGroupsUsableSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter(blockStoragePrimarySimulatedRaidGroupsUsableSize *int64) {
-	o.BlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter = blockStoragePrimarySimulatedRaidGroupsUsableSize
+// SetBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount = blockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount
 }
 
-// WithBlockStorageStorageTypeQueryParameter adds the blockStorageStorageType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageStorageTypeQueryParameter(blockStorageStorageType *string) *AggregateCollectionGetParams {
-	o.SetBlockStorageStorageTypeQueryParameter(blockStorageStorageType)
+// WithBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount)
 	return o
 }
 
-// SetBlockStorageStorageTypeQueryParameter adds the blockStorageStorageType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageStorageTypeQueryParameter(blockStorageStorageType *string) {
-	o.BlockStorageStorageTypeQueryParameter = blockStorageStorageType
+// SetBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount(blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount = blockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount
 }
 
-// WithBlockStorageUsesPartitionsQueryParameter adds the blockStorageUsesPartitions to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithBlockStorageUsesPartitionsQueryParameter(blockStorageUsesPartitions *bool) *AggregateCollectionGetParams {
-	o.SetBlockStorageUsesPartitionsQueryParameter(blockStorageUsesPartitions)
+// WithBlockStoragePrimarySimulatedRaidGroupsDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsDataDiskCount(blockStoragePrimarySimulatedRaidGroupsDataDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsDataDiskCount(blockStoragePrimarySimulatedRaidGroupsDataDiskCount)
 	return o
 }
 
-// SetBlockStorageUsesPartitionsQueryParameter adds the blockStorageUsesPartitions to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetBlockStorageUsesPartitionsQueryParameter(blockStorageUsesPartitions *bool) {
-	o.BlockStorageUsesPartitionsQueryParameter = blockStorageUsesPartitions
+// SetBlockStoragePrimarySimulatedRaidGroupsDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsDataDiskCount(blockStoragePrimarySimulatedRaidGroupsDataDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsDataDiskCount = blockStoragePrimarySimulatedRaidGroupsDataDiskCount
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *AggregateCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount adds the blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount = blockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount
 }
 
-// WithDataEncryptionDriveProtectionEnabledQueryParameter adds the dataEncryptionDriveProtectionEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithDataEncryptionDriveProtectionEnabledQueryParameter(dataEncryptionDriveProtectionEnabled *bool) *AggregateCollectionGetParams {
-	o.SetDataEncryptionDriveProtectionEnabledQueryParameter(dataEncryptionDriveProtectionEnabled)
+// WithBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount)
 	return o
 }
 
-// SetDataEncryptionDriveProtectionEnabledQueryParameter adds the dataEncryptionDriveProtectionEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetDataEncryptionDriveProtectionEnabledQueryParameter(dataEncryptionDriveProtectionEnabled *bool) {
-	o.DataEncryptionDriveProtectionEnabledQueryParameter = dataEncryptionDriveProtectionEnabled
+// SetBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount(blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount = blockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount
 }
 
-// WithDataEncryptionSoftwareEncryptionEnabledQueryParameter adds the dataEncryptionSoftwareEncryptionEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithDataEncryptionSoftwareEncryptionEnabledQueryParameter(dataEncryptionSoftwareEncryptionEnabled *bool) *AggregateCollectionGetParams {
-	o.SetDataEncryptionSoftwareEncryptionEnabledQueryParameter(dataEncryptionSoftwareEncryptionEnabled)
+// WithBlockStoragePrimarySimulatedRaidGroupsIsPartition adds the blockStoragePrimarySimulatedRaidGroupsIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsIsPartition(blockStoragePrimarySimulatedRaidGroupsIsPartition *bool) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsIsPartition(blockStoragePrimarySimulatedRaidGroupsIsPartition)
 	return o
 }
 
-// SetDataEncryptionSoftwareEncryptionEnabledQueryParameter adds the dataEncryptionSoftwareEncryptionEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetDataEncryptionSoftwareEncryptionEnabledQueryParameter(dataEncryptionSoftwareEncryptionEnabled *bool) {
-	o.DataEncryptionSoftwareEncryptionEnabledQueryParameter = dataEncryptionSoftwareEncryptionEnabled
+// SetBlockStoragePrimarySimulatedRaidGroupsIsPartition adds the blockStoragePrimarySimulatedRaidGroupsIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsIsPartition(blockStoragePrimarySimulatedRaidGroupsIsPartition *bool) {
+	o.BlockStoragePrimarySimulatedRaidGroupsIsPartition = blockStoragePrimarySimulatedRaidGroupsIsPartition
 }
 
-// WithDrHomeNodeNameQueryParameter adds the drHomeNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithDrHomeNodeNameQueryParameter(drHomeNodeName *string) *AggregateCollectionGetParams {
-	o.SetDrHomeNodeNameQueryParameter(drHomeNodeName)
+// WithBlockStoragePrimarySimulatedRaidGroupsName adds the blockStoragePrimarySimulatedRaidGroupsName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsName(blockStoragePrimarySimulatedRaidGroupsName *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsName(blockStoragePrimarySimulatedRaidGroupsName)
 	return o
 }
 
-// SetDrHomeNodeNameQueryParameter adds the drHomeNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetDrHomeNodeNameQueryParameter(drHomeNodeName *string) {
-	o.DrHomeNodeNameQueryParameter = drHomeNodeName
+// SetBlockStoragePrimarySimulatedRaidGroupsName adds the blockStoragePrimarySimulatedRaidGroupsName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsName(blockStoragePrimarySimulatedRaidGroupsName *string) {
+	o.BlockStoragePrimarySimulatedRaidGroupsName = blockStoragePrimarySimulatedRaidGroupsName
 }
 
-// WithDrHomeNodeUUIDQueryParameter adds the drHomeNodeUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithDrHomeNodeUUIDQueryParameter(drHomeNodeUUID *string) *AggregateCollectionGetParams {
-	o.SetDrHomeNodeUUIDQueryParameter(drHomeNodeUUID)
+// WithBlockStoragePrimarySimulatedRaidGroupsParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsParityDiskCount(blockStoragePrimarySimulatedRaidGroupsParityDiskCount *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsParityDiskCount(blockStoragePrimarySimulatedRaidGroupsParityDiskCount)
 	return o
 }
 
-// SetDrHomeNodeUUIDQueryParameter adds the drHomeNodeUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetDrHomeNodeUUIDQueryParameter(drHomeNodeUUID *string) {
-	o.DrHomeNodeUUIDQueryParameter = drHomeNodeUUID
+// SetBlockStoragePrimarySimulatedRaidGroupsParityDiskCount adds the blockStoragePrimarySimulatedRaidGroupsParityDiskCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsParityDiskCount(blockStoragePrimarySimulatedRaidGroupsParityDiskCount *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsParityDiskCount = blockStoragePrimarySimulatedRaidGroupsParityDiskCount
 }
 
-// WithFieldsQueryParameter adds the fields to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithFieldsQueryParameter(fields []string) *AggregateCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithBlockStoragePrimarySimulatedRaidGroupsRaidType adds the blockStoragePrimarySimulatedRaidGroupsRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsRaidType(blockStoragePrimarySimulatedRaidGroupsRaidType *string) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsRaidType(blockStoragePrimarySimulatedRaidGroupsRaidType)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetBlockStoragePrimarySimulatedRaidGroupsRaidType adds the blockStoragePrimarySimulatedRaidGroupsRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsRaidType(blockStoragePrimarySimulatedRaidGroupsRaidType *string) {
+	o.BlockStoragePrimarySimulatedRaidGroupsRaidType = blockStoragePrimarySimulatedRaidGroupsRaidType
 }
 
-// WithHomeNodeNameQueryParameter adds the homeNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithHomeNodeNameQueryParameter(homeNodeName *string) *AggregateCollectionGetParams {
-	o.SetHomeNodeNameQueryParameter(homeNodeName)
+// WithBlockStoragePrimarySimulatedRaidGroupsUsableSize adds the blockStoragePrimarySimulatedRaidGroupsUsableSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStoragePrimarySimulatedRaidGroupsUsableSize(blockStoragePrimarySimulatedRaidGroupsUsableSize *int64) *AggregateCollectionGetParams {
+	o.SetBlockStoragePrimarySimulatedRaidGroupsUsableSize(blockStoragePrimarySimulatedRaidGroupsUsableSize)
 	return o
 }
 
-// SetHomeNodeNameQueryParameter adds the homeNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetHomeNodeNameQueryParameter(homeNodeName *string) {
-	o.HomeNodeNameQueryParameter = homeNodeName
+// SetBlockStoragePrimarySimulatedRaidGroupsUsableSize adds the blockStoragePrimarySimulatedRaidGroupsUsableSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStoragePrimarySimulatedRaidGroupsUsableSize(blockStoragePrimarySimulatedRaidGroupsUsableSize *int64) {
+	o.BlockStoragePrimarySimulatedRaidGroupsUsableSize = blockStoragePrimarySimulatedRaidGroupsUsableSize
 }
 
-// WithHomeNodeUUIDQueryParameter adds the homeNodeUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithHomeNodeUUIDQueryParameter(homeNodeUUID *string) *AggregateCollectionGetParams {
-	o.SetHomeNodeUUIDQueryParameter(homeNodeUUID)
+// WithBlockStorageStorageType adds the blockStorageStorageType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageStorageType(blockStorageStorageType *string) *AggregateCollectionGetParams {
+	o.SetBlockStorageStorageType(blockStorageStorageType)
 	return o
 }
 
-// SetHomeNodeUUIDQueryParameter adds the homeNodeUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetHomeNodeUUIDQueryParameter(homeNodeUUID *string) {
-	o.HomeNodeUUIDQueryParameter = homeNodeUUID
+// SetBlockStorageStorageType adds the blockStorageStorageType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageStorageType(blockStorageStorageType *string) {
+	o.BlockStorageStorageType = blockStorageStorageType
 }
 
-// WithInactiveDataReportingEnabledQueryParameter adds the inactiveDataReportingEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled *bool) *AggregateCollectionGetParams {
-	o.SetInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled)
+// WithBlockStorageUsesPartitions adds the blockStorageUsesPartitions to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithBlockStorageUsesPartitions(blockStorageUsesPartitions *bool) *AggregateCollectionGetParams {
+	o.SetBlockStorageUsesPartitions(blockStorageUsesPartitions)
 	return o
 }
 
-// SetInactiveDataReportingEnabledQueryParameter adds the inactiveDataReportingEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled *bool) {
-	o.InactiveDataReportingEnabledQueryParameter = inactiveDataReportingEnabled
+// SetBlockStorageUsesPartitions adds the blockStorageUsesPartitions to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetBlockStorageUsesPartitions(blockStorageUsesPartitions *bool) {
+	o.BlockStorageUsesPartitions = blockStorageUsesPartitions
 }
 
-// WithInactiveDataReportingStartTimeQueryParameter adds the inactiveDataReportingStartTime to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime *string) *AggregateCollectionGetParams {
-	o.SetInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime)
+// WithCreateTime adds the createTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithCreateTime(createTime *string) *AggregateCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetInactiveDataReportingStartTimeQueryParameter adds the inactiveDataReportingStartTime to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime *string) {
-	o.InactiveDataReportingStartTimeQueryParameter = inactiveDataReportingStartTime
+// SetCreateTime adds the createTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithInodeAttributesFilePrivateCapacityQueryParameter adds the inodeAttributesFilePrivateCapacity to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesFilePrivateCapacityQueryParameter(inodeAttributesFilePrivateCapacity *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesFilePrivateCapacityQueryParameter(inodeAttributesFilePrivateCapacity)
+// WithDataEncryptionDriveProtectionEnabled adds the dataEncryptionDriveProtectionEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithDataEncryptionDriveProtectionEnabled(dataEncryptionDriveProtectionEnabled *bool) *AggregateCollectionGetParams {
+	o.SetDataEncryptionDriveProtectionEnabled(dataEncryptionDriveProtectionEnabled)
 	return o
 }
 
-// SetInodeAttributesFilePrivateCapacityQueryParameter adds the inodeAttributesFilePrivateCapacity to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesFilePrivateCapacityQueryParameter(inodeAttributesFilePrivateCapacity *int64) {
-	o.InodeAttributesFilePrivateCapacityQueryParameter = inodeAttributesFilePrivateCapacity
+// SetDataEncryptionDriveProtectionEnabled adds the dataEncryptionDriveProtectionEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetDataEncryptionDriveProtectionEnabled(dataEncryptionDriveProtectionEnabled *bool) {
+	o.DataEncryptionDriveProtectionEnabled = dataEncryptionDriveProtectionEnabled
 }
 
-// WithInodeAttributesFilePublicCapacityQueryParameter adds the inodeAttributesFilePublicCapacity to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesFilePublicCapacityQueryParameter(inodeAttributesFilePublicCapacity *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesFilePublicCapacityQueryParameter(inodeAttributesFilePublicCapacity)
+// WithDataEncryptionSoftwareEncryptionEnabled adds the dataEncryptionSoftwareEncryptionEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithDataEncryptionSoftwareEncryptionEnabled(dataEncryptionSoftwareEncryptionEnabled *bool) *AggregateCollectionGetParams {
+	o.SetDataEncryptionSoftwareEncryptionEnabled(dataEncryptionSoftwareEncryptionEnabled)
 	return o
 }
 
-// SetInodeAttributesFilePublicCapacityQueryParameter adds the inodeAttributesFilePublicCapacity to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesFilePublicCapacityQueryParameter(inodeAttributesFilePublicCapacity *int64) {
-	o.InodeAttributesFilePublicCapacityQueryParameter = inodeAttributesFilePublicCapacity
+// SetDataEncryptionSoftwareEncryptionEnabled adds the dataEncryptionSoftwareEncryptionEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetDataEncryptionSoftwareEncryptionEnabled(dataEncryptionSoftwareEncryptionEnabled *bool) {
+	o.DataEncryptionSoftwareEncryptionEnabled = dataEncryptionSoftwareEncryptionEnabled
 }
 
-// WithInodeAttributesFilesPrivateUsedQueryParameter adds the inodeAttributesFilesPrivateUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesFilesPrivateUsedQueryParameter(inodeAttributesFilesPrivateUsed *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesFilesPrivateUsedQueryParameter(inodeAttributesFilesPrivateUsed)
+// WithDrHomeNodeName adds the drHomeNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithDrHomeNodeName(drHomeNodeName *string) *AggregateCollectionGetParams {
+	o.SetDrHomeNodeName(drHomeNodeName)
 	return o
 }
 
-// SetInodeAttributesFilesPrivateUsedQueryParameter adds the inodeAttributesFilesPrivateUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesFilesPrivateUsedQueryParameter(inodeAttributesFilesPrivateUsed *int64) {
-	o.InodeAttributesFilesPrivateUsedQueryParameter = inodeAttributesFilesPrivateUsed
+// SetDrHomeNodeName adds the drHomeNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetDrHomeNodeName(drHomeNodeName *string) {
+	o.DrHomeNodeName = drHomeNodeName
 }
 
-// WithInodeAttributesFilesTotalQueryParameter adds the inodeAttributesFilesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesFilesTotalQueryParameter(inodeAttributesFilesTotal *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesFilesTotalQueryParameter(inodeAttributesFilesTotal)
+// WithDrHomeNodeUUID adds the drHomeNodeUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithDrHomeNodeUUID(drHomeNodeUUID *string) *AggregateCollectionGetParams {
+	o.SetDrHomeNodeUUID(drHomeNodeUUID)
 	return o
 }
 
-// SetInodeAttributesFilesTotalQueryParameter adds the inodeAttributesFilesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesFilesTotalQueryParameter(inodeAttributesFilesTotal *int64) {
-	o.InodeAttributesFilesTotalQueryParameter = inodeAttributesFilesTotal
+// SetDrHomeNodeUUID adds the drHomeNodeUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetDrHomeNodeUUID(drHomeNodeUUID *string) {
+	o.DrHomeNodeUUID = drHomeNodeUUID
 }
 
-// WithInodeAttributesFilesUsedQueryParameter adds the inodeAttributesFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesFilesUsedQueryParameter(inodeAttributesFilesUsed *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesFilesUsedQueryParameter(inodeAttributesFilesUsed)
+// WithFields adds the fields to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithFields(fields []string) *AggregateCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetInodeAttributesFilesUsedQueryParameter adds the inodeAttributesFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesFilesUsedQueryParameter(inodeAttributesFilesUsed *int64) {
-	o.InodeAttributesFilesUsedQueryParameter = inodeAttributesFilesUsed
+// SetFields adds the fields to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInodeAttributesMaxFilesAvailableQueryParameter adds the inodeAttributesMaxFilesAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesAvailableQueryParameter(inodeAttributesMaxFilesAvailable *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesMaxFilesAvailableQueryParameter(inodeAttributesMaxFilesAvailable)
+// WithFlashPoolEligible adds the flashPoolEligible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithFlashPoolEligible(flashPoolEligible *bool) *AggregateCollectionGetParams {
+	o.SetFlashPoolEligible(flashPoolEligible)
 	return o
 }
 
-// SetInodeAttributesMaxFilesAvailableQueryParameter adds the inodeAttributesMaxFilesAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesAvailableQueryParameter(inodeAttributesMaxFilesAvailable *int64) {
-	o.InodeAttributesMaxFilesAvailableQueryParameter = inodeAttributesMaxFilesAvailable
+// SetFlashPoolEligible adds the flashPoolEligible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetFlashPoolEligible(flashPoolEligible *bool) {
+	o.FlashPoolEligible = flashPoolEligible
 }
 
-// WithInodeAttributesMaxFilesPossibleQueryParameter adds the inodeAttributesMaxFilesPossible to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesPossibleQueryParameter(inodeAttributesMaxFilesPossible *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesMaxFilesPossibleQueryParameter(inodeAttributesMaxFilesPossible)
+// WithHomeNodeName adds the homeNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithHomeNodeName(homeNodeName *string) *AggregateCollectionGetParams {
+	o.SetHomeNodeName(homeNodeName)
 	return o
 }
 
-// SetInodeAttributesMaxFilesPossibleQueryParameter adds the inodeAttributesMaxFilesPossible to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesPossibleQueryParameter(inodeAttributesMaxFilesPossible *int64) {
-	o.InodeAttributesMaxFilesPossibleQueryParameter = inodeAttributesMaxFilesPossible
+// SetHomeNodeName adds the homeNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetHomeNodeName(homeNodeName *string) {
+	o.HomeNodeName = homeNodeName
 }
 
-// WithInodeAttributesMaxFilesUsedQueryParameter adds the inodeAttributesMaxFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesUsedQueryParameter(inodeAttributesMaxFilesUsed *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesMaxFilesUsedQueryParameter(inodeAttributesMaxFilesUsed)
+// WithHomeNodeUUID adds the homeNodeUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithHomeNodeUUID(homeNodeUUID *string) *AggregateCollectionGetParams {
+	o.SetHomeNodeUUID(homeNodeUUID)
 	return o
 }
 
-// SetInodeAttributesMaxFilesUsedQueryParameter adds the inodeAttributesMaxFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesUsedQueryParameter(inodeAttributesMaxFilesUsed *int64) {
-	o.InodeAttributesMaxFilesUsedQueryParameter = inodeAttributesMaxFilesUsed
+// SetHomeNodeUUID adds the homeNodeUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetHomeNodeUUID(homeNodeUUID *string) {
+	o.HomeNodeUUID = homeNodeUUID
 }
 
-// WithInodeAttributesUsedPercentQueryParameter adds the inodeAttributesUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesUsedPercentQueryParameter(inodeAttributesUsedPercent *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesUsedPercentQueryParameter(inodeAttributesUsedPercent)
+// WithInactiveDataReportingEnabled adds the inactiveDataReportingEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInactiveDataReportingEnabled(inactiveDataReportingEnabled *bool) *AggregateCollectionGetParams {
+	o.SetInactiveDataReportingEnabled(inactiveDataReportingEnabled)
 	return o
 }
 
-// SetInodeAttributesUsedPercentQueryParameter adds the inodeAttributesUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesUsedPercentQueryParameter(inodeAttributesUsedPercent *int64) {
-	o.InodeAttributesUsedPercentQueryParameter = inodeAttributesUsedPercent
+// SetInactiveDataReportingEnabled adds the inactiveDataReportingEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInactiveDataReportingEnabled(inactiveDataReportingEnabled *bool) {
+	o.InactiveDataReportingEnabled = inactiveDataReportingEnabled
 }
 
-// WithInodeAttributesVersionQueryParameter adds the inodeAttributesVersion to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithInodeAttributesVersionQueryParameter(inodeAttributesVersion *int64) *AggregateCollectionGetParams {
-	o.SetInodeAttributesVersionQueryParameter(inodeAttributesVersion)
+// WithInactiveDataReportingStartTime adds the inactiveDataReportingStartTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInactiveDataReportingStartTime(inactiveDataReportingStartTime *string) *AggregateCollectionGetParams {
+	o.SetInactiveDataReportingStartTime(inactiveDataReportingStartTime)
 	return o
 }
 
-// SetInodeAttributesVersionQueryParameter adds the inodeAttributesVersion to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetInodeAttributesVersionQueryParameter(inodeAttributesVersion *int64) {
-	o.InodeAttributesVersionQueryParameter = inodeAttributesVersion
+// SetInactiveDataReportingStartTime adds the inactiveDataReportingStartTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInactiveDataReportingStartTime(inactiveDataReportingStartTime *string) {
+	o.InactiveDataReportingStartTime = inactiveDataReportingStartTime
 }
 
-// WithIsSpareLowQueryParameter adds the isSpareLow to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithIsSpareLowQueryParameter(isSpareLow *bool) *AggregateCollectionGetParams {
-	o.SetIsSpareLowQueryParameter(isSpareLow)
+// WithInodeAttributesFilePrivateCapacity adds the inodeAttributesFilePrivateCapacity to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesFilePrivateCapacity(inodeAttributesFilePrivateCapacity *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesFilePrivateCapacity(inodeAttributesFilePrivateCapacity)
 	return o
 }
 
-// SetIsSpareLowQueryParameter adds the isSpareLow to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetIsSpareLowQueryParameter(isSpareLow *bool) {
-	o.IsSpareLowQueryParameter = isSpareLow
+// SetInodeAttributesFilePrivateCapacity adds the inodeAttributesFilePrivateCapacity to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesFilePrivateCapacity(inodeAttributesFilePrivateCapacity *int64) {
+	o.InodeAttributesFilePrivateCapacity = inodeAttributesFilePrivateCapacity
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AggregateCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithInodeAttributesFilePublicCapacity adds the inodeAttributesFilePublicCapacity to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesFilePublicCapacity(inodeAttributesFilePublicCapacity *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesFilePublicCapacity(inodeAttributesFilePublicCapacity)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetInodeAttributesFilePublicCapacity adds the inodeAttributesFilePublicCapacity to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesFilePublicCapacity(inodeAttributesFilePublicCapacity *int64) {
+	o.InodeAttributesFilePublicCapacity = inodeAttributesFilePublicCapacity
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *AggregateCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithInodeAttributesFilesPrivateUsed adds the inodeAttributesFilesPrivateUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesFilesPrivateUsed(inodeAttributesFilesPrivateUsed *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesFilesPrivateUsed(inodeAttributesFilesPrivateUsed)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetInodeAttributesFilesPrivateUsed adds the inodeAttributesFilesPrivateUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesFilesPrivateUsed(inodeAttributesFilesPrivateUsed *int64) {
+	o.InodeAttributesFilesPrivateUsed = inodeAttributesFilesPrivateUsed
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *AggregateCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithInodeAttributesFilesTotal adds the inodeAttributesFilesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesFilesTotal(inodeAttributesFilesTotal *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesFilesTotal(inodeAttributesFilesTotal)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetInodeAttributesFilesTotal adds the inodeAttributesFilesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesFilesTotal(inodeAttributesFilesTotal *int64) {
+	o.InodeAttributesFilesTotal = inodeAttributesFilesTotal
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *AggregateCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithInodeAttributesFilesUsed adds the inodeAttributesFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesFilesUsed(inodeAttributesFilesUsed *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesFilesUsed(inodeAttributesFilesUsed)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetInodeAttributesFilesUsed adds the inodeAttributesFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesFilesUsed(inodeAttributesFilesUsed *int64) {
+	o.InodeAttributesFilesUsed = inodeAttributesFilesUsed
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *AggregateCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithInodeAttributesMaxFilesAvailable adds the inodeAttributesMaxFilesAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesAvailable(inodeAttributesMaxFilesAvailable *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesMaxFilesAvailable(inodeAttributesMaxFilesAvailable)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetInodeAttributesMaxFilesAvailable adds the inodeAttributesMaxFilesAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesAvailable(inodeAttributesMaxFilesAvailable *int64) {
+	o.InodeAttributesMaxFilesAvailable = inodeAttributesMaxFilesAvailable
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *AggregateCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithInodeAttributesMaxFilesPossible adds the inodeAttributesMaxFilesPossible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesPossible(inodeAttributesMaxFilesPossible *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesMaxFilesPossible(inodeAttributesMaxFilesPossible)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetInodeAttributesMaxFilesPossible adds the inodeAttributesMaxFilesPossible to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesPossible(inodeAttributesMaxFilesPossible *int64) {
+	o.InodeAttributesMaxFilesPossible = inodeAttributesMaxFilesPossible
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *AggregateCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithInodeAttributesMaxFilesUsed adds the inodeAttributesMaxFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesMaxFilesUsed(inodeAttributesMaxFilesUsed *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesMaxFilesUsed(inodeAttributesMaxFilesUsed)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetInodeAttributesMaxFilesUsed adds the inodeAttributesMaxFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesMaxFilesUsed(inodeAttributesMaxFilesUsed *int64) {
+	o.InodeAttributesMaxFilesUsed = inodeAttributesMaxFilesUsed
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *AggregateCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithInodeAttributesUsedPercent adds the inodeAttributesUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesUsedPercent(inodeAttributesUsedPercent *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesUsedPercent(inodeAttributesUsedPercent)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetInodeAttributesUsedPercent adds the inodeAttributesUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesUsedPercent(inodeAttributesUsedPercent *int64) {
+	o.InodeAttributesUsedPercent = inodeAttributesUsedPercent
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *AggregateCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithInodeAttributesVersion adds the inodeAttributesVersion to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInodeAttributesVersion(inodeAttributesVersion *int64) *AggregateCollectionGetParams {
+	o.SetInodeAttributesVersion(inodeAttributesVersion)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetInodeAttributesVersion adds the inodeAttributesVersion to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInodeAttributesVersion(inodeAttributesVersion *int64) {
+	o.InodeAttributesVersion = inodeAttributesVersion
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *AggregateCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithIsSpareLow adds the isSpareLow to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithIsSpareLow(isSpareLow *bool) *AggregateCollectionGetParams {
+	o.SetIsSpareLow(isSpareLow)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetIsSpareLow adds the isSpareLow to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetIsSpareLow(isSpareLow *bool) {
+	o.IsSpareLow = isSpareLow
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *AggregateCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMaxRecords adds the maxRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMaxRecords(maxRecords *int64) *AggregateCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMaxRecords adds the maxRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricThroughputOtherQueryParameter adds the metricThroughputOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricThroughputOtherQueryParameter(metricThroughputOther *int64) *AggregateCollectionGetParams {
-	o.SetMetricThroughputOtherQueryParameter(metricThroughputOther)
+// WithMetricDuration adds the metricDuration to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricDuration(metricDuration *string) *AggregateCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricThroughputOtherQueryParameter adds the metricThroughputOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricThroughputOtherQueryParameter(metricThroughputOther *int64) {
-	o.MetricThroughputOtherQueryParameter = metricThroughputOther
+// SetMetricDuration adds the metricDuration to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *AggregateCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricIopsOther adds the metricIopsOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *AggregateCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricIopsOther adds the metricIopsOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *AggregateCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricIopsRead adds the metricIopsRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *AggregateCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricIopsRead adds the metricIopsRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *AggregateCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricIopsTotal adds the metricIopsTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *AggregateCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricIopsTotal adds the metricIopsTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *AggregateCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricIopsWrite adds the metricIopsWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *AggregateCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricIopsWrite adds the metricIopsWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithNameQueryParameter adds the name to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithNameQueryParameter(name *string) *AggregateCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithMetricLatencyOther adds the metricLatencyOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *AggregateCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetMetricLatencyOther adds the metricLatencyOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *AggregateCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithMetricLatencyRead adds the metricLatencyRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *AggregateCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetMetricLatencyRead adds the metricLatencyRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *AggregateCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *AggregateCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetMetricLatencyTotal adds the metricLatencyTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithOrderByQueryParameter adds the orderBy to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AggregateCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *AggregateCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetMetricLatencyWrite adds the metricLatencyWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithRecommendQueryParameter adds the recommend to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendQueryParameter(recommend *bool) *AggregateCollectionGetParams {
-	o.SetRecommendQueryParameter(recommend)
+// WithMetricStatus adds the metricStatus to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricStatus(metricStatus *string) *AggregateCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetRecommendQueryParameter adds the recommend to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendQueryParameter(recommend *bool) {
-	o.RecommendQueryParameter = recommend
+// SetMetricStatus adds the metricStatus to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithRecommendationSparesChecksumStyleQueryParameter adds the recommendationSparesChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesChecksumStyleQueryParameter(recommendationSparesChecksumStyle *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesChecksumStyleQueryParameter(recommendationSparesChecksumStyle)
+// WithMetricThroughputOther adds the metricThroughputOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricThroughputOther(metricThroughputOther *int64) *AggregateCollectionGetParams {
+	o.SetMetricThroughputOther(metricThroughputOther)
 	return o
 }
 
-// SetRecommendationSparesChecksumStyleQueryParameter adds the recommendationSparesChecksumStyle to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesChecksumStyleQueryParameter(recommendationSparesChecksumStyle *string) {
-	o.RecommendationSparesChecksumStyleQueryParameter = recommendationSparesChecksumStyle
+// SetMetricThroughputOther adds the metricThroughputOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricThroughputOther(metricThroughputOther *int64) {
+	o.MetricThroughputOther = metricThroughputOther
 }
 
-// WithRecommendationSparesDiskClassQueryParameter adds the recommendationSparesDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskClassQueryParameter(recommendationSparesDiskClass *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesDiskClassQueryParameter(recommendationSparesDiskClass)
+// WithMetricThroughputRead adds the metricThroughputRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *AggregateCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetRecommendationSparesDiskClassQueryParameter adds the recommendationSparesDiskClass to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskClassQueryParameter(recommendationSparesDiskClass *string) {
-	o.RecommendationSparesDiskClassQueryParameter = recommendationSparesDiskClass
+// SetMetricThroughputRead adds the metricThroughputRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithRecommendationSparesDiskTypeQueryParameter adds the recommendationSparesDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskTypeQueryParameter(recommendationSparesDiskType *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesDiskTypeQueryParameter(recommendationSparesDiskType)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *AggregateCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetRecommendationSparesDiskTypeQueryParameter adds the recommendationSparesDiskType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskTypeQueryParameter(recommendationSparesDiskType *string) {
-	o.RecommendationSparesDiskTypeQueryParameter = recommendationSparesDiskType
+// SetMetricThroughputTotal adds the metricThroughputTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithRecommendationSparesIsPartitionQueryParameter adds the recommendationSparesIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesIsPartitionQueryParameter(recommendationSparesIsPartition *bool) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesIsPartitionQueryParameter(recommendationSparesIsPartition)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *AggregateCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetRecommendationSparesIsPartitionQueryParameter adds the recommendationSparesIsPartition to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesIsPartitionQueryParameter(recommendationSparesIsPartition *bool) {
-	o.RecommendationSparesIsPartitionQueryParameter = recommendationSparesIsPartition
+// SetMetricThroughputWrite adds the metricThroughputWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithRecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter(recommendationSparesLayoutRequirementsAggregateMinDisks)
+// WithMetricTimestamp adds the metricTimestamp to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *AggregateCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) {
-	o.RecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter = recommendationSparesLayoutRequirementsAggregateMinDisks
+// SetMetricTimestamp adds the metricTimestamp to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithRecommendationSparesLayoutRequirementsDefaultQueryParameter adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsDefaultQueryParameter(recommendationSparesLayoutRequirementsDefault *bool) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsDefaultQueryParameter(recommendationSparesLayoutRequirementsDefault)
+// WithName adds the name to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithName(name *string) *AggregateCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsDefaultQueryParameter adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsDefaultQueryParameter(recommendationSparesLayoutRequirementsDefault *bool) {
-	o.RecommendationSparesLayoutRequirementsDefaultQueryParameter = recommendationSparesLayoutRequirementsDefault
+// SetName adds the name to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithRecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter(recommendationSparesLayoutRequirementsRaidGroupDefault)
+// WithNodeName adds the nodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithNodeName(nodeName *string) *AggregateCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) {
-	o.RecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter = recommendationSparesLayoutRequirementsRaidGroupDefault
+// SetNodeName adds the nodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithRecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMax *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMax)
+// WithNodeUUID adds the nodeUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithNodeUUID(nodeUUID *string) *AggregateCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMax *int64) {
-	o.RecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter = recommendationSparesLayoutRequirementsRaidGroupMax
+// SetNodeUUID adds the nodeUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithRecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMin *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMin)
+// WithOrderBy adds the orderBy to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithOrderBy(orderBy []string) *AggregateCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter(recommendationSparesLayoutRequirementsRaidGroupMin *int64) {
-	o.RecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter = recommendationSparesLayoutRequirementsRaidGroupMin
+// SetOrderBy adds the orderBy to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithRecommendationSparesLayoutRequirementsRaIDTypeQueryParameter adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaIDTypeQueryParameter(recommendationSparesLayoutRequirementsRaidType *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesLayoutRequirementsRaIDTypeQueryParameter(recommendationSparesLayoutRequirementsRaidType)
+// WithRecommend adds the recommend to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommend(recommend *bool) *AggregateCollectionGetParams {
+	o.SetRecommend(recommend)
 	return o
 }
 
-// SetRecommendationSparesLayoutRequirementsRaIDTypeQueryParameter adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaIDTypeQueryParameter(recommendationSparesLayoutRequirementsRaidType *string) {
-	o.RecommendationSparesLayoutRequirementsRaIDTypeQueryParameter = recommendationSparesLayoutRequirementsRaidType
+// SetRecommend adds the recommend to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommend(recommend *bool) {
+	o.Recommend = recommend
 }
 
-// WithRecommendationSparesNodeNameQueryParameter adds the recommendationSparesNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeNameQueryParameter(recommendationSparesNodeName *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesNodeNameQueryParameter(recommendationSparesNodeName)
+// WithRecommendationSparesChecksumStyle adds the recommendationSparesChecksumStyle to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle)
 	return o
 }
 
-// SetRecommendationSparesNodeNameQueryParameter adds the recommendationSparesNodeName to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeNameQueryParameter(recommendationSparesNodeName *string) {
-	o.RecommendationSparesNodeNameQueryParameter = recommendationSparesNodeName
+// SetRecommendationSparesChecksumStyle adds the recommendationSparesChecksumStyle to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesChecksumStyle(recommendationSparesChecksumStyle *string) {
+	o.RecommendationSparesChecksumStyle = recommendationSparesChecksumStyle
 }
 
-// WithRecommendationSparesNodeUUIDQueryParameter adds the recommendationSparesNodeUUID to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeUUIDQueryParameter(recommendationSparesNodeUUID *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesNodeUUIDQueryParameter(recommendationSparesNodeUUID)
+// WithRecommendationSparesDiskClass adds the recommendationSparesDiskClass to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskClass(recommendationSparesDiskClass *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesDiskClass(recommendationSparesDiskClass)
 	return o
 }
 
-// SetRecommendationSparesNodeUUIDQueryParameter adds the recommendationSparesNodeUuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeUUIDQueryParameter(recommendationSparesNodeUUID *string) {
-	o.RecommendationSparesNodeUUIDQueryParameter = recommendationSparesNodeUUID
+// SetRecommendationSparesDiskClass adds the recommendationSparesDiskClass to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskClass(recommendationSparesDiskClass *string) {
+	o.RecommendationSparesDiskClass = recommendationSparesDiskClass
 }
 
-// WithRecommendationSparesSizeQueryParameter adds the recommendationSparesSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesSizeQueryParameter(recommendationSparesSize *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesSizeQueryParameter(recommendationSparesSize)
+// WithRecommendationSparesDiskType adds the recommendationSparesDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesDiskType(recommendationSparesDiskType *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesDiskType(recommendationSparesDiskType)
 	return o
 }
 
-// SetRecommendationSparesSizeQueryParameter adds the recommendationSparesSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesSizeQueryParameter(recommendationSparesSize *int64) {
-	o.RecommendationSparesSizeQueryParameter = recommendationSparesSize
+// SetRecommendationSparesDiskType adds the recommendationSparesDiskType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesDiskType(recommendationSparesDiskType *string) {
+	o.RecommendationSparesDiskType = recommendationSparesDiskType
 }
 
-// WithRecommendationSparesSyncmirrorPoolQueryParameter adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesSyncmirrorPoolQueryParameter(recommendationSparesSyncmirrorPool *string) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesSyncmirrorPoolQueryParameter(recommendationSparesSyncmirrorPool)
+// WithRecommendationSparesIsPartition adds the recommendationSparesIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesIsPartition(recommendationSparesIsPartition *bool) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesIsPartition(recommendationSparesIsPartition)
 	return o
 }
 
-// SetRecommendationSparesSyncmirrorPoolQueryParameter adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesSyncmirrorPoolQueryParameter(recommendationSparesSyncmirrorPool *string) {
-	o.RecommendationSparesSyncmirrorPoolQueryParameter = recommendationSparesSyncmirrorPool
+// SetRecommendationSparesIsPartition adds the recommendationSparesIsPartition to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesIsPartition(recommendationSparesIsPartition *bool) {
+	o.RecommendationSparesIsPartition = recommendationSparesIsPartition
 }
 
-// WithRecommendationSparesTotalQueryParameter adds the recommendationSparesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesTotalQueryParameter(recommendationSparesTotal *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesTotalQueryParameter(recommendationSparesTotal)
+// WithRecommendationSparesLayoutRequirementsAggregateMinDisks adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks)
 	return o
 }
 
-// SetRecommendationSparesTotalQueryParameter adds the recommendationSparesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesTotalQueryParameter(recommendationSparesTotal *int64) {
-	o.RecommendationSparesTotalQueryParameter = recommendationSparesTotal
+// SetRecommendationSparesLayoutRequirementsAggregateMinDisks adds the recommendationSparesLayoutRequirementsAggregateMinDisks to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsAggregateMinDisks(recommendationSparesLayoutRequirementsAggregateMinDisks *int64) {
+	o.RecommendationSparesLayoutRequirementsAggregateMinDisks = recommendationSparesLayoutRequirementsAggregateMinDisks
 }
 
-// WithRecommendationSparesUsableQueryParameter adds the recommendationSparesUsable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithRecommendationSparesUsableQueryParameter(recommendationSparesUsable *int64) *AggregateCollectionGetParams {
-	o.SetRecommendationSparesUsableQueryParameter(recommendationSparesUsable)
+// WithRecommendationSparesLayoutRequirementsDefault adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault *bool) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault)
 	return o
 }
 
-// SetRecommendationSparesUsableQueryParameter adds the recommendationSparesUsable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetRecommendationSparesUsableQueryParameter(recommendationSparesUsable *int64) {
-	o.RecommendationSparesUsableQueryParameter = recommendationSparesUsable
+// SetRecommendationSparesLayoutRequirementsDefault adds the recommendationSparesLayoutRequirementsDefault to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsDefault(recommendationSparesLayoutRequirementsDefault *bool) {
+	o.RecommendationSparesLayoutRequirementsDefault = recommendationSparesLayoutRequirementsDefault
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AggregateCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithRecommendationSparesLayoutRequirementsRaidGroupDefault adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetRecommendationSparesLayoutRequirementsRaidGroupDefault adds the recommendationSparesLayoutRequirementsRaidGroupDefault to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupDefault(recommendationSparesLayoutRequirementsRaidGroupDefault *int64) {
+	o.RecommendationSparesLayoutRequirementsRaidGroupDefault = recommendationSparesLayoutRequirementsRaidGroupDefault
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AggregateCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithRecommendationSparesLayoutRequirementsRaidGroupMax adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetRecommendationSparesLayoutRequirementsRaidGroupMax adds the recommendationSparesLayoutRequirementsRaidGroupMax to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupMax(recommendationSparesLayoutRequirementsRaidGroupMax *int64) {
+	o.RecommendationSparesLayoutRequirementsRaidGroupMax = recommendationSparesLayoutRequirementsRaidGroupMax
 }
 
-// WithShowSparesQueryParameter adds the showSpares to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithShowSparesQueryParameter(showSpares *bool) *AggregateCollectionGetParams {
-	o.SetShowSparesQueryParameter(showSpares)
+// WithRecommendationSparesLayoutRequirementsRaidGroupMin adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin)
 	return o
 }
 
-// SetShowSparesQueryParameter adds the showSpares to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetShowSparesQueryParameter(showSpares *bool) {
-	o.ShowSparesQueryParameter = showSpares
+// SetRecommendationSparesLayoutRequirementsRaidGroupMin adds the recommendationSparesLayoutRequirementsRaidGroupMin to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidGroupMin(recommendationSparesLayoutRequirementsRaidGroupMin *int64) {
+	o.RecommendationSparesLayoutRequirementsRaidGroupMin = recommendationSparesLayoutRequirementsRaidGroupMin
 }
 
-// WithSidlEnabledQueryParameter adds the sidlEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSidlEnabledQueryParameter(sidlEnabled *bool) *AggregateCollectionGetParams {
-	o.SetSidlEnabledQueryParameter(sidlEnabled)
+// WithRecommendationSparesLayoutRequirementsRaidType adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType)
 	return o
 }
 
-// SetSidlEnabledQueryParameter adds the sidlEnabled to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSidlEnabledQueryParameter(sidlEnabled *bool) {
-	o.SidlEnabledQueryParameter = sidlEnabled
+// SetRecommendationSparesLayoutRequirementsRaidType adds the recommendationSparesLayoutRequirementsRaidType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesLayoutRequirementsRaidType(recommendationSparesLayoutRequirementsRaidType *string) {
+	o.RecommendationSparesLayoutRequirementsRaidType = recommendationSparesLayoutRequirementsRaidType
 }
 
-// WithSnaplockTypeQueryParameter adds the snaplockType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSnaplockTypeQueryParameter(snaplockType *string) *AggregateCollectionGetParams {
-	o.SetSnaplockTypeQueryParameter(snaplockType)
+// WithRecommendationSparesNodeName adds the recommendationSparesNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeName(recommendationSparesNodeName *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesNodeName(recommendationSparesNodeName)
 	return o
 }
 
-// SetSnaplockTypeQueryParameter adds the snaplockType to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSnaplockTypeQueryParameter(snaplockType *string) {
-	o.SnaplockTypeQueryParameter = snaplockType
+// SetRecommendationSparesNodeName adds the recommendationSparesNodeName to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeName(recommendationSparesNodeName *string) {
+	o.RecommendationSparesNodeName = recommendationSparesNodeName
 }
 
-// WithSnapshotFilesTotalQueryParameter adds the snapshotFilesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSnapshotFilesTotalQueryParameter(snapshotFilesTotal *int64) *AggregateCollectionGetParams {
-	o.SetSnapshotFilesTotalQueryParameter(snapshotFilesTotal)
+// WithRecommendationSparesNodeUUID adds the recommendationSparesNodeUUID to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesNodeUUID(recommendationSparesNodeUUID *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesNodeUUID(recommendationSparesNodeUUID)
 	return o
 }
 
-// SetSnapshotFilesTotalQueryParameter adds the snapshotFilesTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSnapshotFilesTotalQueryParameter(snapshotFilesTotal *int64) {
-	o.SnapshotFilesTotalQueryParameter = snapshotFilesTotal
+// SetRecommendationSparesNodeUUID adds the recommendationSparesNodeUuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesNodeUUID(recommendationSparesNodeUUID *string) {
+	o.RecommendationSparesNodeUUID = recommendationSparesNodeUUID
 }
 
-// WithSnapshotFilesUsedQueryParameter adds the snapshotFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSnapshotFilesUsedQueryParameter(snapshotFilesUsed *int64) *AggregateCollectionGetParams {
-	o.SetSnapshotFilesUsedQueryParameter(snapshotFilesUsed)
+// WithRecommendationSparesSize adds the recommendationSparesSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesSize(recommendationSparesSize *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesSize(recommendationSparesSize)
 	return o
 }
 
-// SetSnapshotFilesUsedQueryParameter adds the snapshotFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSnapshotFilesUsedQueryParameter(snapshotFilesUsed *int64) {
-	o.SnapshotFilesUsedQueryParameter = snapshotFilesUsed
+// SetRecommendationSparesSize adds the recommendationSparesSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesSize(recommendationSparesSize *int64) {
+	o.RecommendationSparesSize = recommendationSparesSize
 }
 
-// WithSnapshotMaxFilesAvailableQueryParameter adds the snapshotMaxFilesAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSnapshotMaxFilesAvailableQueryParameter(snapshotMaxFilesAvailable *int64) *AggregateCollectionGetParams {
-	o.SetSnapshotMaxFilesAvailableQueryParameter(snapshotMaxFilesAvailable)
+// WithRecommendationSparesSyncmirrorPool adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool *string) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool)
 	return o
 }
 
-// SetSnapshotMaxFilesAvailableQueryParameter adds the snapshotMaxFilesAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSnapshotMaxFilesAvailableQueryParameter(snapshotMaxFilesAvailable *int64) {
-	o.SnapshotMaxFilesAvailableQueryParameter = snapshotMaxFilesAvailable
+// SetRecommendationSparesSyncmirrorPool adds the recommendationSparesSyncmirrorPool to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesSyncmirrorPool(recommendationSparesSyncmirrorPool *string) {
+	o.RecommendationSparesSyncmirrorPool = recommendationSparesSyncmirrorPool
 }
 
-// WithSnapshotMaxFilesUsedQueryParameter adds the snapshotMaxFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSnapshotMaxFilesUsedQueryParameter(snapshotMaxFilesUsed *int64) *AggregateCollectionGetParams {
-	o.SetSnapshotMaxFilesUsedQueryParameter(snapshotMaxFilesUsed)
+// WithRecommendationSparesTotal adds the recommendationSparesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesTotal(recommendationSparesTotal *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesTotal(recommendationSparesTotal)
 	return o
 }
 
-// SetSnapshotMaxFilesUsedQueryParameter adds the snapshotMaxFilesUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSnapshotMaxFilesUsedQueryParameter(snapshotMaxFilesUsed *int64) {
-	o.SnapshotMaxFilesUsedQueryParameter = snapshotMaxFilesUsed
+// SetRecommendationSparesTotal adds the recommendationSparesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesTotal(recommendationSparesTotal *int64) {
+	o.RecommendationSparesTotal = recommendationSparesTotal
 }
 
-// WithSpaceBlockStorageAggregateMetadataQueryParameter adds the spaceBlockStorageAggregateMetadata to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAggregateMetadataQueryParameter(spaceBlockStorageAggregateMetadata *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageAggregateMetadataQueryParameter(spaceBlockStorageAggregateMetadata)
+// WithRecommendationSparesUsable adds the recommendationSparesUsable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithRecommendationSparesUsable(recommendationSparesUsable *int64) *AggregateCollectionGetParams {
+	o.SetRecommendationSparesUsable(recommendationSparesUsable)
 	return o
 }
 
-// SetSpaceBlockStorageAggregateMetadataQueryParameter adds the spaceBlockStorageAggregateMetadata to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAggregateMetadataQueryParameter(spaceBlockStorageAggregateMetadata *int64) {
-	o.SpaceBlockStorageAggregateMetadataQueryParameter = spaceBlockStorageAggregateMetadata
+// SetRecommendationSparesUsable adds the recommendationSparesUsable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetRecommendationSparesUsable(recommendationSparesUsable *int64) {
+	o.RecommendationSparesUsable = recommendationSparesUsable
 }
 
-// WithSpaceBlockStorageAggregateMetadataPercentQueryParameter adds the spaceBlockStorageAggregateMetadataPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAggregateMetadataPercentQueryParameter(spaceBlockStorageAggregateMetadataPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageAggregateMetadataPercentQueryParameter(spaceBlockStorageAggregateMetadataPercent)
+// WithReturnRecords adds the returnRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithReturnRecords(returnRecords *bool) *AggregateCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetSpaceBlockStorageAggregateMetadataPercentQueryParameter adds the spaceBlockStorageAggregateMetadataPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAggregateMetadataPercentQueryParameter(spaceBlockStorageAggregateMetadataPercent *int64) {
-	o.SpaceBlockStorageAggregateMetadataPercentQueryParameter = spaceBlockStorageAggregateMetadataPercent
+// SetReturnRecords adds the returnRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSpaceBlockStorageAvailableQueryParameter adds the spaceBlockStorageAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAvailableQueryParameter(spaceBlockStorageAvailable *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageAvailableQueryParameter(spaceBlockStorageAvailable)
+// WithReturnTimeout adds the returnTimeout to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AggregateCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSpaceBlockStorageAvailableQueryParameter adds the spaceBlockStorageAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAvailableQueryParameter(spaceBlockStorageAvailable *int64) {
-	o.SpaceBlockStorageAvailableQueryParameter = spaceBlockStorageAvailable
+// SetReturnTimeout adds the returnTimeout to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSpaceBlockStorageDataCompactedCountQueryParameter adds the spaceBlockStorageDataCompactedCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactedCountQueryParameter(spaceBlockStorageDataCompactedCount *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageDataCompactedCountQueryParameter(spaceBlockStorageDataCompactedCount)
+// WithShowSpares adds the showSpares to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithShowSpares(showSpares *bool) *AggregateCollectionGetParams {
+	o.SetShowSpares(showSpares)
 	return o
 }
 
-// SetSpaceBlockStorageDataCompactedCountQueryParameter adds the spaceBlockStorageDataCompactedCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactedCountQueryParameter(spaceBlockStorageDataCompactedCount *int64) {
-	o.SpaceBlockStorageDataCompactedCountQueryParameter = spaceBlockStorageDataCompactedCount
+// SetShowSpares adds the showSpares to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetShowSpares(showSpares *bool) {
+	o.ShowSpares = showSpares
 }
 
-// WithSpaceBlockStorageDataCompactionSpaceSavedQueryParameter adds the spaceBlockStorageDataCompactionSpaceSaved to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactionSpaceSavedQueryParameter(spaceBlockStorageDataCompactionSpaceSaved *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageDataCompactionSpaceSavedQueryParameter(spaceBlockStorageDataCompactionSpaceSaved)
+// WithSidlEnabled adds the sidlEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSidlEnabled(sidlEnabled *bool) *AggregateCollectionGetParams {
+	o.SetSidlEnabled(sidlEnabled)
 	return o
 }
 
-// SetSpaceBlockStorageDataCompactionSpaceSavedQueryParameter adds the spaceBlockStorageDataCompactionSpaceSaved to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactionSpaceSavedQueryParameter(spaceBlockStorageDataCompactionSpaceSaved *int64) {
-	o.SpaceBlockStorageDataCompactionSpaceSavedQueryParameter = spaceBlockStorageDataCompactionSpaceSaved
+// SetSidlEnabled adds the sidlEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSidlEnabled(sidlEnabled *bool) {
+	o.SidlEnabled = sidlEnabled
 }
 
-// WithSpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter adds the spaceBlockStorageDataCompactionSpaceSavedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter(spaceBlockStorageDataCompactionSpaceSavedPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter(spaceBlockStorageDataCompactionSpaceSavedPercent)
+// WithSnaplockType adds the snaplockType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSnaplockType(snaplockType *string) *AggregateCollectionGetParams {
+	o.SetSnaplockType(snaplockType)
 	return o
 }
 
-// SetSpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter adds the spaceBlockStorageDataCompactionSpaceSavedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter(spaceBlockStorageDataCompactionSpaceSavedPercent *int64) {
-	o.SpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter = spaceBlockStorageDataCompactionSpaceSavedPercent
+// SetSnaplockType adds the snaplockType to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSnaplockType(snaplockType *string) {
+	o.SnaplockType = snaplockType
 }
 
-// WithSpaceBlockStorageFullThresholdPercentQueryParameter adds the spaceBlockStorageFullThresholdPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageFullThresholdPercentQueryParameter(spaceBlockStorageFullThresholdPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageFullThresholdPercentQueryParameter(spaceBlockStorageFullThresholdPercent)
+// WithSnapshotFilesTotal adds the snapshotFilesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSnapshotFilesTotal(snapshotFilesTotal *int64) *AggregateCollectionGetParams {
+	o.SetSnapshotFilesTotal(snapshotFilesTotal)
 	return o
 }
 
-// SetSpaceBlockStorageFullThresholdPercentQueryParameter adds the spaceBlockStorageFullThresholdPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageFullThresholdPercentQueryParameter(spaceBlockStorageFullThresholdPercent *int64) {
-	o.SpaceBlockStorageFullThresholdPercentQueryParameter = spaceBlockStorageFullThresholdPercent
+// SetSnapshotFilesTotal adds the snapshotFilesTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSnapshotFilesTotal(snapshotFilesTotal *int64) {
+	o.SnapshotFilesTotal = snapshotFilesTotal
 }
 
-// WithSpaceBlockStorageInactiveUserDataQueryParameter adds the spaceBlockStorageInactiveUserData to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData)
+// WithSnapshotFilesUsed adds the snapshotFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSnapshotFilesUsed(snapshotFilesUsed *int64) *AggregateCollectionGetParams {
+	o.SetSnapshotFilesUsed(snapshotFilesUsed)
 	return o
 }
 
-// SetSpaceBlockStorageInactiveUserDataQueryParameter adds the spaceBlockStorageInactiveUserData to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData *int64) {
-	o.SpaceBlockStorageInactiveUserDataQueryParameter = spaceBlockStorageInactiveUserData
+// SetSnapshotFilesUsed adds the snapshotFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSnapshotFilesUsed(snapshotFilesUsed *int64) {
+	o.SnapshotFilesUsed = snapshotFilesUsed
 }
 
-// WithSpaceBlockStorageInactiveUserDataPercentQueryParameter adds the spaceBlockStorageInactiveUserDataPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent)
+// WithSnapshotMaxFilesAvailable adds the snapshotMaxFilesAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSnapshotMaxFilesAvailable(snapshotMaxFilesAvailable *int64) *AggregateCollectionGetParams {
+	o.SetSnapshotMaxFilesAvailable(snapshotMaxFilesAvailable)
 	return o
 }
 
-// SetSpaceBlockStorageInactiveUserDataPercentQueryParameter adds the spaceBlockStorageInactiveUserDataPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent *int64) {
-	o.SpaceBlockStorageInactiveUserDataPercentQueryParameter = spaceBlockStorageInactiveUserDataPercent
+// SetSnapshotMaxFilesAvailable adds the snapshotMaxFilesAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSnapshotMaxFilesAvailable(snapshotMaxFilesAvailable *int64) {
+	o.SnapshotMaxFilesAvailable = snapshotMaxFilesAvailable
 }
 
-// WithSpaceBlockStoragePhysicalUsedQueryParameter adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed)
+// WithSnapshotMaxFilesUsed adds the snapshotMaxFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSnapshotMaxFilesUsed(snapshotMaxFilesUsed *int64) *AggregateCollectionGetParams {
+	o.SetSnapshotMaxFilesUsed(snapshotMaxFilesUsed)
 	return o
 }
 
-// SetSpaceBlockStoragePhysicalUsedQueryParameter adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed *int64) {
-	o.SpaceBlockStoragePhysicalUsedQueryParameter = spaceBlockStoragePhysicalUsed
+// SetSnapshotMaxFilesUsed adds the snapshotMaxFilesUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSnapshotMaxFilesUsed(snapshotMaxFilesUsed *int64) {
+	o.SnapshotMaxFilesUsed = snapshotMaxFilesUsed
 }
 
-// WithSpaceBlockStoragePhysicalUsedPercentQueryParameter adds the spaceBlockStoragePhysicalUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStoragePhysicalUsedPercentQueryParameter(spaceBlockStoragePhysicalUsedPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStoragePhysicalUsedPercentQueryParameter(spaceBlockStoragePhysicalUsedPercent)
+// WithSpaceBlockStorageAggregateMetadata adds the spaceBlockStorageAggregateMetadata to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAggregateMetadata(spaceBlockStorageAggregateMetadata *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageAggregateMetadata(spaceBlockStorageAggregateMetadata)
 	return o
 }
 
-// SetSpaceBlockStoragePhysicalUsedPercentQueryParameter adds the spaceBlockStoragePhysicalUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStoragePhysicalUsedPercentQueryParameter(spaceBlockStoragePhysicalUsedPercent *int64) {
-	o.SpaceBlockStoragePhysicalUsedPercentQueryParameter = spaceBlockStoragePhysicalUsedPercent
+// SetSpaceBlockStorageAggregateMetadata adds the spaceBlockStorageAggregateMetadata to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAggregateMetadata(spaceBlockStorageAggregateMetadata *int64) {
+	o.SpaceBlockStorageAggregateMetadata = spaceBlockStorageAggregateMetadata
 }
 
-// WithSpaceBlockStorageSizeQueryParameter adds the spaceBlockStorageSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageSizeQueryParameter(spaceBlockStorageSize *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageSizeQueryParameter(spaceBlockStorageSize)
+// WithSpaceBlockStorageAggregateMetadataPercent adds the spaceBlockStorageAggregateMetadataPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAggregateMetadataPercent(spaceBlockStorageAggregateMetadataPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageAggregateMetadataPercent(spaceBlockStorageAggregateMetadataPercent)
 	return o
 }
 
-// SetSpaceBlockStorageSizeQueryParameter adds the spaceBlockStorageSize to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageSizeQueryParameter(spaceBlockStorageSize *int64) {
-	o.SpaceBlockStorageSizeQueryParameter = spaceBlockStorageSize
+// SetSpaceBlockStorageAggregateMetadataPercent adds the spaceBlockStorageAggregateMetadataPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAggregateMetadataPercent(spaceBlockStorageAggregateMetadataPercent *int64) {
+	o.SpaceBlockStorageAggregateMetadataPercent = spaceBlockStorageAggregateMetadataPercent
 }
 
-// WithSpaceBlockStorageUsedQueryParameter adds the spaceBlockStorageUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedQueryParameter(spaceBlockStorageUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageUsedQueryParameter(spaceBlockStorageUsed)
+// WithSpaceBlockStorageAvailable adds the spaceBlockStorageAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageAvailable(spaceBlockStorageAvailable *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageAvailable(spaceBlockStorageAvailable)
 	return o
 }
 
-// SetSpaceBlockStorageUsedQueryParameter adds the spaceBlockStorageUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedQueryParameter(spaceBlockStorageUsed *int64) {
-	o.SpaceBlockStorageUsedQueryParameter = spaceBlockStorageUsed
+// SetSpaceBlockStorageAvailable adds the spaceBlockStorageAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageAvailable(spaceBlockStorageAvailable *int64) {
+	o.SpaceBlockStorageAvailable = spaceBlockStorageAvailable
 }
 
-// WithSpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter adds the spaceBlockStorageUsedIncludingSnapshotReserve to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter(spaceBlockStorageUsedIncludingSnapshotReserve *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter(spaceBlockStorageUsedIncludingSnapshotReserve)
+// WithSpaceBlockStorageDataCompactedCount adds the spaceBlockStorageDataCompactedCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactedCount(spaceBlockStorageDataCompactedCount *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageDataCompactedCount(spaceBlockStorageDataCompactedCount)
 	return o
 }
 
-// SetSpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter adds the spaceBlockStorageUsedIncludingSnapshotReserve to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter(spaceBlockStorageUsedIncludingSnapshotReserve *int64) {
-	o.SpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter = spaceBlockStorageUsedIncludingSnapshotReserve
+// SetSpaceBlockStorageDataCompactedCount adds the spaceBlockStorageDataCompactedCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactedCount(spaceBlockStorageDataCompactedCount *int64) {
+	o.SpaceBlockStorageDataCompactedCount = spaceBlockStorageDataCompactedCount
 }
 
-// WithSpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter adds the spaceBlockStorageUsedIncludingSnapshotReservePercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter(spaceBlockStorageUsedIncludingSnapshotReservePercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter(spaceBlockStorageUsedIncludingSnapshotReservePercent)
+// WithSpaceBlockStorageDataCompactionSpaceSaved adds the spaceBlockStorageDataCompactionSpaceSaved to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactionSpaceSaved(spaceBlockStorageDataCompactionSpaceSaved *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageDataCompactionSpaceSaved(spaceBlockStorageDataCompactionSpaceSaved)
 	return o
 }
 
-// SetSpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter adds the spaceBlockStorageUsedIncludingSnapshotReservePercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter(spaceBlockStorageUsedIncludingSnapshotReservePercent *int64) {
-	o.SpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter = spaceBlockStorageUsedIncludingSnapshotReservePercent
+// SetSpaceBlockStorageDataCompactionSpaceSaved adds the spaceBlockStorageDataCompactionSpaceSaved to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactionSpaceSaved(spaceBlockStorageDataCompactionSpaceSaved *int64) {
+	o.SpaceBlockStorageDataCompactionSpaceSaved = spaceBlockStorageDataCompactionSpaceSaved
 }
 
-// WithSpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter adds the spaceBlockStorageVolumeDeduplicationSharedCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter(spaceBlockStorageVolumeDeduplicationSharedCount *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter(spaceBlockStorageVolumeDeduplicationSharedCount)
+// WithSpaceBlockStorageDataCompactionSpaceSavedPercent adds the spaceBlockStorageDataCompactionSpaceSavedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageDataCompactionSpaceSavedPercent(spaceBlockStorageDataCompactionSpaceSavedPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageDataCompactionSpaceSavedPercent(spaceBlockStorageDataCompactionSpaceSavedPercent)
 	return o
 }
 
-// SetSpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter adds the spaceBlockStorageVolumeDeduplicationSharedCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter(spaceBlockStorageVolumeDeduplicationSharedCount *int64) {
-	o.SpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter = spaceBlockStorageVolumeDeduplicationSharedCount
+// SetSpaceBlockStorageDataCompactionSpaceSavedPercent adds the spaceBlockStorageDataCompactionSpaceSavedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageDataCompactionSpaceSavedPercent(spaceBlockStorageDataCompactionSpaceSavedPercent *int64) {
+	o.SpaceBlockStorageDataCompactionSpaceSavedPercent = spaceBlockStorageDataCompactionSpaceSavedPercent
 }
 
-// WithSpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter adds the spaceBlockStorageVolumeDeduplicationSpaceSaved to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSaved *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSaved)
+// WithSpaceBlockStorageFullThresholdPercent adds the spaceBlockStorageFullThresholdPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageFullThresholdPercent(spaceBlockStorageFullThresholdPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageFullThresholdPercent(spaceBlockStorageFullThresholdPercent)
 	return o
 }
 
-// SetSpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter adds the spaceBlockStorageVolumeDeduplicationSpaceSaved to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSaved *int64) {
-	o.SpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter = spaceBlockStorageVolumeDeduplicationSpaceSaved
+// SetSpaceBlockStorageFullThresholdPercent adds the spaceBlockStorageFullThresholdPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageFullThresholdPercent(spaceBlockStorageFullThresholdPercent *int64) {
+	o.SpaceBlockStorageFullThresholdPercent = spaceBlockStorageFullThresholdPercent
 }
 
-// WithSpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter adds the spaceBlockStorageVolumeDeduplicationSpaceSavedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent)
+// WithSpaceBlockStorageInactiveUserData adds the spaceBlockStorageInactiveUserData to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageInactiveUserData(spaceBlockStorageInactiveUserData *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageInactiveUserData(spaceBlockStorageInactiveUserData)
 	return o
 }
 
-// SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter adds the spaceBlockStorageVolumeDeduplicationSpaceSavedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent *int64) {
-	o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter = spaceBlockStorageVolumeDeduplicationSpaceSavedPercent
+// SetSpaceBlockStorageInactiveUserData adds the spaceBlockStorageInactiveUserData to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageInactiveUserData(spaceBlockStorageInactiveUserData *int64) {
+	o.SpaceBlockStorageInactiveUserData = spaceBlockStorageInactiveUserData
 }
 
-// WithSpaceBlockStorageVolumeFootprintsPercentQueryParameter adds the spaceBlockStorageVolumeFootprintsPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeFootprintsPercentQueryParameter(spaceBlockStorageVolumeFootprintsPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceBlockStorageVolumeFootprintsPercentQueryParameter(spaceBlockStorageVolumeFootprintsPercent)
+// WithSpaceBlockStorageInactiveUserDataPercent adds the spaceBlockStorageInactiveUserDataPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageInactiveUserDataPercent(spaceBlockStorageInactiveUserDataPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageInactiveUserDataPercent(spaceBlockStorageInactiveUserDataPercent)
 	return o
 }
 
-// SetSpaceBlockStorageVolumeFootprintsPercentQueryParameter adds the spaceBlockStorageVolumeFootprintsPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeFootprintsPercentQueryParameter(spaceBlockStorageVolumeFootprintsPercent *int64) {
-	o.SpaceBlockStorageVolumeFootprintsPercentQueryParameter = spaceBlockStorageVolumeFootprintsPercent
+// SetSpaceBlockStorageInactiveUserDataPercent adds the spaceBlockStorageInactiveUserDataPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageInactiveUserDataPercent(spaceBlockStorageInactiveUserDataPercent *int64) {
+	o.SpaceBlockStorageInactiveUserDataPercent = spaceBlockStorageInactiveUserDataPercent
 }
 
-// WithSpaceCloudStorageUsedQueryParameter adds the spaceCloudStorageUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceCloudStorageUsedQueryParameter(spaceCloudStorageUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceCloudStorageUsedQueryParameter(spaceCloudStorageUsed)
+// WithSpaceBlockStoragePhysicalUsed adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStoragePhysicalUsed(spaceBlockStoragePhysicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStoragePhysicalUsed(spaceBlockStoragePhysicalUsed)
 	return o
 }
 
-// SetSpaceCloudStorageUsedQueryParameter adds the spaceCloudStorageUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceCloudStorageUsedQueryParameter(spaceCloudStorageUsed *int64) {
-	o.SpaceCloudStorageUsedQueryParameter = spaceCloudStorageUsed
+// SetSpaceBlockStoragePhysicalUsed adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStoragePhysicalUsed(spaceBlockStoragePhysicalUsed *int64) {
+	o.SpaceBlockStoragePhysicalUsed = spaceBlockStoragePhysicalUsed
 }
 
-// WithSpaceEfficiencyLogicalUsedQueryParameter adds the spaceEfficiencyLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyLogicalUsedQueryParameter(spaceEfficiencyLogicalUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyLogicalUsedQueryParameter(spaceEfficiencyLogicalUsed)
+// WithSpaceBlockStoragePhysicalUsedPercent adds the spaceBlockStoragePhysicalUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStoragePhysicalUsedPercent(spaceBlockStoragePhysicalUsedPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStoragePhysicalUsedPercent(spaceBlockStoragePhysicalUsedPercent)
 	return o
 }
 
-// SetSpaceEfficiencyLogicalUsedQueryParameter adds the spaceEfficiencyLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyLogicalUsedQueryParameter(spaceEfficiencyLogicalUsed *int64) {
-	o.SpaceEfficiencyLogicalUsedQueryParameter = spaceEfficiencyLogicalUsed
+// SetSpaceBlockStoragePhysicalUsedPercent adds the spaceBlockStoragePhysicalUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStoragePhysicalUsedPercent(spaceBlockStoragePhysicalUsedPercent *int64) {
+	o.SpaceBlockStoragePhysicalUsedPercent = spaceBlockStoragePhysicalUsedPercent
 }
 
-// WithSpaceEfficiencyRatioQueryParameter adds the spaceEfficiencyRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyRatioQueryParameter(spaceEfficiencyRatio *float64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyRatioQueryParameter(spaceEfficiencyRatio)
+// WithSpaceBlockStorageSize adds the spaceBlockStorageSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageSize(spaceBlockStorageSize *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageSize(spaceBlockStorageSize)
 	return o
 }
 
-// SetSpaceEfficiencyRatioQueryParameter adds the spaceEfficiencyRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyRatioQueryParameter(spaceEfficiencyRatio *float64) {
-	o.SpaceEfficiencyRatioQueryParameter = spaceEfficiencyRatio
+// SetSpaceBlockStorageSize adds the spaceBlockStorageSize to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageSize(spaceBlockStorageSize *int64) {
+	o.SpaceBlockStorageSize = spaceBlockStorageSize
 }
 
-// WithSpaceEfficiencySavingsQueryParameter adds the spaceEfficiencySavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencySavingsQueryParameter(spaceEfficiencySavings *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencySavingsQueryParameter(spaceEfficiencySavings)
+// WithSpaceBlockStorageUsed adds the spaceBlockStorageUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsed(spaceBlockStorageUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageUsed(spaceBlockStorageUsed)
 	return o
 }
 
-// SetSpaceEfficiencySavingsQueryParameter adds the spaceEfficiencySavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencySavingsQueryParameter(spaceEfficiencySavings *int64) {
-	o.SpaceEfficiencySavingsQueryParameter = spaceEfficiencySavings
+// SetSpaceBlockStorageUsed adds the spaceBlockStorageUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsed(spaceBlockStorageUsed *int64) {
+	o.SpaceBlockStorageUsed = spaceBlockStorageUsed
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsLogicalUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsLogicalUsed)
+// WithSpaceBlockStorageUsedIncludingSnapshotReserve adds the spaceBlockStorageUsedIncludingSnapshotReserve to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedIncludingSnapshotReserve(spaceBlockStorageUsedIncludingSnapshotReserve *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageUsedIncludingSnapshotReserve(spaceBlockStorageUsedIncludingSnapshotReserve)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsLogicalUsed *int64) {
-	o.SpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter = spaceEfficiencyWithoutSnapshotsLogicalUsed
+// SetSpaceBlockStorageUsedIncludingSnapshotReserve adds the spaceBlockStorageUsedIncludingSnapshotReserve to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedIncludingSnapshotReserve(spaceBlockStorageUsedIncludingSnapshotReserve *int64) {
+	o.SpaceBlockStorageUsedIncludingSnapshotReserve = spaceBlockStorageUsedIncludingSnapshotReserve
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsRatioQueryParameter(spaceEfficiencyWithoutSnapshotsRatio *float64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsRatioQueryParameter(spaceEfficiencyWithoutSnapshotsRatio)
+// WithSpaceBlockStorageUsedIncludingSnapshotReservePercent adds the spaceBlockStorageUsedIncludingSnapshotReservePercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageUsedIncludingSnapshotReservePercent(spaceBlockStorageUsedIncludingSnapshotReservePercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageUsedIncludingSnapshotReservePercent(spaceBlockStorageUsedIncludingSnapshotReservePercent)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsRatioQueryParameter(spaceEfficiencyWithoutSnapshotsRatio *float64) {
-	o.SpaceEfficiencyWithoutSnapshotsRatioQueryParameter = spaceEfficiencyWithoutSnapshotsRatio
+// SetSpaceBlockStorageUsedIncludingSnapshotReservePercent adds the spaceBlockStorageUsedIncludingSnapshotReservePercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageUsedIncludingSnapshotReservePercent(spaceBlockStorageUsedIncludingSnapshotReservePercent *int64) {
+	o.SpaceBlockStorageUsedIncludingSnapshotReservePercent = spaceBlockStorageUsedIncludingSnapshotReservePercent
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsSavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsSavings *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsSavings)
+// WithSpaceBlockStorageVolumeDeduplicationSharedCount adds the spaceBlockStorageVolumeDeduplicationSharedCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSharedCount(spaceBlockStorageVolumeDeduplicationSharedCount *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageVolumeDeduplicationSharedCount(spaceBlockStorageVolumeDeduplicationSharedCount)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsSavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsSavings *int64) {
-	o.SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter = spaceEfficiencyWithoutSnapshotsSavings
+// SetSpaceBlockStorageVolumeDeduplicationSharedCount adds the spaceBlockStorageVolumeDeduplicationSharedCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSharedCount(spaceBlockStorageVolumeDeduplicationSharedCount *int64) {
+	o.SpaceBlockStorageVolumeDeduplicationSharedCount = spaceBlockStorageVolumeDeduplicationSharedCount
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+// WithSpaceBlockStorageVolumeDeduplicationSpaceSaved adds the spaceBlockStorageVolumeDeduplicationSpaceSaved to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSpaceSaved(spaceBlockStorageVolumeDeduplicationSpaceSaved *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageVolumeDeduplicationSpaceSaved(spaceBlockStorageVolumeDeduplicationSpaceSaved)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) {
-	o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
+// SetSpaceBlockStorageVolumeDeduplicationSpaceSaved adds the spaceBlockStorageVolumeDeduplicationSpaceSaved to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSpaceSaved(spaceBlockStorageVolumeDeduplicationSpaceSaved *int64) {
+	o.SpaceBlockStorageVolumeDeduplicationSpaceSaved = spaceBlockStorageVolumeDeduplicationSpaceSaved
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio)
+// WithSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent adds the spaceBlockStorageVolumeDeduplicationSpaceSavedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) {
-	o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesRatio
+// SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent adds the spaceBlockStorageVolumeDeduplicationSpaceSavedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent(spaceBlockStorageVolumeDeduplicationSpaceSavedPercent *int64) {
+	o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent = spaceBlockStorageVolumeDeduplicationSpaceSavedPercent
 }
 
-// WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) *AggregateCollectionGetParams {
-	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings)
+// WithSpaceBlockStorageVolumeFootprintsPercent adds the spaceBlockStorageVolumeFootprintsPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStorageVolumeFootprintsPercent(spaceBlockStorageVolumeFootprintsPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStorageVolumeFootprintsPercent(spaceBlockStorageVolumeFootprintsPercent)
 	return o
 }
 
-// SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) {
-	o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesSavings
+// SetSpaceBlockStorageVolumeFootprintsPercent adds the spaceBlockStorageVolumeFootprintsPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStorageVolumeFootprintsPercent(spaceBlockStorageVolumeFootprintsPercent *int64) {
+	o.SpaceBlockStorageVolumeFootprintsPercent = spaceBlockStorageVolumeFootprintsPercent
 }
 
-// WithSpaceFootprintQueryParameter adds the spaceFootprint to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceFootprintQueryParameter(spaceFootprint *int64) *AggregateCollectionGetParams {
-	o.SetSpaceFootprintQueryParameter(spaceFootprint)
+// WithSpaceCloudStorageUsed adds the spaceCloudStorageUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceCloudStorageUsed(spaceCloudStorageUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceCloudStorageUsed(spaceCloudStorageUsed)
 	return o
 }
 
-// SetSpaceFootprintQueryParameter adds the spaceFootprint to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceFootprintQueryParameter(spaceFootprint *int64) {
-	o.SpaceFootprintQueryParameter = spaceFootprint
+// SetSpaceCloudStorageUsed adds the spaceCloudStorageUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceCloudStorageUsed(spaceCloudStorageUsed *int64) {
+	o.SpaceCloudStorageUsed = spaceCloudStorageUsed
 }
 
-// WithSpaceSnapshotAvailableQueryParameter adds the spaceSnapshotAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceSnapshotAvailableQueryParameter(spaceSnapshotAvailable *int64) *AggregateCollectionGetParams {
-	o.SetSpaceSnapshotAvailableQueryParameter(spaceSnapshotAvailable)
+// WithSpaceEfficiencyAutoAdaptiveCompressionSavings adds the spaceEfficiencyAutoAdaptiveCompressionSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyAutoAdaptiveCompressionSavings(spaceEfficiencyAutoAdaptiveCompressionSavings *bool) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyAutoAdaptiveCompressionSavings(spaceEfficiencyAutoAdaptiveCompressionSavings)
 	return o
 }
 
-// SetSpaceSnapshotAvailableQueryParameter adds the spaceSnapshotAvailable to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceSnapshotAvailableQueryParameter(spaceSnapshotAvailable *int64) {
-	o.SpaceSnapshotAvailableQueryParameter = spaceSnapshotAvailable
+// SetSpaceEfficiencyAutoAdaptiveCompressionSavings adds the spaceEfficiencyAutoAdaptiveCompressionSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyAutoAdaptiveCompressionSavings(spaceEfficiencyAutoAdaptiveCompressionSavings *bool) {
+	o.SpaceEfficiencyAutoAdaptiveCompressionSavings = spaceEfficiencyAutoAdaptiveCompressionSavings
 }
 
-// WithSpaceSnapshotReservePercentQueryParameter adds the spaceSnapshotReservePercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent)
+// WithSpaceEfficiencyCrossVolumeBackgroundDedupe adds the spaceEfficiencyCrossVolumeBackgroundDedupe to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyCrossVolumeBackgroundDedupe(spaceEfficiencyCrossVolumeBackgroundDedupe *bool) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyCrossVolumeBackgroundDedupe(spaceEfficiencyCrossVolumeBackgroundDedupe)
 	return o
 }
 
-// SetSpaceSnapshotReservePercentQueryParameter adds the spaceSnapshotReservePercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent *int64) {
-	o.SpaceSnapshotReservePercentQueryParameter = spaceSnapshotReservePercent
+// SetSpaceEfficiencyCrossVolumeBackgroundDedupe adds the spaceEfficiencyCrossVolumeBackgroundDedupe to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyCrossVolumeBackgroundDedupe(spaceEfficiencyCrossVolumeBackgroundDedupe *bool) {
+	o.SpaceEfficiencyCrossVolumeBackgroundDedupe = spaceEfficiencyCrossVolumeBackgroundDedupe
 }
 
-// WithSpaceSnapshotTotalQueryParameter adds the spaceSnapshotTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceSnapshotTotalQueryParameter(spaceSnapshotTotal *int64) *AggregateCollectionGetParams {
-	o.SetSpaceSnapshotTotalQueryParameter(spaceSnapshotTotal)
+// WithSpaceEfficiencyCrossVolumeDedupeSavings adds the spaceEfficiencyCrossVolumeDedupeSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyCrossVolumeDedupeSavings(spaceEfficiencyCrossVolumeDedupeSavings *bool) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyCrossVolumeDedupeSavings(spaceEfficiencyCrossVolumeDedupeSavings)
 	return o
 }
 
-// SetSpaceSnapshotTotalQueryParameter adds the spaceSnapshotTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceSnapshotTotalQueryParameter(spaceSnapshotTotal *int64) {
-	o.SpaceSnapshotTotalQueryParameter = spaceSnapshotTotal
+// SetSpaceEfficiencyCrossVolumeDedupeSavings adds the spaceEfficiencyCrossVolumeDedupeSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyCrossVolumeDedupeSavings(spaceEfficiencyCrossVolumeDedupeSavings *bool) {
+	o.SpaceEfficiencyCrossVolumeDedupeSavings = spaceEfficiencyCrossVolumeDedupeSavings
 }
 
-// WithSpaceSnapshotUsedQueryParameter adds the spaceSnapshotUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceSnapshotUsedQueryParameter(spaceSnapshotUsed *int64) *AggregateCollectionGetParams {
-	o.SetSpaceSnapshotUsedQueryParameter(spaceSnapshotUsed)
+// WithSpaceEfficiencyCrossVolumeInlineDedupe adds the spaceEfficiencyCrossVolumeInlineDedupe to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyCrossVolumeInlineDedupe(spaceEfficiencyCrossVolumeInlineDedupe *bool) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyCrossVolumeInlineDedupe(spaceEfficiencyCrossVolumeInlineDedupe)
 	return o
 }
 
-// SetSpaceSnapshotUsedQueryParameter adds the spaceSnapshotUsed to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceSnapshotUsedQueryParameter(spaceSnapshotUsed *int64) {
-	o.SpaceSnapshotUsedQueryParameter = spaceSnapshotUsed
+// SetSpaceEfficiencyCrossVolumeInlineDedupe adds the spaceEfficiencyCrossVolumeInlineDedupe to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyCrossVolumeInlineDedupe(spaceEfficiencyCrossVolumeInlineDedupe *bool) {
+	o.SpaceEfficiencyCrossVolumeInlineDedupe = spaceEfficiencyCrossVolumeInlineDedupe
 }
 
-// WithSpaceSnapshotUsedPercentQueryParameter adds the spaceSnapshotUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithSpaceSnapshotUsedPercentQueryParameter(spaceSnapshotUsedPercent *int64) *AggregateCollectionGetParams {
-	o.SetSpaceSnapshotUsedPercentQueryParameter(spaceSnapshotUsedPercent)
+// WithSpaceEfficiencyLogicalUsed adds the spaceEfficiencyLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyLogicalUsed(spaceEfficiencyLogicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyLogicalUsed(spaceEfficiencyLogicalUsed)
 	return o
 }
 
-// SetSpaceSnapshotUsedPercentQueryParameter adds the spaceSnapshotUsedPercent to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetSpaceSnapshotUsedPercentQueryParameter(spaceSnapshotUsedPercent *int64) {
-	o.SpaceSnapshotUsedPercentQueryParameter = spaceSnapshotUsedPercent
+// SetSpaceEfficiencyLogicalUsed adds the spaceEfficiencyLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyLogicalUsed(spaceEfficiencyLogicalUsed *int64) {
+	o.SpaceEfficiencyLogicalUsed = spaceEfficiencyLogicalUsed
 }
 
-// WithStateQueryParameter adds the state to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStateQueryParameter(state *string) *AggregateCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyRatio(spaceEfficiencyRatio)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) {
+	o.SpaceEfficiencyRatio = spaceEfficiencyRatio
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithSpaceEfficiencySavings adds the spaceEfficiencySavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencySavings(spaceEfficiencySavings *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencySavings(spaceEfficiencySavings)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetSpaceEfficiencySavings adds the spaceEfficiencySavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencySavings(spaceEfficiencySavings *int64) {
+	o.SpaceEfficiencySavings = spaceEfficiencySavings
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithSpaceEfficiencyWithoutSnapshotsLogicalUsed adds the spaceEfficiencyWithoutSnapshotsLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsLogicalUsed(spaceEfficiencyWithoutSnapshotsLogicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsLogicalUsed(spaceEfficiencyWithoutSnapshotsLogicalUsed)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetSpaceEfficiencyWithoutSnapshotsLogicalUsed adds the spaceEfficiencyWithoutSnapshotsLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsLogicalUsed(spaceEfficiencyWithoutSnapshotsLogicalUsed *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsLogicalUsed = spaceEfficiencyWithoutSnapshotsLogicalUsed
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithSpaceEfficiencyWithoutSnapshotsRatio adds the spaceEfficiencyWithoutSnapshotsRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsRatio(spaceEfficiencyWithoutSnapshotsRatio *float64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsRatio(spaceEfficiencyWithoutSnapshotsRatio)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetSpaceEfficiencyWithoutSnapshotsRatio adds the spaceEfficiencyWithoutSnapshotsRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsRatio(spaceEfficiencyWithoutSnapshotsRatio *float64) {
+	o.SpaceEfficiencyWithoutSnapshotsRatio = spaceEfficiencyWithoutSnapshotsRatio
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithSpaceEfficiencyWithoutSnapshotsSavings adds the spaceEfficiencyWithoutSnapshotsSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsSavings(spaceEfficiencyWithoutSnapshotsSavings *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsSavings(spaceEfficiencyWithoutSnapshotsSavings)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetSpaceEfficiencyWithoutSnapshotsSavings adds the spaceEfficiencyWithoutSnapshotsSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsSavings(spaceEfficiencyWithoutSnapshotsSavings *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsSavings = spaceEfficiencyWithoutSnapshotsSavings
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatio adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatio(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatio(spaceEfficiencyWithoutSnapshotsFlexclonesRatio)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatio adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatio(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatio = spaceEfficiencyWithoutSnapshotsFlexclonesRatio
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavings adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavings(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavings(spaceEfficiencyWithoutSnapshotsFlexclonesSavings)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavings adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavings(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavings = spaceEfficiencyWithoutSnapshotsFlexclonesSavings
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithSpaceFootprint adds the spaceFootprint to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceFootprint(spaceFootprint *int64) *AggregateCollectionGetParams {
+	o.SetSpaceFootprint(spaceFootprint)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetSpaceFootprint adds the spaceFootprint to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceFootprint(spaceFootprint *int64) {
+	o.SpaceFootprint = spaceFootprint
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *AggregateCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithSpaceSnapshotAvailable adds the spaceSnapshotAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceSnapshotAvailable(spaceSnapshotAvailable *int64) *AggregateCollectionGetParams {
+	o.SetSpaceSnapshotAvailable(spaceSnapshotAvailable)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetSpaceSnapshotAvailable adds the spaceSnapshotAvailable to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceSnapshotAvailable(spaceSnapshotAvailable *int64) {
+	o.SpaceSnapshotAvailable = spaceSnapshotAvailable
 }
 
-// WithStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther)
+// WithSpaceSnapshotReservePercent adds the spaceSnapshotReservePercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceSnapshotReservePercent(spaceSnapshotReservePercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceSnapshotReservePercent(spaceSnapshotReservePercent)
 	return o
 }
 
-// SetStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) {
-	o.StatisticsThroughputRawOtherQueryParameter = statisticsThroughputRawOther
+// SetSpaceSnapshotReservePercent adds the spaceSnapshotReservePercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceSnapshotReservePercent(spaceSnapshotReservePercent *int64) {
+	o.SpaceSnapshotReservePercent = spaceSnapshotReservePercent
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithSpaceSnapshotTotal adds the spaceSnapshotTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceSnapshotTotal(spaceSnapshotTotal *int64) *AggregateCollectionGetParams {
+	o.SetSpaceSnapshotTotal(spaceSnapshotTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetSpaceSnapshotTotal adds the spaceSnapshotTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceSnapshotTotal(spaceSnapshotTotal *int64) {
+	o.SpaceSnapshotTotal = spaceSnapshotTotal
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithSpaceSnapshotUsed adds the spaceSnapshotUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceSnapshotUsed(spaceSnapshotUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceSnapshotUsed(spaceSnapshotUsed)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetSpaceSnapshotUsed adds the spaceSnapshotUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceSnapshotUsed(spaceSnapshotUsed *int64) {
+	o.SpaceSnapshotUsed = spaceSnapshotUsed
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *AggregateCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithSpaceSnapshotUsedPercent adds the spaceSnapshotUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceSnapshotUsedPercent(spaceSnapshotUsedPercent *int64) *AggregateCollectionGetParams {
+	o.SetSpaceSnapshotUsedPercent(spaceSnapshotUsedPercent)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetSpaceSnapshotUsedPercent adds the spaceSnapshotUsedPercent to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceSnapshotUsedPercent(spaceSnapshotUsedPercent *int64) {
+	o.SpaceSnapshotUsedPercent = spaceSnapshotUsedPercent
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *AggregateCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithState adds the state to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithState(state *string) *AggregateCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetState adds the state to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithUUIDQueryParameter adds the uuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithUUIDQueryParameter(uuid *string) *AggregateCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithVolumeCountQueryParameter adds the volumeCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithVolumeCountQueryParameter(volumeCount *int64) *AggregateCollectionGetParams {
-	o.SetVolumeCountQueryParameter(volumeCount)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetVolumeCountQueryParameter adds the volumeCount to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetVolumeCountQueryParameter(volumeCount *int64) {
-	o.VolumeCountQueryParameter = volumeCount
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
+}
+
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
+}
+
+// WithStatisticsStatus adds the statisticsStatus to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *AggregateCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatus adds the statisticsStatus to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
+}
+
+// WithStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsThroughputRawOther(statisticsThroughputRawOther)
+	return o
+}
+
+// SetStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) {
+	o.StatisticsThroughputRawOther = statisticsThroughputRawOther
+}
+
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *AggregateCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestamp adds the statisticsTimestamp to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *AggregateCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestamp adds the statisticsTimestamp to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
+}
+
+// WithUUID adds the uuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithUUID(uuid *string) *AggregateCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVolumeCount adds the volumeCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithVolumeCount(volumeCount *int64) *AggregateCollectionGetParams {
+	o.SetVolumeCount(volumeCount)
+	return o
+}
+
+// SetVolumeCount adds the volumeCount to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetVolumeCount(volumeCount *int64) {
+	o.VolumeCount = volumeCount
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2657,13 +2895,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.BlockStorageHybrIDCacheDiskCountQueryParameter != nil {
+	if o.BlockStorageHybridCacheDiskCount != nil {
 
 		// query param block_storage.hybrid_cache.disk_count
 		var qrBlockStorageHybridCacheDiskCount int64
 
-		if o.BlockStorageHybrIDCacheDiskCountQueryParameter != nil {
-			qrBlockStorageHybridCacheDiskCount = *o.BlockStorageHybrIDCacheDiskCountQueryParameter
+		if o.BlockStorageHybridCacheDiskCount != nil {
+			qrBlockStorageHybridCacheDiskCount = *o.BlockStorageHybridCacheDiskCount
 		}
 		qBlockStorageHybridCacheDiskCount := swag.FormatInt64(qrBlockStorageHybridCacheDiskCount)
 		if qBlockStorageHybridCacheDiskCount != "" {
@@ -2674,13 +2912,30 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheEnabledQueryParameter != nil {
+	if o.BlockStorageHybridCacheDiskType != nil {
+
+		// query param block_storage.hybrid_cache.disk_type
+		var qrBlockStorageHybridCacheDiskType string
+
+		if o.BlockStorageHybridCacheDiskType != nil {
+			qrBlockStorageHybridCacheDiskType = *o.BlockStorageHybridCacheDiskType
+		}
+		qBlockStorageHybridCacheDiskType := qrBlockStorageHybridCacheDiskType
+		if qBlockStorageHybridCacheDiskType != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.disk_type", qBlockStorageHybridCacheDiskType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheEnabled != nil {
 
 		// query param block_storage.hybrid_cache.enabled
 		var qrBlockStorageHybridCacheEnabled bool
 
-		if o.BlockStorageHybrIDCacheEnabledQueryParameter != nil {
-			qrBlockStorageHybridCacheEnabled = *o.BlockStorageHybrIDCacheEnabledQueryParameter
+		if o.BlockStorageHybridCacheEnabled != nil {
+			qrBlockStorageHybridCacheEnabled = *o.BlockStorageHybridCacheEnabled
 		}
 		qBlockStorageHybridCacheEnabled := swag.FormatBool(qrBlockStorageHybridCacheEnabled)
 		if qBlockStorageHybridCacheEnabled != "" {
@@ -2691,13 +2946,30 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheRaIDTypeQueryParameter != nil {
+	if o.BlockStorageHybridCacheRaidSize != nil {
+
+		// query param block_storage.hybrid_cache.raid_size
+		var qrBlockStorageHybridCacheRaidSize int64
+
+		if o.BlockStorageHybridCacheRaidSize != nil {
+			qrBlockStorageHybridCacheRaidSize = *o.BlockStorageHybridCacheRaidSize
+		}
+		qBlockStorageHybridCacheRaidSize := swag.FormatInt64(qrBlockStorageHybridCacheRaidSize)
+		if qBlockStorageHybridCacheRaidSize != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.raid_size", qBlockStorageHybridCacheRaidSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheRaidType != nil {
 
 		// query param block_storage.hybrid_cache.raid_type
 		var qrBlockStorageHybridCacheRaidType string
 
-		if o.BlockStorageHybrIDCacheRaIDTypeQueryParameter != nil {
-			qrBlockStorageHybridCacheRaidType = *o.BlockStorageHybrIDCacheRaIDTypeQueryParameter
+		if o.BlockStorageHybridCacheRaidType != nil {
+			qrBlockStorageHybridCacheRaidType = *o.BlockStorageHybridCacheRaidType
 		}
 		qBlockStorageHybridCacheRaidType := qrBlockStorageHybridCacheRaidType
 		if qBlockStorageHybridCacheRaidType != "" {
@@ -2708,13 +2980,132 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheSizeQueryParameter != nil {
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.added_data_disk_count
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount int64
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount = *o.BlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount := swag.FormatInt64(qrBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.added_data_disk_count", qBlockStorageHybridCacheSimulatedRaidGroupsAddedDataDiskCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.added_parity_disk_count
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount int64
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount = *o.BlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount := swag.FormatInt64(qrBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.added_parity_disk_count", qBlockStorageHybridCacheSimulatedRaidGroupsAddedParityDiskCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.existing_data_disk_count
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount int64
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount = *o.BlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount := swag.FormatInt64(qrBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.existing_data_disk_count", qBlockStorageHybridCacheSimulatedRaidGroupsExistingDataDiskCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.existing_parity_disk_count
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount int64
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount = *o.BlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount := swag.FormatInt64(qrBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.existing_parity_disk_count", qBlockStorageHybridCacheSimulatedRaidGroupsExistingParityDiskCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsIsPartition != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.is_partition
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsIsPartition bool
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsIsPartition != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsIsPartition = *o.BlockStorageHybridCacheSimulatedRaidGroupsIsPartition
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsIsPartition := swag.FormatBool(qrBlockStorageHybridCacheSimulatedRaidGroupsIsPartition)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsIsPartition != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.is_partition", qBlockStorageHybridCacheSimulatedRaidGroupsIsPartition); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsName != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.name
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsName string
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsName != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsName = *o.BlockStorageHybridCacheSimulatedRaidGroupsName
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsName := qrBlockStorageHybridCacheSimulatedRaidGroupsName
+		if qBlockStorageHybridCacheSimulatedRaidGroupsName != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.name", qBlockStorageHybridCacheSimulatedRaidGroupsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSimulatedRaidGroupsUsableSize != nil {
+
+		// query param block_storage.hybrid_cache.simulated_raid_groups.usable_size
+		var qrBlockStorageHybridCacheSimulatedRaidGroupsUsableSize int64
+
+		if o.BlockStorageHybridCacheSimulatedRaidGroupsUsableSize != nil {
+			qrBlockStorageHybridCacheSimulatedRaidGroupsUsableSize = *o.BlockStorageHybridCacheSimulatedRaidGroupsUsableSize
+		}
+		qBlockStorageHybridCacheSimulatedRaidGroupsUsableSize := swag.FormatInt64(qrBlockStorageHybridCacheSimulatedRaidGroupsUsableSize)
+		if qBlockStorageHybridCacheSimulatedRaidGroupsUsableSize != "" {
+
+			if err := r.SetQueryParam("block_storage.hybrid_cache.simulated_raid_groups.usable_size", qBlockStorageHybridCacheSimulatedRaidGroupsUsableSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageHybridCacheSize != nil {
 
 		// query param block_storage.hybrid_cache.size
 		var qrBlockStorageHybridCacheSize int64
 
-		if o.BlockStorageHybrIDCacheSizeQueryParameter != nil {
-			qrBlockStorageHybridCacheSize = *o.BlockStorageHybrIDCacheSizeQueryParameter
+		if o.BlockStorageHybridCacheSize != nil {
+			qrBlockStorageHybridCacheSize = *o.BlockStorageHybridCacheSize
 		}
 		qBlockStorageHybridCacheSize := swag.FormatInt64(qrBlockStorageHybridCacheSize)
 		if qBlockStorageHybridCacheSize != "" {
@@ -2725,13 +3116,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter != nil {
+	if o.BlockStorageHybridCacheStoragePoolsAllocationUnitsCount != nil {
 
 		// query param block_storage.hybrid_cache.storage_pools.allocation_units_count
 		var qrBlockStorageHybridCacheStoragePoolsAllocationUnitsCount int64
 
-		if o.BlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter != nil {
-			qrBlockStorageHybridCacheStoragePoolsAllocationUnitsCount = *o.BlockStorageHybrIDCacheStoragePoolsAllocationUnitsCountQueryParameter
+		if o.BlockStorageHybridCacheStoragePoolsAllocationUnitsCount != nil {
+			qrBlockStorageHybridCacheStoragePoolsAllocationUnitsCount = *o.BlockStorageHybridCacheStoragePoolsAllocationUnitsCount
 		}
 		qBlockStorageHybridCacheStoragePoolsAllocationUnitsCount := swag.FormatInt64(qrBlockStorageHybridCacheStoragePoolsAllocationUnitsCount)
 		if qBlockStorageHybridCacheStoragePoolsAllocationUnitsCount != "" {
@@ -2742,13 +3133,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter != nil {
+	if o.BlockStorageHybridCacheStoragePoolsStoragePoolName != nil {
 
 		// query param block_storage.hybrid_cache.storage_pools.storage_pool.name
 		var qrBlockStorageHybridCacheStoragePoolsStoragePoolName string
 
-		if o.BlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter != nil {
-			qrBlockStorageHybridCacheStoragePoolsStoragePoolName = *o.BlockStorageHybrIDCacheStoragePoolsStoragePoolNameQueryParameter
+		if o.BlockStorageHybridCacheStoragePoolsStoragePoolName != nil {
+			qrBlockStorageHybridCacheStoragePoolsStoragePoolName = *o.BlockStorageHybridCacheStoragePoolsStoragePoolName
 		}
 		qBlockStorageHybridCacheStoragePoolsStoragePoolName := qrBlockStorageHybridCacheStoragePoolsStoragePoolName
 		if qBlockStorageHybridCacheStoragePoolsStoragePoolName != "" {
@@ -2759,13 +3150,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter != nil {
+	if o.BlockStorageHybridCacheStoragePoolsStoragePoolUUID != nil {
 
 		// query param block_storage.hybrid_cache.storage_pools.storage_pool.uuid
 		var qrBlockStorageHybridCacheStoragePoolsStoragePoolUUID string
 
-		if o.BlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter != nil {
-			qrBlockStorageHybridCacheStoragePoolsStoragePoolUUID = *o.BlockStorageHybrIDCacheStoragePoolsStoragePoolUUIDQueryParameter
+		if o.BlockStorageHybridCacheStoragePoolsStoragePoolUUID != nil {
+			qrBlockStorageHybridCacheStoragePoolsStoragePoolUUID = *o.BlockStorageHybridCacheStoragePoolsStoragePoolUUID
 		}
 		qBlockStorageHybridCacheStoragePoolsStoragePoolUUID := qrBlockStorageHybridCacheStoragePoolsStoragePoolUUID
 		if qBlockStorageHybridCacheStoragePoolsStoragePoolUUID != "" {
@@ -2776,13 +3167,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageHybrIDCacheUsedQueryParameter != nil {
+	if o.BlockStorageHybridCacheUsed != nil {
 
 		// query param block_storage.hybrid_cache.used
 		var qrBlockStorageHybridCacheUsed int64
 
-		if o.BlockStorageHybrIDCacheUsedQueryParameter != nil {
-			qrBlockStorageHybridCacheUsed = *o.BlockStorageHybrIDCacheUsedQueryParameter
+		if o.BlockStorageHybridCacheUsed != nil {
+			qrBlockStorageHybridCacheUsed = *o.BlockStorageHybridCacheUsed
 		}
 		qBlockStorageHybridCacheUsed := swag.FormatInt64(qrBlockStorageHybridCacheUsed)
 		if qBlockStorageHybridCacheUsed != "" {
@@ -2793,13 +3184,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageMirrorEnabledQueryParameter != nil {
+	if o.BlockStorageMirrorEnabled != nil {
 
 		// query param block_storage.mirror.enabled
 		var qrBlockStorageMirrorEnabled bool
 
-		if o.BlockStorageMirrorEnabledQueryParameter != nil {
-			qrBlockStorageMirrorEnabled = *o.BlockStorageMirrorEnabledQueryParameter
+		if o.BlockStorageMirrorEnabled != nil {
+			qrBlockStorageMirrorEnabled = *o.BlockStorageMirrorEnabled
 		}
 		qBlockStorageMirrorEnabled := swag.FormatBool(qrBlockStorageMirrorEnabled)
 		if qBlockStorageMirrorEnabled != "" {
@@ -2810,13 +3201,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageMirrorStateQueryParameter != nil {
+	if o.BlockStorageMirrorState != nil {
 
 		// query param block_storage.mirror.state
 		var qrBlockStorageMirrorState string
 
-		if o.BlockStorageMirrorStateQueryParameter != nil {
-			qrBlockStorageMirrorState = *o.BlockStorageMirrorStateQueryParameter
+		if o.BlockStorageMirrorState != nil {
+			qrBlockStorageMirrorState = *o.BlockStorageMirrorState
 		}
 		qBlockStorageMirrorState := qrBlockStorageMirrorState
 		if qBlockStorageMirrorState != "" {
@@ -2827,13 +3218,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePlexesNameQueryParameter != nil {
+	if o.BlockStoragePlexesName != nil {
 
 		// query param block_storage.plexes.name
 		var qrBlockStoragePlexesName string
 
-		if o.BlockStoragePlexesNameQueryParameter != nil {
-			qrBlockStoragePlexesName = *o.BlockStoragePlexesNameQueryParameter
+		if o.BlockStoragePlexesName != nil {
+			qrBlockStoragePlexesName = *o.BlockStoragePlexesName
 		}
 		qBlockStoragePlexesName := qrBlockStoragePlexesName
 		if qBlockStoragePlexesName != "" {
@@ -2844,13 +3235,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryChecksumStyleQueryParameter != nil {
+	if o.BlockStoragePrimaryChecksumStyle != nil {
 
 		// query param block_storage.primary.checksum_style
 		var qrBlockStoragePrimaryChecksumStyle string
 
-		if o.BlockStoragePrimaryChecksumStyleQueryParameter != nil {
-			qrBlockStoragePrimaryChecksumStyle = *o.BlockStoragePrimaryChecksumStyleQueryParameter
+		if o.BlockStoragePrimaryChecksumStyle != nil {
+			qrBlockStoragePrimaryChecksumStyle = *o.BlockStoragePrimaryChecksumStyle
 		}
 		qBlockStoragePrimaryChecksumStyle := qrBlockStoragePrimaryChecksumStyle
 		if qBlockStoragePrimaryChecksumStyle != "" {
@@ -2861,13 +3252,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryDiskClassQueryParameter != nil {
+	if o.BlockStoragePrimaryDiskClass != nil {
 
 		// query param block_storage.primary.disk_class
 		var qrBlockStoragePrimaryDiskClass string
 
-		if o.BlockStoragePrimaryDiskClassQueryParameter != nil {
-			qrBlockStoragePrimaryDiskClass = *o.BlockStoragePrimaryDiskClassQueryParameter
+		if o.BlockStoragePrimaryDiskClass != nil {
+			qrBlockStoragePrimaryDiskClass = *o.BlockStoragePrimaryDiskClass
 		}
 		qBlockStoragePrimaryDiskClass := qrBlockStoragePrimaryDiskClass
 		if qBlockStoragePrimaryDiskClass != "" {
@@ -2878,13 +3269,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimaryDiskCount != nil {
 
 		// query param block_storage.primary.disk_count
 		var qrBlockStoragePrimaryDiskCount int64
 
-		if o.BlockStoragePrimaryDiskCountQueryParameter != nil {
-			qrBlockStoragePrimaryDiskCount = *o.BlockStoragePrimaryDiskCountQueryParameter
+		if o.BlockStoragePrimaryDiskCount != nil {
+			qrBlockStoragePrimaryDiskCount = *o.BlockStoragePrimaryDiskCount
 		}
 		qBlockStoragePrimaryDiskCount := swag.FormatInt64(qrBlockStoragePrimaryDiskCount)
 		if qBlockStoragePrimaryDiskCount != "" {
@@ -2895,13 +3286,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryDiskTypeQueryParameter != nil {
+	if o.BlockStoragePrimaryDiskType != nil {
 
 		// query param block_storage.primary.disk_type
 		var qrBlockStoragePrimaryDiskType string
 
-		if o.BlockStoragePrimaryDiskTypeQueryParameter != nil {
-			qrBlockStoragePrimaryDiskType = *o.BlockStoragePrimaryDiskTypeQueryParameter
+		if o.BlockStoragePrimaryDiskType != nil {
+			qrBlockStoragePrimaryDiskType = *o.BlockStoragePrimaryDiskType
 		}
 		qBlockStoragePrimaryDiskType := qrBlockStoragePrimaryDiskType
 		if qBlockStoragePrimaryDiskType != "" {
@@ -2912,13 +3303,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryRaIDSizeQueryParameter != nil {
+	if o.BlockStoragePrimaryRaidSize != nil {
 
 		// query param block_storage.primary.raid_size
 		var qrBlockStoragePrimaryRaidSize int64
 
-		if o.BlockStoragePrimaryRaIDSizeQueryParameter != nil {
-			qrBlockStoragePrimaryRaidSize = *o.BlockStoragePrimaryRaIDSizeQueryParameter
+		if o.BlockStoragePrimaryRaidSize != nil {
+			qrBlockStoragePrimaryRaidSize = *o.BlockStoragePrimaryRaidSize
 		}
 		qBlockStoragePrimaryRaidSize := swag.FormatInt64(qrBlockStoragePrimaryRaidSize)
 		if qBlockStoragePrimaryRaidSize != "" {
@@ -2929,13 +3320,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimaryRaIDTypeQueryParameter != nil {
+	if o.BlockStoragePrimaryRaidType != nil {
 
 		// query param block_storage.primary.raid_type
 		var qrBlockStoragePrimaryRaidType string
 
-		if o.BlockStoragePrimaryRaIDTypeQueryParameter != nil {
-			qrBlockStoragePrimaryRaidType = *o.BlockStoragePrimaryRaIDTypeQueryParameter
+		if o.BlockStoragePrimaryRaidType != nil {
+			qrBlockStoragePrimaryRaidType = *o.BlockStoragePrimaryRaidType
 		}
 		qBlockStoragePrimaryRaidType := qrBlockStoragePrimaryRaidType
 		if qBlockStoragePrimaryRaidType != "" {
@@ -2946,13 +3337,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.added_data_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsAddedDataDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsAddedDataDiskCount != "" {
@@ -2963,13 +3354,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.added_parity_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsAddedParityDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsAddedParityDiskCount != "" {
@@ -2980,13 +3371,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsDataDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.data_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsDataDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsDataDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsDataDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsDataDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsDataDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsDataDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsDataDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsDataDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsDataDiskCount != "" {
@@ -2997,13 +3388,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.existing_data_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsExistingDataDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsExistingDataDiskCount != "" {
@@ -3014,13 +3405,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.existing_parity_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsExistingParityDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsExistingParityDiskCount != "" {
@@ -3031,13 +3422,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsIsPartition != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.is_partition
 		var qrBlockStoragePrimarySimulatedRaidGroupsIsPartition bool
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsIsPartition = *o.BlockStoragePrimarySimulatedRaIDGroupsIsPartitionQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsIsPartition != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsIsPartition = *o.BlockStoragePrimarySimulatedRaidGroupsIsPartition
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsIsPartition := swag.FormatBool(qrBlockStoragePrimarySimulatedRaidGroupsIsPartition)
 		if qBlockStoragePrimarySimulatedRaidGroupsIsPartition != "" {
@@ -3048,13 +3439,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsName != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.name
 		var qrBlockStoragePrimarySimulatedRaidGroupsName string
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsName = *o.BlockStoragePrimarySimulatedRaIDGroupsNameQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsName != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsName = *o.BlockStoragePrimarySimulatedRaidGroupsName
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsName := qrBlockStoragePrimarySimulatedRaidGroupsName
 		if qBlockStoragePrimarySimulatedRaidGroupsName != "" {
@@ -3065,13 +3456,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsParityDiskCount != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.parity_disk_count
 		var qrBlockStoragePrimarySimulatedRaidGroupsParityDiskCount int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsParityDiskCount = *o.BlockStoragePrimarySimulatedRaIDGroupsParityDiskCountQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsParityDiskCount != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsParityDiskCount = *o.BlockStoragePrimarySimulatedRaidGroupsParityDiskCount
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsParityDiskCount := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsParityDiskCount)
 		if qBlockStoragePrimarySimulatedRaidGroupsParityDiskCount != "" {
@@ -3082,13 +3473,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsRaidType != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.raid_type
 		var qrBlockStoragePrimarySimulatedRaidGroupsRaidType string
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsRaidType = *o.BlockStoragePrimarySimulatedRaIDGroupsRaIDTypeQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsRaidType != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsRaidType = *o.BlockStoragePrimarySimulatedRaidGroupsRaidType
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsRaidType := qrBlockStoragePrimarySimulatedRaidGroupsRaidType
 		if qBlockStoragePrimarySimulatedRaidGroupsRaidType != "" {
@@ -3099,13 +3490,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter != nil {
+	if o.BlockStoragePrimarySimulatedRaidGroupsUsableSize != nil {
 
 		// query param block_storage.primary.simulated_raid_groups.usable_size
 		var qrBlockStoragePrimarySimulatedRaidGroupsUsableSize int64
 
-		if o.BlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter != nil {
-			qrBlockStoragePrimarySimulatedRaidGroupsUsableSize = *o.BlockStoragePrimarySimulatedRaIDGroupsUsableSizeQueryParameter
+		if o.BlockStoragePrimarySimulatedRaidGroupsUsableSize != nil {
+			qrBlockStoragePrimarySimulatedRaidGroupsUsableSize = *o.BlockStoragePrimarySimulatedRaidGroupsUsableSize
 		}
 		qBlockStoragePrimarySimulatedRaidGroupsUsableSize := swag.FormatInt64(qrBlockStoragePrimarySimulatedRaidGroupsUsableSize)
 		if qBlockStoragePrimarySimulatedRaidGroupsUsableSize != "" {
@@ -3116,13 +3507,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageStorageTypeQueryParameter != nil {
+	if o.BlockStorageStorageType != nil {
 
 		// query param block_storage.storage_type
 		var qrBlockStorageStorageType string
 
-		if o.BlockStorageStorageTypeQueryParameter != nil {
-			qrBlockStorageStorageType = *o.BlockStorageStorageTypeQueryParameter
+		if o.BlockStorageStorageType != nil {
+			qrBlockStorageStorageType = *o.BlockStorageStorageType
 		}
 		qBlockStorageStorageType := qrBlockStorageStorageType
 		if qBlockStorageStorageType != "" {
@@ -3133,13 +3524,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BlockStorageUsesPartitionsQueryParameter != nil {
+	if o.BlockStorageUsesPartitions != nil {
 
 		// query param block_storage.uses_partitions
 		var qrBlockStorageUsesPartitions bool
 
-		if o.BlockStorageUsesPartitionsQueryParameter != nil {
-			qrBlockStorageUsesPartitions = *o.BlockStorageUsesPartitionsQueryParameter
+		if o.BlockStorageUsesPartitions != nil {
+			qrBlockStorageUsesPartitions = *o.BlockStorageUsesPartitions
 		}
 		qBlockStorageUsesPartitions := swag.FormatBool(qrBlockStorageUsesPartitions)
 		if qBlockStorageUsesPartitions != "" {
@@ -3150,13 +3541,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -3167,13 +3558,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.DataEncryptionDriveProtectionEnabledQueryParameter != nil {
+	if o.DataEncryptionDriveProtectionEnabled != nil {
 
 		// query param data_encryption.drive_protection_enabled
 		var qrDataEncryptionDriveProtectionEnabled bool
 
-		if o.DataEncryptionDriveProtectionEnabledQueryParameter != nil {
-			qrDataEncryptionDriveProtectionEnabled = *o.DataEncryptionDriveProtectionEnabledQueryParameter
+		if o.DataEncryptionDriveProtectionEnabled != nil {
+			qrDataEncryptionDriveProtectionEnabled = *o.DataEncryptionDriveProtectionEnabled
 		}
 		qDataEncryptionDriveProtectionEnabled := swag.FormatBool(qrDataEncryptionDriveProtectionEnabled)
 		if qDataEncryptionDriveProtectionEnabled != "" {
@@ -3184,13 +3575,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.DataEncryptionSoftwareEncryptionEnabledQueryParameter != nil {
+	if o.DataEncryptionSoftwareEncryptionEnabled != nil {
 
 		// query param data_encryption.software_encryption_enabled
 		var qrDataEncryptionSoftwareEncryptionEnabled bool
 
-		if o.DataEncryptionSoftwareEncryptionEnabledQueryParameter != nil {
-			qrDataEncryptionSoftwareEncryptionEnabled = *o.DataEncryptionSoftwareEncryptionEnabledQueryParameter
+		if o.DataEncryptionSoftwareEncryptionEnabled != nil {
+			qrDataEncryptionSoftwareEncryptionEnabled = *o.DataEncryptionSoftwareEncryptionEnabled
 		}
 		qDataEncryptionSoftwareEncryptionEnabled := swag.FormatBool(qrDataEncryptionSoftwareEncryptionEnabled)
 		if qDataEncryptionSoftwareEncryptionEnabled != "" {
@@ -3201,13 +3592,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.DrHomeNodeNameQueryParameter != nil {
+	if o.DrHomeNodeName != nil {
 
 		// query param dr_home_node.name
 		var qrDrHomeNodeName string
 
-		if o.DrHomeNodeNameQueryParameter != nil {
-			qrDrHomeNodeName = *o.DrHomeNodeNameQueryParameter
+		if o.DrHomeNodeName != nil {
+			qrDrHomeNodeName = *o.DrHomeNodeName
 		}
 		qDrHomeNodeName := qrDrHomeNodeName
 		if qDrHomeNodeName != "" {
@@ -3218,13 +3609,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.DrHomeNodeUUIDQueryParameter != nil {
+	if o.DrHomeNodeUUID != nil {
 
 		// query param dr_home_node.uuid
 		var qrDrHomeNodeUUID string
 
-		if o.DrHomeNodeUUIDQueryParameter != nil {
-			qrDrHomeNodeUUID = *o.DrHomeNodeUUIDQueryParameter
+		if o.DrHomeNodeUUID != nil {
+			qrDrHomeNodeUUID = *o.DrHomeNodeUUID
 		}
 		qDrHomeNodeUUID := qrDrHomeNodeUUID
 		if qDrHomeNodeUUID != "" {
@@ -3235,7 +3626,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -3246,13 +3637,30 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.HomeNodeNameQueryParameter != nil {
+	if o.FlashPoolEligible != nil {
+
+		// query param flash_pool_eligible
+		var qrFlashPoolEligible bool
+
+		if o.FlashPoolEligible != nil {
+			qrFlashPoolEligible = *o.FlashPoolEligible
+		}
+		qFlashPoolEligible := swag.FormatBool(qrFlashPoolEligible)
+		if qFlashPoolEligible != "" {
+
+			if err := r.SetQueryParam("flash_pool_eligible", qFlashPoolEligible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HomeNodeName != nil {
 
 		// query param home_node.name
 		var qrHomeNodeName string
 
-		if o.HomeNodeNameQueryParameter != nil {
-			qrHomeNodeName = *o.HomeNodeNameQueryParameter
+		if o.HomeNodeName != nil {
+			qrHomeNodeName = *o.HomeNodeName
 		}
 		qHomeNodeName := qrHomeNodeName
 		if qHomeNodeName != "" {
@@ -3263,13 +3671,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.HomeNodeUUIDQueryParameter != nil {
+	if o.HomeNodeUUID != nil {
 
 		// query param home_node.uuid
 		var qrHomeNodeUUID string
 
-		if o.HomeNodeUUIDQueryParameter != nil {
-			qrHomeNodeUUID = *o.HomeNodeUUIDQueryParameter
+		if o.HomeNodeUUID != nil {
+			qrHomeNodeUUID = *o.HomeNodeUUID
 		}
 		qHomeNodeUUID := qrHomeNodeUUID
 		if qHomeNodeUUID != "" {
@@ -3280,13 +3688,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InactiveDataReportingEnabledQueryParameter != nil {
+	if o.InactiveDataReportingEnabled != nil {
 
 		// query param inactive_data_reporting.enabled
 		var qrInactiveDataReportingEnabled bool
 
-		if o.InactiveDataReportingEnabledQueryParameter != nil {
-			qrInactiveDataReportingEnabled = *o.InactiveDataReportingEnabledQueryParameter
+		if o.InactiveDataReportingEnabled != nil {
+			qrInactiveDataReportingEnabled = *o.InactiveDataReportingEnabled
 		}
 		qInactiveDataReportingEnabled := swag.FormatBool(qrInactiveDataReportingEnabled)
 		if qInactiveDataReportingEnabled != "" {
@@ -3297,13 +3705,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InactiveDataReportingStartTimeQueryParameter != nil {
+	if o.InactiveDataReportingStartTime != nil {
 
 		// query param inactive_data_reporting.start_time
 		var qrInactiveDataReportingStartTime string
 
-		if o.InactiveDataReportingStartTimeQueryParameter != nil {
-			qrInactiveDataReportingStartTime = *o.InactiveDataReportingStartTimeQueryParameter
+		if o.InactiveDataReportingStartTime != nil {
+			qrInactiveDataReportingStartTime = *o.InactiveDataReportingStartTime
 		}
 		qInactiveDataReportingStartTime := qrInactiveDataReportingStartTime
 		if qInactiveDataReportingStartTime != "" {
@@ -3314,13 +3722,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesFilePrivateCapacityQueryParameter != nil {
+	if o.InodeAttributesFilePrivateCapacity != nil {
 
 		// query param inode_attributes.file_private_capacity
 		var qrInodeAttributesFilePrivateCapacity int64
 
-		if o.InodeAttributesFilePrivateCapacityQueryParameter != nil {
-			qrInodeAttributesFilePrivateCapacity = *o.InodeAttributesFilePrivateCapacityQueryParameter
+		if o.InodeAttributesFilePrivateCapacity != nil {
+			qrInodeAttributesFilePrivateCapacity = *o.InodeAttributesFilePrivateCapacity
 		}
 		qInodeAttributesFilePrivateCapacity := swag.FormatInt64(qrInodeAttributesFilePrivateCapacity)
 		if qInodeAttributesFilePrivateCapacity != "" {
@@ -3331,13 +3739,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesFilePublicCapacityQueryParameter != nil {
+	if o.InodeAttributesFilePublicCapacity != nil {
 
 		// query param inode_attributes.file_public_capacity
 		var qrInodeAttributesFilePublicCapacity int64
 
-		if o.InodeAttributesFilePublicCapacityQueryParameter != nil {
-			qrInodeAttributesFilePublicCapacity = *o.InodeAttributesFilePublicCapacityQueryParameter
+		if o.InodeAttributesFilePublicCapacity != nil {
+			qrInodeAttributesFilePublicCapacity = *o.InodeAttributesFilePublicCapacity
 		}
 		qInodeAttributesFilePublicCapacity := swag.FormatInt64(qrInodeAttributesFilePublicCapacity)
 		if qInodeAttributesFilePublicCapacity != "" {
@@ -3348,13 +3756,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesFilesPrivateUsedQueryParameter != nil {
+	if o.InodeAttributesFilesPrivateUsed != nil {
 
 		// query param inode_attributes.files_private_used
 		var qrInodeAttributesFilesPrivateUsed int64
 
-		if o.InodeAttributesFilesPrivateUsedQueryParameter != nil {
-			qrInodeAttributesFilesPrivateUsed = *o.InodeAttributesFilesPrivateUsedQueryParameter
+		if o.InodeAttributesFilesPrivateUsed != nil {
+			qrInodeAttributesFilesPrivateUsed = *o.InodeAttributesFilesPrivateUsed
 		}
 		qInodeAttributesFilesPrivateUsed := swag.FormatInt64(qrInodeAttributesFilesPrivateUsed)
 		if qInodeAttributesFilesPrivateUsed != "" {
@@ -3365,13 +3773,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesFilesTotalQueryParameter != nil {
+	if o.InodeAttributesFilesTotal != nil {
 
 		// query param inode_attributes.files_total
 		var qrInodeAttributesFilesTotal int64
 
-		if o.InodeAttributesFilesTotalQueryParameter != nil {
-			qrInodeAttributesFilesTotal = *o.InodeAttributesFilesTotalQueryParameter
+		if o.InodeAttributesFilesTotal != nil {
+			qrInodeAttributesFilesTotal = *o.InodeAttributesFilesTotal
 		}
 		qInodeAttributesFilesTotal := swag.FormatInt64(qrInodeAttributesFilesTotal)
 		if qInodeAttributesFilesTotal != "" {
@@ -3382,13 +3790,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesFilesUsedQueryParameter != nil {
+	if o.InodeAttributesFilesUsed != nil {
 
 		// query param inode_attributes.files_used
 		var qrInodeAttributesFilesUsed int64
 
-		if o.InodeAttributesFilesUsedQueryParameter != nil {
-			qrInodeAttributesFilesUsed = *o.InodeAttributesFilesUsedQueryParameter
+		if o.InodeAttributesFilesUsed != nil {
+			qrInodeAttributesFilesUsed = *o.InodeAttributesFilesUsed
 		}
 		qInodeAttributesFilesUsed := swag.FormatInt64(qrInodeAttributesFilesUsed)
 		if qInodeAttributesFilesUsed != "" {
@@ -3399,13 +3807,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesMaxFilesAvailableQueryParameter != nil {
+	if o.InodeAttributesMaxFilesAvailable != nil {
 
 		// query param inode_attributes.max_files_available
 		var qrInodeAttributesMaxFilesAvailable int64
 
-		if o.InodeAttributesMaxFilesAvailableQueryParameter != nil {
-			qrInodeAttributesMaxFilesAvailable = *o.InodeAttributesMaxFilesAvailableQueryParameter
+		if o.InodeAttributesMaxFilesAvailable != nil {
+			qrInodeAttributesMaxFilesAvailable = *o.InodeAttributesMaxFilesAvailable
 		}
 		qInodeAttributesMaxFilesAvailable := swag.FormatInt64(qrInodeAttributesMaxFilesAvailable)
 		if qInodeAttributesMaxFilesAvailable != "" {
@@ -3416,13 +3824,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesMaxFilesPossibleQueryParameter != nil {
+	if o.InodeAttributesMaxFilesPossible != nil {
 
 		// query param inode_attributes.max_files_possible
 		var qrInodeAttributesMaxFilesPossible int64
 
-		if o.InodeAttributesMaxFilesPossibleQueryParameter != nil {
-			qrInodeAttributesMaxFilesPossible = *o.InodeAttributesMaxFilesPossibleQueryParameter
+		if o.InodeAttributesMaxFilesPossible != nil {
+			qrInodeAttributesMaxFilesPossible = *o.InodeAttributesMaxFilesPossible
 		}
 		qInodeAttributesMaxFilesPossible := swag.FormatInt64(qrInodeAttributesMaxFilesPossible)
 		if qInodeAttributesMaxFilesPossible != "" {
@@ -3433,13 +3841,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesMaxFilesUsedQueryParameter != nil {
+	if o.InodeAttributesMaxFilesUsed != nil {
 
 		// query param inode_attributes.max_files_used
 		var qrInodeAttributesMaxFilesUsed int64
 
-		if o.InodeAttributesMaxFilesUsedQueryParameter != nil {
-			qrInodeAttributesMaxFilesUsed = *o.InodeAttributesMaxFilesUsedQueryParameter
+		if o.InodeAttributesMaxFilesUsed != nil {
+			qrInodeAttributesMaxFilesUsed = *o.InodeAttributesMaxFilesUsed
 		}
 		qInodeAttributesMaxFilesUsed := swag.FormatInt64(qrInodeAttributesMaxFilesUsed)
 		if qInodeAttributesMaxFilesUsed != "" {
@@ -3450,13 +3858,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesUsedPercentQueryParameter != nil {
+	if o.InodeAttributesUsedPercent != nil {
 
 		// query param inode_attributes.used_percent
 		var qrInodeAttributesUsedPercent int64
 
-		if o.InodeAttributesUsedPercentQueryParameter != nil {
-			qrInodeAttributesUsedPercent = *o.InodeAttributesUsedPercentQueryParameter
+		if o.InodeAttributesUsedPercent != nil {
+			qrInodeAttributesUsedPercent = *o.InodeAttributesUsedPercent
 		}
 		qInodeAttributesUsedPercent := swag.FormatInt64(qrInodeAttributesUsedPercent)
 		if qInodeAttributesUsedPercent != "" {
@@ -3467,13 +3875,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.InodeAttributesVersionQueryParameter != nil {
+	if o.InodeAttributesVersion != nil {
 
 		// query param inode_attributes.version
 		var qrInodeAttributesVersion int64
 
-		if o.InodeAttributesVersionQueryParameter != nil {
-			qrInodeAttributesVersion = *o.InodeAttributesVersionQueryParameter
+		if o.InodeAttributesVersion != nil {
+			qrInodeAttributesVersion = *o.InodeAttributesVersion
 		}
 		qInodeAttributesVersion := swag.FormatInt64(qrInodeAttributesVersion)
 		if qInodeAttributesVersion != "" {
@@ -3484,13 +3892,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IsSpareLowQueryParameter != nil {
+	if o.IsSpareLow != nil {
 
 		// query param is_spare_low
 		var qrIsSpareLow bool
 
-		if o.IsSpareLowQueryParameter != nil {
-			qrIsSpareLow = *o.IsSpareLowQueryParameter
+		if o.IsSpareLow != nil {
+			qrIsSpareLow = *o.IsSpareLow
 		}
 		qIsSpareLow := swag.FormatBool(qrIsSpareLow)
 		if qIsSpareLow != "" {
@@ -3501,13 +3909,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -3518,13 +3926,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -3535,13 +3943,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -3552,13 +3960,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -3569,13 +3977,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -3586,13 +3994,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -3603,13 +4011,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -3620,13 +4028,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -3637,13 +4045,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -3654,13 +4062,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -3671,13 +4079,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -3688,13 +4096,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputOtherQueryParameter != nil {
+	if o.MetricThroughputOther != nil {
 
 		// query param metric.throughput.other
 		var qrMetricThroughputOther int64
 
-		if o.MetricThroughputOtherQueryParameter != nil {
-			qrMetricThroughputOther = *o.MetricThroughputOtherQueryParameter
+		if o.MetricThroughputOther != nil {
+			qrMetricThroughputOther = *o.MetricThroughputOther
 		}
 		qMetricThroughputOther := swag.FormatInt64(qrMetricThroughputOther)
 		if qMetricThroughputOther != "" {
@@ -3705,13 +4113,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -3722,13 +4130,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -3739,13 +4147,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -3756,13 +4164,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -3773,13 +4181,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -3790,13 +4198,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -3807,13 +4215,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -3824,7 +4232,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -3835,13 +4243,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendQueryParameter != nil {
+	if o.Recommend != nil {
 
 		// query param recommend
 		var qrRecommend bool
 
-		if o.RecommendQueryParameter != nil {
-			qrRecommend = *o.RecommendQueryParameter
+		if o.Recommend != nil {
+			qrRecommend = *o.Recommend
 		}
 		qRecommend := swag.FormatBool(qrRecommend)
 		if qRecommend != "" {
@@ -3852,13 +4260,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesChecksumStyleQueryParameter != nil {
+	if o.RecommendationSparesChecksumStyle != nil {
 
 		// query param recommendation_spares.checksum_style
 		var qrRecommendationSparesChecksumStyle string
 
-		if o.RecommendationSparesChecksumStyleQueryParameter != nil {
-			qrRecommendationSparesChecksumStyle = *o.RecommendationSparesChecksumStyleQueryParameter
+		if o.RecommendationSparesChecksumStyle != nil {
+			qrRecommendationSparesChecksumStyle = *o.RecommendationSparesChecksumStyle
 		}
 		qRecommendationSparesChecksumStyle := qrRecommendationSparesChecksumStyle
 		if qRecommendationSparesChecksumStyle != "" {
@@ -3869,13 +4277,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesDiskClassQueryParameter != nil {
+	if o.RecommendationSparesDiskClass != nil {
 
 		// query param recommendation_spares.disk_class
 		var qrRecommendationSparesDiskClass string
 
-		if o.RecommendationSparesDiskClassQueryParameter != nil {
-			qrRecommendationSparesDiskClass = *o.RecommendationSparesDiskClassQueryParameter
+		if o.RecommendationSparesDiskClass != nil {
+			qrRecommendationSparesDiskClass = *o.RecommendationSparesDiskClass
 		}
 		qRecommendationSparesDiskClass := qrRecommendationSparesDiskClass
 		if qRecommendationSparesDiskClass != "" {
@@ -3886,13 +4294,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesDiskTypeQueryParameter != nil {
+	if o.RecommendationSparesDiskType != nil {
 
 		// query param recommendation_spares.disk_type
 		var qrRecommendationSparesDiskType string
 
-		if o.RecommendationSparesDiskTypeQueryParameter != nil {
-			qrRecommendationSparesDiskType = *o.RecommendationSparesDiskTypeQueryParameter
+		if o.RecommendationSparesDiskType != nil {
+			qrRecommendationSparesDiskType = *o.RecommendationSparesDiskType
 		}
 		qRecommendationSparesDiskType := qrRecommendationSparesDiskType
 		if qRecommendationSparesDiskType != "" {
@@ -3903,13 +4311,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesIsPartitionQueryParameter != nil {
+	if o.RecommendationSparesIsPartition != nil {
 
 		// query param recommendation_spares.is_partition
 		var qrRecommendationSparesIsPartition bool
 
-		if o.RecommendationSparesIsPartitionQueryParameter != nil {
-			qrRecommendationSparesIsPartition = *o.RecommendationSparesIsPartitionQueryParameter
+		if o.RecommendationSparesIsPartition != nil {
+			qrRecommendationSparesIsPartition = *o.RecommendationSparesIsPartition
 		}
 		qRecommendationSparesIsPartition := swag.FormatBool(qrRecommendationSparesIsPartition)
 		if qRecommendationSparesIsPartition != "" {
@@ -3920,13 +4328,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsAggregateMinDisks != nil {
 
 		// query param recommendation_spares.layout_requirements.aggregate_min_disks
 		var qrRecommendationSparesLayoutRequirementsAggregateMinDisks int64
 
-		if o.RecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsAggregateMinDisks = *o.RecommendationSparesLayoutRequirementsAggregateMinDisksQueryParameter
+		if o.RecommendationSparesLayoutRequirementsAggregateMinDisks != nil {
+			qrRecommendationSparesLayoutRequirementsAggregateMinDisks = *o.RecommendationSparesLayoutRequirementsAggregateMinDisks
 		}
 		qRecommendationSparesLayoutRequirementsAggregateMinDisks := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsAggregateMinDisks)
 		if qRecommendationSparesLayoutRequirementsAggregateMinDisks != "" {
@@ -3937,13 +4345,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsDefaultQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsDefault != nil {
 
 		// query param recommendation_spares.layout_requirements.default
 		var qrRecommendationSparesLayoutRequirementsDefault bool
 
-		if o.RecommendationSparesLayoutRequirementsDefaultQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsDefault = *o.RecommendationSparesLayoutRequirementsDefaultQueryParameter
+		if o.RecommendationSparesLayoutRequirementsDefault != nil {
+			qrRecommendationSparesLayoutRequirementsDefault = *o.RecommendationSparesLayoutRequirementsDefault
 		}
 		qRecommendationSparesLayoutRequirementsDefault := swag.FormatBool(qrRecommendationSparesLayoutRequirementsDefault)
 		if qRecommendationSparesLayoutRequirementsDefault != "" {
@@ -3954,13 +4362,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsRaidGroupDefault != nil {
 
 		// query param recommendation_spares.layout_requirements.raid_group.default
 		var qrRecommendationSparesLayoutRequirementsRaidGroupDefault int64
 
-		if o.RecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupDefault = *o.RecommendationSparesLayoutRequirementsRaIDGroupDefaultQueryParameter
+		if o.RecommendationSparesLayoutRequirementsRaidGroupDefault != nil {
+			qrRecommendationSparesLayoutRequirementsRaidGroupDefault = *o.RecommendationSparesLayoutRequirementsRaidGroupDefault
 		}
 		qRecommendationSparesLayoutRequirementsRaidGroupDefault := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupDefault)
 		if qRecommendationSparesLayoutRequirementsRaidGroupDefault != "" {
@@ -3971,13 +4379,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsRaidGroupMax != nil {
 
 		// query param recommendation_spares.layout_requirements.raid_group.max
 		var qrRecommendationSparesLayoutRequirementsRaidGroupMax int64
 
-		if o.RecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupMax = *o.RecommendationSparesLayoutRequirementsRaIDGroupMaxQueryParameter
+		if o.RecommendationSparesLayoutRequirementsRaidGroupMax != nil {
+			qrRecommendationSparesLayoutRequirementsRaidGroupMax = *o.RecommendationSparesLayoutRequirementsRaidGroupMax
 		}
 		qRecommendationSparesLayoutRequirementsRaidGroupMax := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupMax)
 		if qRecommendationSparesLayoutRequirementsRaidGroupMax != "" {
@@ -3988,13 +4396,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsRaidGroupMin != nil {
 
 		// query param recommendation_spares.layout_requirements.raid_group.min
 		var qrRecommendationSparesLayoutRequirementsRaidGroupMin int64
 
-		if o.RecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsRaidGroupMin = *o.RecommendationSparesLayoutRequirementsRaIDGroupMinQueryParameter
+		if o.RecommendationSparesLayoutRequirementsRaidGroupMin != nil {
+			qrRecommendationSparesLayoutRequirementsRaidGroupMin = *o.RecommendationSparesLayoutRequirementsRaidGroupMin
 		}
 		qRecommendationSparesLayoutRequirementsRaidGroupMin := swag.FormatInt64(qrRecommendationSparesLayoutRequirementsRaidGroupMin)
 		if qRecommendationSparesLayoutRequirementsRaidGroupMin != "" {
@@ -4005,13 +4413,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesLayoutRequirementsRaIDTypeQueryParameter != nil {
+	if o.RecommendationSparesLayoutRequirementsRaidType != nil {
 
 		// query param recommendation_spares.layout_requirements.raid_type
 		var qrRecommendationSparesLayoutRequirementsRaidType string
 
-		if o.RecommendationSparesLayoutRequirementsRaIDTypeQueryParameter != nil {
-			qrRecommendationSparesLayoutRequirementsRaidType = *o.RecommendationSparesLayoutRequirementsRaIDTypeQueryParameter
+		if o.RecommendationSparesLayoutRequirementsRaidType != nil {
+			qrRecommendationSparesLayoutRequirementsRaidType = *o.RecommendationSparesLayoutRequirementsRaidType
 		}
 		qRecommendationSparesLayoutRequirementsRaidType := qrRecommendationSparesLayoutRequirementsRaidType
 		if qRecommendationSparesLayoutRequirementsRaidType != "" {
@@ -4022,13 +4430,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesNodeNameQueryParameter != nil {
+	if o.RecommendationSparesNodeName != nil {
 
 		// query param recommendation_spares.node.name
 		var qrRecommendationSparesNodeName string
 
-		if o.RecommendationSparesNodeNameQueryParameter != nil {
-			qrRecommendationSparesNodeName = *o.RecommendationSparesNodeNameQueryParameter
+		if o.RecommendationSparesNodeName != nil {
+			qrRecommendationSparesNodeName = *o.RecommendationSparesNodeName
 		}
 		qRecommendationSparesNodeName := qrRecommendationSparesNodeName
 		if qRecommendationSparesNodeName != "" {
@@ -4039,13 +4447,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesNodeUUIDQueryParameter != nil {
+	if o.RecommendationSparesNodeUUID != nil {
 
 		// query param recommendation_spares.node.uuid
 		var qrRecommendationSparesNodeUUID string
 
-		if o.RecommendationSparesNodeUUIDQueryParameter != nil {
-			qrRecommendationSparesNodeUUID = *o.RecommendationSparesNodeUUIDQueryParameter
+		if o.RecommendationSparesNodeUUID != nil {
+			qrRecommendationSparesNodeUUID = *o.RecommendationSparesNodeUUID
 		}
 		qRecommendationSparesNodeUUID := qrRecommendationSparesNodeUUID
 		if qRecommendationSparesNodeUUID != "" {
@@ -4056,13 +4464,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesSizeQueryParameter != nil {
+	if o.RecommendationSparesSize != nil {
 
 		// query param recommendation_spares.size
 		var qrRecommendationSparesSize int64
 
-		if o.RecommendationSparesSizeQueryParameter != nil {
-			qrRecommendationSparesSize = *o.RecommendationSparesSizeQueryParameter
+		if o.RecommendationSparesSize != nil {
+			qrRecommendationSparesSize = *o.RecommendationSparesSize
 		}
 		qRecommendationSparesSize := swag.FormatInt64(qrRecommendationSparesSize)
 		if qRecommendationSparesSize != "" {
@@ -4073,13 +4481,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesSyncmirrorPoolQueryParameter != nil {
+	if o.RecommendationSparesSyncmirrorPool != nil {
 
 		// query param recommendation_spares.syncmirror_pool
 		var qrRecommendationSparesSyncmirrorPool string
 
-		if o.RecommendationSparesSyncmirrorPoolQueryParameter != nil {
-			qrRecommendationSparesSyncmirrorPool = *o.RecommendationSparesSyncmirrorPoolQueryParameter
+		if o.RecommendationSparesSyncmirrorPool != nil {
+			qrRecommendationSparesSyncmirrorPool = *o.RecommendationSparesSyncmirrorPool
 		}
 		qRecommendationSparesSyncmirrorPool := qrRecommendationSparesSyncmirrorPool
 		if qRecommendationSparesSyncmirrorPool != "" {
@@ -4090,13 +4498,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesTotalQueryParameter != nil {
+	if o.RecommendationSparesTotal != nil {
 
 		// query param recommendation_spares.total
 		var qrRecommendationSparesTotal int64
 
-		if o.RecommendationSparesTotalQueryParameter != nil {
-			qrRecommendationSparesTotal = *o.RecommendationSparesTotalQueryParameter
+		if o.RecommendationSparesTotal != nil {
+			qrRecommendationSparesTotal = *o.RecommendationSparesTotal
 		}
 		qRecommendationSparesTotal := swag.FormatInt64(qrRecommendationSparesTotal)
 		if qRecommendationSparesTotal != "" {
@@ -4107,13 +4515,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.RecommendationSparesUsableQueryParameter != nil {
+	if o.RecommendationSparesUsable != nil {
 
 		// query param recommendation_spares.usable
 		var qrRecommendationSparesUsable int64
 
-		if o.RecommendationSparesUsableQueryParameter != nil {
-			qrRecommendationSparesUsable = *o.RecommendationSparesUsableQueryParameter
+		if o.RecommendationSparesUsable != nil {
+			qrRecommendationSparesUsable = *o.RecommendationSparesUsable
 		}
 		qRecommendationSparesUsable := swag.FormatInt64(qrRecommendationSparesUsable)
 		if qRecommendationSparesUsable != "" {
@@ -4124,13 +4532,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -4141,13 +4549,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -4158,13 +4566,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ShowSparesQueryParameter != nil {
+	if o.ShowSpares != nil {
 
 		// query param show_spares
 		var qrShowSpares bool
 
-		if o.ShowSparesQueryParameter != nil {
-			qrShowSpares = *o.ShowSparesQueryParameter
+		if o.ShowSpares != nil {
+			qrShowSpares = *o.ShowSpares
 		}
 		qShowSpares := swag.FormatBool(qrShowSpares)
 		if qShowSpares != "" {
@@ -4175,13 +4583,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SidlEnabledQueryParameter != nil {
+	if o.SidlEnabled != nil {
 
 		// query param sidl_enabled
 		var qrSidlEnabled bool
 
-		if o.SidlEnabledQueryParameter != nil {
-			qrSidlEnabled = *o.SidlEnabledQueryParameter
+		if o.SidlEnabled != nil {
+			qrSidlEnabled = *o.SidlEnabled
 		}
 		qSidlEnabled := swag.FormatBool(qrSidlEnabled)
 		if qSidlEnabled != "" {
@@ -4192,13 +4600,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SnaplockTypeQueryParameter != nil {
+	if o.SnaplockType != nil {
 
 		// query param snaplock_type
 		var qrSnaplockType string
 
-		if o.SnaplockTypeQueryParameter != nil {
-			qrSnaplockType = *o.SnaplockTypeQueryParameter
+		if o.SnaplockType != nil {
+			qrSnaplockType = *o.SnaplockType
 		}
 		qSnaplockType := qrSnaplockType
 		if qSnaplockType != "" {
@@ -4209,13 +4617,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SnapshotFilesTotalQueryParameter != nil {
+	if o.SnapshotFilesTotal != nil {
 
 		// query param snapshot.files_total
 		var qrSnapshotFilesTotal int64
 
-		if o.SnapshotFilesTotalQueryParameter != nil {
-			qrSnapshotFilesTotal = *o.SnapshotFilesTotalQueryParameter
+		if o.SnapshotFilesTotal != nil {
+			qrSnapshotFilesTotal = *o.SnapshotFilesTotal
 		}
 		qSnapshotFilesTotal := swag.FormatInt64(qrSnapshotFilesTotal)
 		if qSnapshotFilesTotal != "" {
@@ -4226,13 +4634,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SnapshotFilesUsedQueryParameter != nil {
+	if o.SnapshotFilesUsed != nil {
 
 		// query param snapshot.files_used
 		var qrSnapshotFilesUsed int64
 
-		if o.SnapshotFilesUsedQueryParameter != nil {
-			qrSnapshotFilesUsed = *o.SnapshotFilesUsedQueryParameter
+		if o.SnapshotFilesUsed != nil {
+			qrSnapshotFilesUsed = *o.SnapshotFilesUsed
 		}
 		qSnapshotFilesUsed := swag.FormatInt64(qrSnapshotFilesUsed)
 		if qSnapshotFilesUsed != "" {
@@ -4243,13 +4651,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SnapshotMaxFilesAvailableQueryParameter != nil {
+	if o.SnapshotMaxFilesAvailable != nil {
 
 		// query param snapshot.max_files_available
 		var qrSnapshotMaxFilesAvailable int64
 
-		if o.SnapshotMaxFilesAvailableQueryParameter != nil {
-			qrSnapshotMaxFilesAvailable = *o.SnapshotMaxFilesAvailableQueryParameter
+		if o.SnapshotMaxFilesAvailable != nil {
+			qrSnapshotMaxFilesAvailable = *o.SnapshotMaxFilesAvailable
 		}
 		qSnapshotMaxFilesAvailable := swag.FormatInt64(qrSnapshotMaxFilesAvailable)
 		if qSnapshotMaxFilesAvailable != "" {
@@ -4260,13 +4668,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SnapshotMaxFilesUsedQueryParameter != nil {
+	if o.SnapshotMaxFilesUsed != nil {
 
 		// query param snapshot.max_files_used
 		var qrSnapshotMaxFilesUsed int64
 
-		if o.SnapshotMaxFilesUsedQueryParameter != nil {
-			qrSnapshotMaxFilesUsed = *o.SnapshotMaxFilesUsedQueryParameter
+		if o.SnapshotMaxFilesUsed != nil {
+			qrSnapshotMaxFilesUsed = *o.SnapshotMaxFilesUsed
 		}
 		qSnapshotMaxFilesUsed := swag.FormatInt64(qrSnapshotMaxFilesUsed)
 		if qSnapshotMaxFilesUsed != "" {
@@ -4277,13 +4685,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageAggregateMetadataQueryParameter != nil {
+	if o.SpaceBlockStorageAggregateMetadata != nil {
 
 		// query param space.block_storage.aggregate_metadata
 		var qrSpaceBlockStorageAggregateMetadata int64
 
-		if o.SpaceBlockStorageAggregateMetadataQueryParameter != nil {
-			qrSpaceBlockStorageAggregateMetadata = *o.SpaceBlockStorageAggregateMetadataQueryParameter
+		if o.SpaceBlockStorageAggregateMetadata != nil {
+			qrSpaceBlockStorageAggregateMetadata = *o.SpaceBlockStorageAggregateMetadata
 		}
 		qSpaceBlockStorageAggregateMetadata := swag.FormatInt64(qrSpaceBlockStorageAggregateMetadata)
 		if qSpaceBlockStorageAggregateMetadata != "" {
@@ -4294,13 +4702,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageAggregateMetadataPercentQueryParameter != nil {
+	if o.SpaceBlockStorageAggregateMetadataPercent != nil {
 
 		// query param space.block_storage.aggregate_metadata_percent
 		var qrSpaceBlockStorageAggregateMetadataPercent int64
 
-		if o.SpaceBlockStorageAggregateMetadataPercentQueryParameter != nil {
-			qrSpaceBlockStorageAggregateMetadataPercent = *o.SpaceBlockStorageAggregateMetadataPercentQueryParameter
+		if o.SpaceBlockStorageAggregateMetadataPercent != nil {
+			qrSpaceBlockStorageAggregateMetadataPercent = *o.SpaceBlockStorageAggregateMetadataPercent
 		}
 		qSpaceBlockStorageAggregateMetadataPercent := swag.FormatInt64(qrSpaceBlockStorageAggregateMetadataPercent)
 		if qSpaceBlockStorageAggregateMetadataPercent != "" {
@@ -4311,13 +4719,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageAvailableQueryParameter != nil {
+	if o.SpaceBlockStorageAvailable != nil {
 
 		// query param space.block_storage.available
 		var qrSpaceBlockStorageAvailable int64
 
-		if o.SpaceBlockStorageAvailableQueryParameter != nil {
-			qrSpaceBlockStorageAvailable = *o.SpaceBlockStorageAvailableQueryParameter
+		if o.SpaceBlockStorageAvailable != nil {
+			qrSpaceBlockStorageAvailable = *o.SpaceBlockStorageAvailable
 		}
 		qSpaceBlockStorageAvailable := swag.FormatInt64(qrSpaceBlockStorageAvailable)
 		if qSpaceBlockStorageAvailable != "" {
@@ -4328,13 +4736,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageDataCompactedCountQueryParameter != nil {
+	if o.SpaceBlockStorageDataCompactedCount != nil {
 
 		// query param space.block_storage.data_compacted_count
 		var qrSpaceBlockStorageDataCompactedCount int64
 
-		if o.SpaceBlockStorageDataCompactedCountQueryParameter != nil {
-			qrSpaceBlockStorageDataCompactedCount = *o.SpaceBlockStorageDataCompactedCountQueryParameter
+		if o.SpaceBlockStorageDataCompactedCount != nil {
+			qrSpaceBlockStorageDataCompactedCount = *o.SpaceBlockStorageDataCompactedCount
 		}
 		qSpaceBlockStorageDataCompactedCount := swag.FormatInt64(qrSpaceBlockStorageDataCompactedCount)
 		if qSpaceBlockStorageDataCompactedCount != "" {
@@ -4345,13 +4753,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageDataCompactionSpaceSavedQueryParameter != nil {
+	if o.SpaceBlockStorageDataCompactionSpaceSaved != nil {
 
 		// query param space.block_storage.data_compaction_space_saved
 		var qrSpaceBlockStorageDataCompactionSpaceSaved int64
 
-		if o.SpaceBlockStorageDataCompactionSpaceSavedQueryParameter != nil {
-			qrSpaceBlockStorageDataCompactionSpaceSaved = *o.SpaceBlockStorageDataCompactionSpaceSavedQueryParameter
+		if o.SpaceBlockStorageDataCompactionSpaceSaved != nil {
+			qrSpaceBlockStorageDataCompactionSpaceSaved = *o.SpaceBlockStorageDataCompactionSpaceSaved
 		}
 		qSpaceBlockStorageDataCompactionSpaceSaved := swag.FormatInt64(qrSpaceBlockStorageDataCompactionSpaceSaved)
 		if qSpaceBlockStorageDataCompactionSpaceSaved != "" {
@@ -4362,13 +4770,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter != nil {
+	if o.SpaceBlockStorageDataCompactionSpaceSavedPercent != nil {
 
 		// query param space.block_storage.data_compaction_space_saved_percent
 		var qrSpaceBlockStorageDataCompactionSpaceSavedPercent int64
 
-		if o.SpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter != nil {
-			qrSpaceBlockStorageDataCompactionSpaceSavedPercent = *o.SpaceBlockStorageDataCompactionSpaceSavedPercentQueryParameter
+		if o.SpaceBlockStorageDataCompactionSpaceSavedPercent != nil {
+			qrSpaceBlockStorageDataCompactionSpaceSavedPercent = *o.SpaceBlockStorageDataCompactionSpaceSavedPercent
 		}
 		qSpaceBlockStorageDataCompactionSpaceSavedPercent := swag.FormatInt64(qrSpaceBlockStorageDataCompactionSpaceSavedPercent)
 		if qSpaceBlockStorageDataCompactionSpaceSavedPercent != "" {
@@ -4379,13 +4787,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageFullThresholdPercentQueryParameter != nil {
+	if o.SpaceBlockStorageFullThresholdPercent != nil {
 
 		// query param space.block_storage.full_threshold_percent
 		var qrSpaceBlockStorageFullThresholdPercent int64
 
-		if o.SpaceBlockStorageFullThresholdPercentQueryParameter != nil {
-			qrSpaceBlockStorageFullThresholdPercent = *o.SpaceBlockStorageFullThresholdPercentQueryParameter
+		if o.SpaceBlockStorageFullThresholdPercent != nil {
+			qrSpaceBlockStorageFullThresholdPercent = *o.SpaceBlockStorageFullThresholdPercent
 		}
 		qSpaceBlockStorageFullThresholdPercent := swag.FormatInt64(qrSpaceBlockStorageFullThresholdPercent)
 		if qSpaceBlockStorageFullThresholdPercent != "" {
@@ -4396,13 +4804,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageInactiveUserDataQueryParameter != nil {
+	if o.SpaceBlockStorageInactiveUserData != nil {
 
 		// query param space.block_storage.inactive_user_data
 		var qrSpaceBlockStorageInactiveUserData int64
 
-		if o.SpaceBlockStorageInactiveUserDataQueryParameter != nil {
-			qrSpaceBlockStorageInactiveUserData = *o.SpaceBlockStorageInactiveUserDataQueryParameter
+		if o.SpaceBlockStorageInactiveUserData != nil {
+			qrSpaceBlockStorageInactiveUserData = *o.SpaceBlockStorageInactiveUserData
 		}
 		qSpaceBlockStorageInactiveUserData := swag.FormatInt64(qrSpaceBlockStorageInactiveUserData)
 		if qSpaceBlockStorageInactiveUserData != "" {
@@ -4413,13 +4821,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageInactiveUserDataPercentQueryParameter != nil {
+	if o.SpaceBlockStorageInactiveUserDataPercent != nil {
 
 		// query param space.block_storage.inactive_user_data_percent
 		var qrSpaceBlockStorageInactiveUserDataPercent int64
 
-		if o.SpaceBlockStorageInactiveUserDataPercentQueryParameter != nil {
-			qrSpaceBlockStorageInactiveUserDataPercent = *o.SpaceBlockStorageInactiveUserDataPercentQueryParameter
+		if o.SpaceBlockStorageInactiveUserDataPercent != nil {
+			qrSpaceBlockStorageInactiveUserDataPercent = *o.SpaceBlockStorageInactiveUserDataPercent
 		}
 		qSpaceBlockStorageInactiveUserDataPercent := swag.FormatInt64(qrSpaceBlockStorageInactiveUserDataPercent)
 		if qSpaceBlockStorageInactiveUserDataPercent != "" {
@@ -4430,13 +4838,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStoragePhysicalUsedQueryParameter != nil {
+	if o.SpaceBlockStoragePhysicalUsed != nil {
 
 		// query param space.block_storage.physical_used
 		var qrSpaceBlockStoragePhysicalUsed int64
 
-		if o.SpaceBlockStoragePhysicalUsedQueryParameter != nil {
-			qrSpaceBlockStoragePhysicalUsed = *o.SpaceBlockStoragePhysicalUsedQueryParameter
+		if o.SpaceBlockStoragePhysicalUsed != nil {
+			qrSpaceBlockStoragePhysicalUsed = *o.SpaceBlockStoragePhysicalUsed
 		}
 		qSpaceBlockStoragePhysicalUsed := swag.FormatInt64(qrSpaceBlockStoragePhysicalUsed)
 		if qSpaceBlockStoragePhysicalUsed != "" {
@@ -4447,13 +4855,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStoragePhysicalUsedPercentQueryParameter != nil {
+	if o.SpaceBlockStoragePhysicalUsedPercent != nil {
 
 		// query param space.block_storage.physical_used_percent
 		var qrSpaceBlockStoragePhysicalUsedPercent int64
 
-		if o.SpaceBlockStoragePhysicalUsedPercentQueryParameter != nil {
-			qrSpaceBlockStoragePhysicalUsedPercent = *o.SpaceBlockStoragePhysicalUsedPercentQueryParameter
+		if o.SpaceBlockStoragePhysicalUsedPercent != nil {
+			qrSpaceBlockStoragePhysicalUsedPercent = *o.SpaceBlockStoragePhysicalUsedPercent
 		}
 		qSpaceBlockStoragePhysicalUsedPercent := swag.FormatInt64(qrSpaceBlockStoragePhysicalUsedPercent)
 		if qSpaceBlockStoragePhysicalUsedPercent != "" {
@@ -4464,13 +4872,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageSizeQueryParameter != nil {
+	if o.SpaceBlockStorageSize != nil {
 
 		// query param space.block_storage.size
 		var qrSpaceBlockStorageSize int64
 
-		if o.SpaceBlockStorageSizeQueryParameter != nil {
-			qrSpaceBlockStorageSize = *o.SpaceBlockStorageSizeQueryParameter
+		if o.SpaceBlockStorageSize != nil {
+			qrSpaceBlockStorageSize = *o.SpaceBlockStorageSize
 		}
 		qSpaceBlockStorageSize := swag.FormatInt64(qrSpaceBlockStorageSize)
 		if qSpaceBlockStorageSize != "" {
@@ -4481,13 +4889,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageUsedQueryParameter != nil {
+	if o.SpaceBlockStorageUsed != nil {
 
 		// query param space.block_storage.used
 		var qrSpaceBlockStorageUsed int64
 
-		if o.SpaceBlockStorageUsedQueryParameter != nil {
-			qrSpaceBlockStorageUsed = *o.SpaceBlockStorageUsedQueryParameter
+		if o.SpaceBlockStorageUsed != nil {
+			qrSpaceBlockStorageUsed = *o.SpaceBlockStorageUsed
 		}
 		qSpaceBlockStorageUsed := swag.FormatInt64(qrSpaceBlockStorageUsed)
 		if qSpaceBlockStorageUsed != "" {
@@ -4498,13 +4906,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter != nil {
+	if o.SpaceBlockStorageUsedIncludingSnapshotReserve != nil {
 
 		// query param space.block_storage.used_including_snapshot_reserve
 		var qrSpaceBlockStorageUsedIncludingSnapshotReserve int64
 
-		if o.SpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter != nil {
-			qrSpaceBlockStorageUsedIncludingSnapshotReserve = *o.SpaceBlockStorageUsedIncludingSnapshotReserveQueryParameter
+		if o.SpaceBlockStorageUsedIncludingSnapshotReserve != nil {
+			qrSpaceBlockStorageUsedIncludingSnapshotReserve = *o.SpaceBlockStorageUsedIncludingSnapshotReserve
 		}
 		qSpaceBlockStorageUsedIncludingSnapshotReserve := swag.FormatInt64(qrSpaceBlockStorageUsedIncludingSnapshotReserve)
 		if qSpaceBlockStorageUsedIncludingSnapshotReserve != "" {
@@ -4515,13 +4923,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter != nil {
+	if o.SpaceBlockStorageUsedIncludingSnapshotReservePercent != nil {
 
 		// query param space.block_storage.used_including_snapshot_reserve_percent
 		var qrSpaceBlockStorageUsedIncludingSnapshotReservePercent int64
 
-		if o.SpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter != nil {
-			qrSpaceBlockStorageUsedIncludingSnapshotReservePercent = *o.SpaceBlockStorageUsedIncludingSnapshotReservePercentQueryParameter
+		if o.SpaceBlockStorageUsedIncludingSnapshotReservePercent != nil {
+			qrSpaceBlockStorageUsedIncludingSnapshotReservePercent = *o.SpaceBlockStorageUsedIncludingSnapshotReservePercent
 		}
 		qSpaceBlockStorageUsedIncludingSnapshotReservePercent := swag.FormatInt64(qrSpaceBlockStorageUsedIncludingSnapshotReservePercent)
 		if qSpaceBlockStorageUsedIncludingSnapshotReservePercent != "" {
@@ -4532,13 +4940,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter != nil {
+	if o.SpaceBlockStorageVolumeDeduplicationSharedCount != nil {
 
 		// query param space.block_storage.volume_deduplication_shared_count
 		var qrSpaceBlockStorageVolumeDeduplicationSharedCount int64
 
-		if o.SpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter != nil {
-			qrSpaceBlockStorageVolumeDeduplicationSharedCount = *o.SpaceBlockStorageVolumeDeduplicationSharedCountQueryParameter
+		if o.SpaceBlockStorageVolumeDeduplicationSharedCount != nil {
+			qrSpaceBlockStorageVolumeDeduplicationSharedCount = *o.SpaceBlockStorageVolumeDeduplicationSharedCount
 		}
 		qSpaceBlockStorageVolumeDeduplicationSharedCount := swag.FormatInt64(qrSpaceBlockStorageVolumeDeduplicationSharedCount)
 		if qSpaceBlockStorageVolumeDeduplicationSharedCount != "" {
@@ -4549,13 +4957,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter != nil {
+	if o.SpaceBlockStorageVolumeDeduplicationSpaceSaved != nil {
 
 		// query param space.block_storage.volume_deduplication_space_saved
 		var qrSpaceBlockStorageVolumeDeduplicationSpaceSaved int64
 
-		if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter != nil {
-			qrSpaceBlockStorageVolumeDeduplicationSpaceSaved = *o.SpaceBlockStorageVolumeDeduplicationSpaceSavedQueryParameter
+		if o.SpaceBlockStorageVolumeDeduplicationSpaceSaved != nil {
+			qrSpaceBlockStorageVolumeDeduplicationSpaceSaved = *o.SpaceBlockStorageVolumeDeduplicationSpaceSaved
 		}
 		qSpaceBlockStorageVolumeDeduplicationSpaceSaved := swag.FormatInt64(qrSpaceBlockStorageVolumeDeduplicationSpaceSaved)
 		if qSpaceBlockStorageVolumeDeduplicationSpaceSaved != "" {
@@ -4566,13 +4974,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter != nil {
+	if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent != nil {
 
 		// query param space.block_storage.volume_deduplication_space_saved_percent
 		var qrSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent int64
 
-		if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter != nil {
-			qrSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent = *o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercentQueryParameter
+		if o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent != nil {
+			qrSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent = *o.SpaceBlockStorageVolumeDeduplicationSpaceSavedPercent
 		}
 		qSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent := swag.FormatInt64(qrSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent)
 		if qSpaceBlockStorageVolumeDeduplicationSpaceSavedPercent != "" {
@@ -4583,13 +4991,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceBlockStorageVolumeFootprintsPercentQueryParameter != nil {
+	if o.SpaceBlockStorageVolumeFootprintsPercent != nil {
 
 		// query param space.block_storage.volume_footprints_percent
 		var qrSpaceBlockStorageVolumeFootprintsPercent int64
 
-		if o.SpaceBlockStorageVolumeFootprintsPercentQueryParameter != nil {
-			qrSpaceBlockStorageVolumeFootprintsPercent = *o.SpaceBlockStorageVolumeFootprintsPercentQueryParameter
+		if o.SpaceBlockStorageVolumeFootprintsPercent != nil {
+			qrSpaceBlockStorageVolumeFootprintsPercent = *o.SpaceBlockStorageVolumeFootprintsPercent
 		}
 		qSpaceBlockStorageVolumeFootprintsPercent := swag.FormatInt64(qrSpaceBlockStorageVolumeFootprintsPercent)
 		if qSpaceBlockStorageVolumeFootprintsPercent != "" {
@@ -4600,13 +5008,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceCloudStorageUsedQueryParameter != nil {
+	if o.SpaceCloudStorageUsed != nil {
 
 		// query param space.cloud_storage.used
 		var qrSpaceCloudStorageUsed int64
 
-		if o.SpaceCloudStorageUsedQueryParameter != nil {
-			qrSpaceCloudStorageUsed = *o.SpaceCloudStorageUsedQueryParameter
+		if o.SpaceCloudStorageUsed != nil {
+			qrSpaceCloudStorageUsed = *o.SpaceCloudStorageUsed
 		}
 		qSpaceCloudStorageUsed := swag.FormatInt64(qrSpaceCloudStorageUsed)
 		if qSpaceCloudStorageUsed != "" {
@@ -4617,13 +5025,81 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyLogicalUsedQueryParameter != nil {
+	if o.SpaceEfficiencyAutoAdaptiveCompressionSavings != nil {
+
+		// query param space.efficiency.auto_adaptive_compression_savings
+		var qrSpaceEfficiencyAutoAdaptiveCompressionSavings bool
+
+		if o.SpaceEfficiencyAutoAdaptiveCompressionSavings != nil {
+			qrSpaceEfficiencyAutoAdaptiveCompressionSavings = *o.SpaceEfficiencyAutoAdaptiveCompressionSavings
+		}
+		qSpaceEfficiencyAutoAdaptiveCompressionSavings := swag.FormatBool(qrSpaceEfficiencyAutoAdaptiveCompressionSavings)
+		if qSpaceEfficiencyAutoAdaptiveCompressionSavings != "" {
+
+			if err := r.SetQueryParam("space.efficiency.auto_adaptive_compression_savings", qSpaceEfficiencyAutoAdaptiveCompressionSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyCrossVolumeBackgroundDedupe != nil {
+
+		// query param space.efficiency.cross_volume_background_dedupe
+		var qrSpaceEfficiencyCrossVolumeBackgroundDedupe bool
+
+		if o.SpaceEfficiencyCrossVolumeBackgroundDedupe != nil {
+			qrSpaceEfficiencyCrossVolumeBackgroundDedupe = *o.SpaceEfficiencyCrossVolumeBackgroundDedupe
+		}
+		qSpaceEfficiencyCrossVolumeBackgroundDedupe := swag.FormatBool(qrSpaceEfficiencyCrossVolumeBackgroundDedupe)
+		if qSpaceEfficiencyCrossVolumeBackgroundDedupe != "" {
+
+			if err := r.SetQueryParam("space.efficiency.cross_volume_background_dedupe", qSpaceEfficiencyCrossVolumeBackgroundDedupe); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyCrossVolumeDedupeSavings != nil {
+
+		// query param space.efficiency.cross_volume_dedupe_savings
+		var qrSpaceEfficiencyCrossVolumeDedupeSavings bool
+
+		if o.SpaceEfficiencyCrossVolumeDedupeSavings != nil {
+			qrSpaceEfficiencyCrossVolumeDedupeSavings = *o.SpaceEfficiencyCrossVolumeDedupeSavings
+		}
+		qSpaceEfficiencyCrossVolumeDedupeSavings := swag.FormatBool(qrSpaceEfficiencyCrossVolumeDedupeSavings)
+		if qSpaceEfficiencyCrossVolumeDedupeSavings != "" {
+
+			if err := r.SetQueryParam("space.efficiency.cross_volume_dedupe_savings", qSpaceEfficiencyCrossVolumeDedupeSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyCrossVolumeInlineDedupe != nil {
+
+		// query param space.efficiency.cross_volume_inline_dedupe
+		var qrSpaceEfficiencyCrossVolumeInlineDedupe bool
+
+		if o.SpaceEfficiencyCrossVolumeInlineDedupe != nil {
+			qrSpaceEfficiencyCrossVolumeInlineDedupe = *o.SpaceEfficiencyCrossVolumeInlineDedupe
+		}
+		qSpaceEfficiencyCrossVolumeInlineDedupe := swag.FormatBool(qrSpaceEfficiencyCrossVolumeInlineDedupe)
+		if qSpaceEfficiencyCrossVolumeInlineDedupe != "" {
+
+			if err := r.SetQueryParam("space.efficiency.cross_volume_inline_dedupe", qSpaceEfficiencyCrossVolumeInlineDedupe); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyLogicalUsed != nil {
 
 		// query param space.efficiency.logical_used
 		var qrSpaceEfficiencyLogicalUsed int64
 
-		if o.SpaceEfficiencyLogicalUsedQueryParameter != nil {
-			qrSpaceEfficiencyLogicalUsed = *o.SpaceEfficiencyLogicalUsedQueryParameter
+		if o.SpaceEfficiencyLogicalUsed != nil {
+			qrSpaceEfficiencyLogicalUsed = *o.SpaceEfficiencyLogicalUsed
 		}
 		qSpaceEfficiencyLogicalUsed := swag.FormatInt64(qrSpaceEfficiencyLogicalUsed)
 		if qSpaceEfficiencyLogicalUsed != "" {
@@ -4634,13 +5110,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyRatioQueryParameter != nil {
+	if o.SpaceEfficiencyRatio != nil {
 
 		// query param space.efficiency.ratio
 		var qrSpaceEfficiencyRatio float64
 
-		if o.SpaceEfficiencyRatioQueryParameter != nil {
-			qrSpaceEfficiencyRatio = *o.SpaceEfficiencyRatioQueryParameter
+		if o.SpaceEfficiencyRatio != nil {
+			qrSpaceEfficiencyRatio = *o.SpaceEfficiencyRatio
 		}
 		qSpaceEfficiencyRatio := swag.FormatFloat64(qrSpaceEfficiencyRatio)
 		if qSpaceEfficiencyRatio != "" {
@@ -4651,13 +5127,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencySavingsQueryParameter != nil {
+	if o.SpaceEfficiencySavings != nil {
 
 		// query param space.efficiency.savings
 		var qrSpaceEfficiencySavings int64
 
-		if o.SpaceEfficiencySavingsQueryParameter != nil {
-			qrSpaceEfficiencySavings = *o.SpaceEfficiencySavingsQueryParameter
+		if o.SpaceEfficiencySavings != nil {
+			qrSpaceEfficiencySavings = *o.SpaceEfficiencySavings
 		}
 		qSpaceEfficiencySavings := swag.FormatInt64(qrSpaceEfficiencySavings)
 		if qSpaceEfficiencySavings != "" {
@@ -4668,13 +5144,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsLogicalUsed != nil {
 
 		// query param space.efficiency_without_snapshots.logical_used
 		var qrSpaceEfficiencyWithoutSnapshotsLogicalUsed int64
 
-		if o.SpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsLogicalUsed = *o.SpaceEfficiencyWithoutSnapshotsLogicalUsedQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsLogicalUsed != nil {
+			qrSpaceEfficiencyWithoutSnapshotsLogicalUsed = *o.SpaceEfficiencyWithoutSnapshotsLogicalUsed
 		}
 		qSpaceEfficiencyWithoutSnapshotsLogicalUsed := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsLogicalUsed)
 		if qSpaceEfficiencyWithoutSnapshotsLogicalUsed != "" {
@@ -4685,13 +5161,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsRatioQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsRatio != nil {
 
 		// query param space.efficiency_without_snapshots.ratio
 		var qrSpaceEfficiencyWithoutSnapshotsRatio float64
 
-		if o.SpaceEfficiencyWithoutSnapshotsRatioQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsRatio = *o.SpaceEfficiencyWithoutSnapshotsRatioQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsRatio != nil {
+			qrSpaceEfficiencyWithoutSnapshotsRatio = *o.SpaceEfficiencyWithoutSnapshotsRatio
 		}
 		qSpaceEfficiencyWithoutSnapshotsRatio := swag.FormatFloat64(qrSpaceEfficiencyWithoutSnapshotsRatio)
 		if qSpaceEfficiencyWithoutSnapshotsRatio != "" {
@@ -4702,13 +5178,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsSavings != nil {
 
 		// query param space.efficiency_without_snapshots.savings
 		var qrSpaceEfficiencyWithoutSnapshotsSavings int64
 
-		if o.SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsSavings = *o.SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsSavings != nil {
+			qrSpaceEfficiencyWithoutSnapshotsSavings = *o.SpaceEfficiencyWithoutSnapshotsSavings
 		}
 		qSpaceEfficiencyWithoutSnapshotsSavings := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsSavings)
 		if qSpaceEfficiencyWithoutSnapshotsSavings != "" {
@@ -4719,13 +5195,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
 
 		// query param space.efficiency_without_snapshots_flexclones.logical_used
 		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed int64
 
-		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
 		}
 		qSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
 		if qSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != "" {
@@ -4736,13 +5212,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatio != nil {
 
 		// query param space.efficiency_without_snapshots_flexclones.ratio
 		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio float64
 
-		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatio != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatio
 		}
 		qSpaceEfficiencyWithoutSnapshotsFlexclonesRatio := swag.FormatFloat64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio)
 		if qSpaceEfficiencyWithoutSnapshotsFlexclonesRatio != "" {
@@ -4753,13 +5229,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter != nil {
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavings != nil {
 
 		// query param space.efficiency_without_snapshots_flexclones.savings
 		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings int64
 
-		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter != nil {
-			qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavings != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavings
 		}
 		qSpaceEfficiencyWithoutSnapshotsFlexclonesSavings := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings)
 		if qSpaceEfficiencyWithoutSnapshotsFlexclonesSavings != "" {
@@ -4770,13 +5246,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceFootprintQueryParameter != nil {
+	if o.SpaceFootprint != nil {
 
 		// query param space.footprint
 		var qrSpaceFootprint int64
 
-		if o.SpaceFootprintQueryParameter != nil {
-			qrSpaceFootprint = *o.SpaceFootprintQueryParameter
+		if o.SpaceFootprint != nil {
+			qrSpaceFootprint = *o.SpaceFootprint
 		}
 		qSpaceFootprint := swag.FormatInt64(qrSpaceFootprint)
 		if qSpaceFootprint != "" {
@@ -4787,13 +5263,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSnapshotAvailableQueryParameter != nil {
+	if o.SpaceSnapshotAvailable != nil {
 
 		// query param space.snapshot.available
 		var qrSpaceSnapshotAvailable int64
 
-		if o.SpaceSnapshotAvailableQueryParameter != nil {
-			qrSpaceSnapshotAvailable = *o.SpaceSnapshotAvailableQueryParameter
+		if o.SpaceSnapshotAvailable != nil {
+			qrSpaceSnapshotAvailable = *o.SpaceSnapshotAvailable
 		}
 		qSpaceSnapshotAvailable := swag.FormatInt64(qrSpaceSnapshotAvailable)
 		if qSpaceSnapshotAvailable != "" {
@@ -4804,13 +5280,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSnapshotReservePercentQueryParameter != nil {
+	if o.SpaceSnapshotReservePercent != nil {
 
 		// query param space.snapshot.reserve_percent
 		var qrSpaceSnapshotReservePercent int64
 
-		if o.SpaceSnapshotReservePercentQueryParameter != nil {
-			qrSpaceSnapshotReservePercent = *o.SpaceSnapshotReservePercentQueryParameter
+		if o.SpaceSnapshotReservePercent != nil {
+			qrSpaceSnapshotReservePercent = *o.SpaceSnapshotReservePercent
 		}
 		qSpaceSnapshotReservePercent := swag.FormatInt64(qrSpaceSnapshotReservePercent)
 		if qSpaceSnapshotReservePercent != "" {
@@ -4821,13 +5297,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSnapshotTotalQueryParameter != nil {
+	if o.SpaceSnapshotTotal != nil {
 
 		// query param space.snapshot.total
 		var qrSpaceSnapshotTotal int64
 
-		if o.SpaceSnapshotTotalQueryParameter != nil {
-			qrSpaceSnapshotTotal = *o.SpaceSnapshotTotalQueryParameter
+		if o.SpaceSnapshotTotal != nil {
+			qrSpaceSnapshotTotal = *o.SpaceSnapshotTotal
 		}
 		qSpaceSnapshotTotal := swag.FormatInt64(qrSpaceSnapshotTotal)
 		if qSpaceSnapshotTotal != "" {
@@ -4838,13 +5314,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSnapshotUsedQueryParameter != nil {
+	if o.SpaceSnapshotUsed != nil {
 
 		// query param space.snapshot.used
 		var qrSpaceSnapshotUsed int64
 
-		if o.SpaceSnapshotUsedQueryParameter != nil {
-			qrSpaceSnapshotUsed = *o.SpaceSnapshotUsedQueryParameter
+		if o.SpaceSnapshotUsed != nil {
+			qrSpaceSnapshotUsed = *o.SpaceSnapshotUsed
 		}
 		qSpaceSnapshotUsed := swag.FormatInt64(qrSpaceSnapshotUsed)
 		if qSpaceSnapshotUsed != "" {
@@ -4855,13 +5331,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSnapshotUsedPercentQueryParameter != nil {
+	if o.SpaceSnapshotUsedPercent != nil {
 
 		// query param space.snapshot.used_percent
 		var qrSpaceSnapshotUsedPercent int64
 
-		if o.SpaceSnapshotUsedPercentQueryParameter != nil {
-			qrSpaceSnapshotUsedPercent = *o.SpaceSnapshotUsedPercentQueryParameter
+		if o.SpaceSnapshotUsedPercent != nil {
+			qrSpaceSnapshotUsedPercent = *o.SpaceSnapshotUsedPercent
 		}
 		qSpaceSnapshotUsedPercent := swag.FormatInt64(qrSpaceSnapshotUsedPercent)
 		if qSpaceSnapshotUsedPercent != "" {
@@ -4872,13 +5348,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -4889,13 +5365,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -4906,13 +5382,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -4923,13 +5399,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -4940,13 +5416,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -4957,13 +5433,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -4974,13 +5450,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -4991,13 +5467,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -5008,13 +5484,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -5025,13 +5501,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -5042,13 +5518,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawOtherQueryParameter != nil {
+	if o.StatisticsThroughputRawOther != nil {
 
 		// query param statistics.throughput_raw.other
 		var qrStatisticsThroughputRawOther int64
 
-		if o.StatisticsThroughputRawOtherQueryParameter != nil {
-			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOtherQueryParameter
+		if o.StatisticsThroughputRawOther != nil {
+			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOther
 		}
 		qStatisticsThroughputRawOther := swag.FormatInt64(qrStatisticsThroughputRawOther)
 		if qStatisticsThroughputRawOther != "" {
@@ -5059,13 +5535,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -5076,13 +5552,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -5093,13 +5569,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -5110,13 +5586,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -5127,13 +5603,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -5144,13 +5620,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.VolumeCountQueryParameter != nil {
+	if o.VolumeCount != nil {
 
 		// query param volume-count
 		var qrVolumeCount int64
 
-		if o.VolumeCountQueryParameter != nil {
-			qrVolumeCount = *o.VolumeCountQueryParameter
+		if o.VolumeCount != nil {
+			qrVolumeCount = *o.VolumeCount
 		}
 		qVolumeCount := swag.FormatInt64(qrVolumeCount)
 		if qVolumeCount != "" {
@@ -5169,7 +5645,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamAggregateCollectionGet binds the parameter fields
 func (o *AggregateCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -5186,7 +5662,7 @@ func (o *AggregateCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamAggregateCollectionGet binds the parameter order_by
 func (o *AggregateCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -19,9 +19,6 @@ import (
 // swagger:model firmware
 type Firmware struct {
 
-	// cluster fw progress
-	ClusterFwProgress []*FirmwareUpdateProgress `json:"cluster_fw_progress,omitempty"`
-
 	// disk
 	// Read Only: true
 	Disk *FirmwareDisk `json:"disk,omitempty"`
@@ -29,6 +26,9 @@ type Firmware struct {
 	// dqp
 	// Read Only: true
 	Dqp *FirmwareDqp `json:"dqp,omitempty"`
+
+	// firmware inline cluster fw progress
+	FirmwareInlineClusterFwProgress []*FirmwareUpdateProgress `json:"cluster_fw_progress,omitempty"`
 
 	// shelf
 	// Read Only: true
@@ -43,15 +43,15 @@ type Firmware struct {
 func (m *Firmware) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateClusterFwProgress(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateDisk(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateDqp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFirmwareInlineClusterFwProgress(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,30 +66,6 @@ func (m *Firmware) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Firmware) validateClusterFwProgress(formats strfmt.Registry) error {
-	if swag.IsZero(m.ClusterFwProgress) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ClusterFwProgress); i++ {
-		if swag.IsZero(m.ClusterFwProgress[i]) { // not required
-			continue
-		}
-
-		if m.ClusterFwProgress[i] != nil {
-			if err := m.ClusterFwProgress[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cluster_fw_progress" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -122,6 +98,30 @@ func (m *Firmware) validateDqp(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Firmware) validateFirmwareInlineClusterFwProgress(formats strfmt.Registry) error {
+	if swag.IsZero(m.FirmwareInlineClusterFwProgress) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FirmwareInlineClusterFwProgress); i++ {
+		if swag.IsZero(m.FirmwareInlineClusterFwProgress[i]) { // not required
+			continue
+		}
+
+		if m.FirmwareInlineClusterFwProgress[i] != nil {
+			if err := m.FirmwareInlineClusterFwProgress[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cluster_fw_progress" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -165,15 +165,15 @@ func (m *Firmware) validateSpBmc(formats strfmt.Registry) error {
 func (m *Firmware) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateClusterFwProgress(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateDisk(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateDqp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareInlineClusterFwProgress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -188,24 +188,6 @@ func (m *Firmware) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Firmware) contextValidateClusterFwProgress(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.ClusterFwProgress); i++ {
-
-		if m.ClusterFwProgress[i] != nil {
-			if err := m.ClusterFwProgress[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cluster_fw_progress" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -232,6 +214,24 @@ func (m *Firmware) contextValidateDqp(ctx context.Context, formats strfmt.Regist
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Firmware) contextValidateFirmwareInlineClusterFwProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FirmwareInlineClusterFwProgress); i++ {
+
+		if m.FirmwareInlineClusterFwProgress[i] != nil {
+			if err := m.FirmwareInlineClusterFwProgress[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cluster_fw_progress" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

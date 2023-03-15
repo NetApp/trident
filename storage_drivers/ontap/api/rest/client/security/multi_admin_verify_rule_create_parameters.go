@@ -74,7 +74,7 @@ type MultiAdminVerifyRuleCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *MultiAdminVerifyRuleCreateParams) WithDefaults() *MultiAdminVerifyRuleC
 // All values with no default are reset to their zero value.
 func (o *MultiAdminVerifyRuleCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := MultiAdminVerifyRuleCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *MultiAdminVerifyRuleCreateParams) SetInfo(info *models.MultiAdminVerify
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the multi admin verify rule create params
-func (o *MultiAdminVerifyRuleCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MultiAdminVerifyRuleCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the multi admin verify rule create params
+func (o *MultiAdminVerifyRuleCreateParams) WithReturnRecords(returnRecords *bool) *MultiAdminVerifyRuleCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the multi admin verify rule create params
-func (o *MultiAdminVerifyRuleCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the multi admin verify rule create params
+func (o *MultiAdminVerifyRuleCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *MultiAdminVerifyRuleCreateParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

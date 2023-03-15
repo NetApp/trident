@@ -29,7 +29,7 @@ type ACLDelete struct {
 	//
 	// Example: access_allow
 	// Enum: [access_allow access_deny audit_failure audit_success]
-	Access string `json:"access,omitempty"`
+	Access *string `json:"access,omitempty"`
 
 	// An Access Control Level specifies the access control of the task to be applied. Valid values
 	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
@@ -41,13 +41,13 @@ type ACLDelete struct {
 	// Enum: [file_directory slag]
 	AccessControl *string `json:"access_control,omitempty"`
 
-	// apply to
-	ApplyTo *ApplyTo `json:"apply_to,omitempty"`
-
 	// Specifies that permissions on this file or directory cannot be replaced.
 	//
 	// Example: ["/dir1/dir2/","/parent/dir3"]
-	IgnorePaths []string `json:"ignore_paths,omitempty"`
+	ACLDeleteInlineIgnorePaths []*string `json:"ignore_paths,omitempty"`
+
+	// apply to
+	ApplyTo *ApplyTo `json:"apply_to,omitempty"`
 
 	// Specifies how to propagate security settings to child subfolders and files.
 	// This setting determines how child files/folders contained within a parent
@@ -155,7 +155,7 @@ func (m *ACLDelete) validateAccess(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateAccessEnum("access", "body", m.Access); err != nil {
+	if err := m.validateAccessEnum("access", "body", *m.Access); err != nil {
 		return err
 	}
 

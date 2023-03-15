@@ -66,19 +66,19 @@ type S3GroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Group identifier that identifies the unique group.
 	*/
-	IDPathParameter string
+	ID string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *S3GroupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 group get params
-func (o *S3GroupGetParams) WithFieldsQueryParameter(fields []string) *S3GroupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the s3 group get params
+func (o *S3GroupGetParams) WithFields(fields []string) *S3GroupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 group get params
-func (o *S3GroupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the s3 group get params
+func (o *S3GroupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the s3 group get params
-func (o *S3GroupGetParams) WithIDPathParameter(id string) *S3GroupGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the s3 group get params
+func (o *S3GroupGetParams) WithID(id string) *S3GroupGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the s3 group get params
-func (o *S3GroupGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the s3 group get params
+func (o *S3GroupGetParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 group get params
-func (o *S3GroupGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3GroupGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 group get params
+func (o *S3GroupGetParams) WithSvmUUID(svmUUID string) *S3GroupGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 group get params
-func (o *S3GroupGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 group get params
+func (o *S3GroupGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *S3GroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *S3GroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *S3GroupGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamS3GroupGet binds the parameter fields
 func (o *S3GroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

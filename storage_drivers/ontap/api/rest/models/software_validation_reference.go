@@ -21,21 +21,21 @@ import (
 type SoftwareValidationReference struct {
 
 	// action
-	Action *SoftwareValidationReferenceAction `json:"action,omitempty"`
+	Action *SoftwareValidationReferenceInlineAction `json:"action,omitempty"`
 
 	// issue
-	Issue *SoftwareValidationReferenceIssue `json:"issue,omitempty"`
+	Issue *SoftwareValidationReferenceInlineIssue `json:"issue,omitempty"`
 
 	// Status of the update check.
 	// Example: warning
 	// Read Only: true
 	// Enum: [warning error]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// Name of the update check.
 	// Example: nfs_mounts
 	// Read Only: true
-	UpdateCheck string `json:"update_check,omitempty"`
+	UpdateCheck *string `json:"update_check,omitempty"`
 }
 
 // Validate validates this software validation reference
@@ -143,7 +143,7 @@ func (m *SoftwareValidationReference) validateStatus(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (m *SoftwareValidationReference) contextValidateIssue(ctx context.Context, 
 
 func (m *SoftwareValidationReference) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -215,7 +215,7 @@ func (m *SoftwareValidationReference) contextValidateStatus(ctx context.Context,
 
 func (m *SoftwareValidationReference) contextValidateUpdateCheck(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "update_check", "body", string(m.UpdateCheck)); err != nil {
+	if err := validate.ReadOnly(ctx, "update_check", "body", m.UpdateCheck); err != nil {
 		return err
 	}
 
@@ -240,23 +240,23 @@ func (m *SoftwareValidationReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareValidationReferenceAction software validation reference action
+// SoftwareValidationReferenceInlineAction software validation reference inline action
 //
-// swagger:model SoftwareValidationReferenceAction
-type SoftwareValidationReferenceAction struct {
+// swagger:model software_validation_reference_inline_action
+type SoftwareValidationReferenceInlineAction struct {
 
 	// Specifies the corrective action to take to resolve an error.
 	// Example: Use NFS hard mounts, if possible.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software validation reference action
-func (m *SoftwareValidationReferenceAction) Validate(formats strfmt.Registry) error {
+// Validate validates this software validation reference inline action
+func (m *SoftwareValidationReferenceInlineAction) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software validation reference action based on the context it is used
-func (m *SoftwareValidationReferenceAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software validation reference inline action based on the context it is used
+func (m *SoftwareValidationReferenceInlineAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -266,7 +266,7 @@ func (m *SoftwareValidationReferenceAction) ContextValidate(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareValidationReferenceAction) MarshalBinary() ([]byte, error) {
+func (m *SoftwareValidationReferenceInlineAction) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -274,8 +274,8 @@ func (m *SoftwareValidationReferenceAction) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareValidationReferenceAction) UnmarshalBinary(b []byte) error {
-	var res SoftwareValidationReferenceAction
+func (m *SoftwareValidationReferenceInlineAction) UnmarshalBinary(b []byte) error {
+	var res SoftwareValidationReferenceInlineAction
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -283,23 +283,23 @@ func (m *SoftwareValidationReferenceAction) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareValidationReferenceIssue software validation reference issue
+// SoftwareValidationReferenceInlineIssue software validation reference inline issue
 //
-// swagger:model SoftwareValidationReferenceIssue
-type SoftwareValidationReferenceIssue struct {
+// swagger:model software_validation_reference_inline_issue
+type SoftwareValidationReferenceInlineIssue struct {
 
 	// Details of the error or warning encountered by the update checks.
 	// Example: Cluster HA is not configured in the cluster.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software validation reference issue
-func (m *SoftwareValidationReferenceIssue) Validate(formats strfmt.Registry) error {
+// Validate validates this software validation reference inline issue
+func (m *SoftwareValidationReferenceInlineIssue) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software validation reference issue based on the context it is used
-func (m *SoftwareValidationReferenceIssue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software validation reference inline issue based on the context it is used
+func (m *SoftwareValidationReferenceInlineIssue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -309,7 +309,7 @@ func (m *SoftwareValidationReferenceIssue) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareValidationReferenceIssue) MarshalBinary() ([]byte, error) {
+func (m *SoftwareValidationReferenceInlineIssue) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -317,8 +317,8 @@ func (m *SoftwareValidationReferenceIssue) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareValidationReferenceIssue) UnmarshalBinary(b []byte) error {
-	var res SoftwareValidationReferenceIssue
+func (m *SoftwareValidationReferenceInlineIssue) UnmarshalBinary(b []byte) error {
+	var res SoftwareValidationReferenceInlineIssue
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

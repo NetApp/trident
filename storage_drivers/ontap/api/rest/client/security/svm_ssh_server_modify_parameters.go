@@ -73,7 +73,7 @@ type SvmSSHServerModifyParams struct {
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *SvmSSHServerModifyParams) SetInfo(info *models.SvmSSHServer) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the svm ssh server modify params
-func (o *SvmSSHServerModifyParams) WithSVMUUIDPathParameter(svmUUID string) *SvmSSHServerModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm ssh server modify params
+func (o *SvmSSHServerModifyParams) WithSvmUUID(svmUUID string) *SvmSSHServerModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the svm ssh server modify params
-func (o *SvmSSHServerModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm ssh server modify params
+func (o *SvmSSHServerModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *SvmSSHServerModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

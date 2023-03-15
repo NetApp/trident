@@ -66,85 +66,85 @@ type SvmMigrationCollectionGetParams struct {
 
 	   Filter by auto_cutover
 	*/
-	AutoCutoverQueryParameter *bool
+	AutoCutover *bool
 
 	/* AutoSourceCleanup.
 
 	   Filter by auto_source_cleanup
 	*/
-	AutoSourceCleanupQueryParameter *bool
+	AutoSourceCleanup *bool
 
 	/* CurrentOperation.
 
 	   Filter by current_operation
 	*/
-	CurrentOperationQueryParameter *string
+	CurrentOperation *string
 
 	/* DestinationIpspaceName.
 
 	   Filter by destination.ipspace.name
 	*/
-	DestinationIPspaceNameQueryParameter *string
+	DestinationIpspaceName *string
 
 	/* DestinationIpspaceUUID.
 
 	   Filter by destination.ipspace.uuid
 	*/
-	DestinationIPspaceUUIDQueryParameter *string
+	DestinationIpspaceUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LastFailedState.
 
 	   Filter by last_failed_state
 	*/
-	LastFailedStateQueryParameter *string
+	LastFailedState *string
 
 	/* LastOperation.
 
 	   Filter by last_operation
 	*/
-	LastOperationQueryParameter *string
+	LastOperation *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MessagesCode.
 
 	   Filter by messages.code
 	*/
-	MessagesCodeQueryParameter *int64
+	MessagesCode *string
 
 	/* MessagesMessage.
 
 	   Filter by messages.message
 	*/
-	MessagesMessageQueryParameter *string
+	MessagesMessage *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PointOfNoReturn.
 
 	   Filter by point_of_no_return
 	*/
-	PointOfNoReturnQueryParameter *bool
+	PointOfNoReturn *bool
 
 	/* RestartCount.
 
 	   Filter by restart_count
 	*/
-	RestartCountQueryParameter *int64
+	RestartCount *int64
 
 	/* ReturnRecords.
 
@@ -152,7 +152,7 @@ type SvmMigrationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -160,85 +160,91 @@ type SvmMigrationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SourceClusterName.
 
 	   Filter by source.cluster.name
 	*/
-	SourceClusterNameQueryParameter *string
+	SourceClusterName *string
 
 	/* SourceClusterUUID.
 
 	   Filter by source.cluster.uuid
 	*/
-	SourceClusterUUIDQueryParameter *string
+	SourceClusterUUID *string
 
 	/* SourceSvmName.
 
 	   Filter by source.svm.name
 	*/
-	SourceSVMNameQueryParameter *string
+	SourceSvmName *string
 
 	/* SourceSvmUUID.
 
 	   Filter by source.svm.uuid
 	*/
-	SourceSVMUUIDQueryParameter *string
+	SourceSvmUUID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
+
+	/* Throttle.
+
+	   Filter by throttle
+	*/
+	Throttle *int64
 
 	/* TimeMetricsCutoverCompleteTime.
 
 	   Filter by time_metrics.cutover_complete_time
 	*/
-	TimeMetricsCutoverCompleteTimeQueryParameter *string
+	TimeMetricsCutoverCompleteTime *string
 
 	/* TimeMetricsCutoverStartTime.
 
 	   Filter by time_metrics.cutover_start_time
 	*/
-	TimeMetricsCutoverStartTimeQueryParameter *string
+	TimeMetricsCutoverStartTime *string
 
 	/* TimeMetricsCutoverTriggerTime.
 
 	   Filter by time_metrics.cutover_trigger_time
 	*/
-	TimeMetricsCutoverTriggerTimeQueryParameter *string
+	TimeMetricsCutoverTriggerTime *string
 
 	/* TimeMetricsEndTime.
 
 	   Filter by time_metrics.end_time
 	*/
-	TimeMetricsEndTimeQueryParameter *string
+	TimeMetricsEndTime *string
 
 	/* TimeMetricsLastPauseTime.
 
 	   Filter by time_metrics.last_pause_time
 	*/
-	TimeMetricsLastPauseTimeQueryParameter *string
+	TimeMetricsLastPauseTime *string
 
 	/* TimeMetricsLastResumeTime.
 
 	   Filter by time_metrics.last_resume_time
 	*/
-	TimeMetricsLastResumeTimeQueryParameter *string
+	TimeMetricsLastResumeTime *string
 
 	/* TimeMetricsStartTime.
 
 	   Filter by time_metrics.start_time
 	*/
-	TimeMetricsStartTimeQueryParameter *string
+	TimeMetricsStartTime *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -258,14 +264,14 @@ func (o *SvmMigrationCollectionGetParams) WithDefaults() *SvmMigrationCollection
 // All values with no default are reset to their zero value.
 func (o *SvmMigrationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmMigrationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -307,323 +313,334 @@ func (o *SvmMigrationCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAutoCutoverQueryParameter adds the autoCutover to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithAutoCutoverQueryParameter(autoCutover *bool) *SvmMigrationCollectionGetParams {
-	o.SetAutoCutoverQueryParameter(autoCutover)
+// WithAutoCutover adds the autoCutover to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithAutoCutover(autoCutover *bool) *SvmMigrationCollectionGetParams {
+	o.SetAutoCutover(autoCutover)
 	return o
 }
 
-// SetAutoCutoverQueryParameter adds the autoCutover to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetAutoCutoverQueryParameter(autoCutover *bool) {
-	o.AutoCutoverQueryParameter = autoCutover
+// SetAutoCutover adds the autoCutover to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetAutoCutover(autoCutover *bool) {
+	o.AutoCutover = autoCutover
 }
 
-// WithAutoSourceCleanupQueryParameter adds the autoSourceCleanup to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithAutoSourceCleanupQueryParameter(autoSourceCleanup *bool) *SvmMigrationCollectionGetParams {
-	o.SetAutoSourceCleanupQueryParameter(autoSourceCleanup)
+// WithAutoSourceCleanup adds the autoSourceCleanup to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithAutoSourceCleanup(autoSourceCleanup *bool) *SvmMigrationCollectionGetParams {
+	o.SetAutoSourceCleanup(autoSourceCleanup)
 	return o
 }
 
-// SetAutoSourceCleanupQueryParameter adds the autoSourceCleanup to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetAutoSourceCleanupQueryParameter(autoSourceCleanup *bool) {
-	o.AutoSourceCleanupQueryParameter = autoSourceCleanup
+// SetAutoSourceCleanup adds the autoSourceCleanup to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetAutoSourceCleanup(autoSourceCleanup *bool) {
+	o.AutoSourceCleanup = autoSourceCleanup
 }
 
-// WithCurrentOperationQueryParameter adds the currentOperation to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithCurrentOperationQueryParameter(currentOperation *string) *SvmMigrationCollectionGetParams {
-	o.SetCurrentOperationQueryParameter(currentOperation)
+// WithCurrentOperation adds the currentOperation to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithCurrentOperation(currentOperation *string) *SvmMigrationCollectionGetParams {
+	o.SetCurrentOperation(currentOperation)
 	return o
 }
 
-// SetCurrentOperationQueryParameter adds the currentOperation to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetCurrentOperationQueryParameter(currentOperation *string) {
-	o.CurrentOperationQueryParameter = currentOperation
+// SetCurrentOperation adds the currentOperation to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetCurrentOperation(currentOperation *string) {
+	o.CurrentOperation = currentOperation
 }
 
-// WithDestinationIPspaceNameQueryParameter adds the destinationIpspaceName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithDestinationIPspaceNameQueryParameter(destinationIpspaceName *string) *SvmMigrationCollectionGetParams {
-	o.SetDestinationIPspaceNameQueryParameter(destinationIpspaceName)
+// WithDestinationIpspaceName adds the destinationIpspaceName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithDestinationIpspaceName(destinationIpspaceName *string) *SvmMigrationCollectionGetParams {
+	o.SetDestinationIpspaceName(destinationIpspaceName)
 	return o
 }
 
-// SetDestinationIPspaceNameQueryParameter adds the destinationIpspaceName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetDestinationIPspaceNameQueryParameter(destinationIpspaceName *string) {
-	o.DestinationIPspaceNameQueryParameter = destinationIpspaceName
+// SetDestinationIpspaceName adds the destinationIpspaceName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetDestinationIpspaceName(destinationIpspaceName *string) {
+	o.DestinationIpspaceName = destinationIpspaceName
 }
 
-// WithDestinationIPspaceUUIDQueryParameter adds the destinationIpspaceUUID to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithDestinationIPspaceUUIDQueryParameter(destinationIpspaceUUID *string) *SvmMigrationCollectionGetParams {
-	o.SetDestinationIPspaceUUIDQueryParameter(destinationIpspaceUUID)
+// WithDestinationIpspaceUUID adds the destinationIpspaceUUID to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithDestinationIpspaceUUID(destinationIpspaceUUID *string) *SvmMigrationCollectionGetParams {
+	o.SetDestinationIpspaceUUID(destinationIpspaceUUID)
 	return o
 }
 
-// SetDestinationIPspaceUUIDQueryParameter adds the destinationIpspaceUuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetDestinationIPspaceUUIDQueryParameter(destinationIpspaceUUID *string) {
-	o.DestinationIPspaceUUIDQueryParameter = destinationIpspaceUUID
+// SetDestinationIpspaceUUID adds the destinationIpspaceUuid to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetDestinationIpspaceUUID(destinationIpspaceUUID *string) {
+	o.DestinationIpspaceUUID = destinationIpspaceUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmMigrationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithFields(fields []string) *SvmMigrationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLastFailedStateQueryParameter adds the lastFailedState to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithLastFailedStateQueryParameter(lastFailedState *string) *SvmMigrationCollectionGetParams {
-	o.SetLastFailedStateQueryParameter(lastFailedState)
+// WithLastFailedState adds the lastFailedState to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithLastFailedState(lastFailedState *string) *SvmMigrationCollectionGetParams {
+	o.SetLastFailedState(lastFailedState)
 	return o
 }
 
-// SetLastFailedStateQueryParameter adds the lastFailedState to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetLastFailedStateQueryParameter(lastFailedState *string) {
-	o.LastFailedStateQueryParameter = lastFailedState
+// SetLastFailedState adds the lastFailedState to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetLastFailedState(lastFailedState *string) {
+	o.LastFailedState = lastFailedState
 }
 
-// WithLastOperationQueryParameter adds the lastOperation to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithLastOperationQueryParameter(lastOperation *string) *SvmMigrationCollectionGetParams {
-	o.SetLastOperationQueryParameter(lastOperation)
+// WithLastOperation adds the lastOperation to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithLastOperation(lastOperation *string) *SvmMigrationCollectionGetParams {
+	o.SetLastOperation(lastOperation)
 	return o
 }
 
-// SetLastOperationQueryParameter adds the lastOperation to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetLastOperationQueryParameter(lastOperation *string) {
-	o.LastOperationQueryParameter = lastOperation
+// SetLastOperation adds the lastOperation to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetLastOperation(lastOperation *string) {
+	o.LastOperation = lastOperation
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmMigrationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmMigrationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMessagesCodeQueryParameter adds the messagesCode to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithMessagesCodeQueryParameter(messagesCode *int64) *SvmMigrationCollectionGetParams {
-	o.SetMessagesCodeQueryParameter(messagesCode)
+// WithMessagesCode adds the messagesCode to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithMessagesCode(messagesCode *string) *SvmMigrationCollectionGetParams {
+	o.SetMessagesCode(messagesCode)
 	return o
 }
 
-// SetMessagesCodeQueryParameter adds the messagesCode to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetMessagesCodeQueryParameter(messagesCode *int64) {
-	o.MessagesCodeQueryParameter = messagesCode
+// SetMessagesCode adds the messagesCode to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetMessagesCode(messagesCode *string) {
+	o.MessagesCode = messagesCode
 }
 
-// WithMessagesMessageQueryParameter adds the messagesMessage to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithMessagesMessageQueryParameter(messagesMessage *string) *SvmMigrationCollectionGetParams {
-	o.SetMessagesMessageQueryParameter(messagesMessage)
+// WithMessagesMessage adds the messagesMessage to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithMessagesMessage(messagesMessage *string) *SvmMigrationCollectionGetParams {
+	o.SetMessagesMessage(messagesMessage)
 	return o
 }
 
-// SetMessagesMessageQueryParameter adds the messagesMessage to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetMessagesMessageQueryParameter(messagesMessage *string) {
-	o.MessagesMessageQueryParameter = messagesMessage
+// SetMessagesMessage adds the messagesMessage to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetMessagesMessage(messagesMessage *string) {
+	o.MessagesMessage = messagesMessage
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmMigrationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithOrderBy(orderBy []string) *SvmMigrationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPointOfNoReturnQueryParameter adds the pointOfNoReturn to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithPointOfNoReturnQueryParameter(pointOfNoReturn *bool) *SvmMigrationCollectionGetParams {
-	o.SetPointOfNoReturnQueryParameter(pointOfNoReturn)
+// WithPointOfNoReturn adds the pointOfNoReturn to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithPointOfNoReturn(pointOfNoReturn *bool) *SvmMigrationCollectionGetParams {
+	o.SetPointOfNoReturn(pointOfNoReturn)
 	return o
 }
 
-// SetPointOfNoReturnQueryParameter adds the pointOfNoReturn to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetPointOfNoReturnQueryParameter(pointOfNoReturn *bool) {
-	o.PointOfNoReturnQueryParameter = pointOfNoReturn
+// SetPointOfNoReturn adds the pointOfNoReturn to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetPointOfNoReturn(pointOfNoReturn *bool) {
+	o.PointOfNoReturn = pointOfNoReturn
 }
 
-// WithRestartCountQueryParameter adds the restartCount to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithRestartCountQueryParameter(restartCount *int64) *SvmMigrationCollectionGetParams {
-	o.SetRestartCountQueryParameter(restartCount)
+// WithRestartCount adds the restartCount to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithRestartCount(restartCount *int64) *SvmMigrationCollectionGetParams {
+	o.SetRestartCount(restartCount)
 	return o
 }
 
-// SetRestartCountQueryParameter adds the restartCount to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetRestartCountQueryParameter(restartCount *int64) {
-	o.RestartCountQueryParameter = restartCount
+// SetRestartCount adds the restartCount to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetRestartCount(restartCount *int64) {
+	o.RestartCount = restartCount
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmMigrationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmMigrationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmMigrationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmMigrationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSourceClusterNameQueryParameter adds the sourceClusterName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithSourceClusterNameQueryParameter(sourceClusterName *string) *SvmMigrationCollectionGetParams {
-	o.SetSourceClusterNameQueryParameter(sourceClusterName)
+// WithSourceClusterName adds the sourceClusterName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithSourceClusterName(sourceClusterName *string) *SvmMigrationCollectionGetParams {
+	o.SetSourceClusterName(sourceClusterName)
 	return o
 }
 
-// SetSourceClusterNameQueryParameter adds the sourceClusterName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetSourceClusterNameQueryParameter(sourceClusterName *string) {
-	o.SourceClusterNameQueryParameter = sourceClusterName
+// SetSourceClusterName adds the sourceClusterName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetSourceClusterName(sourceClusterName *string) {
+	o.SourceClusterName = sourceClusterName
 }
 
-// WithSourceClusterUUIDQueryParameter adds the sourceClusterUUID to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithSourceClusterUUIDQueryParameter(sourceClusterUUID *string) *SvmMigrationCollectionGetParams {
-	o.SetSourceClusterUUIDQueryParameter(sourceClusterUUID)
+// WithSourceClusterUUID adds the sourceClusterUUID to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithSourceClusterUUID(sourceClusterUUID *string) *SvmMigrationCollectionGetParams {
+	o.SetSourceClusterUUID(sourceClusterUUID)
 	return o
 }
 
-// SetSourceClusterUUIDQueryParameter adds the sourceClusterUuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetSourceClusterUUIDQueryParameter(sourceClusterUUID *string) {
-	o.SourceClusterUUIDQueryParameter = sourceClusterUUID
+// SetSourceClusterUUID adds the sourceClusterUuid to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetSourceClusterUUID(sourceClusterUUID *string) {
+	o.SourceClusterUUID = sourceClusterUUID
 }
 
-// WithSourceSVMNameQueryParameter adds the sourceSvmName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithSourceSVMNameQueryParameter(sourceSvmName *string) *SvmMigrationCollectionGetParams {
-	o.SetSourceSVMNameQueryParameter(sourceSvmName)
+// WithSourceSvmName adds the sourceSvmName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithSourceSvmName(sourceSvmName *string) *SvmMigrationCollectionGetParams {
+	o.SetSourceSvmName(sourceSvmName)
 	return o
 }
 
-// SetSourceSVMNameQueryParameter adds the sourceSvmName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetSourceSVMNameQueryParameter(sourceSvmName *string) {
-	o.SourceSVMNameQueryParameter = sourceSvmName
+// SetSourceSvmName adds the sourceSvmName to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetSourceSvmName(sourceSvmName *string) {
+	o.SourceSvmName = sourceSvmName
 }
 
-// WithSourceSVMUUIDQueryParameter adds the sourceSvmUUID to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithSourceSVMUUIDQueryParameter(sourceSvmUUID *string) *SvmMigrationCollectionGetParams {
-	o.SetSourceSVMUUIDQueryParameter(sourceSvmUUID)
+// WithSourceSvmUUID adds the sourceSvmUUID to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithSourceSvmUUID(sourceSvmUUID *string) *SvmMigrationCollectionGetParams {
+	o.SetSourceSvmUUID(sourceSvmUUID)
 	return o
 }
 
-// SetSourceSVMUUIDQueryParameter adds the sourceSvmUuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetSourceSVMUUIDQueryParameter(sourceSvmUUID *string) {
-	o.SourceSVMUUIDQueryParameter = sourceSvmUUID
+// SetSourceSvmUUID adds the sourceSvmUuid to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetSourceSvmUUID(sourceSvmUUID *string) {
+	o.SourceSvmUUID = sourceSvmUUID
 }
 
-// WithStateQueryParameter adds the state to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithStateQueryParameter(state *string) *SvmMigrationCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithState(state *string) *SvmMigrationCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithTimeMetricsCutoverCompleteTimeQueryParameter adds the timeMetricsCutoverCompleteTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverCompleteTimeQueryParameter(timeMetricsCutoverCompleteTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsCutoverCompleteTimeQueryParameter(timeMetricsCutoverCompleteTime)
+// WithThrottle adds the throttle to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithThrottle(throttle *int64) *SvmMigrationCollectionGetParams {
+	o.SetThrottle(throttle)
 	return o
 }
 
-// SetTimeMetricsCutoverCompleteTimeQueryParameter adds the timeMetricsCutoverCompleteTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverCompleteTimeQueryParameter(timeMetricsCutoverCompleteTime *string) {
-	o.TimeMetricsCutoverCompleteTimeQueryParameter = timeMetricsCutoverCompleteTime
+// SetThrottle adds the throttle to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetThrottle(throttle *int64) {
+	o.Throttle = throttle
 }
 
-// WithTimeMetricsCutoverStartTimeQueryParameter adds the timeMetricsCutoverStartTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverStartTimeQueryParameter(timeMetricsCutoverStartTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsCutoverStartTimeQueryParameter(timeMetricsCutoverStartTime)
+// WithTimeMetricsCutoverCompleteTime adds the timeMetricsCutoverCompleteTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverCompleteTime(timeMetricsCutoverCompleteTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsCutoverCompleteTime(timeMetricsCutoverCompleteTime)
 	return o
 }
 
-// SetTimeMetricsCutoverStartTimeQueryParameter adds the timeMetricsCutoverStartTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverStartTimeQueryParameter(timeMetricsCutoverStartTime *string) {
-	o.TimeMetricsCutoverStartTimeQueryParameter = timeMetricsCutoverStartTime
+// SetTimeMetricsCutoverCompleteTime adds the timeMetricsCutoverCompleteTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverCompleteTime(timeMetricsCutoverCompleteTime *string) {
+	o.TimeMetricsCutoverCompleteTime = timeMetricsCutoverCompleteTime
 }
 
-// WithTimeMetricsCutoverTriggerTimeQueryParameter adds the timeMetricsCutoverTriggerTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverTriggerTimeQueryParameter(timeMetricsCutoverTriggerTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsCutoverTriggerTimeQueryParameter(timeMetricsCutoverTriggerTime)
+// WithTimeMetricsCutoverStartTime adds the timeMetricsCutoverStartTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverStartTime(timeMetricsCutoverStartTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsCutoverStartTime(timeMetricsCutoverStartTime)
 	return o
 }
 
-// SetTimeMetricsCutoverTriggerTimeQueryParameter adds the timeMetricsCutoverTriggerTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverTriggerTimeQueryParameter(timeMetricsCutoverTriggerTime *string) {
-	o.TimeMetricsCutoverTriggerTimeQueryParameter = timeMetricsCutoverTriggerTime
+// SetTimeMetricsCutoverStartTime adds the timeMetricsCutoverStartTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverStartTime(timeMetricsCutoverStartTime *string) {
+	o.TimeMetricsCutoverStartTime = timeMetricsCutoverStartTime
 }
 
-// WithTimeMetricsEndTimeQueryParameter adds the timeMetricsEndTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsEndTimeQueryParameter(timeMetricsEndTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsEndTimeQueryParameter(timeMetricsEndTime)
+// WithTimeMetricsCutoverTriggerTime adds the timeMetricsCutoverTriggerTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsCutoverTriggerTime(timeMetricsCutoverTriggerTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsCutoverTriggerTime(timeMetricsCutoverTriggerTime)
 	return o
 }
 
-// SetTimeMetricsEndTimeQueryParameter adds the timeMetricsEndTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsEndTimeQueryParameter(timeMetricsEndTime *string) {
-	o.TimeMetricsEndTimeQueryParameter = timeMetricsEndTime
+// SetTimeMetricsCutoverTriggerTime adds the timeMetricsCutoverTriggerTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsCutoverTriggerTime(timeMetricsCutoverTriggerTime *string) {
+	o.TimeMetricsCutoverTriggerTime = timeMetricsCutoverTriggerTime
 }
 
-// WithTimeMetricsLastPauseTimeQueryParameter adds the timeMetricsLastPauseTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastPauseTimeQueryParameter(timeMetricsLastPauseTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsLastPauseTimeQueryParameter(timeMetricsLastPauseTime)
+// WithTimeMetricsEndTime adds the timeMetricsEndTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsEndTime(timeMetricsEndTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsEndTime(timeMetricsEndTime)
 	return o
 }
 
-// SetTimeMetricsLastPauseTimeQueryParameter adds the timeMetricsLastPauseTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastPauseTimeQueryParameter(timeMetricsLastPauseTime *string) {
-	o.TimeMetricsLastPauseTimeQueryParameter = timeMetricsLastPauseTime
+// SetTimeMetricsEndTime adds the timeMetricsEndTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsEndTime(timeMetricsEndTime *string) {
+	o.TimeMetricsEndTime = timeMetricsEndTime
 }
 
-// WithTimeMetricsLastResumeTimeQueryParameter adds the timeMetricsLastResumeTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastResumeTimeQueryParameter(timeMetricsLastResumeTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsLastResumeTimeQueryParameter(timeMetricsLastResumeTime)
+// WithTimeMetricsLastPauseTime adds the timeMetricsLastPauseTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastPauseTime(timeMetricsLastPauseTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsLastPauseTime(timeMetricsLastPauseTime)
 	return o
 }
 
-// SetTimeMetricsLastResumeTimeQueryParameter adds the timeMetricsLastResumeTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastResumeTimeQueryParameter(timeMetricsLastResumeTime *string) {
-	o.TimeMetricsLastResumeTimeQueryParameter = timeMetricsLastResumeTime
+// SetTimeMetricsLastPauseTime adds the timeMetricsLastPauseTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastPauseTime(timeMetricsLastPauseTime *string) {
+	o.TimeMetricsLastPauseTime = timeMetricsLastPauseTime
 }
 
-// WithTimeMetricsStartTimeQueryParameter adds the timeMetricsStartTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithTimeMetricsStartTimeQueryParameter(timeMetricsStartTime *string) *SvmMigrationCollectionGetParams {
-	o.SetTimeMetricsStartTimeQueryParameter(timeMetricsStartTime)
+// WithTimeMetricsLastResumeTime adds the timeMetricsLastResumeTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastResumeTime(timeMetricsLastResumeTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsLastResumeTime(timeMetricsLastResumeTime)
 	return o
 }
 
-// SetTimeMetricsStartTimeQueryParameter adds the timeMetricsStartTime to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetTimeMetricsStartTimeQueryParameter(timeMetricsStartTime *string) {
-	o.TimeMetricsStartTimeQueryParameter = timeMetricsStartTime
+// SetTimeMetricsLastResumeTime adds the timeMetricsLastResumeTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastResumeTime(timeMetricsLastResumeTime *string) {
+	o.TimeMetricsLastResumeTime = timeMetricsLastResumeTime
 }
 
-// WithUUIDQueryParameter adds the uuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SvmMigrationCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithTimeMetricsStartTime adds the timeMetricsStartTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsStartTime(timeMetricsStartTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsStartTime(timeMetricsStartTime)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetTimeMetricsStartTime adds the timeMetricsStartTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsStartTime(timeMetricsStartTime *string) {
+	o.TimeMetricsStartTime = timeMetricsStartTime
+}
+
+// WithUUID adds the uuid to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithUUID(uuid *string) *SvmMigrationCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -634,13 +651,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.AutoCutoverQueryParameter != nil {
+	if o.AutoCutover != nil {
 
 		// query param auto_cutover
 		var qrAutoCutover bool
 
-		if o.AutoCutoverQueryParameter != nil {
-			qrAutoCutover = *o.AutoCutoverQueryParameter
+		if o.AutoCutover != nil {
+			qrAutoCutover = *o.AutoCutover
 		}
 		qAutoCutover := swag.FormatBool(qrAutoCutover)
 		if qAutoCutover != "" {
@@ -651,13 +668,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.AutoSourceCleanupQueryParameter != nil {
+	if o.AutoSourceCleanup != nil {
 
 		// query param auto_source_cleanup
 		var qrAutoSourceCleanup bool
 
-		if o.AutoSourceCleanupQueryParameter != nil {
-			qrAutoSourceCleanup = *o.AutoSourceCleanupQueryParameter
+		if o.AutoSourceCleanup != nil {
+			qrAutoSourceCleanup = *o.AutoSourceCleanup
 		}
 		qAutoSourceCleanup := swag.FormatBool(qrAutoSourceCleanup)
 		if qAutoSourceCleanup != "" {
@@ -668,13 +685,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.CurrentOperationQueryParameter != nil {
+	if o.CurrentOperation != nil {
 
 		// query param current_operation
 		var qrCurrentOperation string
 
-		if o.CurrentOperationQueryParameter != nil {
-			qrCurrentOperation = *o.CurrentOperationQueryParameter
+		if o.CurrentOperation != nil {
+			qrCurrentOperation = *o.CurrentOperation
 		}
 		qCurrentOperation := qrCurrentOperation
 		if qCurrentOperation != "" {
@@ -685,13 +702,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.DestinationIPspaceNameQueryParameter != nil {
+	if o.DestinationIpspaceName != nil {
 
 		// query param destination.ipspace.name
 		var qrDestinationIpspaceName string
 
-		if o.DestinationIPspaceNameQueryParameter != nil {
-			qrDestinationIpspaceName = *o.DestinationIPspaceNameQueryParameter
+		if o.DestinationIpspaceName != nil {
+			qrDestinationIpspaceName = *o.DestinationIpspaceName
 		}
 		qDestinationIpspaceName := qrDestinationIpspaceName
 		if qDestinationIpspaceName != "" {
@@ -702,13 +719,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.DestinationIPspaceUUIDQueryParameter != nil {
+	if o.DestinationIpspaceUUID != nil {
 
 		// query param destination.ipspace.uuid
 		var qrDestinationIpspaceUUID string
 
-		if o.DestinationIPspaceUUIDQueryParameter != nil {
-			qrDestinationIpspaceUUID = *o.DestinationIPspaceUUIDQueryParameter
+		if o.DestinationIpspaceUUID != nil {
+			qrDestinationIpspaceUUID = *o.DestinationIpspaceUUID
 		}
 		qDestinationIpspaceUUID := qrDestinationIpspaceUUID
 		if qDestinationIpspaceUUID != "" {
@@ -719,7 +736,7 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -730,13 +747,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LastFailedStateQueryParameter != nil {
+	if o.LastFailedState != nil {
 
 		// query param last_failed_state
 		var qrLastFailedState string
 
-		if o.LastFailedStateQueryParameter != nil {
-			qrLastFailedState = *o.LastFailedStateQueryParameter
+		if o.LastFailedState != nil {
+			qrLastFailedState = *o.LastFailedState
 		}
 		qLastFailedState := qrLastFailedState
 		if qLastFailedState != "" {
@@ -747,13 +764,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LastOperationQueryParameter != nil {
+	if o.LastOperation != nil {
 
 		// query param last_operation
 		var qrLastOperation string
 
-		if o.LastOperationQueryParameter != nil {
-			qrLastOperation = *o.LastOperationQueryParameter
+		if o.LastOperation != nil {
+			qrLastOperation = *o.LastOperation
 		}
 		qLastOperation := qrLastOperation
 		if qLastOperation != "" {
@@ -764,13 +781,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -781,15 +798,15 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MessagesCodeQueryParameter != nil {
+	if o.MessagesCode != nil {
 
 		// query param messages.code
-		var qrMessagesCode int64
+		var qrMessagesCode string
 
-		if o.MessagesCodeQueryParameter != nil {
-			qrMessagesCode = *o.MessagesCodeQueryParameter
+		if o.MessagesCode != nil {
+			qrMessagesCode = *o.MessagesCode
 		}
-		qMessagesCode := swag.FormatInt64(qrMessagesCode)
+		qMessagesCode := qrMessagesCode
 		if qMessagesCode != "" {
 
 			if err := r.SetQueryParam("messages.code", qMessagesCode); err != nil {
@@ -798,13 +815,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MessagesMessageQueryParameter != nil {
+	if o.MessagesMessage != nil {
 
 		// query param messages.message
 		var qrMessagesMessage string
 
-		if o.MessagesMessageQueryParameter != nil {
-			qrMessagesMessage = *o.MessagesMessageQueryParameter
+		if o.MessagesMessage != nil {
+			qrMessagesMessage = *o.MessagesMessage
 		}
 		qMessagesMessage := qrMessagesMessage
 		if qMessagesMessage != "" {
@@ -815,7 +832,7 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -826,13 +843,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PointOfNoReturnQueryParameter != nil {
+	if o.PointOfNoReturn != nil {
 
 		// query param point_of_no_return
 		var qrPointOfNoReturn bool
 
-		if o.PointOfNoReturnQueryParameter != nil {
-			qrPointOfNoReturn = *o.PointOfNoReturnQueryParameter
+		if o.PointOfNoReturn != nil {
+			qrPointOfNoReturn = *o.PointOfNoReturn
 		}
 		qPointOfNoReturn := swag.FormatBool(qrPointOfNoReturn)
 		if qPointOfNoReturn != "" {
@@ -843,13 +860,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.RestartCountQueryParameter != nil {
+	if o.RestartCount != nil {
 
 		// query param restart_count
 		var qrRestartCount int64
 
-		if o.RestartCountQueryParameter != nil {
-			qrRestartCount = *o.RestartCountQueryParameter
+		if o.RestartCount != nil {
+			qrRestartCount = *o.RestartCount
 		}
 		qRestartCount := swag.FormatInt64(qrRestartCount)
 		if qRestartCount != "" {
@@ -860,13 +877,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -877,13 +894,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -894,13 +911,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SourceClusterNameQueryParameter != nil {
+	if o.SourceClusterName != nil {
 
 		// query param source.cluster.name
 		var qrSourceClusterName string
 
-		if o.SourceClusterNameQueryParameter != nil {
-			qrSourceClusterName = *o.SourceClusterNameQueryParameter
+		if o.SourceClusterName != nil {
+			qrSourceClusterName = *o.SourceClusterName
 		}
 		qSourceClusterName := qrSourceClusterName
 		if qSourceClusterName != "" {
@@ -911,13 +928,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SourceClusterUUIDQueryParameter != nil {
+	if o.SourceClusterUUID != nil {
 
 		// query param source.cluster.uuid
 		var qrSourceClusterUUID string
 
-		if o.SourceClusterUUIDQueryParameter != nil {
-			qrSourceClusterUUID = *o.SourceClusterUUIDQueryParameter
+		if o.SourceClusterUUID != nil {
+			qrSourceClusterUUID = *o.SourceClusterUUID
 		}
 		qSourceClusterUUID := qrSourceClusterUUID
 		if qSourceClusterUUID != "" {
@@ -928,13 +945,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SourceSVMNameQueryParameter != nil {
+	if o.SourceSvmName != nil {
 
 		// query param source.svm.name
 		var qrSourceSvmName string
 
-		if o.SourceSVMNameQueryParameter != nil {
-			qrSourceSvmName = *o.SourceSVMNameQueryParameter
+		if o.SourceSvmName != nil {
+			qrSourceSvmName = *o.SourceSvmName
 		}
 		qSourceSvmName := qrSourceSvmName
 		if qSourceSvmName != "" {
@@ -945,13 +962,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SourceSVMUUIDQueryParameter != nil {
+	if o.SourceSvmUUID != nil {
 
 		// query param source.svm.uuid
 		var qrSourceSvmUUID string
 
-		if o.SourceSVMUUIDQueryParameter != nil {
-			qrSourceSvmUUID = *o.SourceSVMUUIDQueryParameter
+		if o.SourceSvmUUID != nil {
+			qrSourceSvmUUID = *o.SourceSvmUUID
 		}
 		qSourceSvmUUID := qrSourceSvmUUID
 		if qSourceSvmUUID != "" {
@@ -962,13 +979,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -979,13 +996,30 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsCutoverCompleteTimeQueryParameter != nil {
+	if o.Throttle != nil {
+
+		// query param throttle
+		var qrThrottle int64
+
+		if o.Throttle != nil {
+			qrThrottle = *o.Throttle
+		}
+		qThrottle := swag.FormatInt64(qrThrottle)
+		if qThrottle != "" {
+
+			if err := r.SetQueryParam("throttle", qThrottle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TimeMetricsCutoverCompleteTime != nil {
 
 		// query param time_metrics.cutover_complete_time
 		var qrTimeMetricsCutoverCompleteTime string
 
-		if o.TimeMetricsCutoverCompleteTimeQueryParameter != nil {
-			qrTimeMetricsCutoverCompleteTime = *o.TimeMetricsCutoverCompleteTimeQueryParameter
+		if o.TimeMetricsCutoverCompleteTime != nil {
+			qrTimeMetricsCutoverCompleteTime = *o.TimeMetricsCutoverCompleteTime
 		}
 		qTimeMetricsCutoverCompleteTime := qrTimeMetricsCutoverCompleteTime
 		if qTimeMetricsCutoverCompleteTime != "" {
@@ -996,13 +1030,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsCutoverStartTimeQueryParameter != nil {
+	if o.TimeMetricsCutoverStartTime != nil {
 
 		// query param time_metrics.cutover_start_time
 		var qrTimeMetricsCutoverStartTime string
 
-		if o.TimeMetricsCutoverStartTimeQueryParameter != nil {
-			qrTimeMetricsCutoverStartTime = *o.TimeMetricsCutoverStartTimeQueryParameter
+		if o.TimeMetricsCutoverStartTime != nil {
+			qrTimeMetricsCutoverStartTime = *o.TimeMetricsCutoverStartTime
 		}
 		qTimeMetricsCutoverStartTime := qrTimeMetricsCutoverStartTime
 		if qTimeMetricsCutoverStartTime != "" {
@@ -1013,13 +1047,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsCutoverTriggerTimeQueryParameter != nil {
+	if o.TimeMetricsCutoverTriggerTime != nil {
 
 		// query param time_metrics.cutover_trigger_time
 		var qrTimeMetricsCutoverTriggerTime string
 
-		if o.TimeMetricsCutoverTriggerTimeQueryParameter != nil {
-			qrTimeMetricsCutoverTriggerTime = *o.TimeMetricsCutoverTriggerTimeQueryParameter
+		if o.TimeMetricsCutoverTriggerTime != nil {
+			qrTimeMetricsCutoverTriggerTime = *o.TimeMetricsCutoverTriggerTime
 		}
 		qTimeMetricsCutoverTriggerTime := qrTimeMetricsCutoverTriggerTime
 		if qTimeMetricsCutoverTriggerTime != "" {
@@ -1030,13 +1064,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsEndTimeQueryParameter != nil {
+	if o.TimeMetricsEndTime != nil {
 
 		// query param time_metrics.end_time
 		var qrTimeMetricsEndTime string
 
-		if o.TimeMetricsEndTimeQueryParameter != nil {
-			qrTimeMetricsEndTime = *o.TimeMetricsEndTimeQueryParameter
+		if o.TimeMetricsEndTime != nil {
+			qrTimeMetricsEndTime = *o.TimeMetricsEndTime
 		}
 		qTimeMetricsEndTime := qrTimeMetricsEndTime
 		if qTimeMetricsEndTime != "" {
@@ -1047,13 +1081,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsLastPauseTimeQueryParameter != nil {
+	if o.TimeMetricsLastPauseTime != nil {
 
 		// query param time_metrics.last_pause_time
 		var qrTimeMetricsLastPauseTime string
 
-		if o.TimeMetricsLastPauseTimeQueryParameter != nil {
-			qrTimeMetricsLastPauseTime = *o.TimeMetricsLastPauseTimeQueryParameter
+		if o.TimeMetricsLastPauseTime != nil {
+			qrTimeMetricsLastPauseTime = *o.TimeMetricsLastPauseTime
 		}
 		qTimeMetricsLastPauseTime := qrTimeMetricsLastPauseTime
 		if qTimeMetricsLastPauseTime != "" {
@@ -1064,13 +1098,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsLastResumeTimeQueryParameter != nil {
+	if o.TimeMetricsLastResumeTime != nil {
 
 		// query param time_metrics.last_resume_time
 		var qrTimeMetricsLastResumeTime string
 
-		if o.TimeMetricsLastResumeTimeQueryParameter != nil {
-			qrTimeMetricsLastResumeTime = *o.TimeMetricsLastResumeTimeQueryParameter
+		if o.TimeMetricsLastResumeTime != nil {
+			qrTimeMetricsLastResumeTime = *o.TimeMetricsLastResumeTime
 		}
 		qTimeMetricsLastResumeTime := qrTimeMetricsLastResumeTime
 		if qTimeMetricsLastResumeTime != "" {
@@ -1081,13 +1115,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TimeMetricsStartTimeQueryParameter != nil {
+	if o.TimeMetricsStartTime != nil {
 
 		// query param time_metrics.start_time
 		var qrTimeMetricsStartTime string
 
-		if o.TimeMetricsStartTimeQueryParameter != nil {
-			qrTimeMetricsStartTime = *o.TimeMetricsStartTimeQueryParameter
+		if o.TimeMetricsStartTime != nil {
+			qrTimeMetricsStartTime = *o.TimeMetricsStartTime
 		}
 		qTimeMetricsStartTime := qrTimeMetricsStartTime
 		if qTimeMetricsStartTime != "" {
@@ -1098,13 +1132,13 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1123,7 +1157,7 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSvmMigrationCollectionGet binds the parameter fields
 func (o *SvmMigrationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1140,7 +1174,7 @@ func (o *SvmMigrationCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamSvmMigrationCollectionGet binds the parameter order_by
 func (o *SvmMigrationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

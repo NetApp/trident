@@ -21,32 +21,32 @@ import (
 // swagger:model application_san_access
 type ApplicationSanAccess struct {
 
+	// application san access inline lun mappings
+	ApplicationSanAccessInlineLunMappings []*ApplicationLunMappingObject `json:"lun_mappings,omitempty"`
+
 	// backing storage
-	BackingStorage *ApplicationSanAccessBackingStorage `json:"backing_storage,omitempty"`
+	BackingStorage *ApplicationSanAccessInlineBackingStorage `json:"backing_storage,omitempty"`
 
 	// Clone
 	// Read Only: true
 	IsClone *bool `json:"is_clone,omitempty"`
 
-	// lun mappings
-	LunMappings []*ApplicationLunMappingObject `json:"lun_mappings,omitempty"`
-
 	// LUN serial number
 	// Read Only: true
 	// Max Length: 12
 	// Min Length: 12
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
 // Validate validates this application san access
 func (m *ApplicationSanAccess) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBackingStorage(formats); err != nil {
+	if err := m.validateApplicationSanAccessInlineLunMappings(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateLunMappings(formats); err != nil {
+	if err := m.validateBackingStorage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -57,6 +57,30 @@ func (m *ApplicationSanAccess) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ApplicationSanAccess) validateApplicationSanAccessInlineLunMappings(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationSanAccessInlineLunMappings) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationSanAccessInlineLunMappings); i++ {
+		if swag.IsZero(m.ApplicationSanAccessInlineLunMappings[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationSanAccessInlineLunMappings[i] != nil {
+			if err := m.ApplicationSanAccessInlineLunMappings[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lun_mappings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -77,40 +101,16 @@ func (m *ApplicationSanAccess) validateBackingStorage(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *ApplicationSanAccess) validateLunMappings(formats strfmt.Registry) error {
-	if swag.IsZero(m.LunMappings) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.LunMappings); i++ {
-		if swag.IsZero(m.LunMappings[i]) { // not required
-			continue
-		}
-
-		if m.LunMappings[i] != nil {
-			if err := m.LunMappings[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("lun_mappings" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationSanAccess) validateSerialNumber(formats strfmt.Registry) error {
 	if swag.IsZero(m.SerialNumber) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("serial_number", "body", m.SerialNumber, 12); err != nil {
+	if err := validate.MinLength("serial_number", "body", *m.SerialNumber, 12); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("serial_number", "body", m.SerialNumber, 12); err != nil {
+	if err := validate.MaxLength("serial_number", "body", *m.SerialNumber, 12); err != nil {
 		return err
 	}
 
@@ -121,15 +121,15 @@ func (m *ApplicationSanAccess) validateSerialNumber(formats strfmt.Registry) err
 func (m *ApplicationSanAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateApplicationSanAccessInlineLunMappings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBackingStorage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateIsClone(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateLunMappings(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -140,6 +140,24 @@ func (m *ApplicationSanAccess) ContextValidate(ctx context.Context, formats strf
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ApplicationSanAccess) contextValidateApplicationSanAccessInlineLunMappings(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationSanAccessInlineLunMappings); i++ {
+
+		if m.ApplicationSanAccessInlineLunMappings[i] != nil {
+			if err := m.ApplicationSanAccessInlineLunMappings[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lun_mappings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -166,27 +184,9 @@ func (m *ApplicationSanAccess) contextValidateIsClone(ctx context.Context, forma
 	return nil
 }
 
-func (m *ApplicationSanAccess) contextValidateLunMappings(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.LunMappings); i++ {
-
-		if m.LunMappings[i] != nil {
-			if err := m.LunMappings[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("lun_mappings" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationSanAccess) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -211,23 +211,23 @@ func (m *ApplicationSanAccess) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationSanAccessBackingStorage application san access backing storage
+// ApplicationSanAccessInlineBackingStorage application san access inline backing storage
 //
-// swagger:model ApplicationSanAccessBackingStorage
-type ApplicationSanAccessBackingStorage struct {
+// swagger:model application_san_access_inline_backing_storage
+type ApplicationSanAccessInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
 	// Enum: [lun]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application san access backing storage
-func (m *ApplicationSanAccessBackingStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this application san access inline backing storage
+func (m *ApplicationSanAccessInlineBackingStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -240,7 +240,7 @@ func (m *ApplicationSanAccessBackingStorage) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-var applicationSanAccessBackingStorageTypeTypePropEnum []interface{}
+var applicationSanAccessInlineBackingStorageTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -248,46 +248,46 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationSanAccessBackingStorageTypeTypePropEnum = append(applicationSanAccessBackingStorageTypeTypePropEnum, v)
+		applicationSanAccessInlineBackingStorageTypeTypePropEnum = append(applicationSanAccessInlineBackingStorageTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationSanAccessBackingStorage
-	// ApplicationSanAccessBackingStorage
+	// application_san_access_inline_backing_storage
+	// ApplicationSanAccessInlineBackingStorage
 	// type
 	// Type
 	// lun
 	// END DEBUGGING
-	// ApplicationSanAccessBackingStorageTypeLun captures enum value "lun"
-	ApplicationSanAccessBackingStorageTypeLun string = "lun"
+	// ApplicationSanAccessInlineBackingStorageTypeLun captures enum value "lun"
+	ApplicationSanAccessInlineBackingStorageTypeLun string = "lun"
 )
 
 // prop value enum
-func (m *ApplicationSanAccessBackingStorage) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationSanAccessBackingStorageTypeTypePropEnum, true); err != nil {
+func (m *ApplicationSanAccessInlineBackingStorage) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationSanAccessInlineBackingStorageTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationSanAccessBackingStorage) validateType(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessInlineBackingStorage) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application san access backing storage based on the context it is used
-func (m *ApplicationSanAccessBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application san access inline backing storage based on the context it is used
+func (m *ApplicationSanAccessInlineBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
@@ -304,18 +304,18 @@ func (m *ApplicationSanAccessBackingStorage) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *ApplicationSanAccessBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessInlineBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationSanAccessBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessInlineBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -323,7 +323,7 @@ func (m *ApplicationSanAccessBackingStorage) contextValidateUUID(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSanAccessBackingStorage) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSanAccessInlineBackingStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -331,8 +331,8 @@ func (m *ApplicationSanAccessBackingStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSanAccessBackingStorage) UnmarshalBinary(b []byte) error {
-	var res ApplicationSanAccessBackingStorage
+func (m *ApplicationSanAccessInlineBackingStorage) UnmarshalBinary(b []byte) error {
+	var res ApplicationSanAccessInlineBackingStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

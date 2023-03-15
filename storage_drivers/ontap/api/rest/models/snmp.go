@@ -23,15 +23,15 @@ type Snmp struct {
 
 	// Specifies whether to enable or disable SNMP authentication traps.
 	// Example: true
-	AuthTrapsEnabled bool `json:"auth_traps_enabled,omitempty"`
+	AuthTrapsEnabled *bool `json:"auth_traps_enabled,omitempty"`
 
 	// Specifies whether to enable or disable SNMP.
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Specifies whether to enable or disable SNMP traps.
 	// Example: true
-	TrapsEnabled bool `json:"traps_enabled,omitempty"`
+	TrapsEnabled *bool `json:"traps_enabled,omitempty"`
 
 	// Trigger a test SNMP trap.
 	// Example: true

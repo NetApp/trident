@@ -66,277 +66,277 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricFcDuration.
 
 	   Filter by metric.fc.duration
 	*/
-	MetricFcDurationQueryParameter *string
+	MetricFcDuration *string
 
 	/* MetricFcIopsOther.
 
 	   Filter by metric.fc.iops.other
 	*/
-	MetricFcIopsOtherQueryParameter *int64
+	MetricFcIopsOther *int64
 
 	/* MetricFcIopsRead.
 
 	   Filter by metric.fc.iops.read
 	*/
-	MetricFcIopsReadQueryParameter *int64
+	MetricFcIopsRead *int64
 
 	/* MetricFcIopsTotal.
 
 	   Filter by metric.fc.iops.total
 	*/
-	MetricFcIopsTotalQueryParameter *int64
+	MetricFcIopsTotal *int64
 
 	/* MetricFcIopsWrite.
 
 	   Filter by metric.fc.iops.write
 	*/
-	MetricFcIopsWriteQueryParameter *int64
+	MetricFcIopsWrite *int64
 
 	/* MetricFcLatencyOther.
 
 	   Filter by metric.fc.latency.other
 	*/
-	MetricFcLatencyOtherQueryParameter *int64
+	MetricFcLatencyOther *int64
 
 	/* MetricFcLatencyRead.
 
 	   Filter by metric.fc.latency.read
 	*/
-	MetricFcLatencyReadQueryParameter *int64
+	MetricFcLatencyRead *int64
 
 	/* MetricFcLatencyTotal.
 
 	   Filter by metric.fc.latency.total
 	*/
-	MetricFcLatencyTotalQueryParameter *int64
+	MetricFcLatencyTotal *int64
 
 	/* MetricFcLatencyWrite.
 
 	   Filter by metric.fc.latency.write
 	*/
-	MetricFcLatencyWriteQueryParameter *int64
+	MetricFcLatencyWrite *int64
 
 	/* MetricFcStatus.
 
 	   Filter by metric.fc.status
 	*/
-	MetricFcStatusQueryParameter *string
+	MetricFcStatus *string
 
 	/* MetricFcThroughputRead.
 
 	   Filter by metric.fc.throughput.read
 	*/
-	MetricFcThroughputReadQueryParameter *int64
+	MetricFcThroughputRead *int64
 
 	/* MetricFcThroughputTotal.
 
 	   Filter by metric.fc.throughput.total
 	*/
-	MetricFcThroughputTotalQueryParameter *int64
+	MetricFcThroughputTotal *int64
 
 	/* MetricFcThroughputWrite.
 
 	   Filter by metric.fc.throughput.write
 	*/
-	MetricFcThroughputWriteQueryParameter *int64
+	MetricFcThroughputWrite *int64
 
 	/* MetricFcTimestamp.
 
 	   Filter by metric.fc.timestamp
 	*/
-	MetricFcTimestampQueryParameter *string
+	MetricFcTimestamp *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricTCPDuration.
 
 	   Filter by metric.tcp.duration
 	*/
-	MetricTCPDurationQueryParameter *string
+	MetricTCPDuration *string
 
 	/* MetricTCPIopsOther.
 
 	   Filter by metric.tcp.iops.other
 	*/
-	MetricTCPIopsOtherQueryParameter *int64
+	MetricTCPIopsOther *int64
 
 	/* MetricTCPIopsRead.
 
 	   Filter by metric.tcp.iops.read
 	*/
-	MetricTCPIopsReadQueryParameter *int64
+	MetricTCPIopsRead *int64
 
 	/* MetricTCPIopsTotal.
 
 	   Filter by metric.tcp.iops.total
 	*/
-	MetricTCPIopsTotalQueryParameter *int64
+	MetricTCPIopsTotal *int64
 
 	/* MetricTCPIopsWrite.
 
 	   Filter by metric.tcp.iops.write
 	*/
-	MetricTCPIopsWriteQueryParameter *int64
+	MetricTCPIopsWrite *int64
 
 	/* MetricTCPLatencyOther.
 
 	   Filter by metric.tcp.latency.other
 	*/
-	MetricTCPLatencyOtherQueryParameter *int64
+	MetricTCPLatencyOther *int64
 
 	/* MetricTCPLatencyRead.
 
 	   Filter by metric.tcp.latency.read
 	*/
-	MetricTCPLatencyReadQueryParameter *int64
+	MetricTCPLatencyRead *int64
 
 	/* MetricTCPLatencyTotal.
 
 	   Filter by metric.tcp.latency.total
 	*/
-	MetricTCPLatencyTotalQueryParameter *int64
+	MetricTCPLatencyTotal *int64
 
 	/* MetricTCPLatencyWrite.
 
 	   Filter by metric.tcp.latency.write
 	*/
-	MetricTCPLatencyWriteQueryParameter *int64
+	MetricTCPLatencyWrite *int64
 
 	/* MetricTCPStatus.
 
 	   Filter by metric.tcp.status
 	*/
-	MetricTCPStatusQueryParameter *string
+	MetricTCPStatus *string
 
 	/* MetricTCPThroughputRead.
 
 	   Filter by metric.tcp.throughput.read
 	*/
-	MetricTCPThroughputReadQueryParameter *int64
+	MetricTCPThroughputRead *int64
 
 	/* MetricTCPThroughputTotal.
 
 	   Filter by metric.tcp.throughput.total
 	*/
-	MetricTCPThroughputTotalQueryParameter *int64
+	MetricTCPThroughputTotal *int64
 
 	/* MetricTCPThroughputWrite.
 
 	   Filter by metric.tcp.throughput.write
 	*/
-	MetricTCPThroughputWriteQueryParameter *int64
+	MetricTCPThroughputWrite *int64
 
 	/* MetricTCPTimestamp.
 
 	   Filter by metric.tcp.timestamp
 	*/
-	MetricTCPTimestampQueryParameter *string
+	MetricTCPTimestamp *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -344,7 +344,7 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -352,253 +352,253 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StatisticsFcIopsRawOther.
 
 	   Filter by statistics.fc.iops_raw.other
 	*/
-	StatisticsFcIopsRawOtherQueryParameter *int64
+	StatisticsFcIopsRawOther *int64
 
 	/* StatisticsFcIopsRawRead.
 
 	   Filter by statistics.fc.iops_raw.read
 	*/
-	StatisticsFcIopsRawReadQueryParameter *int64
+	StatisticsFcIopsRawRead *int64
 
 	/* StatisticsFcIopsRawTotal.
 
 	   Filter by statistics.fc.iops_raw.total
 	*/
-	StatisticsFcIopsRawTotalQueryParameter *int64
+	StatisticsFcIopsRawTotal *int64
 
 	/* StatisticsFcIopsRawWrite.
 
 	   Filter by statistics.fc.iops_raw.write
 	*/
-	StatisticsFcIopsRawWriteQueryParameter *int64
+	StatisticsFcIopsRawWrite *int64
 
 	/* StatisticsFcLatencyRawOther.
 
 	   Filter by statistics.fc.latency_raw.other
 	*/
-	StatisticsFcLatencyRawOtherQueryParameter *int64
+	StatisticsFcLatencyRawOther *int64
 
 	/* StatisticsFcLatencyRawRead.
 
 	   Filter by statistics.fc.latency_raw.read
 	*/
-	StatisticsFcLatencyRawReadQueryParameter *int64
+	StatisticsFcLatencyRawRead *int64
 
 	/* StatisticsFcLatencyRawTotal.
 
 	   Filter by statistics.fc.latency_raw.total
 	*/
-	StatisticsFcLatencyRawTotalQueryParameter *int64
+	StatisticsFcLatencyRawTotal *int64
 
 	/* StatisticsFcLatencyRawWrite.
 
 	   Filter by statistics.fc.latency_raw.write
 	*/
-	StatisticsFcLatencyRawWriteQueryParameter *int64
+	StatisticsFcLatencyRawWrite *int64
 
 	/* StatisticsFcStatus.
 
 	   Filter by statistics.fc.status
 	*/
-	StatisticsFcStatusQueryParameter *string
+	StatisticsFcStatus *string
 
 	/* StatisticsFcThroughputRawRead.
 
 	   Filter by statistics.fc.throughput_raw.read
 	*/
-	StatisticsFcThroughputRawReadQueryParameter *int64
+	StatisticsFcThroughputRawRead *int64
 
 	/* StatisticsFcThroughputRawTotal.
 
 	   Filter by statistics.fc.throughput_raw.total
 	*/
-	StatisticsFcThroughputRawTotalQueryParameter *int64
+	StatisticsFcThroughputRawTotal *int64
 
 	/* StatisticsFcThroughputRawWrite.
 
 	   Filter by statistics.fc.throughput_raw.write
 	*/
-	StatisticsFcThroughputRawWriteQueryParameter *int64
+	StatisticsFcThroughputRawWrite *int64
 
 	/* StatisticsFcTimestamp.
 
 	   Filter by statistics.fc.timestamp
 	*/
-	StatisticsFcTimestampQueryParameter *string
+	StatisticsFcTimestamp *string
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsTCPIopsRawOther.
 
 	   Filter by statistics.tcp.iops_raw.other
 	*/
-	StatisticsTCPIopsRawOtherQueryParameter *int64
+	StatisticsTCPIopsRawOther *int64
 
 	/* StatisticsTCPIopsRawRead.
 
 	   Filter by statistics.tcp.iops_raw.read
 	*/
-	StatisticsTCPIopsRawReadQueryParameter *int64
+	StatisticsTCPIopsRawRead *int64
 
 	/* StatisticsTCPIopsRawTotal.
 
 	   Filter by statistics.tcp.iops_raw.total
 	*/
-	StatisticsTCPIopsRawTotalQueryParameter *int64
+	StatisticsTCPIopsRawTotal *int64
 
 	/* StatisticsTCPIopsRawWrite.
 
 	   Filter by statistics.tcp.iops_raw.write
 	*/
-	StatisticsTCPIopsRawWriteQueryParameter *int64
+	StatisticsTCPIopsRawWrite *int64
 
 	/* StatisticsTCPLatencyRawOther.
 
 	   Filter by statistics.tcp.latency_raw.other
 	*/
-	StatisticsTCPLatencyRawOtherQueryParameter *int64
+	StatisticsTCPLatencyRawOther *int64
 
 	/* StatisticsTCPLatencyRawRead.
 
 	   Filter by statistics.tcp.latency_raw.read
 	*/
-	StatisticsTCPLatencyRawReadQueryParameter *int64
+	StatisticsTCPLatencyRawRead *int64
 
 	/* StatisticsTCPLatencyRawTotal.
 
 	   Filter by statistics.tcp.latency_raw.total
 	*/
-	StatisticsTCPLatencyRawTotalQueryParameter *int64
+	StatisticsTCPLatencyRawTotal *int64
 
 	/* StatisticsTCPLatencyRawWrite.
 
 	   Filter by statistics.tcp.latency_raw.write
 	*/
-	StatisticsTCPLatencyRawWriteQueryParameter *int64
+	StatisticsTCPLatencyRawWrite *int64
 
 	/* StatisticsTCPStatus.
 
 	   Filter by statistics.tcp.status
 	*/
-	StatisticsTCPStatusQueryParameter *string
+	StatisticsTCPStatus *string
 
 	/* StatisticsTCPThroughputRawRead.
 
 	   Filter by statistics.tcp.throughput_raw.read
 	*/
-	StatisticsTCPThroughputRawReadQueryParameter *int64
+	StatisticsTCPThroughputRawRead *int64
 
 	/* StatisticsTCPThroughputRawTotal.
 
 	   Filter by statistics.tcp.throughput_raw.total
 	*/
-	StatisticsTCPThroughputRawTotalQueryParameter *int64
+	StatisticsTCPThroughputRawTotal *int64
 
 	/* StatisticsTCPThroughputRawWrite.
 
 	   Filter by statistics.tcp.throughput_raw.write
 	*/
-	StatisticsTCPThroughputRawWriteQueryParameter *int64
+	StatisticsTCPThroughputRawWrite *int64
 
 	/* StatisticsTCPTimestamp.
 
 	   Filter by statistics.tcp.timestamp
 	*/
-	StatisticsTCPTimestampQueryParameter *string
+	StatisticsTCPTimestamp *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -618,14 +618,14 @@ func (o *NvmeServiceCollectionGetParams) WithDefaults() *NvmeServiceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *NvmeServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeServiceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -667,983 +667,983 @@ func (o *NvmeServiceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NvmeServiceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithEnabled(enabled *bool) *NvmeServiceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeServiceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithFields(fields []string) *NvmeServiceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeServiceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeServiceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMetricDuration adds the metricDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricDuration(metricDuration *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMetricDuration adds the metricDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricFcDurationQueryParameter adds the metricFcDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcDurationQueryParameter(metricFcDuration *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcDurationQueryParameter(metricFcDuration)
+// WithMetricFcDuration adds the metricFcDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcDuration(metricFcDuration *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcDuration(metricFcDuration)
 	return o
 }
 
-// SetMetricFcDurationQueryParameter adds the metricFcDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcDurationQueryParameter(metricFcDuration *string) {
-	o.MetricFcDurationQueryParameter = metricFcDuration
+// SetMetricFcDuration adds the metricFcDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcDuration(metricFcDuration *string) {
+	o.MetricFcDuration = metricFcDuration
 }
 
-// WithMetricFcIopsOtherQueryParameter adds the metricFcIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsOtherQueryParameter(metricFcIopsOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcIopsOtherQueryParameter(metricFcIopsOther)
+// WithMetricFcIopsOther adds the metricFcIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsOther(metricFcIopsOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcIopsOther(metricFcIopsOther)
 	return o
 }
 
-// SetMetricFcIopsOtherQueryParameter adds the metricFcIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsOtherQueryParameter(metricFcIopsOther *int64) {
-	o.MetricFcIopsOtherQueryParameter = metricFcIopsOther
+// SetMetricFcIopsOther adds the metricFcIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsOther(metricFcIopsOther *int64) {
+	o.MetricFcIopsOther = metricFcIopsOther
 }
 
-// WithMetricFcIopsReadQueryParameter adds the metricFcIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsReadQueryParameter(metricFcIopsRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcIopsReadQueryParameter(metricFcIopsRead)
+// WithMetricFcIopsRead adds the metricFcIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsRead(metricFcIopsRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcIopsRead(metricFcIopsRead)
 	return o
 }
 
-// SetMetricFcIopsReadQueryParameter adds the metricFcIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsReadQueryParameter(metricFcIopsRead *int64) {
-	o.MetricFcIopsReadQueryParameter = metricFcIopsRead
+// SetMetricFcIopsRead adds the metricFcIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsRead(metricFcIopsRead *int64) {
+	o.MetricFcIopsRead = metricFcIopsRead
 }
 
-// WithMetricFcIopsTotalQueryParameter adds the metricFcIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsTotalQueryParameter(metricFcIopsTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcIopsTotalQueryParameter(metricFcIopsTotal)
+// WithMetricFcIopsTotal adds the metricFcIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsTotal(metricFcIopsTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcIopsTotal(metricFcIopsTotal)
 	return o
 }
 
-// SetMetricFcIopsTotalQueryParameter adds the metricFcIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsTotalQueryParameter(metricFcIopsTotal *int64) {
-	o.MetricFcIopsTotalQueryParameter = metricFcIopsTotal
+// SetMetricFcIopsTotal adds the metricFcIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsTotal(metricFcIopsTotal *int64) {
+	o.MetricFcIopsTotal = metricFcIopsTotal
 }
 
-// WithMetricFcIopsWriteQueryParameter adds the metricFcIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsWriteQueryParameter(metricFcIopsWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcIopsWriteQueryParameter(metricFcIopsWrite)
+// WithMetricFcIopsWrite adds the metricFcIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcIopsWrite(metricFcIopsWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcIopsWrite(metricFcIopsWrite)
 	return o
 }
 
-// SetMetricFcIopsWriteQueryParameter adds the metricFcIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsWriteQueryParameter(metricFcIopsWrite *int64) {
-	o.MetricFcIopsWriteQueryParameter = metricFcIopsWrite
+// SetMetricFcIopsWrite adds the metricFcIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcIopsWrite(metricFcIopsWrite *int64) {
+	o.MetricFcIopsWrite = metricFcIopsWrite
 }
 
-// WithMetricFcLatencyOtherQueryParameter adds the metricFcLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyOtherQueryParameter(metricFcLatencyOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcLatencyOtherQueryParameter(metricFcLatencyOther)
+// WithMetricFcLatencyOther adds the metricFcLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyOther(metricFcLatencyOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcLatencyOther(metricFcLatencyOther)
 	return o
 }
 
-// SetMetricFcLatencyOtherQueryParameter adds the metricFcLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyOtherQueryParameter(metricFcLatencyOther *int64) {
-	o.MetricFcLatencyOtherQueryParameter = metricFcLatencyOther
+// SetMetricFcLatencyOther adds the metricFcLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyOther(metricFcLatencyOther *int64) {
+	o.MetricFcLatencyOther = metricFcLatencyOther
 }
 
-// WithMetricFcLatencyReadQueryParameter adds the metricFcLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyReadQueryParameter(metricFcLatencyRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcLatencyReadQueryParameter(metricFcLatencyRead)
+// WithMetricFcLatencyRead adds the metricFcLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyRead(metricFcLatencyRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcLatencyRead(metricFcLatencyRead)
 	return o
 }
 
-// SetMetricFcLatencyReadQueryParameter adds the metricFcLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyReadQueryParameter(metricFcLatencyRead *int64) {
-	o.MetricFcLatencyReadQueryParameter = metricFcLatencyRead
+// SetMetricFcLatencyRead adds the metricFcLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyRead(metricFcLatencyRead *int64) {
+	o.MetricFcLatencyRead = metricFcLatencyRead
 }
 
-// WithMetricFcLatencyTotalQueryParameter adds the metricFcLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyTotalQueryParameter(metricFcLatencyTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcLatencyTotalQueryParameter(metricFcLatencyTotal)
+// WithMetricFcLatencyTotal adds the metricFcLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyTotal(metricFcLatencyTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcLatencyTotal(metricFcLatencyTotal)
 	return o
 }
 
-// SetMetricFcLatencyTotalQueryParameter adds the metricFcLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyTotalQueryParameter(metricFcLatencyTotal *int64) {
-	o.MetricFcLatencyTotalQueryParameter = metricFcLatencyTotal
+// SetMetricFcLatencyTotal adds the metricFcLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyTotal(metricFcLatencyTotal *int64) {
+	o.MetricFcLatencyTotal = metricFcLatencyTotal
 }
 
-// WithMetricFcLatencyWriteQueryParameter adds the metricFcLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyWriteQueryParameter(metricFcLatencyWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcLatencyWriteQueryParameter(metricFcLatencyWrite)
+// WithMetricFcLatencyWrite adds the metricFcLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcLatencyWrite(metricFcLatencyWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcLatencyWrite(metricFcLatencyWrite)
 	return o
 }
 
-// SetMetricFcLatencyWriteQueryParameter adds the metricFcLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyWriteQueryParameter(metricFcLatencyWrite *int64) {
-	o.MetricFcLatencyWriteQueryParameter = metricFcLatencyWrite
+// SetMetricFcLatencyWrite adds the metricFcLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcLatencyWrite(metricFcLatencyWrite *int64) {
+	o.MetricFcLatencyWrite = metricFcLatencyWrite
 }
 
-// WithMetricFcStatusQueryParameter adds the metricFcStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcStatusQueryParameter(metricFcStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcStatusQueryParameter(metricFcStatus)
+// WithMetricFcStatus adds the metricFcStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcStatus(metricFcStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcStatus(metricFcStatus)
 	return o
 }
 
-// SetMetricFcStatusQueryParameter adds the metricFcStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcStatusQueryParameter(metricFcStatus *string) {
-	o.MetricFcStatusQueryParameter = metricFcStatus
+// SetMetricFcStatus adds the metricFcStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcStatus(metricFcStatus *string) {
+	o.MetricFcStatus = metricFcStatus
 }
 
-// WithMetricFcThroughputReadQueryParameter adds the metricFcThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputReadQueryParameter(metricFcThroughputRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcThroughputReadQueryParameter(metricFcThroughputRead)
+// WithMetricFcThroughputRead adds the metricFcThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputRead(metricFcThroughputRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcThroughputRead(metricFcThroughputRead)
 	return o
 }
 
-// SetMetricFcThroughputReadQueryParameter adds the metricFcThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputReadQueryParameter(metricFcThroughputRead *int64) {
-	o.MetricFcThroughputReadQueryParameter = metricFcThroughputRead
+// SetMetricFcThroughputRead adds the metricFcThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputRead(metricFcThroughputRead *int64) {
+	o.MetricFcThroughputRead = metricFcThroughputRead
 }
 
-// WithMetricFcThroughputTotalQueryParameter adds the metricFcThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputTotalQueryParameter(metricFcThroughputTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcThroughputTotalQueryParameter(metricFcThroughputTotal)
+// WithMetricFcThroughputTotal adds the metricFcThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputTotal(metricFcThroughputTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcThroughputTotal(metricFcThroughputTotal)
 	return o
 }
 
-// SetMetricFcThroughputTotalQueryParameter adds the metricFcThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputTotalQueryParameter(metricFcThroughputTotal *int64) {
-	o.MetricFcThroughputTotalQueryParameter = metricFcThroughputTotal
+// SetMetricFcThroughputTotal adds the metricFcThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputTotal(metricFcThroughputTotal *int64) {
+	o.MetricFcThroughputTotal = metricFcThroughputTotal
 }
 
-// WithMetricFcThroughputWriteQueryParameter adds the metricFcThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputWriteQueryParameter(metricFcThroughputWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcThroughputWriteQueryParameter(metricFcThroughputWrite)
+// WithMetricFcThroughputWrite adds the metricFcThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcThroughputWrite(metricFcThroughputWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcThroughputWrite(metricFcThroughputWrite)
 	return o
 }
 
-// SetMetricFcThroughputWriteQueryParameter adds the metricFcThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputWriteQueryParameter(metricFcThroughputWrite *int64) {
-	o.MetricFcThroughputWriteQueryParameter = metricFcThroughputWrite
+// SetMetricFcThroughputWrite adds the metricFcThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcThroughputWrite(metricFcThroughputWrite *int64) {
+	o.MetricFcThroughputWrite = metricFcThroughputWrite
 }
 
-// WithMetricFcTimestampQueryParameter adds the metricFcTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricFcTimestampQueryParameter(metricFcTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricFcTimestampQueryParameter(metricFcTimestamp)
+// WithMetricFcTimestamp adds the metricFcTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricFcTimestamp(metricFcTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricFcTimestamp(metricFcTimestamp)
 	return o
 }
 
-// SetMetricFcTimestampQueryParameter adds the metricFcTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricFcTimestampQueryParameter(metricFcTimestamp *string) {
-	o.MetricFcTimestampQueryParameter = metricFcTimestamp
+// SetMetricFcTimestamp adds the metricFcTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricFcTimestamp(metricFcTimestamp *string) {
+	o.MetricFcTimestamp = metricFcTimestamp
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithMetricIopsOther adds the metricIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetMetricIopsOther adds the metricIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithMetricIopsRead adds the metricIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetMetricIopsRead adds the metricIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithMetricIopsTotal adds the metricIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetMetricIopsTotal adds the metricIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithMetricIopsWrite adds the metricIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetMetricIopsWrite adds the metricIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithMetricLatencyOther adds the metricLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetMetricLatencyOther adds the metricLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithMetricLatencyRead adds the metricLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetMetricLatencyRead adds the metricLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetMetricLatencyTotal adds the metricLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetMetricLatencyWrite adds the metricLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricStatus adds the metricStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricStatus(metricStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricStatus adds the metricStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricTCPDurationQueryParameter adds the metricTCPDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPDurationQueryParameter(metricTCPDuration *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPDurationQueryParameter(metricTCPDuration)
+// WithMetricTCPDuration adds the metricTCPDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPDuration(metricTCPDuration *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPDuration(metricTCPDuration)
 	return o
 }
 
-// SetMetricTCPDurationQueryParameter adds the metricTcpDuration to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPDurationQueryParameter(metricTCPDuration *string) {
-	o.MetricTCPDurationQueryParameter = metricTCPDuration
+// SetMetricTCPDuration adds the metricTcpDuration to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPDuration(metricTCPDuration *string) {
+	o.MetricTCPDuration = metricTCPDuration
 }
 
-// WithMetricTCPIopsOtherQueryParameter adds the metricTCPIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsOtherQueryParameter(metricTCPIopsOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPIopsOtherQueryParameter(metricTCPIopsOther)
+// WithMetricTCPIopsOther adds the metricTCPIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsOther(metricTCPIopsOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPIopsOther(metricTCPIopsOther)
 	return o
 }
 
-// SetMetricTCPIopsOtherQueryParameter adds the metricTcpIopsOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsOtherQueryParameter(metricTCPIopsOther *int64) {
-	o.MetricTCPIopsOtherQueryParameter = metricTCPIopsOther
+// SetMetricTCPIopsOther adds the metricTcpIopsOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsOther(metricTCPIopsOther *int64) {
+	o.MetricTCPIopsOther = metricTCPIopsOther
 }
 
-// WithMetricTCPIopsReadQueryParameter adds the metricTCPIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsReadQueryParameter(metricTCPIopsRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPIopsReadQueryParameter(metricTCPIopsRead)
+// WithMetricTCPIopsRead adds the metricTCPIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsRead(metricTCPIopsRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPIopsRead(metricTCPIopsRead)
 	return o
 }
 
-// SetMetricTCPIopsReadQueryParameter adds the metricTcpIopsRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsReadQueryParameter(metricTCPIopsRead *int64) {
-	o.MetricTCPIopsReadQueryParameter = metricTCPIopsRead
+// SetMetricTCPIopsRead adds the metricTcpIopsRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsRead(metricTCPIopsRead *int64) {
+	o.MetricTCPIopsRead = metricTCPIopsRead
 }
 
-// WithMetricTCPIopsTotalQueryParameter adds the metricTCPIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsTotalQueryParameter(metricTCPIopsTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPIopsTotalQueryParameter(metricTCPIopsTotal)
+// WithMetricTCPIopsTotal adds the metricTCPIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsTotal(metricTCPIopsTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPIopsTotal(metricTCPIopsTotal)
 	return o
 }
 
-// SetMetricTCPIopsTotalQueryParameter adds the metricTcpIopsTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsTotalQueryParameter(metricTCPIopsTotal *int64) {
-	o.MetricTCPIopsTotalQueryParameter = metricTCPIopsTotal
+// SetMetricTCPIopsTotal adds the metricTcpIopsTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsTotal(metricTCPIopsTotal *int64) {
+	o.MetricTCPIopsTotal = metricTCPIopsTotal
 }
 
-// WithMetricTCPIopsWriteQueryParameter adds the metricTCPIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsWriteQueryParameter(metricTCPIopsWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPIopsWriteQueryParameter(metricTCPIopsWrite)
+// WithMetricTCPIopsWrite adds the metricTCPIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPIopsWrite(metricTCPIopsWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPIopsWrite(metricTCPIopsWrite)
 	return o
 }
 
-// SetMetricTCPIopsWriteQueryParameter adds the metricTcpIopsWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsWriteQueryParameter(metricTCPIopsWrite *int64) {
-	o.MetricTCPIopsWriteQueryParameter = metricTCPIopsWrite
+// SetMetricTCPIopsWrite adds the metricTcpIopsWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPIopsWrite(metricTCPIopsWrite *int64) {
+	o.MetricTCPIopsWrite = metricTCPIopsWrite
 }
 
-// WithMetricTCPLatencyOtherQueryParameter adds the metricTCPLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyOtherQueryParameter(metricTCPLatencyOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPLatencyOtherQueryParameter(metricTCPLatencyOther)
+// WithMetricTCPLatencyOther adds the metricTCPLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyOther(metricTCPLatencyOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPLatencyOther(metricTCPLatencyOther)
 	return o
 }
 
-// SetMetricTCPLatencyOtherQueryParameter adds the metricTcpLatencyOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyOtherQueryParameter(metricTCPLatencyOther *int64) {
-	o.MetricTCPLatencyOtherQueryParameter = metricTCPLatencyOther
+// SetMetricTCPLatencyOther adds the metricTcpLatencyOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyOther(metricTCPLatencyOther *int64) {
+	o.MetricTCPLatencyOther = metricTCPLatencyOther
 }
 
-// WithMetricTCPLatencyReadQueryParameter adds the metricTCPLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyReadQueryParameter(metricTCPLatencyRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPLatencyReadQueryParameter(metricTCPLatencyRead)
+// WithMetricTCPLatencyRead adds the metricTCPLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyRead(metricTCPLatencyRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPLatencyRead(metricTCPLatencyRead)
 	return o
 }
 
-// SetMetricTCPLatencyReadQueryParameter adds the metricTcpLatencyRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyReadQueryParameter(metricTCPLatencyRead *int64) {
-	o.MetricTCPLatencyReadQueryParameter = metricTCPLatencyRead
+// SetMetricTCPLatencyRead adds the metricTcpLatencyRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyRead(metricTCPLatencyRead *int64) {
+	o.MetricTCPLatencyRead = metricTCPLatencyRead
 }
 
-// WithMetricTCPLatencyTotalQueryParameter adds the metricTCPLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyTotalQueryParameter(metricTCPLatencyTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPLatencyTotalQueryParameter(metricTCPLatencyTotal)
+// WithMetricTCPLatencyTotal adds the metricTCPLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyTotal(metricTCPLatencyTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPLatencyTotal(metricTCPLatencyTotal)
 	return o
 }
 
-// SetMetricTCPLatencyTotalQueryParameter adds the metricTcpLatencyTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyTotalQueryParameter(metricTCPLatencyTotal *int64) {
-	o.MetricTCPLatencyTotalQueryParameter = metricTCPLatencyTotal
+// SetMetricTCPLatencyTotal adds the metricTcpLatencyTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyTotal(metricTCPLatencyTotal *int64) {
+	o.MetricTCPLatencyTotal = metricTCPLatencyTotal
 }
 
-// WithMetricTCPLatencyWriteQueryParameter adds the metricTCPLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyWriteQueryParameter(metricTCPLatencyWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPLatencyWriteQueryParameter(metricTCPLatencyWrite)
+// WithMetricTCPLatencyWrite adds the metricTCPLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPLatencyWrite(metricTCPLatencyWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPLatencyWrite(metricTCPLatencyWrite)
 	return o
 }
 
-// SetMetricTCPLatencyWriteQueryParameter adds the metricTcpLatencyWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyWriteQueryParameter(metricTCPLatencyWrite *int64) {
-	o.MetricTCPLatencyWriteQueryParameter = metricTCPLatencyWrite
+// SetMetricTCPLatencyWrite adds the metricTcpLatencyWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPLatencyWrite(metricTCPLatencyWrite *int64) {
+	o.MetricTCPLatencyWrite = metricTCPLatencyWrite
 }
 
-// WithMetricTCPStatusQueryParameter adds the metricTCPStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPStatusQueryParameter(metricTCPStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPStatusQueryParameter(metricTCPStatus)
+// WithMetricTCPStatus adds the metricTCPStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPStatus(metricTCPStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPStatus(metricTCPStatus)
 	return o
 }
 
-// SetMetricTCPStatusQueryParameter adds the metricTcpStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPStatusQueryParameter(metricTCPStatus *string) {
-	o.MetricTCPStatusQueryParameter = metricTCPStatus
+// SetMetricTCPStatus adds the metricTcpStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPStatus(metricTCPStatus *string) {
+	o.MetricTCPStatus = metricTCPStatus
 }
 
-// WithMetricTCPThroughputReadQueryParameter adds the metricTCPThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputReadQueryParameter(metricTCPThroughputRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPThroughputReadQueryParameter(metricTCPThroughputRead)
+// WithMetricTCPThroughputRead adds the metricTCPThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputRead(metricTCPThroughputRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPThroughputRead(metricTCPThroughputRead)
 	return o
 }
 
-// SetMetricTCPThroughputReadQueryParameter adds the metricTcpThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputReadQueryParameter(metricTCPThroughputRead *int64) {
-	o.MetricTCPThroughputReadQueryParameter = metricTCPThroughputRead
+// SetMetricTCPThroughputRead adds the metricTcpThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputRead(metricTCPThroughputRead *int64) {
+	o.MetricTCPThroughputRead = metricTCPThroughputRead
 }
 
-// WithMetricTCPThroughputTotalQueryParameter adds the metricTCPThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputTotalQueryParameter(metricTCPThroughputTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPThroughputTotalQueryParameter(metricTCPThroughputTotal)
+// WithMetricTCPThroughputTotal adds the metricTCPThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputTotal(metricTCPThroughputTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPThroughputTotal(metricTCPThroughputTotal)
 	return o
 }
 
-// SetMetricTCPThroughputTotalQueryParameter adds the metricTcpThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputTotalQueryParameter(metricTCPThroughputTotal *int64) {
-	o.MetricTCPThroughputTotalQueryParameter = metricTCPThroughputTotal
+// SetMetricTCPThroughputTotal adds the metricTcpThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputTotal(metricTCPThroughputTotal *int64) {
+	o.MetricTCPThroughputTotal = metricTCPThroughputTotal
 }
 
-// WithMetricTCPThroughputWriteQueryParameter adds the metricTCPThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputWriteQueryParameter(metricTCPThroughputWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPThroughputWriteQueryParameter(metricTCPThroughputWrite)
+// WithMetricTCPThroughputWrite adds the metricTCPThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPThroughputWrite(metricTCPThroughputWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPThroughputWrite(metricTCPThroughputWrite)
 	return o
 }
 
-// SetMetricTCPThroughputWriteQueryParameter adds the metricTcpThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputWriteQueryParameter(metricTCPThroughputWrite *int64) {
-	o.MetricTCPThroughputWriteQueryParameter = metricTCPThroughputWrite
+// SetMetricTCPThroughputWrite adds the metricTcpThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPThroughputWrite(metricTCPThroughputWrite *int64) {
+	o.MetricTCPThroughputWrite = metricTCPThroughputWrite
 }
 
-// WithMetricTCPTimestampQueryParameter adds the metricTCPTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTCPTimestampQueryParameter(metricTCPTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricTCPTimestampQueryParameter(metricTCPTimestamp)
+// WithMetricTCPTimestamp adds the metricTCPTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTCPTimestamp(metricTCPTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricTCPTimestamp(metricTCPTimestamp)
 	return o
 }
 
-// SetMetricTCPTimestampQueryParameter adds the metricTcpTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTCPTimestampQueryParameter(metricTCPTimestamp *string) {
-	o.MetricTCPTimestampQueryParameter = metricTCPTimestamp
+// SetMetricTCPTimestamp adds the metricTcpTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTCPTimestamp(metricTCPTimestamp *string) {
+	o.MetricTCPTimestamp = metricTCPTimestamp
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricThroughputRead adds the metricThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricThroughputRead adds the metricThroughputRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputTotal adds the metricThroughputTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputWrite adds the metricThroughputWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricTimestamp adds the metricTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricTimestamp adds the metricTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeServiceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithOrderBy(orderBy []string) *NvmeServiceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeServiceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeServiceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeServiceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeServiceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatisticsFcIopsRawOtherQueryParameter adds the statisticsFcIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawOtherQueryParameter(statisticsFcIopsRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcIopsRawOtherQueryParameter(statisticsFcIopsRawOther)
+// WithStatisticsFcIopsRawOther adds the statisticsFcIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawOther(statisticsFcIopsRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcIopsRawOther(statisticsFcIopsRawOther)
 	return o
 }
 
-// SetStatisticsFcIopsRawOtherQueryParameter adds the statisticsFcIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawOtherQueryParameter(statisticsFcIopsRawOther *int64) {
-	o.StatisticsFcIopsRawOtherQueryParameter = statisticsFcIopsRawOther
+// SetStatisticsFcIopsRawOther adds the statisticsFcIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawOther(statisticsFcIopsRawOther *int64) {
+	o.StatisticsFcIopsRawOther = statisticsFcIopsRawOther
 }
 
-// WithStatisticsFcIopsRawReadQueryParameter adds the statisticsFcIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawReadQueryParameter(statisticsFcIopsRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcIopsRawReadQueryParameter(statisticsFcIopsRawRead)
+// WithStatisticsFcIopsRawRead adds the statisticsFcIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawRead(statisticsFcIopsRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcIopsRawRead(statisticsFcIopsRawRead)
 	return o
 }
 
-// SetStatisticsFcIopsRawReadQueryParameter adds the statisticsFcIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawReadQueryParameter(statisticsFcIopsRawRead *int64) {
-	o.StatisticsFcIopsRawReadQueryParameter = statisticsFcIopsRawRead
+// SetStatisticsFcIopsRawRead adds the statisticsFcIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawRead(statisticsFcIopsRawRead *int64) {
+	o.StatisticsFcIopsRawRead = statisticsFcIopsRawRead
 }
 
-// WithStatisticsFcIopsRawTotalQueryParameter adds the statisticsFcIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawTotalQueryParameter(statisticsFcIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcIopsRawTotalQueryParameter(statisticsFcIopsRawTotal)
+// WithStatisticsFcIopsRawTotal adds the statisticsFcIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawTotal(statisticsFcIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcIopsRawTotal(statisticsFcIopsRawTotal)
 	return o
 }
 
-// SetStatisticsFcIopsRawTotalQueryParameter adds the statisticsFcIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawTotalQueryParameter(statisticsFcIopsRawTotal *int64) {
-	o.StatisticsFcIopsRawTotalQueryParameter = statisticsFcIopsRawTotal
+// SetStatisticsFcIopsRawTotal adds the statisticsFcIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawTotal(statisticsFcIopsRawTotal *int64) {
+	o.StatisticsFcIopsRawTotal = statisticsFcIopsRawTotal
 }
 
-// WithStatisticsFcIopsRawWriteQueryParameter adds the statisticsFcIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawWriteQueryParameter(statisticsFcIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcIopsRawWriteQueryParameter(statisticsFcIopsRawWrite)
+// WithStatisticsFcIopsRawWrite adds the statisticsFcIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcIopsRawWrite(statisticsFcIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcIopsRawWrite(statisticsFcIopsRawWrite)
 	return o
 }
 
-// SetStatisticsFcIopsRawWriteQueryParameter adds the statisticsFcIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawWriteQueryParameter(statisticsFcIopsRawWrite *int64) {
-	o.StatisticsFcIopsRawWriteQueryParameter = statisticsFcIopsRawWrite
+// SetStatisticsFcIopsRawWrite adds the statisticsFcIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcIopsRawWrite(statisticsFcIopsRawWrite *int64) {
+	o.StatisticsFcIopsRawWrite = statisticsFcIopsRawWrite
 }
 
-// WithStatisticsFcLatencyRawOtherQueryParameter adds the statisticsFcLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawOtherQueryParameter(statisticsFcLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcLatencyRawOtherQueryParameter(statisticsFcLatencyRawOther)
+// WithStatisticsFcLatencyRawOther adds the statisticsFcLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawOther(statisticsFcLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcLatencyRawOther(statisticsFcLatencyRawOther)
 	return o
 }
 
-// SetStatisticsFcLatencyRawOtherQueryParameter adds the statisticsFcLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawOtherQueryParameter(statisticsFcLatencyRawOther *int64) {
-	o.StatisticsFcLatencyRawOtherQueryParameter = statisticsFcLatencyRawOther
+// SetStatisticsFcLatencyRawOther adds the statisticsFcLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawOther(statisticsFcLatencyRawOther *int64) {
+	o.StatisticsFcLatencyRawOther = statisticsFcLatencyRawOther
 }
 
-// WithStatisticsFcLatencyRawReadQueryParameter adds the statisticsFcLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawReadQueryParameter(statisticsFcLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcLatencyRawReadQueryParameter(statisticsFcLatencyRawRead)
+// WithStatisticsFcLatencyRawRead adds the statisticsFcLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawRead(statisticsFcLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcLatencyRawRead(statisticsFcLatencyRawRead)
 	return o
 }
 
-// SetStatisticsFcLatencyRawReadQueryParameter adds the statisticsFcLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawReadQueryParameter(statisticsFcLatencyRawRead *int64) {
-	o.StatisticsFcLatencyRawReadQueryParameter = statisticsFcLatencyRawRead
+// SetStatisticsFcLatencyRawRead adds the statisticsFcLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawRead(statisticsFcLatencyRawRead *int64) {
+	o.StatisticsFcLatencyRawRead = statisticsFcLatencyRawRead
 }
 
-// WithStatisticsFcLatencyRawTotalQueryParameter adds the statisticsFcLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawTotalQueryParameter(statisticsFcLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcLatencyRawTotalQueryParameter(statisticsFcLatencyRawTotal)
+// WithStatisticsFcLatencyRawTotal adds the statisticsFcLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawTotal(statisticsFcLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcLatencyRawTotal(statisticsFcLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsFcLatencyRawTotalQueryParameter adds the statisticsFcLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawTotalQueryParameter(statisticsFcLatencyRawTotal *int64) {
-	o.StatisticsFcLatencyRawTotalQueryParameter = statisticsFcLatencyRawTotal
+// SetStatisticsFcLatencyRawTotal adds the statisticsFcLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawTotal(statisticsFcLatencyRawTotal *int64) {
+	o.StatisticsFcLatencyRawTotal = statisticsFcLatencyRawTotal
 }
 
-// WithStatisticsFcLatencyRawWriteQueryParameter adds the statisticsFcLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawWriteQueryParameter(statisticsFcLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcLatencyRawWriteQueryParameter(statisticsFcLatencyRawWrite)
+// WithStatisticsFcLatencyRawWrite adds the statisticsFcLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcLatencyRawWrite(statisticsFcLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcLatencyRawWrite(statisticsFcLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsFcLatencyRawWriteQueryParameter adds the statisticsFcLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawWriteQueryParameter(statisticsFcLatencyRawWrite *int64) {
-	o.StatisticsFcLatencyRawWriteQueryParameter = statisticsFcLatencyRawWrite
+// SetStatisticsFcLatencyRawWrite adds the statisticsFcLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcLatencyRawWrite(statisticsFcLatencyRawWrite *int64) {
+	o.StatisticsFcLatencyRawWrite = statisticsFcLatencyRawWrite
 }
 
-// WithStatisticsFcStatusQueryParameter adds the statisticsFcStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcStatusQueryParameter(statisticsFcStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcStatusQueryParameter(statisticsFcStatus)
+// WithStatisticsFcStatus adds the statisticsFcStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcStatus(statisticsFcStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcStatus(statisticsFcStatus)
 	return o
 }
 
-// SetStatisticsFcStatusQueryParameter adds the statisticsFcStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcStatusQueryParameter(statisticsFcStatus *string) {
-	o.StatisticsFcStatusQueryParameter = statisticsFcStatus
+// SetStatisticsFcStatus adds the statisticsFcStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcStatus(statisticsFcStatus *string) {
+	o.StatisticsFcStatus = statisticsFcStatus
 }
 
-// WithStatisticsFcThroughputRawReadQueryParameter adds the statisticsFcThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawReadQueryParameter(statisticsFcThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcThroughputRawReadQueryParameter(statisticsFcThroughputRawRead)
+// WithStatisticsFcThroughputRawRead adds the statisticsFcThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawRead(statisticsFcThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcThroughputRawRead(statisticsFcThroughputRawRead)
 	return o
 }
 
-// SetStatisticsFcThroughputRawReadQueryParameter adds the statisticsFcThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawReadQueryParameter(statisticsFcThroughputRawRead *int64) {
-	o.StatisticsFcThroughputRawReadQueryParameter = statisticsFcThroughputRawRead
+// SetStatisticsFcThroughputRawRead adds the statisticsFcThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawRead(statisticsFcThroughputRawRead *int64) {
+	o.StatisticsFcThroughputRawRead = statisticsFcThroughputRawRead
 }
 
-// WithStatisticsFcThroughputRawTotalQueryParameter adds the statisticsFcThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawTotalQueryParameter(statisticsFcThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcThroughputRawTotalQueryParameter(statisticsFcThroughputRawTotal)
+// WithStatisticsFcThroughputRawTotal adds the statisticsFcThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawTotal(statisticsFcThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcThroughputRawTotal(statisticsFcThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsFcThroughputRawTotalQueryParameter adds the statisticsFcThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawTotalQueryParameter(statisticsFcThroughputRawTotal *int64) {
-	o.StatisticsFcThroughputRawTotalQueryParameter = statisticsFcThroughputRawTotal
+// SetStatisticsFcThroughputRawTotal adds the statisticsFcThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawTotal(statisticsFcThroughputRawTotal *int64) {
+	o.StatisticsFcThroughputRawTotal = statisticsFcThroughputRawTotal
 }
 
-// WithStatisticsFcThroughputRawWriteQueryParameter adds the statisticsFcThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawWriteQueryParameter(statisticsFcThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcThroughputRawWriteQueryParameter(statisticsFcThroughputRawWrite)
+// WithStatisticsFcThroughputRawWrite adds the statisticsFcThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcThroughputRawWrite(statisticsFcThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcThroughputRawWrite(statisticsFcThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsFcThroughputRawWriteQueryParameter adds the statisticsFcThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawWriteQueryParameter(statisticsFcThroughputRawWrite *int64) {
-	o.StatisticsFcThroughputRawWriteQueryParameter = statisticsFcThroughputRawWrite
+// SetStatisticsFcThroughputRawWrite adds the statisticsFcThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcThroughputRawWrite(statisticsFcThroughputRawWrite *int64) {
+	o.StatisticsFcThroughputRawWrite = statisticsFcThroughputRawWrite
 }
 
-// WithStatisticsFcTimestampQueryParameter adds the statisticsFcTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsFcTimestampQueryParameter(statisticsFcTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsFcTimestampQueryParameter(statisticsFcTimestamp)
+// WithStatisticsFcTimestamp adds the statisticsFcTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsFcTimestamp(statisticsFcTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsFcTimestamp(statisticsFcTimestamp)
 	return o
 }
 
-// SetStatisticsFcTimestampQueryParameter adds the statisticsFcTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsFcTimestampQueryParameter(statisticsFcTimestamp *string) {
-	o.StatisticsFcTimestampQueryParameter = statisticsFcTimestamp
+// SetStatisticsFcTimestamp adds the statisticsFcTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsFcTimestamp(statisticsFcTimestamp *string) {
+	o.StatisticsFcTimestamp = statisticsFcTimestamp
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsTCPIopsRawOtherQueryParameter adds the statisticsTCPIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawOtherQueryParameter(statisticsTCPIopsRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPIopsRawOtherQueryParameter(statisticsTCPIopsRawOther)
+// WithStatisticsTCPIopsRawOther adds the statisticsTCPIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawOther(statisticsTCPIopsRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPIopsRawOther(statisticsTCPIopsRawOther)
 	return o
 }
 
-// SetStatisticsTCPIopsRawOtherQueryParameter adds the statisticsTcpIopsRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawOtherQueryParameter(statisticsTCPIopsRawOther *int64) {
-	o.StatisticsTCPIopsRawOtherQueryParameter = statisticsTCPIopsRawOther
+// SetStatisticsTCPIopsRawOther adds the statisticsTcpIopsRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawOther(statisticsTCPIopsRawOther *int64) {
+	o.StatisticsTCPIopsRawOther = statisticsTCPIopsRawOther
 }
 
-// WithStatisticsTCPIopsRawReadQueryParameter adds the statisticsTCPIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawReadQueryParameter(statisticsTCPIopsRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPIopsRawReadQueryParameter(statisticsTCPIopsRawRead)
+// WithStatisticsTCPIopsRawRead adds the statisticsTCPIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawRead(statisticsTCPIopsRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPIopsRawRead(statisticsTCPIopsRawRead)
 	return o
 }
 
-// SetStatisticsTCPIopsRawReadQueryParameter adds the statisticsTcpIopsRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawReadQueryParameter(statisticsTCPIopsRawRead *int64) {
-	o.StatisticsTCPIopsRawReadQueryParameter = statisticsTCPIopsRawRead
+// SetStatisticsTCPIopsRawRead adds the statisticsTcpIopsRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawRead(statisticsTCPIopsRawRead *int64) {
+	o.StatisticsTCPIopsRawRead = statisticsTCPIopsRawRead
 }
 
-// WithStatisticsTCPIopsRawTotalQueryParameter adds the statisticsTCPIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawTotalQueryParameter(statisticsTCPIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPIopsRawTotalQueryParameter(statisticsTCPIopsRawTotal)
+// WithStatisticsTCPIopsRawTotal adds the statisticsTCPIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawTotal(statisticsTCPIopsRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPIopsRawTotal(statisticsTCPIopsRawTotal)
 	return o
 }
 
-// SetStatisticsTCPIopsRawTotalQueryParameter adds the statisticsTcpIopsRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawTotalQueryParameter(statisticsTCPIopsRawTotal *int64) {
-	o.StatisticsTCPIopsRawTotalQueryParameter = statisticsTCPIopsRawTotal
+// SetStatisticsTCPIopsRawTotal adds the statisticsTcpIopsRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawTotal(statisticsTCPIopsRawTotal *int64) {
+	o.StatisticsTCPIopsRawTotal = statisticsTCPIopsRawTotal
 }
 
-// WithStatisticsTCPIopsRawWriteQueryParameter adds the statisticsTCPIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawWriteQueryParameter(statisticsTCPIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPIopsRawWriteQueryParameter(statisticsTCPIopsRawWrite)
+// WithStatisticsTCPIopsRawWrite adds the statisticsTCPIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPIopsRawWrite(statisticsTCPIopsRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPIopsRawWrite(statisticsTCPIopsRawWrite)
 	return o
 }
 
-// SetStatisticsTCPIopsRawWriteQueryParameter adds the statisticsTcpIopsRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawWriteQueryParameter(statisticsTCPIopsRawWrite *int64) {
-	o.StatisticsTCPIopsRawWriteQueryParameter = statisticsTCPIopsRawWrite
+// SetStatisticsTCPIopsRawWrite adds the statisticsTcpIopsRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPIopsRawWrite(statisticsTCPIopsRawWrite *int64) {
+	o.StatisticsTCPIopsRawWrite = statisticsTCPIopsRawWrite
 }
 
-// WithStatisticsTCPLatencyRawOtherQueryParameter adds the statisticsTCPLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawOtherQueryParameter(statisticsTCPLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPLatencyRawOtherQueryParameter(statisticsTCPLatencyRawOther)
+// WithStatisticsTCPLatencyRawOther adds the statisticsTCPLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawOther(statisticsTCPLatencyRawOther *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPLatencyRawOther(statisticsTCPLatencyRawOther)
 	return o
 }
 
-// SetStatisticsTCPLatencyRawOtherQueryParameter adds the statisticsTcpLatencyRawOther to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawOtherQueryParameter(statisticsTCPLatencyRawOther *int64) {
-	o.StatisticsTCPLatencyRawOtherQueryParameter = statisticsTCPLatencyRawOther
+// SetStatisticsTCPLatencyRawOther adds the statisticsTcpLatencyRawOther to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawOther(statisticsTCPLatencyRawOther *int64) {
+	o.StatisticsTCPLatencyRawOther = statisticsTCPLatencyRawOther
 }
 
-// WithStatisticsTCPLatencyRawReadQueryParameter adds the statisticsTCPLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawReadQueryParameter(statisticsTCPLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPLatencyRawReadQueryParameter(statisticsTCPLatencyRawRead)
+// WithStatisticsTCPLatencyRawRead adds the statisticsTCPLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawRead(statisticsTCPLatencyRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPLatencyRawRead(statisticsTCPLatencyRawRead)
 	return o
 }
 
-// SetStatisticsTCPLatencyRawReadQueryParameter adds the statisticsTcpLatencyRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawReadQueryParameter(statisticsTCPLatencyRawRead *int64) {
-	o.StatisticsTCPLatencyRawReadQueryParameter = statisticsTCPLatencyRawRead
+// SetStatisticsTCPLatencyRawRead adds the statisticsTcpLatencyRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawRead(statisticsTCPLatencyRawRead *int64) {
+	o.StatisticsTCPLatencyRawRead = statisticsTCPLatencyRawRead
 }
 
-// WithStatisticsTCPLatencyRawTotalQueryParameter adds the statisticsTCPLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawTotalQueryParameter(statisticsTCPLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPLatencyRawTotalQueryParameter(statisticsTCPLatencyRawTotal)
+// WithStatisticsTCPLatencyRawTotal adds the statisticsTCPLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawTotal(statisticsTCPLatencyRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPLatencyRawTotal(statisticsTCPLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsTCPLatencyRawTotalQueryParameter adds the statisticsTcpLatencyRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawTotalQueryParameter(statisticsTCPLatencyRawTotal *int64) {
-	o.StatisticsTCPLatencyRawTotalQueryParameter = statisticsTCPLatencyRawTotal
+// SetStatisticsTCPLatencyRawTotal adds the statisticsTcpLatencyRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawTotal(statisticsTCPLatencyRawTotal *int64) {
+	o.StatisticsTCPLatencyRawTotal = statisticsTCPLatencyRawTotal
 }
 
-// WithStatisticsTCPLatencyRawWriteQueryParameter adds the statisticsTCPLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawWriteQueryParameter(statisticsTCPLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPLatencyRawWriteQueryParameter(statisticsTCPLatencyRawWrite)
+// WithStatisticsTCPLatencyRawWrite adds the statisticsTCPLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPLatencyRawWrite(statisticsTCPLatencyRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPLatencyRawWrite(statisticsTCPLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsTCPLatencyRawWriteQueryParameter adds the statisticsTcpLatencyRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawWriteQueryParameter(statisticsTCPLatencyRawWrite *int64) {
-	o.StatisticsTCPLatencyRawWriteQueryParameter = statisticsTCPLatencyRawWrite
+// SetStatisticsTCPLatencyRawWrite adds the statisticsTcpLatencyRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPLatencyRawWrite(statisticsTCPLatencyRawWrite *int64) {
+	o.StatisticsTCPLatencyRawWrite = statisticsTCPLatencyRawWrite
 }
 
-// WithStatisticsTCPStatusQueryParameter adds the statisticsTCPStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPStatusQueryParameter(statisticsTCPStatus *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPStatusQueryParameter(statisticsTCPStatus)
+// WithStatisticsTCPStatus adds the statisticsTCPStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPStatus(statisticsTCPStatus *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPStatus(statisticsTCPStatus)
 	return o
 }
 
-// SetStatisticsTCPStatusQueryParameter adds the statisticsTcpStatus to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPStatusQueryParameter(statisticsTCPStatus *string) {
-	o.StatisticsTCPStatusQueryParameter = statisticsTCPStatus
+// SetStatisticsTCPStatus adds the statisticsTcpStatus to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPStatus(statisticsTCPStatus *string) {
+	o.StatisticsTCPStatus = statisticsTCPStatus
 }
 
-// WithStatisticsTCPThroughputRawReadQueryParameter adds the statisticsTCPThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawReadQueryParameter(statisticsTCPThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPThroughputRawReadQueryParameter(statisticsTCPThroughputRawRead)
+// WithStatisticsTCPThroughputRawRead adds the statisticsTCPThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawRead(statisticsTCPThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPThroughputRawRead(statisticsTCPThroughputRawRead)
 	return o
 }
 
-// SetStatisticsTCPThroughputRawReadQueryParameter adds the statisticsTcpThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawReadQueryParameter(statisticsTCPThroughputRawRead *int64) {
-	o.StatisticsTCPThroughputRawReadQueryParameter = statisticsTCPThroughputRawRead
+// SetStatisticsTCPThroughputRawRead adds the statisticsTcpThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawRead(statisticsTCPThroughputRawRead *int64) {
+	o.StatisticsTCPThroughputRawRead = statisticsTCPThroughputRawRead
 }
 
-// WithStatisticsTCPThroughputRawTotalQueryParameter adds the statisticsTCPThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawTotalQueryParameter(statisticsTCPThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPThroughputRawTotalQueryParameter(statisticsTCPThroughputRawTotal)
+// WithStatisticsTCPThroughputRawTotal adds the statisticsTCPThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawTotal(statisticsTCPThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPThroughputRawTotal(statisticsTCPThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsTCPThroughputRawTotalQueryParameter adds the statisticsTcpThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawTotalQueryParameter(statisticsTCPThroughputRawTotal *int64) {
-	o.StatisticsTCPThroughputRawTotalQueryParameter = statisticsTCPThroughputRawTotal
+// SetStatisticsTCPThroughputRawTotal adds the statisticsTcpThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawTotal(statisticsTCPThroughputRawTotal *int64) {
+	o.StatisticsTCPThroughputRawTotal = statisticsTCPThroughputRawTotal
 }
 
-// WithStatisticsTCPThroughputRawWriteQueryParameter adds the statisticsTCPThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawWriteQueryParameter(statisticsTCPThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPThroughputRawWriteQueryParameter(statisticsTCPThroughputRawWrite)
+// WithStatisticsTCPThroughputRawWrite adds the statisticsTCPThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPThroughputRawWrite(statisticsTCPThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPThroughputRawWrite(statisticsTCPThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsTCPThroughputRawWriteQueryParameter adds the statisticsTcpThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawWriteQueryParameter(statisticsTCPThroughputRawWrite *int64) {
-	o.StatisticsTCPThroughputRawWriteQueryParameter = statisticsTCPThroughputRawWrite
+// SetStatisticsTCPThroughputRawWrite adds the statisticsTcpThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPThroughputRawWrite(statisticsTCPThroughputRawWrite *int64) {
+	o.StatisticsTCPThroughputRawWrite = statisticsTCPThroughputRawWrite
 }
 
-// WithStatisticsTCPTimestampQueryParameter adds the statisticsTCPTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPTimestampQueryParameter(statisticsTCPTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTCPTimestampQueryParameter(statisticsTCPTimestamp)
+// WithStatisticsTCPTimestamp adds the statisticsTCPTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTCPTimestamp(statisticsTCPTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTCPTimestamp(statisticsTCPTimestamp)
 	return o
 }
 
-// SetStatisticsTCPTimestampQueryParameter adds the statisticsTcpTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPTimestampQueryParameter(statisticsTCPTimestamp *string) {
-	o.StatisticsTCPTimestampQueryParameter = statisticsTCPTimestamp
+// SetStatisticsTCPTimestamp adds the statisticsTcpTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTCPTimestamp(statisticsTCPTimestamp *string) {
+	o.StatisticsTCPTimestamp = statisticsTCPTimestamp
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NvmeServiceCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *NvmeServiceCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NvmeServiceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithSvmName(svmName *string) *NvmeServiceCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NvmeServiceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithSvmUUID(svmUUID *string) *NvmeServiceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1654,13 +1654,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -1671,7 +1671,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1682,13 +1682,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1699,13 +1699,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -1716,13 +1716,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcDurationQueryParameter != nil {
+	if o.MetricFcDuration != nil {
 
 		// query param metric.fc.duration
 		var qrMetricFcDuration string
 
-		if o.MetricFcDurationQueryParameter != nil {
-			qrMetricFcDuration = *o.MetricFcDurationQueryParameter
+		if o.MetricFcDuration != nil {
+			qrMetricFcDuration = *o.MetricFcDuration
 		}
 		qMetricFcDuration := qrMetricFcDuration
 		if qMetricFcDuration != "" {
@@ -1733,13 +1733,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcIopsOtherQueryParameter != nil {
+	if o.MetricFcIopsOther != nil {
 
 		// query param metric.fc.iops.other
 		var qrMetricFcIopsOther int64
 
-		if o.MetricFcIopsOtherQueryParameter != nil {
-			qrMetricFcIopsOther = *o.MetricFcIopsOtherQueryParameter
+		if o.MetricFcIopsOther != nil {
+			qrMetricFcIopsOther = *o.MetricFcIopsOther
 		}
 		qMetricFcIopsOther := swag.FormatInt64(qrMetricFcIopsOther)
 		if qMetricFcIopsOther != "" {
@@ -1750,13 +1750,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcIopsReadQueryParameter != nil {
+	if o.MetricFcIopsRead != nil {
 
 		// query param metric.fc.iops.read
 		var qrMetricFcIopsRead int64
 
-		if o.MetricFcIopsReadQueryParameter != nil {
-			qrMetricFcIopsRead = *o.MetricFcIopsReadQueryParameter
+		if o.MetricFcIopsRead != nil {
+			qrMetricFcIopsRead = *o.MetricFcIopsRead
 		}
 		qMetricFcIopsRead := swag.FormatInt64(qrMetricFcIopsRead)
 		if qMetricFcIopsRead != "" {
@@ -1767,13 +1767,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcIopsTotalQueryParameter != nil {
+	if o.MetricFcIopsTotal != nil {
 
 		// query param metric.fc.iops.total
 		var qrMetricFcIopsTotal int64
 
-		if o.MetricFcIopsTotalQueryParameter != nil {
-			qrMetricFcIopsTotal = *o.MetricFcIopsTotalQueryParameter
+		if o.MetricFcIopsTotal != nil {
+			qrMetricFcIopsTotal = *o.MetricFcIopsTotal
 		}
 		qMetricFcIopsTotal := swag.FormatInt64(qrMetricFcIopsTotal)
 		if qMetricFcIopsTotal != "" {
@@ -1784,13 +1784,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcIopsWriteQueryParameter != nil {
+	if o.MetricFcIopsWrite != nil {
 
 		// query param metric.fc.iops.write
 		var qrMetricFcIopsWrite int64
 
-		if o.MetricFcIopsWriteQueryParameter != nil {
-			qrMetricFcIopsWrite = *o.MetricFcIopsWriteQueryParameter
+		if o.MetricFcIopsWrite != nil {
+			qrMetricFcIopsWrite = *o.MetricFcIopsWrite
 		}
 		qMetricFcIopsWrite := swag.FormatInt64(qrMetricFcIopsWrite)
 		if qMetricFcIopsWrite != "" {
@@ -1801,13 +1801,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcLatencyOtherQueryParameter != nil {
+	if o.MetricFcLatencyOther != nil {
 
 		// query param metric.fc.latency.other
 		var qrMetricFcLatencyOther int64
 
-		if o.MetricFcLatencyOtherQueryParameter != nil {
-			qrMetricFcLatencyOther = *o.MetricFcLatencyOtherQueryParameter
+		if o.MetricFcLatencyOther != nil {
+			qrMetricFcLatencyOther = *o.MetricFcLatencyOther
 		}
 		qMetricFcLatencyOther := swag.FormatInt64(qrMetricFcLatencyOther)
 		if qMetricFcLatencyOther != "" {
@@ -1818,13 +1818,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcLatencyReadQueryParameter != nil {
+	if o.MetricFcLatencyRead != nil {
 
 		// query param metric.fc.latency.read
 		var qrMetricFcLatencyRead int64
 
-		if o.MetricFcLatencyReadQueryParameter != nil {
-			qrMetricFcLatencyRead = *o.MetricFcLatencyReadQueryParameter
+		if o.MetricFcLatencyRead != nil {
+			qrMetricFcLatencyRead = *o.MetricFcLatencyRead
 		}
 		qMetricFcLatencyRead := swag.FormatInt64(qrMetricFcLatencyRead)
 		if qMetricFcLatencyRead != "" {
@@ -1835,13 +1835,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcLatencyTotalQueryParameter != nil {
+	if o.MetricFcLatencyTotal != nil {
 
 		// query param metric.fc.latency.total
 		var qrMetricFcLatencyTotal int64
 
-		if o.MetricFcLatencyTotalQueryParameter != nil {
-			qrMetricFcLatencyTotal = *o.MetricFcLatencyTotalQueryParameter
+		if o.MetricFcLatencyTotal != nil {
+			qrMetricFcLatencyTotal = *o.MetricFcLatencyTotal
 		}
 		qMetricFcLatencyTotal := swag.FormatInt64(qrMetricFcLatencyTotal)
 		if qMetricFcLatencyTotal != "" {
@@ -1852,13 +1852,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcLatencyWriteQueryParameter != nil {
+	if o.MetricFcLatencyWrite != nil {
 
 		// query param metric.fc.latency.write
 		var qrMetricFcLatencyWrite int64
 
-		if o.MetricFcLatencyWriteQueryParameter != nil {
-			qrMetricFcLatencyWrite = *o.MetricFcLatencyWriteQueryParameter
+		if o.MetricFcLatencyWrite != nil {
+			qrMetricFcLatencyWrite = *o.MetricFcLatencyWrite
 		}
 		qMetricFcLatencyWrite := swag.FormatInt64(qrMetricFcLatencyWrite)
 		if qMetricFcLatencyWrite != "" {
@@ -1869,13 +1869,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcStatusQueryParameter != nil {
+	if o.MetricFcStatus != nil {
 
 		// query param metric.fc.status
 		var qrMetricFcStatus string
 
-		if o.MetricFcStatusQueryParameter != nil {
-			qrMetricFcStatus = *o.MetricFcStatusQueryParameter
+		if o.MetricFcStatus != nil {
+			qrMetricFcStatus = *o.MetricFcStatus
 		}
 		qMetricFcStatus := qrMetricFcStatus
 		if qMetricFcStatus != "" {
@@ -1886,13 +1886,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcThroughputReadQueryParameter != nil {
+	if o.MetricFcThroughputRead != nil {
 
 		// query param metric.fc.throughput.read
 		var qrMetricFcThroughputRead int64
 
-		if o.MetricFcThroughputReadQueryParameter != nil {
-			qrMetricFcThroughputRead = *o.MetricFcThroughputReadQueryParameter
+		if o.MetricFcThroughputRead != nil {
+			qrMetricFcThroughputRead = *o.MetricFcThroughputRead
 		}
 		qMetricFcThroughputRead := swag.FormatInt64(qrMetricFcThroughputRead)
 		if qMetricFcThroughputRead != "" {
@@ -1903,13 +1903,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcThroughputTotalQueryParameter != nil {
+	if o.MetricFcThroughputTotal != nil {
 
 		// query param metric.fc.throughput.total
 		var qrMetricFcThroughputTotal int64
 
-		if o.MetricFcThroughputTotalQueryParameter != nil {
-			qrMetricFcThroughputTotal = *o.MetricFcThroughputTotalQueryParameter
+		if o.MetricFcThroughputTotal != nil {
+			qrMetricFcThroughputTotal = *o.MetricFcThroughputTotal
 		}
 		qMetricFcThroughputTotal := swag.FormatInt64(qrMetricFcThroughputTotal)
 		if qMetricFcThroughputTotal != "" {
@@ -1920,13 +1920,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcThroughputWriteQueryParameter != nil {
+	if o.MetricFcThroughputWrite != nil {
 
 		// query param metric.fc.throughput.write
 		var qrMetricFcThroughputWrite int64
 
-		if o.MetricFcThroughputWriteQueryParameter != nil {
-			qrMetricFcThroughputWrite = *o.MetricFcThroughputWriteQueryParameter
+		if o.MetricFcThroughputWrite != nil {
+			qrMetricFcThroughputWrite = *o.MetricFcThroughputWrite
 		}
 		qMetricFcThroughputWrite := swag.FormatInt64(qrMetricFcThroughputWrite)
 		if qMetricFcThroughputWrite != "" {
@@ -1937,13 +1937,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricFcTimestampQueryParameter != nil {
+	if o.MetricFcTimestamp != nil {
 
 		// query param metric.fc.timestamp
 		var qrMetricFcTimestamp string
 
-		if o.MetricFcTimestampQueryParameter != nil {
-			qrMetricFcTimestamp = *o.MetricFcTimestampQueryParameter
+		if o.MetricFcTimestamp != nil {
+			qrMetricFcTimestamp = *o.MetricFcTimestamp
 		}
 		qMetricFcTimestamp := qrMetricFcTimestamp
 		if qMetricFcTimestamp != "" {
@@ -1954,13 +1954,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -1971,13 +1971,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -1988,13 +1988,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -2005,13 +2005,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -2022,13 +2022,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -2039,13 +2039,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -2056,13 +2056,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -2073,13 +2073,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -2090,13 +2090,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -2107,13 +2107,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPDurationQueryParameter != nil {
+	if o.MetricTCPDuration != nil {
 
 		// query param metric.tcp.duration
 		var qrMetricTCPDuration string
 
-		if o.MetricTCPDurationQueryParameter != nil {
-			qrMetricTCPDuration = *o.MetricTCPDurationQueryParameter
+		if o.MetricTCPDuration != nil {
+			qrMetricTCPDuration = *o.MetricTCPDuration
 		}
 		qMetricTCPDuration := qrMetricTCPDuration
 		if qMetricTCPDuration != "" {
@@ -2124,13 +2124,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPIopsOtherQueryParameter != nil {
+	if o.MetricTCPIopsOther != nil {
 
 		// query param metric.tcp.iops.other
 		var qrMetricTCPIopsOther int64
 
-		if o.MetricTCPIopsOtherQueryParameter != nil {
-			qrMetricTCPIopsOther = *o.MetricTCPIopsOtherQueryParameter
+		if o.MetricTCPIopsOther != nil {
+			qrMetricTCPIopsOther = *o.MetricTCPIopsOther
 		}
 		qMetricTCPIopsOther := swag.FormatInt64(qrMetricTCPIopsOther)
 		if qMetricTCPIopsOther != "" {
@@ -2141,13 +2141,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPIopsReadQueryParameter != nil {
+	if o.MetricTCPIopsRead != nil {
 
 		// query param metric.tcp.iops.read
 		var qrMetricTCPIopsRead int64
 
-		if o.MetricTCPIopsReadQueryParameter != nil {
-			qrMetricTCPIopsRead = *o.MetricTCPIopsReadQueryParameter
+		if o.MetricTCPIopsRead != nil {
+			qrMetricTCPIopsRead = *o.MetricTCPIopsRead
 		}
 		qMetricTCPIopsRead := swag.FormatInt64(qrMetricTCPIopsRead)
 		if qMetricTCPIopsRead != "" {
@@ -2158,13 +2158,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPIopsTotalQueryParameter != nil {
+	if o.MetricTCPIopsTotal != nil {
 
 		// query param metric.tcp.iops.total
 		var qrMetricTCPIopsTotal int64
 
-		if o.MetricTCPIopsTotalQueryParameter != nil {
-			qrMetricTCPIopsTotal = *o.MetricTCPIopsTotalQueryParameter
+		if o.MetricTCPIopsTotal != nil {
+			qrMetricTCPIopsTotal = *o.MetricTCPIopsTotal
 		}
 		qMetricTCPIopsTotal := swag.FormatInt64(qrMetricTCPIopsTotal)
 		if qMetricTCPIopsTotal != "" {
@@ -2175,13 +2175,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPIopsWriteQueryParameter != nil {
+	if o.MetricTCPIopsWrite != nil {
 
 		// query param metric.tcp.iops.write
 		var qrMetricTCPIopsWrite int64
 
-		if o.MetricTCPIopsWriteQueryParameter != nil {
-			qrMetricTCPIopsWrite = *o.MetricTCPIopsWriteQueryParameter
+		if o.MetricTCPIopsWrite != nil {
+			qrMetricTCPIopsWrite = *o.MetricTCPIopsWrite
 		}
 		qMetricTCPIopsWrite := swag.FormatInt64(qrMetricTCPIopsWrite)
 		if qMetricTCPIopsWrite != "" {
@@ -2192,13 +2192,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPLatencyOtherQueryParameter != nil {
+	if o.MetricTCPLatencyOther != nil {
 
 		// query param metric.tcp.latency.other
 		var qrMetricTCPLatencyOther int64
 
-		if o.MetricTCPLatencyOtherQueryParameter != nil {
-			qrMetricTCPLatencyOther = *o.MetricTCPLatencyOtherQueryParameter
+		if o.MetricTCPLatencyOther != nil {
+			qrMetricTCPLatencyOther = *o.MetricTCPLatencyOther
 		}
 		qMetricTCPLatencyOther := swag.FormatInt64(qrMetricTCPLatencyOther)
 		if qMetricTCPLatencyOther != "" {
@@ -2209,13 +2209,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPLatencyReadQueryParameter != nil {
+	if o.MetricTCPLatencyRead != nil {
 
 		// query param metric.tcp.latency.read
 		var qrMetricTCPLatencyRead int64
 
-		if o.MetricTCPLatencyReadQueryParameter != nil {
-			qrMetricTCPLatencyRead = *o.MetricTCPLatencyReadQueryParameter
+		if o.MetricTCPLatencyRead != nil {
+			qrMetricTCPLatencyRead = *o.MetricTCPLatencyRead
 		}
 		qMetricTCPLatencyRead := swag.FormatInt64(qrMetricTCPLatencyRead)
 		if qMetricTCPLatencyRead != "" {
@@ -2226,13 +2226,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPLatencyTotalQueryParameter != nil {
+	if o.MetricTCPLatencyTotal != nil {
 
 		// query param metric.tcp.latency.total
 		var qrMetricTCPLatencyTotal int64
 
-		if o.MetricTCPLatencyTotalQueryParameter != nil {
-			qrMetricTCPLatencyTotal = *o.MetricTCPLatencyTotalQueryParameter
+		if o.MetricTCPLatencyTotal != nil {
+			qrMetricTCPLatencyTotal = *o.MetricTCPLatencyTotal
 		}
 		qMetricTCPLatencyTotal := swag.FormatInt64(qrMetricTCPLatencyTotal)
 		if qMetricTCPLatencyTotal != "" {
@@ -2243,13 +2243,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPLatencyWriteQueryParameter != nil {
+	if o.MetricTCPLatencyWrite != nil {
 
 		// query param metric.tcp.latency.write
 		var qrMetricTCPLatencyWrite int64
 
-		if o.MetricTCPLatencyWriteQueryParameter != nil {
-			qrMetricTCPLatencyWrite = *o.MetricTCPLatencyWriteQueryParameter
+		if o.MetricTCPLatencyWrite != nil {
+			qrMetricTCPLatencyWrite = *o.MetricTCPLatencyWrite
 		}
 		qMetricTCPLatencyWrite := swag.FormatInt64(qrMetricTCPLatencyWrite)
 		if qMetricTCPLatencyWrite != "" {
@@ -2260,13 +2260,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPStatusQueryParameter != nil {
+	if o.MetricTCPStatus != nil {
 
 		// query param metric.tcp.status
 		var qrMetricTCPStatus string
 
-		if o.MetricTCPStatusQueryParameter != nil {
-			qrMetricTCPStatus = *o.MetricTCPStatusQueryParameter
+		if o.MetricTCPStatus != nil {
+			qrMetricTCPStatus = *o.MetricTCPStatus
 		}
 		qMetricTCPStatus := qrMetricTCPStatus
 		if qMetricTCPStatus != "" {
@@ -2277,13 +2277,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPThroughputReadQueryParameter != nil {
+	if o.MetricTCPThroughputRead != nil {
 
 		// query param metric.tcp.throughput.read
 		var qrMetricTCPThroughputRead int64
 
-		if o.MetricTCPThroughputReadQueryParameter != nil {
-			qrMetricTCPThroughputRead = *o.MetricTCPThroughputReadQueryParameter
+		if o.MetricTCPThroughputRead != nil {
+			qrMetricTCPThroughputRead = *o.MetricTCPThroughputRead
 		}
 		qMetricTCPThroughputRead := swag.FormatInt64(qrMetricTCPThroughputRead)
 		if qMetricTCPThroughputRead != "" {
@@ -2294,13 +2294,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPThroughputTotalQueryParameter != nil {
+	if o.MetricTCPThroughputTotal != nil {
 
 		// query param metric.tcp.throughput.total
 		var qrMetricTCPThroughputTotal int64
 
-		if o.MetricTCPThroughputTotalQueryParameter != nil {
-			qrMetricTCPThroughputTotal = *o.MetricTCPThroughputTotalQueryParameter
+		if o.MetricTCPThroughputTotal != nil {
+			qrMetricTCPThroughputTotal = *o.MetricTCPThroughputTotal
 		}
 		qMetricTCPThroughputTotal := swag.FormatInt64(qrMetricTCPThroughputTotal)
 		if qMetricTCPThroughputTotal != "" {
@@ -2311,13 +2311,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPThroughputWriteQueryParameter != nil {
+	if o.MetricTCPThroughputWrite != nil {
 
 		// query param metric.tcp.throughput.write
 		var qrMetricTCPThroughputWrite int64
 
-		if o.MetricTCPThroughputWriteQueryParameter != nil {
-			qrMetricTCPThroughputWrite = *o.MetricTCPThroughputWriteQueryParameter
+		if o.MetricTCPThroughputWrite != nil {
+			qrMetricTCPThroughputWrite = *o.MetricTCPThroughputWrite
 		}
 		qMetricTCPThroughputWrite := swag.FormatInt64(qrMetricTCPThroughputWrite)
 		if qMetricTCPThroughputWrite != "" {
@@ -2328,13 +2328,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTCPTimestampQueryParameter != nil {
+	if o.MetricTCPTimestamp != nil {
 
 		// query param metric.tcp.timestamp
 		var qrMetricTCPTimestamp string
 
-		if o.MetricTCPTimestampQueryParameter != nil {
-			qrMetricTCPTimestamp = *o.MetricTCPTimestampQueryParameter
+		if o.MetricTCPTimestamp != nil {
+			qrMetricTCPTimestamp = *o.MetricTCPTimestamp
 		}
 		qMetricTCPTimestamp := qrMetricTCPTimestamp
 		if qMetricTCPTimestamp != "" {
@@ -2345,13 +2345,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -2362,13 +2362,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -2379,13 +2379,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -2396,13 +2396,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -2413,7 +2413,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -2424,13 +2424,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2441,13 +2441,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2458,13 +2458,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcIopsRawOtherQueryParameter != nil {
+	if o.StatisticsFcIopsRawOther != nil {
 
 		// query param statistics.fc.iops_raw.other
 		var qrStatisticsFcIopsRawOther int64
 
-		if o.StatisticsFcIopsRawOtherQueryParameter != nil {
-			qrStatisticsFcIopsRawOther = *o.StatisticsFcIopsRawOtherQueryParameter
+		if o.StatisticsFcIopsRawOther != nil {
+			qrStatisticsFcIopsRawOther = *o.StatisticsFcIopsRawOther
 		}
 		qStatisticsFcIopsRawOther := swag.FormatInt64(qrStatisticsFcIopsRawOther)
 		if qStatisticsFcIopsRawOther != "" {
@@ -2475,13 +2475,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcIopsRawReadQueryParameter != nil {
+	if o.StatisticsFcIopsRawRead != nil {
 
 		// query param statistics.fc.iops_raw.read
 		var qrStatisticsFcIopsRawRead int64
 
-		if o.StatisticsFcIopsRawReadQueryParameter != nil {
-			qrStatisticsFcIopsRawRead = *o.StatisticsFcIopsRawReadQueryParameter
+		if o.StatisticsFcIopsRawRead != nil {
+			qrStatisticsFcIopsRawRead = *o.StatisticsFcIopsRawRead
 		}
 		qStatisticsFcIopsRawRead := swag.FormatInt64(qrStatisticsFcIopsRawRead)
 		if qStatisticsFcIopsRawRead != "" {
@@ -2492,13 +2492,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcIopsRawTotalQueryParameter != nil {
+	if o.StatisticsFcIopsRawTotal != nil {
 
 		// query param statistics.fc.iops_raw.total
 		var qrStatisticsFcIopsRawTotal int64
 
-		if o.StatisticsFcIopsRawTotalQueryParameter != nil {
-			qrStatisticsFcIopsRawTotal = *o.StatisticsFcIopsRawTotalQueryParameter
+		if o.StatisticsFcIopsRawTotal != nil {
+			qrStatisticsFcIopsRawTotal = *o.StatisticsFcIopsRawTotal
 		}
 		qStatisticsFcIopsRawTotal := swag.FormatInt64(qrStatisticsFcIopsRawTotal)
 		if qStatisticsFcIopsRawTotal != "" {
@@ -2509,13 +2509,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcIopsRawWriteQueryParameter != nil {
+	if o.StatisticsFcIopsRawWrite != nil {
 
 		// query param statistics.fc.iops_raw.write
 		var qrStatisticsFcIopsRawWrite int64
 
-		if o.StatisticsFcIopsRawWriteQueryParameter != nil {
-			qrStatisticsFcIopsRawWrite = *o.StatisticsFcIopsRawWriteQueryParameter
+		if o.StatisticsFcIopsRawWrite != nil {
+			qrStatisticsFcIopsRawWrite = *o.StatisticsFcIopsRawWrite
 		}
 		qStatisticsFcIopsRawWrite := swag.FormatInt64(qrStatisticsFcIopsRawWrite)
 		if qStatisticsFcIopsRawWrite != "" {
@@ -2526,13 +2526,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsFcLatencyRawOther != nil {
 
 		// query param statistics.fc.latency_raw.other
 		var qrStatisticsFcLatencyRawOther int64
 
-		if o.StatisticsFcLatencyRawOtherQueryParameter != nil {
-			qrStatisticsFcLatencyRawOther = *o.StatisticsFcLatencyRawOtherQueryParameter
+		if o.StatisticsFcLatencyRawOther != nil {
+			qrStatisticsFcLatencyRawOther = *o.StatisticsFcLatencyRawOther
 		}
 		qStatisticsFcLatencyRawOther := swag.FormatInt64(qrStatisticsFcLatencyRawOther)
 		if qStatisticsFcLatencyRawOther != "" {
@@ -2543,13 +2543,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcLatencyRawReadQueryParameter != nil {
+	if o.StatisticsFcLatencyRawRead != nil {
 
 		// query param statistics.fc.latency_raw.read
 		var qrStatisticsFcLatencyRawRead int64
 
-		if o.StatisticsFcLatencyRawReadQueryParameter != nil {
-			qrStatisticsFcLatencyRawRead = *o.StatisticsFcLatencyRawReadQueryParameter
+		if o.StatisticsFcLatencyRawRead != nil {
+			qrStatisticsFcLatencyRawRead = *o.StatisticsFcLatencyRawRead
 		}
 		qStatisticsFcLatencyRawRead := swag.FormatInt64(qrStatisticsFcLatencyRawRead)
 		if qStatisticsFcLatencyRawRead != "" {
@@ -2560,13 +2560,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsFcLatencyRawTotal != nil {
 
 		// query param statistics.fc.latency_raw.total
 		var qrStatisticsFcLatencyRawTotal int64
 
-		if o.StatisticsFcLatencyRawTotalQueryParameter != nil {
-			qrStatisticsFcLatencyRawTotal = *o.StatisticsFcLatencyRawTotalQueryParameter
+		if o.StatisticsFcLatencyRawTotal != nil {
+			qrStatisticsFcLatencyRawTotal = *o.StatisticsFcLatencyRawTotal
 		}
 		qStatisticsFcLatencyRawTotal := swag.FormatInt64(qrStatisticsFcLatencyRawTotal)
 		if qStatisticsFcLatencyRawTotal != "" {
@@ -2577,13 +2577,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsFcLatencyRawWrite != nil {
 
 		// query param statistics.fc.latency_raw.write
 		var qrStatisticsFcLatencyRawWrite int64
 
-		if o.StatisticsFcLatencyRawWriteQueryParameter != nil {
-			qrStatisticsFcLatencyRawWrite = *o.StatisticsFcLatencyRawWriteQueryParameter
+		if o.StatisticsFcLatencyRawWrite != nil {
+			qrStatisticsFcLatencyRawWrite = *o.StatisticsFcLatencyRawWrite
 		}
 		qStatisticsFcLatencyRawWrite := swag.FormatInt64(qrStatisticsFcLatencyRawWrite)
 		if qStatisticsFcLatencyRawWrite != "" {
@@ -2594,13 +2594,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcStatusQueryParameter != nil {
+	if o.StatisticsFcStatus != nil {
 
 		// query param statistics.fc.status
 		var qrStatisticsFcStatus string
 
-		if o.StatisticsFcStatusQueryParameter != nil {
-			qrStatisticsFcStatus = *o.StatisticsFcStatusQueryParameter
+		if o.StatisticsFcStatus != nil {
+			qrStatisticsFcStatus = *o.StatisticsFcStatus
 		}
 		qStatisticsFcStatus := qrStatisticsFcStatus
 		if qStatisticsFcStatus != "" {
@@ -2611,13 +2611,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcThroughputRawReadQueryParameter != nil {
+	if o.StatisticsFcThroughputRawRead != nil {
 
 		// query param statistics.fc.throughput_raw.read
 		var qrStatisticsFcThroughputRawRead int64
 
-		if o.StatisticsFcThroughputRawReadQueryParameter != nil {
-			qrStatisticsFcThroughputRawRead = *o.StatisticsFcThroughputRawReadQueryParameter
+		if o.StatisticsFcThroughputRawRead != nil {
+			qrStatisticsFcThroughputRawRead = *o.StatisticsFcThroughputRawRead
 		}
 		qStatisticsFcThroughputRawRead := swag.FormatInt64(qrStatisticsFcThroughputRawRead)
 		if qStatisticsFcThroughputRawRead != "" {
@@ -2628,13 +2628,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsFcThroughputRawTotal != nil {
 
 		// query param statistics.fc.throughput_raw.total
 		var qrStatisticsFcThroughputRawTotal int64
 
-		if o.StatisticsFcThroughputRawTotalQueryParameter != nil {
-			qrStatisticsFcThroughputRawTotal = *o.StatisticsFcThroughputRawTotalQueryParameter
+		if o.StatisticsFcThroughputRawTotal != nil {
+			qrStatisticsFcThroughputRawTotal = *o.StatisticsFcThroughputRawTotal
 		}
 		qStatisticsFcThroughputRawTotal := swag.FormatInt64(qrStatisticsFcThroughputRawTotal)
 		if qStatisticsFcThroughputRawTotal != "" {
@@ -2645,13 +2645,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsFcThroughputRawWrite != nil {
 
 		// query param statistics.fc.throughput_raw.write
 		var qrStatisticsFcThroughputRawWrite int64
 
-		if o.StatisticsFcThroughputRawWriteQueryParameter != nil {
-			qrStatisticsFcThroughputRawWrite = *o.StatisticsFcThroughputRawWriteQueryParameter
+		if o.StatisticsFcThroughputRawWrite != nil {
+			qrStatisticsFcThroughputRawWrite = *o.StatisticsFcThroughputRawWrite
 		}
 		qStatisticsFcThroughputRawWrite := swag.FormatInt64(qrStatisticsFcThroughputRawWrite)
 		if qStatisticsFcThroughputRawWrite != "" {
@@ -2662,13 +2662,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsFcTimestampQueryParameter != nil {
+	if o.StatisticsFcTimestamp != nil {
 
 		// query param statistics.fc.timestamp
 		var qrStatisticsFcTimestamp string
 
-		if o.StatisticsFcTimestampQueryParameter != nil {
-			qrStatisticsFcTimestamp = *o.StatisticsFcTimestampQueryParameter
+		if o.StatisticsFcTimestamp != nil {
+			qrStatisticsFcTimestamp = *o.StatisticsFcTimestamp
 		}
 		qStatisticsFcTimestamp := qrStatisticsFcTimestamp
 		if qStatisticsFcTimestamp != "" {
@@ -2679,13 +2679,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -2696,13 +2696,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -2713,13 +2713,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -2730,13 +2730,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -2747,13 +2747,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -2764,13 +2764,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -2781,13 +2781,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -2798,13 +2798,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -2815,13 +2815,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -2832,13 +2832,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPIopsRawOtherQueryParameter != nil {
+	if o.StatisticsTCPIopsRawOther != nil {
 
 		// query param statistics.tcp.iops_raw.other
 		var qrStatisticsTCPIopsRawOther int64
 
-		if o.StatisticsTCPIopsRawOtherQueryParameter != nil {
-			qrStatisticsTCPIopsRawOther = *o.StatisticsTCPIopsRawOtherQueryParameter
+		if o.StatisticsTCPIopsRawOther != nil {
+			qrStatisticsTCPIopsRawOther = *o.StatisticsTCPIopsRawOther
 		}
 		qStatisticsTCPIopsRawOther := swag.FormatInt64(qrStatisticsTCPIopsRawOther)
 		if qStatisticsTCPIopsRawOther != "" {
@@ -2849,13 +2849,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPIopsRawReadQueryParameter != nil {
+	if o.StatisticsTCPIopsRawRead != nil {
 
 		// query param statistics.tcp.iops_raw.read
 		var qrStatisticsTCPIopsRawRead int64
 
-		if o.StatisticsTCPIopsRawReadQueryParameter != nil {
-			qrStatisticsTCPIopsRawRead = *o.StatisticsTCPIopsRawReadQueryParameter
+		if o.StatisticsTCPIopsRawRead != nil {
+			qrStatisticsTCPIopsRawRead = *o.StatisticsTCPIopsRawRead
 		}
 		qStatisticsTCPIopsRawRead := swag.FormatInt64(qrStatisticsTCPIopsRawRead)
 		if qStatisticsTCPIopsRawRead != "" {
@@ -2866,13 +2866,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPIopsRawTotalQueryParameter != nil {
+	if o.StatisticsTCPIopsRawTotal != nil {
 
 		// query param statistics.tcp.iops_raw.total
 		var qrStatisticsTCPIopsRawTotal int64
 
-		if o.StatisticsTCPIopsRawTotalQueryParameter != nil {
-			qrStatisticsTCPIopsRawTotal = *o.StatisticsTCPIopsRawTotalQueryParameter
+		if o.StatisticsTCPIopsRawTotal != nil {
+			qrStatisticsTCPIopsRawTotal = *o.StatisticsTCPIopsRawTotal
 		}
 		qStatisticsTCPIopsRawTotal := swag.FormatInt64(qrStatisticsTCPIopsRawTotal)
 		if qStatisticsTCPIopsRawTotal != "" {
@@ -2883,13 +2883,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPIopsRawWriteQueryParameter != nil {
+	if o.StatisticsTCPIopsRawWrite != nil {
 
 		// query param statistics.tcp.iops_raw.write
 		var qrStatisticsTCPIopsRawWrite int64
 
-		if o.StatisticsTCPIopsRawWriteQueryParameter != nil {
-			qrStatisticsTCPIopsRawWrite = *o.StatisticsTCPIopsRawWriteQueryParameter
+		if o.StatisticsTCPIopsRawWrite != nil {
+			qrStatisticsTCPIopsRawWrite = *o.StatisticsTCPIopsRawWrite
 		}
 		qStatisticsTCPIopsRawWrite := swag.FormatInt64(qrStatisticsTCPIopsRawWrite)
 		if qStatisticsTCPIopsRawWrite != "" {
@@ -2900,13 +2900,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsTCPLatencyRawOther != nil {
 
 		// query param statistics.tcp.latency_raw.other
 		var qrStatisticsTCPLatencyRawOther int64
 
-		if o.StatisticsTCPLatencyRawOtherQueryParameter != nil {
-			qrStatisticsTCPLatencyRawOther = *o.StatisticsTCPLatencyRawOtherQueryParameter
+		if o.StatisticsTCPLatencyRawOther != nil {
+			qrStatisticsTCPLatencyRawOther = *o.StatisticsTCPLatencyRawOther
 		}
 		qStatisticsTCPLatencyRawOther := swag.FormatInt64(qrStatisticsTCPLatencyRawOther)
 		if qStatisticsTCPLatencyRawOther != "" {
@@ -2917,13 +2917,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPLatencyRawReadQueryParameter != nil {
+	if o.StatisticsTCPLatencyRawRead != nil {
 
 		// query param statistics.tcp.latency_raw.read
 		var qrStatisticsTCPLatencyRawRead int64
 
-		if o.StatisticsTCPLatencyRawReadQueryParameter != nil {
-			qrStatisticsTCPLatencyRawRead = *o.StatisticsTCPLatencyRawReadQueryParameter
+		if o.StatisticsTCPLatencyRawRead != nil {
+			qrStatisticsTCPLatencyRawRead = *o.StatisticsTCPLatencyRawRead
 		}
 		qStatisticsTCPLatencyRawRead := swag.FormatInt64(qrStatisticsTCPLatencyRawRead)
 		if qStatisticsTCPLatencyRawRead != "" {
@@ -2934,13 +2934,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsTCPLatencyRawTotal != nil {
 
 		// query param statistics.tcp.latency_raw.total
 		var qrStatisticsTCPLatencyRawTotal int64
 
-		if o.StatisticsTCPLatencyRawTotalQueryParameter != nil {
-			qrStatisticsTCPLatencyRawTotal = *o.StatisticsTCPLatencyRawTotalQueryParameter
+		if o.StatisticsTCPLatencyRawTotal != nil {
+			qrStatisticsTCPLatencyRawTotal = *o.StatisticsTCPLatencyRawTotal
 		}
 		qStatisticsTCPLatencyRawTotal := swag.FormatInt64(qrStatisticsTCPLatencyRawTotal)
 		if qStatisticsTCPLatencyRawTotal != "" {
@@ -2951,13 +2951,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsTCPLatencyRawWrite != nil {
 
 		// query param statistics.tcp.latency_raw.write
 		var qrStatisticsTCPLatencyRawWrite int64
 
-		if o.StatisticsTCPLatencyRawWriteQueryParameter != nil {
-			qrStatisticsTCPLatencyRawWrite = *o.StatisticsTCPLatencyRawWriteQueryParameter
+		if o.StatisticsTCPLatencyRawWrite != nil {
+			qrStatisticsTCPLatencyRawWrite = *o.StatisticsTCPLatencyRawWrite
 		}
 		qStatisticsTCPLatencyRawWrite := swag.FormatInt64(qrStatisticsTCPLatencyRawWrite)
 		if qStatisticsTCPLatencyRawWrite != "" {
@@ -2968,13 +2968,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPStatusQueryParameter != nil {
+	if o.StatisticsTCPStatus != nil {
 
 		// query param statistics.tcp.status
 		var qrStatisticsTCPStatus string
 
-		if o.StatisticsTCPStatusQueryParameter != nil {
-			qrStatisticsTCPStatus = *o.StatisticsTCPStatusQueryParameter
+		if o.StatisticsTCPStatus != nil {
+			qrStatisticsTCPStatus = *o.StatisticsTCPStatus
 		}
 		qStatisticsTCPStatus := qrStatisticsTCPStatus
 		if qStatisticsTCPStatus != "" {
@@ -2985,13 +2985,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPThroughputRawReadQueryParameter != nil {
+	if o.StatisticsTCPThroughputRawRead != nil {
 
 		// query param statistics.tcp.throughput_raw.read
 		var qrStatisticsTCPThroughputRawRead int64
 
-		if o.StatisticsTCPThroughputRawReadQueryParameter != nil {
-			qrStatisticsTCPThroughputRawRead = *o.StatisticsTCPThroughputRawReadQueryParameter
+		if o.StatisticsTCPThroughputRawRead != nil {
+			qrStatisticsTCPThroughputRawRead = *o.StatisticsTCPThroughputRawRead
 		}
 		qStatisticsTCPThroughputRawRead := swag.FormatInt64(qrStatisticsTCPThroughputRawRead)
 		if qStatisticsTCPThroughputRawRead != "" {
@@ -3002,13 +3002,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsTCPThroughputRawTotal != nil {
 
 		// query param statistics.tcp.throughput_raw.total
 		var qrStatisticsTCPThroughputRawTotal int64
 
-		if o.StatisticsTCPThroughputRawTotalQueryParameter != nil {
-			qrStatisticsTCPThroughputRawTotal = *o.StatisticsTCPThroughputRawTotalQueryParameter
+		if o.StatisticsTCPThroughputRawTotal != nil {
+			qrStatisticsTCPThroughputRawTotal = *o.StatisticsTCPThroughputRawTotal
 		}
 		qStatisticsTCPThroughputRawTotal := swag.FormatInt64(qrStatisticsTCPThroughputRawTotal)
 		if qStatisticsTCPThroughputRawTotal != "" {
@@ -3019,13 +3019,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsTCPThroughputRawWrite != nil {
 
 		// query param statistics.tcp.throughput_raw.write
 		var qrStatisticsTCPThroughputRawWrite int64
 
-		if o.StatisticsTCPThroughputRawWriteQueryParameter != nil {
-			qrStatisticsTCPThroughputRawWrite = *o.StatisticsTCPThroughputRawWriteQueryParameter
+		if o.StatisticsTCPThroughputRawWrite != nil {
+			qrStatisticsTCPThroughputRawWrite = *o.StatisticsTCPThroughputRawWrite
 		}
 		qStatisticsTCPThroughputRawWrite := swag.FormatInt64(qrStatisticsTCPThroughputRawWrite)
 		if qStatisticsTCPThroughputRawWrite != "" {
@@ -3036,13 +3036,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTCPTimestampQueryParameter != nil {
+	if o.StatisticsTCPTimestamp != nil {
 
 		// query param statistics.tcp.timestamp
 		var qrStatisticsTCPTimestamp string
 
-		if o.StatisticsTCPTimestampQueryParameter != nil {
-			qrStatisticsTCPTimestamp = *o.StatisticsTCPTimestampQueryParameter
+		if o.StatisticsTCPTimestamp != nil {
+			qrStatisticsTCPTimestamp = *o.StatisticsTCPTimestamp
 		}
 		qStatisticsTCPTimestamp := qrStatisticsTCPTimestamp
 		if qStatisticsTCPTimestamp != "" {
@@ -3053,13 +3053,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -3070,13 +3070,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -3087,13 +3087,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -3104,13 +3104,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -3121,13 +3121,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -3138,13 +3138,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -3163,7 +3163,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNvmeServiceCollectionGet binds the parameter fields
 func (o *NvmeServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -3180,7 +3180,7 @@ func (o *NvmeServiceCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamNvmeServiceCollectionGet binds the parameter order_by
 func (o *NvmeServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

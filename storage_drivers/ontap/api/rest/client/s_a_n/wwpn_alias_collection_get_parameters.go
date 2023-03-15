@@ -66,25 +66,25 @@ type WwpnAliasCollectionGetParams struct {
 
 	   Filter by alias
 	*/
-	AliasQueryParameter *string
+	Alias *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type WwpnAliasCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,25 +100,25 @@ type WwpnAliasCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Wwpn.
 
 	   Filter by wwpn
 	*/
-	WwpnQueryParameter *string
+	Wwpn *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,14 +138,14 @@ func (o *WwpnAliasCollectionGetParams) WithDefaults() *WwpnAliasCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *WwpnAliasCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := WwpnAliasCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -187,103 +187,103 @@ func (o *WwpnAliasCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAliasQueryParameter adds the alias to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithAliasQueryParameter(alias *string) *WwpnAliasCollectionGetParams {
-	o.SetAliasQueryParameter(alias)
+// WithAlias adds the alias to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithAlias(alias *string) *WwpnAliasCollectionGetParams {
+	o.SetAlias(alias)
 	return o
 }
 
-// SetAliasQueryParameter adds the alias to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetAliasQueryParameter(alias *string) {
-	o.AliasQueryParameter = alias
+// SetAlias adds the alias to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetAlias(alias *string) {
+	o.Alias = alias
 }
 
-// WithFieldsQueryParameter adds the fields to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithFieldsQueryParameter(fields []string) *WwpnAliasCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithFields(fields []string) *WwpnAliasCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *WwpnAliasCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithMaxRecords(maxRecords *int64) *WwpnAliasCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *WwpnAliasCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithOrderBy(orderBy []string) *WwpnAliasCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *WwpnAliasCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithReturnRecords(returnRecords *bool) *WwpnAliasCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *WwpnAliasCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *WwpnAliasCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *WwpnAliasCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithSvmName(svmName *string) *WwpnAliasCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *WwpnAliasCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithSvmUUID(svmUUID *string) *WwpnAliasCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithWwpnQueryParameter adds the wwpn to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) WithWwpnQueryParameter(wwpn *string) *WwpnAliasCollectionGetParams {
-	o.SetWwpnQueryParameter(wwpn)
+// WithWwpn adds the wwpn to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) WithWwpn(wwpn *string) *WwpnAliasCollectionGetParams {
+	o.SetWwpn(wwpn)
 	return o
 }
 
-// SetWwpnQueryParameter adds the wwpn to the wwpn alias collection get params
-func (o *WwpnAliasCollectionGetParams) SetWwpnQueryParameter(wwpn *string) {
-	o.WwpnQueryParameter = wwpn
+// SetWwpn adds the wwpn to the wwpn alias collection get params
+func (o *WwpnAliasCollectionGetParams) SetWwpn(wwpn *string) {
+	o.Wwpn = wwpn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -294,13 +294,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AliasQueryParameter != nil {
+	if o.Alias != nil {
 
 		// query param alias
 		var qrAlias string
 
-		if o.AliasQueryParameter != nil {
-			qrAlias = *o.AliasQueryParameter
+		if o.Alias != nil {
+			qrAlias = *o.Alias
 		}
 		qAlias := qrAlias
 		if qAlias != "" {
@@ -311,7 +311,7 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -322,13 +322,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -401,13 +401,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -418,13 +418,13 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.WwpnQueryParameter != nil {
+	if o.Wwpn != nil {
 
 		// query param wwpn
 		var qrWwpn string
 
-		if o.WwpnQueryParameter != nil {
-			qrWwpn = *o.WwpnQueryParameter
+		if o.Wwpn != nil {
+			qrWwpn = *o.Wwpn
 		}
 		qWwpn := qrWwpn
 		if qWwpn != "" {
@@ -443,7 +443,7 @@ func (o *WwpnAliasCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamWwpnAliasCollectionGet binds the parameter fields
 func (o *WwpnAliasCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -460,7 +460,7 @@ func (o *WwpnAliasCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamWwpnAliasCollectionGet binds the parameter order_by
 func (o *WwpnAliasCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

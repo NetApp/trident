@@ -66,13 +66,13 @@ type CounterTableGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Counter table name.
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *CounterTableGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the counter table get params
-func (o *CounterTableGetParams) WithFieldsQueryParameter(fields []string) *CounterTableGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the counter table get params
+func (o *CounterTableGetParams) WithFields(fields []string) *CounterTableGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the counter table get params
-func (o *CounterTableGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the counter table get params
+func (o *CounterTableGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the counter table get params
-func (o *CounterTableGetParams) WithNamePathParameter(name string) *CounterTableGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the counter table get params
+func (o *CounterTableGetParams) WithName(name string) *CounterTableGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the counter table get params
-func (o *CounterTableGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the counter table get params
+func (o *CounterTableGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *CounterTableGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *CounterTableGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *CounterTableGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamCounterTableGet binds the parameter fields
 func (o *CounterTableGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

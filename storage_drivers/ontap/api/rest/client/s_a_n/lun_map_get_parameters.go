@@ -66,21 +66,21 @@ type LunMapGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupUUID.
 
 	   The unique identifier of the igroup.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* LunUUID.
 
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *LunMapGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the lun map get params
-func (o *LunMapGetParams) WithFieldsQueryParameter(fields []string) *LunMapGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun map get params
+func (o *LunMapGetParams) WithFields(fields []string) *LunMapGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun map get params
-func (o *LunMapGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun map get params
+func (o *LunMapGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the lun map get params
-func (o *LunMapGetParams) WithIgroupUUIDPathParameter(igroupUUID string) *LunMapGetParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the lun map get params
+func (o *LunMapGetParams) WithIgroupUUID(igroupUUID string) *LunMapGetParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the lun map get params
-func (o *LunMapGetParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the lun map get params
+func (o *LunMapGetParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun map get params
-func (o *LunMapGetParams) WithLunUUIDPathParameter(lunUUID string) *LunMapGetParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun map get params
+func (o *LunMapGetParams) WithLunUUID(lunUUID string) *LunMapGetParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun map get params
-func (o *LunMapGetParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun map get params
+func (o *LunMapGetParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *LunMapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *LunMapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *LunMapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamLunMapGet binds the parameter fields
 func (o *LunMapGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -20,24 +20,24 @@ import (
 type UnixGroup struct {
 
 	// links
-	Links *UnixGroupLinks `json:"_links,omitempty"`
+	Links *UnixGroupInlineLinks `json:"_links,omitempty"`
 
 	// UNIX group ID of the specified user.
 	//
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// UNIX group name to be added to the local database.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Indicates whether or not the validation for the specified UNIX group name is disabled.
 	SkipNameValidation *bool `json:"skip_name_validation,omitempty"`
 
 	// svm
-	Svm *UnixGroupSvm `json:"svm,omitempty"`
+	Svm *UnixGroupInlineSvm `json:"svm,omitempty"`
 
-	// users
-	Users []*UnixGroupUsersItems0 `json:"users,omitempty"`
+	// unix group inline users
+	UnixGroupInlineUsers []*UnixGroupInlineUsersInlineArrayItem `json:"users,omitempty"`
 }
 
 // Validate validates this unix group
@@ -52,7 +52,7 @@ func (m *UnixGroup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateUsers(formats); err != nil {
+	if err := m.validateUnixGroupInlineUsers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -96,18 +96,18 @@ func (m *UnixGroup) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroup) validateUsers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Users) { // not required
+func (m *UnixGroup) validateUnixGroupInlineUsers(formats strfmt.Registry) error {
+	if swag.IsZero(m.UnixGroupInlineUsers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Users); i++ {
-		if swag.IsZero(m.Users[i]) { // not required
+	for i := 0; i < len(m.UnixGroupInlineUsers); i++ {
+		if swag.IsZero(m.UnixGroupInlineUsers[i]) { // not required
 			continue
 		}
 
-		if m.Users[i] != nil {
-			if err := m.Users[i].Validate(formats); err != nil {
+		if m.UnixGroupInlineUsers[i] != nil {
+			if err := m.UnixGroupInlineUsers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("users" + "." + strconv.Itoa(i))
 				}
@@ -132,7 +132,7 @@ func (m *UnixGroup) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUsers(ctx, formats); err != nil {
+	if err := m.contextValidateUnixGroupInlineUsers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -170,12 +170,12 @@ func (m *UnixGroup) contextValidateSvm(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *UnixGroup) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroup) contextValidateUnixGroupInlineUsers(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Users); i++ {
+	for i := 0; i < len(m.UnixGroupInlineUsers); i++ {
 
-		if m.Users[i] != nil {
-			if err := m.Users[i].ContextValidate(ctx, formats); err != nil {
+		if m.UnixGroupInlineUsers[i] != nil {
+			if err := m.UnixGroupInlineUsers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("users" + "." + strconv.Itoa(i))
 				}
@@ -206,17 +206,17 @@ func (m *UnixGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupLinks unix group links
+// UnixGroupInlineLinks unix group inline links
 //
-// swagger:model UnixGroupLinks
-type UnixGroupLinks struct {
+// swagger:model unix_group_inline__links
+type UnixGroupInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix group links
-func (m *UnixGroupLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group inline links
+func (m *UnixGroupInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -229,7 +229,7 @@ func (m *UnixGroupLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixGroupInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -246,8 +246,8 @@ func (m *UnixGroupLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix group links based on the context it is used
-func (m *UnixGroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group inline links based on the context it is used
+func (m *UnixGroupInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -260,7 +260,7 @@ func (m *UnixGroupLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *UnixGroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -275,7 +275,7 @@ func (m *UnixGroupLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -283,8 +283,8 @@ func (m *UnixGroupLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupLinks) UnmarshalBinary(b []byte) error {
-	var res UnixGroupLinks
+func (m *UnixGroupInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixGroupInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -292,27 +292,27 @@ func (m *UnixGroupLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupSvm unix group svm
+// UnixGroupInlineSvm unix group inline svm
 //
-// swagger:model UnixGroupSvm
-type UnixGroupSvm struct {
+// swagger:model unix_group_inline_svm
+type UnixGroupInlineSvm struct {
 
 	// links
-	Links *UnixGroupSvmLinks `json:"_links,omitempty"`
+	Links *UnixGroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this unix group svm
-func (m *UnixGroupSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group inline svm
+func (m *UnixGroupInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -325,7 +325,7 @@ func (m *UnixGroupSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupSvm) validateLinks(formats strfmt.Registry) error {
+func (m *UnixGroupInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -342,8 +342,8 @@ func (m *UnixGroupSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix group svm based on the context it is used
-func (m *UnixGroupSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group inline svm based on the context it is used
+func (m *UnixGroupInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -356,7 +356,7 @@ func (m *UnixGroupSvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *UnixGroupSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -371,7 +371,7 @@ func (m *UnixGroupSvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupSvm) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -379,8 +379,8 @@ func (m *UnixGroupSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupSvm) UnmarshalBinary(b []byte) error {
-	var res UnixGroupSvm
+func (m *UnixGroupInlineSvm) UnmarshalBinary(b []byte) error {
+	var res UnixGroupInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -388,17 +388,17 @@ func (m *UnixGroupSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupSvmLinks unix group svm links
+// UnixGroupInlineSvmInlineLinks unix group inline svm inline links
 //
-// swagger:model UnixGroupSvmLinks
-type UnixGroupSvmLinks struct {
+// swagger:model unix_group_inline_svm_inline__links
+type UnixGroupInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix group svm links
-func (m *UnixGroupSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group inline svm inline links
+func (m *UnixGroupInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -411,7 +411,7 @@ func (m *UnixGroupSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixGroupInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -428,8 +428,8 @@ func (m *UnixGroupSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix group svm links based on the context it is used
-func (m *UnixGroupSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group inline svm inline links based on the context it is used
+func (m *UnixGroupInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -442,7 +442,7 @@ func (m *UnixGroupSvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *UnixGroupSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -457,7 +457,7 @@ func (m *UnixGroupSvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -465,8 +465,8 @@ func (m *UnixGroupSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupSvmLinks) UnmarshalBinary(b []byte) error {
-	var res UnixGroupSvmLinks
+func (m *UnixGroupInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixGroupInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -474,28 +474,28 @@ func (m *UnixGroupSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupUsersItems0 unix group users items0
+// UnixGroupInlineUsersInlineArrayItem unix group inline users inline array item
 //
-// swagger:model UnixGroupUsersItems0
-type UnixGroupUsersItems0 struct {
+// swagger:model unix_group_inline_users_inline_array_item
+type UnixGroupInlineUsersInlineArrayItem struct {
 
 	// UNIX user who belongs to the specified UNIX group and the SVM.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this unix group users items0
-func (m *UnixGroupUsersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group inline users inline array item
+func (m *UnixGroupInlineUsersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this unix group users items0 based on context it is used
-func (m *UnixGroupUsersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this unix group inline users inline array item based on context it is used
+func (m *UnixGroupInlineUsersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupUsersItems0) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupInlineUsersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -503,8 +503,8 @@ func (m *UnixGroupUsersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupUsersItems0) UnmarshalBinary(b []byte) error {
-	var res UnixGroupUsersItems0
+func (m *UnixGroupInlineUsersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res UnixGroupInlineUsersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

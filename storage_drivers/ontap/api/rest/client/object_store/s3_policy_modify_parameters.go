@@ -73,13 +73,13 @@ type S3PolicyModifyParams struct {
 
 	   Policy name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *S3PolicyModifyParams) SetInfo(info *models.S3Policy) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the s3 policy modify params
-func (o *S3PolicyModifyParams) WithNamePathParameter(name string) *S3PolicyModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the s3 policy modify params
+func (o *S3PolicyModifyParams) WithName(name string) *S3PolicyModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the s3 policy modify params
-func (o *S3PolicyModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the s3 policy modify params
+func (o *S3PolicyModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 policy modify params
-func (o *S3PolicyModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3PolicyModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 policy modify params
+func (o *S3PolicyModifyParams) WithSvmUUID(svmUUID string) *S3PolicyModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 policy modify params
-func (o *S3PolicyModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 policy modify params
+func (o *S3PolicyModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *S3PolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

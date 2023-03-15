@@ -21,16 +21,20 @@ import (
 type TopMetricsDirectoryResponse struct {
 
 	// links
-	Links *TopMetricsDirectoryResponseLinks `json:"_links,omitempty"`
+	Links *TopMetricsDirectoryResponseInlineLinks `json:"_links,omitempty"`
+
+	// incomplete response reason
+	IncompleteResponseReason *TopMetricsDirectoryResponseInlineIncompleteResponseReason `json:"incomplete_response_reason,omitempty"`
 
 	// notice
-	Notice *TopMetricsDirectoryResponseNotice `json:"notice,omitempty"`
+	Notice *TopMetricsDirectoryResponseInlineNotice `json:"notice,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*TopMetricsDirectory `json:"records,omitempty"`
+	// top metrics directory response inline records
+	TopMetricsDirectoryResponseInlineRecords []*TopMetricsDirectory `json:"records,omitempty"`
 }
 
 // Validate validates this top metrics directory response
@@ -41,11 +45,15 @@ func (m *TopMetricsDirectoryResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateIncompleteResponseReason(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNotice(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateTopMetricsDirectoryResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -72,6 +80,23 @@ func (m *TopMetricsDirectoryResponse) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
+func (m *TopMetricsDirectoryResponse) validateIncompleteResponseReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.IncompleteResponseReason) { // not required
+		return nil
+	}
+
+	if m.IncompleteResponseReason != nil {
+		if err := m.IncompleteResponseReason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("incomplete_response_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *TopMetricsDirectoryResponse) validateNotice(formats strfmt.Registry) error {
 	if swag.IsZero(m.Notice) { // not required
 		return nil
@@ -89,18 +114,18 @@ func (m *TopMetricsDirectoryResponse) validateNotice(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *TopMetricsDirectoryResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *TopMetricsDirectoryResponse) validateTopMetricsDirectoryResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.TopMetricsDirectoryResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.TopMetricsDirectoryResponseInlineRecords); i++ {
+		if swag.IsZero(m.TopMetricsDirectoryResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.TopMetricsDirectoryResponseInlineRecords[i] != nil {
+			if err := m.TopMetricsDirectoryResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -121,11 +146,15 @@ func (m *TopMetricsDirectoryResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIncompleteResponseReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNotice(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateTopMetricsDirectoryResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -149,6 +178,20 @@ func (m *TopMetricsDirectoryResponse) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
+func (m *TopMetricsDirectoryResponse) contextValidateIncompleteResponseReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IncompleteResponseReason != nil {
+		if err := m.IncompleteResponseReason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("incomplete_response_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *TopMetricsDirectoryResponse) contextValidateNotice(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Notice != nil {
@@ -163,12 +206,12 @@ func (m *TopMetricsDirectoryResponse) contextValidateNotice(ctx context.Context,
 	return nil
 }
 
-func (m *TopMetricsDirectoryResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsDirectoryResponse) contextValidateTopMetricsDirectoryResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.TopMetricsDirectoryResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.TopMetricsDirectoryResponseInlineRecords[i] != nil {
+			if err := m.TopMetricsDirectoryResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -199,157 +242,29 @@ func (m *TopMetricsDirectoryResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsDirectoryResponseLinks top metrics directory response links
+// TopMetricsDirectoryResponseInlineIncompleteResponseReason Indicates that the metric report provides incomplete data.
 //
-// swagger:model TopMetricsDirectoryResponseLinks
-type TopMetricsDirectoryResponseLinks struct {
+// swagger:model top_metrics_directory_response_inline_incomplete_response_reason
+type TopMetricsDirectoryResponseInlineIncompleteResponseReason struct {
 
-	// next
-	Next *Href `json:"next,omitempty"`
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this top metrics directory response links
-func (m *TopMetricsDirectoryResponseLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateNext(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *TopMetricsDirectoryResponseLinks) validateNext(formats strfmt.Registry) error {
-	if swag.IsZero(m.Next) { // not required
-		return nil
-	}
-
-	if m.Next != nil {
-		if err := m.Next.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "next")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *TopMetricsDirectoryResponseLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this top metrics directory response links based on the context it is used
-func (m *TopMetricsDirectoryResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateNext(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *TopMetricsDirectoryResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Next != nil {
-		if err := m.Next.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "next")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *TopMetricsDirectoryResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *TopMetricsDirectoryResponseLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *TopMetricsDirectoryResponseLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsDirectoryResponseLinks
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// TopMetricsDirectoryResponseNotice Optional field that indicates why no records are returned by the volume activity tracking REST API.
-//
-// swagger:model TopMetricsDirectoryResponseNotice
-type TopMetricsDirectoryResponseNotice struct {
-
-	// Warning code indicating why no records are returned.
+	// Warning code indicating why partial data was reported.
 	// Example: 111411207
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
-	// Details why no records are returned.
-	// Example: No read/write traffic on volume.
+	// A message describing the reason for partial data.
+	// Example: Partial data has been returned for this metric report. Reason: Data collection for the large directory report is in progress.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this top metrics directory response notice
-func (m *TopMetricsDirectoryResponseNotice) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics directory response inline incomplete response reason
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics directory response notice based on the context it is used
-func (m *TopMetricsDirectoryResponseNotice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics directory response inline incomplete response reason based on the context it is used
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -366,18 +281,18 @@ func (m *TopMetricsDirectoryResponseNotice) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *TopMetricsDirectoryResponseNotice) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "notice"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "incomplete_response_reason"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsDirectoryResponseNotice) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "notice"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "incomplete_response_reason"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -385,7 +300,7 @@ func (m *TopMetricsDirectoryResponseNotice) contextValidateMessage(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsDirectoryResponseNotice) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -393,8 +308,211 @@ func (m *TopMetricsDirectoryResponseNotice) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsDirectoryResponseNotice) UnmarshalBinary(b []byte) error {
-	var res TopMetricsDirectoryResponseNotice
+func (m *TopMetricsDirectoryResponseInlineIncompleteResponseReason) UnmarshalBinary(b []byte) error {
+	var res TopMetricsDirectoryResponseInlineIncompleteResponseReason
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TopMetricsDirectoryResponseInlineLinks top metrics directory response inline links
+//
+// swagger:model top_metrics_directory_response_inline__links
+type TopMetricsDirectoryResponseInlineLinks struct {
+
+	// next
+	Next *Href `json:"next,omitempty"`
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this top metrics directory response inline links
+func (m *TopMetricsDirectoryResponseInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNext(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineLinks) validateNext(formats strfmt.Registry) error {
+	if swag.IsZero(m.Next) { // not required
+		return nil
+	}
+
+	if m.Next != nil {
+		if err := m.Next.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this top metrics directory response inline links based on the context it is used
+func (m *TopMetricsDirectoryResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNext(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Next != nil {
+		if err := m.Next.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "next")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TopMetricsDirectoryResponseInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TopMetricsDirectoryResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsDirectoryResponseInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TopMetricsDirectoryResponseInlineNotice Optional field that indicates why no records are returned by the volume activity tracking REST API.
+//
+// swagger:model top_metrics_directory_response_inline_notice
+type TopMetricsDirectoryResponseInlineNotice struct {
+
+	// Warning code indicating why no records are returned.
+	// Example: 111411207
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Details why no records are returned.
+	// Example: No read/write traffic on volume.
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this top metrics directory response inline notice
+func (m *TopMetricsDirectoryResponseInlineNotice) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this top metrics directory response inline notice based on the context it is used
+func (m *TopMetricsDirectoryResponseInlineNotice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineNotice) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "notice"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TopMetricsDirectoryResponseInlineNotice) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "notice"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TopMetricsDirectoryResponseInlineNotice) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TopMetricsDirectoryResponseInlineNotice) UnmarshalBinary(b []byte) error {
+	var res TopMetricsDirectoryResponseInlineNotice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -19,21 +19,21 @@ import (
 // swagger:model local_cifs_group_members
 type LocalCifsGroupMembers struct {
 
-	// Local user, Active Directory user, or Active Directory group which is a member of the specified local group.
-	//
-	Name string `json:"name,omitempty"`
-
 	// An array of local users, Active Directory users, and Active Directory groups specified to add or delete multiple members to or from a local group in a single API call.
 	// Not allowed when the `name` property is used.
 	//
-	Records []*LocalCifsGroupMembersRecordsItems0 `json:"records,omitempty"`
+	LocalCifsGroupMembersInlineRecords []*LocalCifsGroupMembersInlineRecordsInlineArrayItem `json:"records,omitempty"`
+
+	// Local user, Active Directory user, or Active Directory group which is a member of the specified local group.
+	//
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this local cifs group members
 func (m *LocalCifsGroupMembers) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateLocalCifsGroupMembersInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -43,18 +43,18 @@ func (m *LocalCifsGroupMembers) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalCifsGroupMembers) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *LocalCifsGroupMembers) validateLocalCifsGroupMembersInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.LocalCifsGroupMembersInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.LocalCifsGroupMembersInlineRecords); i++ {
+		if swag.IsZero(m.LocalCifsGroupMembersInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.LocalCifsGroupMembersInlineRecords[i] != nil {
+			if err := m.LocalCifsGroupMembersInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -71,7 +71,7 @@ func (m *LocalCifsGroupMembers) validateRecords(formats strfmt.Registry) error {
 func (m *LocalCifsGroupMembers) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateLocalCifsGroupMembersInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -81,12 +81,12 @@ func (m *LocalCifsGroupMembers) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *LocalCifsGroupMembers) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsGroupMembers) contextValidateLocalCifsGroupMembersInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.LocalCifsGroupMembersInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.LocalCifsGroupMembersInlineRecords[i] != nil {
+			if err := m.LocalCifsGroupMembersInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -117,28 +117,28 @@ func (m *LocalCifsGroupMembers) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsGroupMembersRecordsItems0 local cifs group members records items0
+// LocalCifsGroupMembersInlineRecordsInlineArrayItem local cifs group members inline records inline array item
 //
-// swagger:model LocalCifsGroupMembersRecordsItems0
-type LocalCifsGroupMembersRecordsItems0 struct {
+// swagger:model local_cifs_group_members_inline_records_inline_array_item
+type LocalCifsGroupMembersInlineRecordsInlineArrayItem struct {
 
 	// Local user, Active Directory user, or Active Directory group which is a member of the specified local group.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this local cifs group members records items0
-func (m *LocalCifsGroupMembersRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs group members inline records inline array item
+func (m *LocalCifsGroupMembersInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this local cifs group members records items0 based on context it is used
-func (m *LocalCifsGroupMembersRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this local cifs group members inline records inline array item based on context it is used
+func (m *LocalCifsGroupMembersInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsGroupMembersRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsGroupMembersInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -146,8 +146,8 @@ func (m *LocalCifsGroupMembersRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsGroupMembersRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res LocalCifsGroupMembersRecordsItems0
+func (m *LocalCifsGroupMembersInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res LocalCifsGroupMembersInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

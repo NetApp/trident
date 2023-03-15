@@ -21,36 +21,36 @@ import (
 // swagger:model application_cifs_properties
 type ApplicationCifsProperties struct {
 
-	// backing storage
-	BackingStorage *ApplicationCifsPropertiesBackingStorage `json:"backing_storage,omitempty"`
+	// application cifs properties inline ips
+	ApplicationCifsPropertiesInlineIps []*string `json:"ips,omitempty"`
 
-	// ips
-	Ips []string `json:"ips,omitempty"`
+	// application cifs properties inline permissions
+	// Read Only: true
+	ApplicationCifsPropertiesInlinePermissions []*ApplicationCifsPropertiesInlinePermissionsInlineArrayItem `json:"permissions,omitempty"`
+
+	// backing storage
+	BackingStorage *ApplicationCifsPropertiesInlineBackingStorage `json:"backing_storage,omitempty"`
 
 	// Junction path
 	// Read Only: true
-	Path string `json:"path,omitempty"`
-
-	// permissions
-	// Read Only: true
-	Permissions []*ApplicationCifsPropertiesPermissionsItems0 `json:"permissions,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// server
-	Server *ApplicationCifsPropertiesServer `json:"server,omitempty"`
+	Server *ApplicationCifsPropertiesInlineServer `json:"server,omitempty"`
 
 	// share
-	Share *ApplicationCifsPropertiesShare `json:"share,omitempty"`
+	Share *ApplicationCifsPropertiesInlineShare `json:"share,omitempty"`
 }
 
 // Validate validates this application cifs properties
 func (m *ApplicationCifsProperties) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBackingStorage(formats); err != nil {
+	if err := m.validateApplicationCifsPropertiesInlinePermissions(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePermissions(formats); err != nil {
+	if err := m.validateBackingStorage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -68,6 +68,30 @@ func (m *ApplicationCifsProperties) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ApplicationCifsProperties) validateApplicationCifsPropertiesInlinePermissions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationCifsPropertiesInlinePermissions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationCifsPropertiesInlinePermissions); i++ {
+		if swag.IsZero(m.ApplicationCifsPropertiesInlinePermissions[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationCifsPropertiesInlinePermissions[i] != nil {
+			if err := m.ApplicationCifsPropertiesInlinePermissions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ApplicationCifsProperties) validateBackingStorage(formats strfmt.Registry) error {
 	if swag.IsZero(m.BackingStorage) { // not required
 		return nil
@@ -80,30 +104,6 @@ func (m *ApplicationCifsProperties) validateBackingStorage(formats strfmt.Regist
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ApplicationCifsProperties) validatePermissions(formats strfmt.Registry) error {
-	if swag.IsZero(m.Permissions) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Permissions); i++ {
-		if swag.IsZero(m.Permissions[i]) { // not required
-			continue
-		}
-
-		if m.Permissions[i] != nil {
-			if err := m.Permissions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -147,19 +147,19 @@ func (m *ApplicationCifsProperties) validateShare(formats strfmt.Registry) error
 func (m *ApplicationCifsProperties) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateApplicationCifsPropertiesInlineIps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationCifsPropertiesInlinePermissions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBackingStorage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidatePath(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePermissions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,6 +177,41 @@ func (m *ApplicationCifsProperties) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
+func (m *ApplicationCifsProperties) contextValidateApplicationCifsPropertiesInlineIps(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationCifsPropertiesInlineIps); i++ {
+
+		if err := validate.ReadOnly(ctx, "ips"+"."+strconv.Itoa(i), "body", m.ApplicationCifsPropertiesInlineIps[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationCifsProperties) contextValidateApplicationCifsPropertiesInlinePermissions(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "permissions", "body", []*ApplicationCifsPropertiesInlinePermissionsInlineArrayItem(m.ApplicationCifsPropertiesInlinePermissions)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ApplicationCifsPropertiesInlinePermissions); i++ {
+
+		if m.ApplicationCifsPropertiesInlinePermissions[i] != nil {
+			if err := m.ApplicationCifsPropertiesInlinePermissions[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ApplicationCifsProperties) contextValidateBackingStorage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BackingStorage != nil {
@@ -191,45 +226,10 @@ func (m *ApplicationCifsProperties) contextValidateBackingStorage(ctx context.Co
 	return nil
 }
 
-func (m *ApplicationCifsProperties) contextValidateIps(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Ips); i++ {
-
-		if err := validate.ReadOnly(ctx, "ips"+"."+strconv.Itoa(i), "body", string(m.Ips[i])); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationCifsProperties) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ApplicationCifsProperties) contextValidatePermissions(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "permissions", "body", []*ApplicationCifsPropertiesPermissionsItems0(m.Permissions)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Permissions); i++ {
-
-		if m.Permissions[i] != nil {
-			if err := m.Permissions[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -281,23 +281,23 @@ func (m *ApplicationCifsProperties) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationCifsPropertiesBackingStorage application cifs properties backing storage
+// ApplicationCifsPropertiesInlineBackingStorage application cifs properties inline backing storage
 //
-// swagger:model ApplicationCifsPropertiesBackingStorage
-type ApplicationCifsPropertiesBackingStorage struct {
+// swagger:model application_cifs_properties_inline_backing_storage
+type ApplicationCifsPropertiesInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
 	// Enum: [volume]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application cifs properties backing storage
-func (m *ApplicationCifsPropertiesBackingStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this application cifs properties inline backing storage
+func (m *ApplicationCifsPropertiesInlineBackingStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -310,7 +310,7 @@ func (m *ApplicationCifsPropertiesBackingStorage) Validate(formats strfmt.Regist
 	return nil
 }
 
-var applicationCifsPropertiesBackingStorageTypeTypePropEnum []interface{}
+var applicationCifsPropertiesInlineBackingStorageTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -318,46 +318,46 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationCifsPropertiesBackingStorageTypeTypePropEnum = append(applicationCifsPropertiesBackingStorageTypeTypePropEnum, v)
+		applicationCifsPropertiesInlineBackingStorageTypeTypePropEnum = append(applicationCifsPropertiesInlineBackingStorageTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationCifsPropertiesBackingStorage
-	// ApplicationCifsPropertiesBackingStorage
+	// application_cifs_properties_inline_backing_storage
+	// ApplicationCifsPropertiesInlineBackingStorage
 	// type
 	// Type
 	// volume
 	// END DEBUGGING
-	// ApplicationCifsPropertiesBackingStorageTypeVolume captures enum value "volume"
-	ApplicationCifsPropertiesBackingStorageTypeVolume string = "volume"
+	// ApplicationCifsPropertiesInlineBackingStorageTypeVolume captures enum value "volume"
+	ApplicationCifsPropertiesInlineBackingStorageTypeVolume string = "volume"
 )
 
 // prop value enum
-func (m *ApplicationCifsPropertiesBackingStorage) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationCifsPropertiesBackingStorageTypeTypePropEnum, true); err != nil {
+func (m *ApplicationCifsPropertiesInlineBackingStorage) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationCifsPropertiesInlineBackingStorageTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesBackingStorage) validateType(formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlineBackingStorage) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application cifs properties backing storage based on the context it is used
-func (m *ApplicationCifsPropertiesBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application cifs properties inline backing storage based on the context it is used
+func (m *ApplicationCifsPropertiesInlineBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
@@ -374,18 +374,18 @@ func (m *ApplicationCifsPropertiesBackingStorage) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlineBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlineBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -393,7 +393,7 @@ func (m *ApplicationCifsPropertiesBackingStorage) contextValidateUUID(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesBackingStorage) MarshalBinary() ([]byte, error) {
+func (m *ApplicationCifsPropertiesInlineBackingStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -401,8 +401,8 @@ func (m *ApplicationCifsPropertiesBackingStorage) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesBackingStorage) UnmarshalBinary(b []byte) error {
-	var res ApplicationCifsPropertiesBackingStorage
+func (m *ApplicationCifsPropertiesInlineBackingStorage) UnmarshalBinary(b []byte) error {
+	var res ApplicationCifsPropertiesInlineBackingStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -410,27 +410,27 @@ func (m *ApplicationCifsPropertiesBackingStorage) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// ApplicationCifsPropertiesPermissionsItems0 application cifs properties permissions items0
+// ApplicationCifsPropertiesInlinePermissionsInlineArrayItem application cifs properties inline permissions inline array item
 //
-// swagger:model ApplicationCifsPropertiesPermissionsItems0
-type ApplicationCifsPropertiesPermissionsItems0 struct {
+// swagger:model application_cifs_properties_inline_permissions_inline_array_item
+type ApplicationCifsPropertiesInlinePermissionsInlineArrayItem struct {
 
 	// Access granted to the user or group
 	// Read Only: true
-	Access string `json:"access,omitempty"`
+	Access *string `json:"access,omitempty"`
 
 	// User or group
 	// Read Only: true
-	UserOrGroup string `json:"user_or_group,omitempty"`
+	UserOrGroup *string `json:"user_or_group,omitempty"`
 }
 
-// Validate validates this application cifs properties permissions items0
-func (m *ApplicationCifsPropertiesPermissionsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this application cifs properties inline permissions inline array item
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application cifs properties permissions items0 based on the context it is used
-func (m *ApplicationCifsPropertiesPermissionsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application cifs properties inline permissions inline array item based on the context it is used
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAccess(ctx, formats); err != nil {
@@ -447,18 +447,18 @@ func (m *ApplicationCifsPropertiesPermissionsItems0) ContextValidate(ctx context
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesPermissionsItems0) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access", "body", string(m.Access)); err != nil {
+	if err := validate.ReadOnly(ctx, "access", "body", m.Access); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesPermissionsItems0) contextValidateUserOrGroup(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) contextValidateUserOrGroup(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user_or_group", "body", string(m.UserOrGroup)); err != nil {
+	if err := validate.ReadOnly(ctx, "user_or_group", "body", m.UserOrGroup); err != nil {
 		return err
 	}
 
@@ -466,7 +466,7 @@ func (m *ApplicationCifsPropertiesPermissionsItems0) contextValidateUserOrGroup(
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesPermissionsItems0) MarshalBinary() ([]byte, error) {
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -474,8 +474,8 @@ func (m *ApplicationCifsPropertiesPermissionsItems0) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesPermissionsItems0) UnmarshalBinary(b []byte) error {
-	var res ApplicationCifsPropertiesPermissionsItems0
+func (m *ApplicationCifsPropertiesInlinePermissionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ApplicationCifsPropertiesInlinePermissionsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -483,23 +483,23 @@ func (m *ApplicationCifsPropertiesPermissionsItems0) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ApplicationCifsPropertiesServer application cifs properties server
+// ApplicationCifsPropertiesInlineServer application cifs properties inline server
 //
-// swagger:model ApplicationCifsPropertiesServer
-type ApplicationCifsPropertiesServer struct {
+// swagger:model application_cifs_properties_inline_server
+type ApplicationCifsPropertiesInlineServer struct {
 
 	// Server name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application cifs properties server
-func (m *ApplicationCifsPropertiesServer) Validate(formats strfmt.Registry) error {
+// Validate validates this application cifs properties inline server
+func (m *ApplicationCifsPropertiesInlineServer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application cifs properties server based on the context it is used
-func (m *ApplicationCifsPropertiesServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application cifs properties inline server based on the context it is used
+func (m *ApplicationCifsPropertiesInlineServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -512,9 +512,9 @@ func (m *ApplicationCifsPropertiesServer) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesServer) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlineServer) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "server"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "server"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -522,7 +522,7 @@ func (m *ApplicationCifsPropertiesServer) contextValidateName(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesServer) MarshalBinary() ([]byte, error) {
+func (m *ApplicationCifsPropertiesInlineServer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -530,8 +530,8 @@ func (m *ApplicationCifsPropertiesServer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesServer) UnmarshalBinary(b []byte) error {
-	var res ApplicationCifsPropertiesServer
+func (m *ApplicationCifsPropertiesInlineServer) UnmarshalBinary(b []byte) error {
+	var res ApplicationCifsPropertiesInlineServer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -539,23 +539,23 @@ func (m *ApplicationCifsPropertiesServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationCifsPropertiesShare application cifs properties share
+// ApplicationCifsPropertiesInlineShare application cifs properties inline share
 //
-// swagger:model ApplicationCifsPropertiesShare
-type ApplicationCifsPropertiesShare struct {
+// swagger:model application_cifs_properties_inline_share
+type ApplicationCifsPropertiesInlineShare struct {
 
 	// Share name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application cifs properties share
-func (m *ApplicationCifsPropertiesShare) Validate(formats strfmt.Registry) error {
+// Validate validates this application cifs properties inline share
+func (m *ApplicationCifsPropertiesInlineShare) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application cifs properties share based on the context it is used
-func (m *ApplicationCifsPropertiesShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application cifs properties inline share based on the context it is used
+func (m *ApplicationCifsPropertiesInlineShare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -568,9 +568,9 @@ func (m *ApplicationCifsPropertiesShare) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *ApplicationCifsPropertiesShare) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationCifsPropertiesInlineShare) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "share"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "share"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -578,7 +578,7 @@ func (m *ApplicationCifsPropertiesShare) contextValidateName(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesShare) MarshalBinary() ([]byte, error) {
+func (m *ApplicationCifsPropertiesInlineShare) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -586,8 +586,8 @@ func (m *ApplicationCifsPropertiesShare) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationCifsPropertiesShare) UnmarshalBinary(b []byte) error {
-	var res ApplicationCifsPropertiesShare
+func (m *ApplicationCifsPropertiesInlineShare) UnmarshalBinary(b []byte) error {
+	var res ApplicationCifsPropertiesInlineShare
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

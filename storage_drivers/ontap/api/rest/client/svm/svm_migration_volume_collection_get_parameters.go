@@ -66,19 +66,19 @@ type SvmMigrationVolumeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type SvmMigrationVolumeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,13 +94,13 @@ type SvmMigrationVolumeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmMigrationUUID.
 
 	   Migration UUID
 	*/
-	SVMMigrationUUIDPathParameter string
+	SvmMigrationUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,14 +120,14 @@ func (o *SvmMigrationVolumeCollectionGetParams) WithDefaults() *SvmMigrationVolu
 // All values with no default are reset to their zero value.
 func (o *SvmMigrationVolumeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmMigrationVolumeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -169,70 +169,70 @@ func (o *SvmMigrationVolumeCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmMigrationVolumeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithFields(fields []string) *SvmMigrationVolumeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmMigrationVolumeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmMigrationVolumeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmMigrationVolumeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithOrderBy(orderBy []string) *SvmMigrationVolumeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmMigrationVolumeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmMigrationVolumeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmMigrationVolumeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmMigrationVolumeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMMigrationUUIDPathParameter adds the svmMigrationUUID to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) WithSVMMigrationUUIDPathParameter(svmMigrationUUID string) *SvmMigrationVolumeCollectionGetParams {
-	o.SetSVMMigrationUUIDPathParameter(svmMigrationUUID)
+// WithSvmMigrationUUID adds the svmMigrationUUID to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) WithSvmMigrationUUID(svmMigrationUUID string) *SvmMigrationVolumeCollectionGetParams {
+	o.SetSvmMigrationUUID(svmMigrationUUID)
 	return o
 }
 
-// SetSVMMigrationUUIDPathParameter adds the svmMigrationUuid to the svm migration volume collection get params
-func (o *SvmMigrationVolumeCollectionGetParams) SetSVMMigrationUUIDPathParameter(svmMigrationUUID string) {
-	o.SVMMigrationUUIDPathParameter = svmMigrationUUID
+// SetSvmMigrationUUID adds the svmMigrationUuid to the svm migration volume collection get params
+func (o *SvmMigrationVolumeCollectionGetParams) SetSvmMigrationUUID(svmMigrationUUID string) {
+	o.SvmMigrationUUID = svmMigrationUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -243,7 +243,7 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -254,13 +254,13 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -271,7 +271,7 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -282,13 +282,13 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -299,13 +299,13 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -317,7 +317,7 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param svm_migration.uuid
-	if err := r.SetPathParam("svm_migration.uuid", o.SVMMigrationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm_migration.uuid", o.SvmMigrationUUID); err != nil {
 		return err
 	}
 
@@ -329,7 +329,7 @@ func (o *SvmMigrationVolumeCollectionGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSvmMigrationVolumeCollectionGet binds the parameter fields
 func (o *SvmMigrationVolumeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -346,7 +346,7 @@ func (o *SvmMigrationVolumeCollectionGetParams) bindParamFields(formats strfmt.R
 
 // bindParamSvmMigrationVolumeCollectionGet binds the parameter order_by
 func (o *SvmMigrationVolumeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

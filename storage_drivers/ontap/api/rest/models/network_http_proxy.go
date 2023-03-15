@@ -21,18 +21,18 @@ import (
 type NetworkHTTPProxy struct {
 
 	// links
-	Links *NetworkHTTPProxyLinks `json:"_links,omitempty"`
+	Links *NetworkHTTPProxyInlineLinks `json:"_links,omitempty"`
 
 	// Specifies whether or not authentication with the HTTP proxy server is enabled.
 	//
 	AuthenticationEnabled *bool `json:"authentication_enabled,omitempty"`
 
 	// ipspace
-	Ipspace *NetworkHTTPProxyIpspace `json:"ipspace,omitempty"`
+	Ipspace *NetworkHTTPProxyInlineIpspace `json:"ipspace,omitempty"`
 
 	// Password to authenticate with the HTTP proxy server when authentication_enabled is set to "true".
 	//
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// The port number on which the HTTP proxy service is configured on the
 	// proxy server.
@@ -40,29 +40,29 @@ type NetworkHTTPProxy struct {
 	// Example: 3128
 	// Maximum: 65535
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Set to “svm” for HTTP proxy owned by an SVM. Otherwise, set to "cluster".
 	//
 	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// Fully qualified domain name (FQDN) or IP address of the HTTP proxy server.
 	//
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// svm
-	Svm *NetworkHTTPProxySvm `json:"svm,omitempty"`
+	Svm *NetworkHTTPProxyInlineSvm `json:"svm,omitempty"`
 
 	// Username to authenticate with the HTTP proxy server when authentication_enabled is set to "true".
 	//
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 
 	// The UUID that uniquely identifies the HTTP proxy.
 	//
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this network http proxy
@@ -134,11 +134,11 @@ func (m *NetworkHTTPProxy) validatePort(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("port", "body", m.Port, 65535, false); err != nil {
+	if err := validate.MaximumInt("port", "body", *m.Port, 65535, false); err != nil {
 		return err
 	}
 
@@ -194,7 +194,7 @@ func (m *NetworkHTTPProxy) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -278,7 +278,7 @@ func (m *NetworkHTTPProxy) contextValidateIpspace(ctx context.Context, formats s
 
 func (m *NetworkHTTPProxy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -301,7 +301,7 @@ func (m *NetworkHTTPProxy) contextValidateSvm(ctx context.Context, formats strfm
 
 func (m *NetworkHTTPProxy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -326,25 +326,25 @@ func (m *NetworkHTTPProxy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input.
+// NetworkHTTPProxyInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input.
 //
-// swagger:model NetworkHTTPProxyIpspace
-type NetworkHTTPProxyIpspace struct {
+// swagger:model network_http_proxy_inline_ipspace
+type NetworkHTTPProxyInlineIpspace struct {
 
 	// links
-	Links *NetworkHTTPProxyIpspaceLinks `json:"_links,omitempty"`
+	Links *NetworkHTTPProxyInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this network HTTP proxy ipspace
-func (m *NetworkHTTPProxyIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy inline ipspace
+func (m *NetworkHTTPProxyInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -357,7 +357,7 @@ func (m *NetworkHTTPProxyIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkHTTPProxyIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -374,8 +374,8 @@ func (m *NetworkHTTPProxyIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy ipspace based on the context it is used
-func (m *NetworkHTTPProxyIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy inline ipspace based on the context it is used
+func (m *NetworkHTTPProxyInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -388,7 +388,7 @@ func (m *NetworkHTTPProxyIpspace) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NetworkHTTPProxyIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -403,7 +403,7 @@ func (m *NetworkHTTPProxyIpspace) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxyIpspace) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -411,8 +411,8 @@ func (m *NetworkHTTPProxyIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxyIpspace) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxyIpspace
+func (m *NetworkHTTPProxyInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -420,17 +420,17 @@ func (m *NetworkHTTPProxyIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyIpspaceLinks network HTTP proxy ipspace links
+// NetworkHTTPProxyInlineIpspaceInlineLinks network http proxy inline ipspace inline links
 //
-// swagger:model NetworkHTTPProxyIpspaceLinks
-type NetworkHTTPProxyIpspaceLinks struct {
+// swagger:model network_http_proxy_inline_ipspace_inline__links
+type NetworkHTTPProxyInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network HTTP proxy ipspace links
-func (m *NetworkHTTPProxyIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy inline ipspace inline links
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -443,7 +443,7 @@ func (m *NetworkHTTPProxyIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkHTTPProxyIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -460,8 +460,8 @@ func (m *NetworkHTTPProxyIpspaceLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy ipspace links based on the context it is used
-func (m *NetworkHTTPProxyIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy inline ipspace inline links based on the context it is used
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -474,7 +474,7 @@ func (m *NetworkHTTPProxyIpspaceLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *NetworkHTTPProxyIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -489,7 +489,7 @@ func (m *NetworkHTTPProxyIpspaceLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxyIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,8 +497,8 @@ func (m *NetworkHTTPProxyIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxyIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxyIpspaceLinks
+func (m *NetworkHTTPProxyInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -506,17 +506,17 @@ func (m *NetworkHTTPProxyIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxyLinks network HTTP proxy links
+// NetworkHTTPProxyInlineLinks network http proxy inline links
 //
-// swagger:model NetworkHTTPProxyLinks
-type NetworkHTTPProxyLinks struct {
+// swagger:model network_http_proxy_inline__links
+type NetworkHTTPProxyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network HTTP proxy links
-func (m *NetworkHTTPProxyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy inline links
+func (m *NetworkHTTPProxyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -529,7 +529,7 @@ func (m *NetworkHTTPProxyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkHTTPProxyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -546,8 +546,8 @@ func (m *NetworkHTTPProxyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy links based on the context it is used
-func (m *NetworkHTTPProxyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy inline links based on the context it is used
+func (m *NetworkHTTPProxyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -560,7 +560,7 @@ func (m *NetworkHTTPProxyLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NetworkHTTPProxyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -575,7 +575,7 @@ func (m *NetworkHTTPProxyLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxyLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -583,8 +583,8 @@ func (m *NetworkHTTPProxyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxyLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxyLinks
+func (m *NetworkHTTPProxyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -592,27 +592,27 @@ func (m *NetworkHTTPProxyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxySvm network HTTP proxy svm
+// NetworkHTTPProxyInlineSvm network http proxy inline svm
 //
-// swagger:model NetworkHTTPProxySvm
-type NetworkHTTPProxySvm struct {
+// swagger:model network_http_proxy_inline_svm
+type NetworkHTTPProxyInlineSvm struct {
 
 	// links
-	Links *NetworkHTTPProxySvmLinks `json:"_links,omitempty"`
+	Links *NetworkHTTPProxyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this network HTTP proxy svm
-func (m *NetworkHTTPProxySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy inline svm
+func (m *NetworkHTTPProxyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -625,7 +625,7 @@ func (m *NetworkHTTPProxySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkHTTPProxySvm) validateLinks(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -642,8 +642,8 @@ func (m *NetworkHTTPProxySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy svm based on the context it is used
-func (m *NetworkHTTPProxySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy inline svm based on the context it is used
+func (m *NetworkHTTPProxyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -656,7 +656,7 @@ func (m *NetworkHTTPProxySvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NetworkHTTPProxySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -671,7 +671,7 @@ func (m *NetworkHTTPProxySvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxySvm) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -679,8 +679,8 @@ func (m *NetworkHTTPProxySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxySvm) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxySvm
+func (m *NetworkHTTPProxyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -688,17 +688,17 @@ func (m *NetworkHTTPProxySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkHTTPProxySvmLinks network HTTP proxy svm links
+// NetworkHTTPProxyInlineSvmInlineLinks network http proxy inline svm inline links
 //
-// swagger:model NetworkHTTPProxySvmLinks
-type NetworkHTTPProxySvmLinks struct {
+// swagger:model network_http_proxy_inline_svm_inline__links
+type NetworkHTTPProxyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network HTTP proxy svm links
-func (m *NetworkHTTPProxySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network http proxy inline svm inline links
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -711,7 +711,7 @@ func (m *NetworkHTTPProxySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkHTTPProxySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -728,8 +728,8 @@ func (m *NetworkHTTPProxySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network HTTP proxy svm links based on the context it is used
-func (m *NetworkHTTPProxySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network http proxy inline svm inline links based on the context it is used
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -742,7 +742,7 @@ func (m *NetworkHTTPProxySvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NetworkHTTPProxySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -757,7 +757,7 @@ func (m *NetworkHTTPProxySvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkHTTPProxySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -765,8 +765,8 @@ func (m *NetworkHTTPProxySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkHTTPProxySvmLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkHTTPProxySvmLinks
+func (m *NetworkHTTPProxyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkHTTPProxyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

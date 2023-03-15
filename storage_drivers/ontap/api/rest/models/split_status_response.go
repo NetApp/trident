@@ -23,10 +23,11 @@ type SplitStatusResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SplitStatus `json:"records,omitempty"`
+	// split status response inline records
+	SplitStatusResponseInlineRecords []*SplitStatus `json:"records,omitempty"`
 }
 
 // Validate validates this split status response
@@ -37,7 +38,7 @@ func (m *SplitStatusResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSplitStatusResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SplitStatusResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SplitStatusResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SplitStatusResponse) validateSplitStatusResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SplitStatusResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SplitStatusResponseInlineRecords); i++ {
+		if swag.IsZero(m.SplitStatusResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SplitStatusResponseInlineRecords[i] != nil {
+			if err := m.SplitStatusResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SplitStatusResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSplitStatusResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SplitStatusResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SplitStatusResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitStatusResponse) contextValidateSplitStatusResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SplitStatusResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SplitStatusResponseInlineRecords[i] != nil {
+			if err := m.SplitStatusResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

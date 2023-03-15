@@ -21,13 +21,13 @@ import (
 type Publickey struct {
 
 	// links
-	Links *PublickeyLinks `json:"_links,omitempty"`
+	Links *PublickeyInlineLinks `json:"_links,omitempty"`
 
 	// account
 	Account *AccountReference `json:"account,omitempty"`
 
 	// Optional comment for the public key.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Index number for the public key (where there are multiple keys for the same account).
 	// Maximum: 99
@@ -36,22 +36,22 @@ type Publickey struct {
 
 	// The obfuscated fingerprint for the public key (READONLY).
 	// Read Only: true
-	ObfuscatedFingerprint string `json:"obfuscated_fingerprint,omitempty"`
+	ObfuscatedFingerprint *string `json:"obfuscated_fingerprint,omitempty"`
 
 	// owner
-	Owner *PublickeyOwner `json:"owner,omitempty"`
+	Owner *PublickeyInlineOwner `json:"owner,omitempty"`
 
 	// The public key
-	PublicKey string `json:"public_key,omitempty"`
+	PublicKey *string `json:"public_key,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// The SHA fingerprint for the public key (READONLY).
 	// Read Only: true
-	ShaFingerprint string `json:"sha_fingerprint,omitempty"`
+	ShaFingerprint *string `json:"sha_fingerprint,omitempty"`
 }
 
 // Validate validates this publickey
@@ -200,7 +200,7 @@ func (m *Publickey) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -271,7 +271,7 @@ func (m *Publickey) contextValidateAccount(ctx context.Context, formats strfmt.R
 
 func (m *Publickey) contextValidateObfuscatedFingerprint(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "obfuscated_fingerprint", "body", string(m.ObfuscatedFingerprint)); err != nil {
+	if err := validate.ReadOnly(ctx, "obfuscated_fingerprint", "body", m.ObfuscatedFingerprint); err != nil {
 		return err
 	}
 
@@ -294,7 +294,7 @@ func (m *Publickey) contextValidateOwner(ctx context.Context, formats strfmt.Reg
 
 func (m *Publickey) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -303,7 +303,7 @@ func (m *Publickey) contextValidateScope(ctx context.Context, formats strfmt.Reg
 
 func (m *Publickey) contextValidateShaFingerprint(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "sha_fingerprint", "body", string(m.ShaFingerprint)); err != nil {
+	if err := validate.ReadOnly(ctx, "sha_fingerprint", "body", m.ShaFingerprint); err != nil {
 		return err
 	}
 
@@ -328,17 +328,17 @@ func (m *Publickey) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PublickeyLinks publickey links
+// PublickeyInlineLinks publickey inline links
 //
-// swagger:model PublickeyLinks
-type PublickeyLinks struct {
+// swagger:model publickey_inline__links
+type PublickeyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this publickey links
-func (m *PublickeyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this publickey inline links
+func (m *PublickeyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -351,7 +351,7 @@ func (m *PublickeyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PublickeyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -368,8 +368,8 @@ func (m *PublickeyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this publickey links based on the context it is used
-func (m *PublickeyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this publickey inline links based on the context it is used
+func (m *PublickeyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -382,7 +382,7 @@ func (m *PublickeyLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *PublickeyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -397,7 +397,7 @@ func (m *PublickeyLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *PublickeyLinks) MarshalBinary() ([]byte, error) {
+func (m *PublickeyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -405,8 +405,8 @@ func (m *PublickeyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PublickeyLinks) UnmarshalBinary(b []byte) error {
-	var res PublickeyLinks
+func (m *PublickeyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PublickeyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -414,27 +414,27 @@ func (m *PublickeyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PublickeyOwner Owner name and UUID that uniquely identifies the public key.
+// PublickeyInlineOwner Owner name and UUID that uniquely identifies the public key.
 //
-// swagger:model PublickeyOwner
-type PublickeyOwner struct {
+// swagger:model publickey_inline_owner
+type PublickeyInlineOwner struct {
 
 	// links
-	Links *PublickeyOwnerLinks `json:"_links,omitempty"`
+	Links *PublickeyInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this publickey owner
-func (m *PublickeyOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this publickey inline owner
+func (m *PublickeyInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -447,7 +447,7 @@ func (m *PublickeyOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyOwner) validateLinks(formats strfmt.Registry) error {
+func (m *PublickeyInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -464,8 +464,8 @@ func (m *PublickeyOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this publickey owner based on the context it is used
-func (m *PublickeyOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this publickey inline owner based on the context it is used
+func (m *PublickeyInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -478,7 +478,7 @@ func (m *PublickeyOwner) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *PublickeyOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -493,7 +493,7 @@ func (m *PublickeyOwner) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *PublickeyOwner) MarshalBinary() ([]byte, error) {
+func (m *PublickeyInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -501,8 +501,8 @@ func (m *PublickeyOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PublickeyOwner) UnmarshalBinary(b []byte) error {
-	var res PublickeyOwner
+func (m *PublickeyInlineOwner) UnmarshalBinary(b []byte) error {
+	var res PublickeyInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -510,17 +510,17 @@ func (m *PublickeyOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PublickeyOwnerLinks publickey owner links
+// PublickeyInlineOwnerInlineLinks publickey inline owner inline links
 //
-// swagger:model PublickeyOwnerLinks
-type PublickeyOwnerLinks struct {
+// swagger:model publickey_inline_owner_inline__links
+type PublickeyInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this publickey owner links
-func (m *PublickeyOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this publickey inline owner inline links
+func (m *PublickeyInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -533,7 +533,7 @@ func (m *PublickeyOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PublickeyInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -550,8 +550,8 @@ func (m *PublickeyOwnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this publickey owner links based on the context it is used
-func (m *PublickeyOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this publickey inline owner inline links based on the context it is used
+func (m *PublickeyInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -564,7 +564,7 @@ func (m *PublickeyOwnerLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *PublickeyOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -579,7 +579,7 @@ func (m *PublickeyOwnerLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *PublickeyOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *PublickeyInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -587,8 +587,8 @@ func (m *PublickeyOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PublickeyOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res PublickeyOwnerLinks
+func (m *PublickeyInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PublickeyInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

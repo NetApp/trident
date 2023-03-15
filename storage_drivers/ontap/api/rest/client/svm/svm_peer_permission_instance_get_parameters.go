@@ -66,13 +66,13 @@ type SvmPeerPermissionInstanceGetParams struct {
 
 	   Peer cluster UUID
 	*/
-	ClusterPeerUUIDPathParameter string
+	ClusterPeerUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ReturnTimeout.
 
@@ -80,13 +80,13 @@ type SvmPeerPermissionInstanceGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *SvmPeerPermissionInstanceGetParams) WithDefaults() *SvmPeerPermissionIn
 // All values with no default are reset to their zero value.
 func (o *SvmPeerPermissionInstanceGetParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmPeerPermissionInstanceGetParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,48 +152,48 @@ func (o *SvmPeerPermissionInstanceGetParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithClusterPeerUUIDPathParameter adds the clusterPeerUUID to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithClusterPeerUUIDPathParameter(clusterPeerUUID string) *SvmPeerPermissionInstanceGetParams {
-	o.SetClusterPeerUUIDPathParameter(clusterPeerUUID)
+// WithClusterPeerUUID adds the clusterPeerUUID to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithClusterPeerUUID(clusterPeerUUID string) *SvmPeerPermissionInstanceGetParams {
+	o.SetClusterPeerUUID(clusterPeerUUID)
 	return o
 }
 
-// SetClusterPeerUUIDPathParameter adds the clusterPeerUuid to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetClusterPeerUUIDPathParameter(clusterPeerUUID string) {
-	o.ClusterPeerUUIDPathParameter = clusterPeerUUID
+// SetClusterPeerUUID adds the clusterPeerUuid to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetClusterPeerUUID(clusterPeerUUID string) {
+	o.ClusterPeerUUID = clusterPeerUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithFieldsQueryParameter(fields []string) *SvmPeerPermissionInstanceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithFields(fields []string) *SvmPeerPermissionInstanceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerPermissionInstanceGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerPermissionInstanceGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithSVMUUIDPathParameter(svmUUID string) *SvmPeerPermissionInstanceGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithSvmUUID(svmUUID string) *SvmPeerPermissionInstanceGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,11 +205,11 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 	var res []error
 
 	// path param cluster_peer.uuid
-	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -220,13 +220,13 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -238,7 +238,7 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -250,7 +250,7 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamSvmPeerPermissionInstanceGet binds the parameter fields
 func (o *SvmPeerPermissionInstanceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

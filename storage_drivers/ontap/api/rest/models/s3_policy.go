@@ -31,17 +31,17 @@ type S3Policy struct {
 	// Max Length: 128
 	// Min Length: 1
 	// Pattern: ^[0-9A-Za-z_+=,.@-]{1,128}$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies whether or not the s3 policy is read only. This parameter should not be specified in the POST method.
 	// Read Only: true
 	ReadOnly *bool `json:"read-only,omitempty"`
 
 	// Specifies the policy statements.
-	Statements []*S3PolicyStatement `json:"statements,omitempty"`
+	S3PolicyInlineStatements []*S3PolicyStatement `json:"statements,omitempty"`
 
 	// svm
-	Svm *S3PolicySvm `json:"svm,omitempty"`
+	Svm *S3PolicyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this s3 policy
@@ -56,7 +56,7 @@ func (m *S3Policy) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateStatements(formats); err != nil {
+	if err := m.validateS3PolicyInlineStatements(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -91,33 +91,33 @@ func (m *S3Policy) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 128); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 128); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", m.Name, `^[0-9A-Za-z_+=,.@-]{1,128}$`); err != nil {
+	if err := validate.Pattern("name", "body", *m.Name, `^[0-9A-Za-z_+=,.@-]{1,128}$`); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3Policy) validateStatements(formats strfmt.Registry) error {
-	if swag.IsZero(m.Statements) { // not required
+func (m *S3Policy) validateS3PolicyInlineStatements(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3PolicyInlineStatements) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Statements); i++ {
-		if swag.IsZero(m.Statements[i]) { // not required
+	for i := 0; i < len(m.S3PolicyInlineStatements); i++ {
+		if swag.IsZero(m.S3PolicyInlineStatements[i]) { // not required
 			continue
 		}
 
-		if m.Statements[i] != nil {
-			if err := m.Statements[i].Validate(formats); err != nil {
+		if m.S3PolicyInlineStatements[i] != nil {
+			if err := m.S3PolicyInlineStatements[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("statements" + "." + strconv.Itoa(i))
 				}
@@ -155,7 +155,7 @@ func (m *S3Policy) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateStatements(ctx, formats); err != nil {
+	if err := m.contextValidateS3PolicyInlineStatements(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -178,12 +178,12 @@ func (m *S3Policy) contextValidateReadOnly(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *S3Policy) contextValidateStatements(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3Policy) contextValidateS3PolicyInlineStatements(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Statements); i++ {
+	for i := 0; i < len(m.S3PolicyInlineStatements); i++ {
 
-		if m.Statements[i] != nil {
-			if err := m.Statements[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3PolicyInlineStatements[i] != nil {
+			if err := m.S3PolicyInlineStatements[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("statements" + "." + strconv.Itoa(i))
 				}
@@ -228,27 +228,27 @@ func (m *S3Policy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3PolicySvm s3 policy svm
+// S3PolicyInlineSvm s3 policy inline svm
 //
-// swagger:model S3PolicySvm
-type S3PolicySvm struct {
+// swagger:model s3_policy_inline_svm
+type S3PolicyInlineSvm struct {
 
 	// links
-	Links *S3PolicySvmLinks `json:"_links,omitempty"`
+	Links *S3PolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 policy svm
-func (m *S3PolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 policy inline svm
+func (m *S3PolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -261,7 +261,7 @@ func (m *S3PolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3PolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *S3PolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -278,8 +278,8 @@ func (m *S3PolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 policy svm based on the context it is used
-func (m *S3PolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 policy inline svm based on the context it is used
+func (m *S3PolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -292,7 +292,7 @@ func (m *S3PolicySvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *S3PolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3PolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -307,7 +307,7 @@ func (m *S3PolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *S3PolicySvm) MarshalBinary() ([]byte, error) {
+func (m *S3PolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -315,8 +315,8 @@ func (m *S3PolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3PolicySvm) UnmarshalBinary(b []byte) error {
-	var res S3PolicySvm
+func (m *S3PolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res S3PolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -324,17 +324,17 @@ func (m *S3PolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3PolicySvmLinks s3 policy svm links
+// S3PolicyInlineSvmInlineLinks s3 policy inline svm inline links
 //
-// swagger:model S3PolicySvmLinks
-type S3PolicySvmLinks struct {
+// swagger:model s3_policy_inline_svm_inline__links
+type S3PolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 policy svm links
-func (m *S3PolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 policy inline svm inline links
+func (m *S3PolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -347,7 +347,7 @@ func (m *S3PolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3PolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3PolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -364,8 +364,8 @@ func (m *S3PolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 policy svm links based on the context it is used
-func (m *S3PolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 policy inline svm inline links based on the context it is used
+func (m *S3PolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -378,7 +378,7 @@ func (m *S3PolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *S3PolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3PolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -393,7 +393,7 @@ func (m *S3PolicySvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *S3PolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *S3PolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -401,8 +401,8 @@ func (m *S3PolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3PolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3PolicySvmLinks
+func (m *S3PolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3PolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

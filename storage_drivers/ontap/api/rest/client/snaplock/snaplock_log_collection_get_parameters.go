@@ -66,91 +66,91 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LogArchiveBaseName.
 
 	   Filter by log_archive.base_name
 	*/
-	LogArchiveBaseNameQueryParameter *string
+	LogArchiveBaseName *string
 
 	/* LogArchiveExpiryTime.
 
 	   Filter by log_archive.expiry_time
 	*/
-	LogArchiveExpiryTimeQueryParameter *string
+	LogArchiveExpiryTime *string
 
 	/* LogArchivePath.
 
 	   Filter by log_archive.path
 	*/
-	LogArchivePathQueryParameter *string
+	LogArchivePath *string
 
 	/* LogArchiveSize.
 
 	   Filter by log_archive.size
 	*/
-	LogArchiveSizeQueryParameter *int64
+	LogArchiveSize *int64
 
 	/* LogFilesBaseName.
 
 	   Filter by log_files.base_name
 	*/
-	LogFilesBaseNameQueryParameter *string
+	LogFilesBaseName *string
 
 	/* LogFilesExpiryTime.
 
 	   Filter by log_files.expiry_time
 	*/
-	LogFilesExpiryTimeQueryParameter *string
+	LogFilesExpiryTime *string
 
 	/* LogFilesPath.
 
 	   Filter by log_files.path
 	*/
-	LogFilesPathQueryParameter *string
+	LogFilesPath *string
 
 	/* LogFilesSize.
 
 	   Filter by log_files.size
 	*/
-	LogFilesSizeQueryParameter *int64
+	LogFilesSize *int64
 
 	/* LogVolumeMaxLogSize.
 
 	   Filter by log_volume.max_log_size
 	*/
-	LogVolumeMaxLogSizeQueryParameter *int64
+	LogVolumeMaxLogSize *int64
 
 	/* LogVolumeRetentionPeriod.
 
 	   Filter by log_volume.retention_period
 	*/
-	LogVolumeRetentionPeriodQueryParameter *string
+	LogVolumeRetentionPeriod *string
 
 	/* LogVolumeVolumeName.
 
 	   Filter by log_volume.volume.name
 	*/
-	LogVolumeVolumeNameQueryParameter *string
+	LogVolumeVolumeName *string
 
 	/* LogVolumeVolumeUUID.
 
 	   Filter by log_volume.volume.uuid
 	*/
-	LogVolumeVolumeUUIDQueryParameter *string
+	LogVolumeVolumeUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -158,7 +158,7 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -166,19 +166,19 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *SnaplockLogCollectionGetParams) WithDefaults() *SnaplockLogCollectionGe
 // All values with no default are reset to their zero value.
 func (o *SnaplockLogCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnaplockLogCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *SnaplockLogCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLogCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithFields(fields []string) *SnaplockLogCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLogArchiveBaseNameQueryParameter adds the logArchiveBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveBaseNameQueryParameter(logArchiveBaseName *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveBaseNameQueryParameter(logArchiveBaseName)
+// WithLogArchiveBaseName adds the logArchiveBaseName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogArchiveBaseName(logArchiveBaseName *string) *SnaplockLogCollectionGetParams {
+	o.SetLogArchiveBaseName(logArchiveBaseName)
 	return o
 }
 
-// SetLogArchiveBaseNameQueryParameter adds the logArchiveBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveBaseNameQueryParameter(logArchiveBaseName *string) {
-	o.LogArchiveBaseNameQueryParameter = logArchiveBaseName
+// SetLogArchiveBaseName adds the logArchiveBaseName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogArchiveBaseName(logArchiveBaseName *string) {
+	o.LogArchiveBaseName = logArchiveBaseName
 }
 
-// WithLogArchiveExpiryTimeQueryParameter adds the logArchiveExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveExpiryTimeQueryParameter(logArchiveExpiryTime *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveExpiryTimeQueryParameter(logArchiveExpiryTime)
+// WithLogArchiveExpiryTime adds the logArchiveExpiryTime to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogArchiveExpiryTime(logArchiveExpiryTime *string) *SnaplockLogCollectionGetParams {
+	o.SetLogArchiveExpiryTime(logArchiveExpiryTime)
 	return o
 }
 
-// SetLogArchiveExpiryTimeQueryParameter adds the logArchiveExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveExpiryTimeQueryParameter(logArchiveExpiryTime *string) {
-	o.LogArchiveExpiryTimeQueryParameter = logArchiveExpiryTime
+// SetLogArchiveExpiryTime adds the logArchiveExpiryTime to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogArchiveExpiryTime(logArchiveExpiryTime *string) {
+	o.LogArchiveExpiryTime = logArchiveExpiryTime
 }
 
-// WithLogArchivePathQueryParameter adds the logArchivePath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchivePathQueryParameter(logArchivePath *string) *SnaplockLogCollectionGetParams {
-	o.SetLogArchivePathQueryParameter(logArchivePath)
+// WithLogArchivePath adds the logArchivePath to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogArchivePath(logArchivePath *string) *SnaplockLogCollectionGetParams {
+	o.SetLogArchivePath(logArchivePath)
 	return o
 }
 
-// SetLogArchivePathQueryParameter adds the logArchivePath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchivePathQueryParameter(logArchivePath *string) {
-	o.LogArchivePathQueryParameter = logArchivePath
+// SetLogArchivePath adds the logArchivePath to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogArchivePath(logArchivePath *string) {
+	o.LogArchivePath = logArchivePath
 }
 
-// WithLogArchiveSizeQueryParameter adds the logArchiveSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogArchiveSizeQueryParameter(logArchiveSize *int64) *SnaplockLogCollectionGetParams {
-	o.SetLogArchiveSizeQueryParameter(logArchiveSize)
+// WithLogArchiveSize adds the logArchiveSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogArchiveSize(logArchiveSize *int64) *SnaplockLogCollectionGetParams {
+	o.SetLogArchiveSize(logArchiveSize)
 	return o
 }
 
-// SetLogArchiveSizeQueryParameter adds the logArchiveSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogArchiveSizeQueryParameter(logArchiveSize *int64) {
-	o.LogArchiveSizeQueryParameter = logArchiveSize
+// SetLogArchiveSize adds the logArchiveSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogArchiveSize(logArchiveSize *int64) {
+	o.LogArchiveSize = logArchiveSize
 }
 
-// WithLogFilesBaseNameQueryParameter adds the logFilesBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogFilesBaseNameQueryParameter(logFilesBaseName *string) *SnaplockLogCollectionGetParams {
-	o.SetLogFilesBaseNameQueryParameter(logFilesBaseName)
+// WithLogFilesBaseName adds the logFilesBaseName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogFilesBaseName(logFilesBaseName *string) *SnaplockLogCollectionGetParams {
+	o.SetLogFilesBaseName(logFilesBaseName)
 	return o
 }
 
-// SetLogFilesBaseNameQueryParameter adds the logFilesBaseName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogFilesBaseNameQueryParameter(logFilesBaseName *string) {
-	o.LogFilesBaseNameQueryParameter = logFilesBaseName
+// SetLogFilesBaseName adds the logFilesBaseName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogFilesBaseName(logFilesBaseName *string) {
+	o.LogFilesBaseName = logFilesBaseName
 }
 
-// WithLogFilesExpiryTimeQueryParameter adds the logFilesExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogFilesExpiryTimeQueryParameter(logFilesExpiryTime *string) *SnaplockLogCollectionGetParams {
-	o.SetLogFilesExpiryTimeQueryParameter(logFilesExpiryTime)
+// WithLogFilesExpiryTime adds the logFilesExpiryTime to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogFilesExpiryTime(logFilesExpiryTime *string) *SnaplockLogCollectionGetParams {
+	o.SetLogFilesExpiryTime(logFilesExpiryTime)
 	return o
 }
 
-// SetLogFilesExpiryTimeQueryParameter adds the logFilesExpiryTime to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogFilesExpiryTimeQueryParameter(logFilesExpiryTime *string) {
-	o.LogFilesExpiryTimeQueryParameter = logFilesExpiryTime
+// SetLogFilesExpiryTime adds the logFilesExpiryTime to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogFilesExpiryTime(logFilesExpiryTime *string) {
+	o.LogFilesExpiryTime = logFilesExpiryTime
 }
 
-// WithLogFilesPathQueryParameter adds the logFilesPath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogFilesPathQueryParameter(logFilesPath *string) *SnaplockLogCollectionGetParams {
-	o.SetLogFilesPathQueryParameter(logFilesPath)
+// WithLogFilesPath adds the logFilesPath to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogFilesPath(logFilesPath *string) *SnaplockLogCollectionGetParams {
+	o.SetLogFilesPath(logFilesPath)
 	return o
 }
 
-// SetLogFilesPathQueryParameter adds the logFilesPath to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogFilesPathQueryParameter(logFilesPath *string) {
-	o.LogFilesPathQueryParameter = logFilesPath
+// SetLogFilesPath adds the logFilesPath to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogFilesPath(logFilesPath *string) {
+	o.LogFilesPath = logFilesPath
 }
 
-// WithLogFilesSizeQueryParameter adds the logFilesSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogFilesSizeQueryParameter(logFilesSize *int64) *SnaplockLogCollectionGetParams {
-	o.SetLogFilesSizeQueryParameter(logFilesSize)
+// WithLogFilesSize adds the logFilesSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogFilesSize(logFilesSize *int64) *SnaplockLogCollectionGetParams {
+	o.SetLogFilesSize(logFilesSize)
 	return o
 }
 
-// SetLogFilesSizeQueryParameter adds the logFilesSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogFilesSizeQueryParameter(logFilesSize *int64) {
-	o.LogFilesSizeQueryParameter = logFilesSize
+// SetLogFilesSize adds the logFilesSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogFilesSize(logFilesSize *int64) {
+	o.LogFilesSize = logFilesSize
 }
 
-// WithLogVolumeMaxLogSizeQueryParameter adds the logVolumeMaxLogSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogVolumeMaxLogSizeQueryParameter(logVolumeMaxLogSize *int64) *SnaplockLogCollectionGetParams {
-	o.SetLogVolumeMaxLogSizeQueryParameter(logVolumeMaxLogSize)
+// WithLogVolumeMaxLogSize adds the logVolumeMaxLogSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogVolumeMaxLogSize(logVolumeMaxLogSize *int64) *SnaplockLogCollectionGetParams {
+	o.SetLogVolumeMaxLogSize(logVolumeMaxLogSize)
 	return o
 }
 
-// SetLogVolumeMaxLogSizeQueryParameter adds the logVolumeMaxLogSize to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogVolumeMaxLogSizeQueryParameter(logVolumeMaxLogSize *int64) {
-	o.LogVolumeMaxLogSizeQueryParameter = logVolumeMaxLogSize
+// SetLogVolumeMaxLogSize adds the logVolumeMaxLogSize to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogVolumeMaxLogSize(logVolumeMaxLogSize *int64) {
+	o.LogVolumeMaxLogSize = logVolumeMaxLogSize
 }
 
-// WithLogVolumeRetentionPeriodQueryParameter adds the logVolumeRetentionPeriod to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogVolumeRetentionPeriodQueryParameter(logVolumeRetentionPeriod *string) *SnaplockLogCollectionGetParams {
-	o.SetLogVolumeRetentionPeriodQueryParameter(logVolumeRetentionPeriod)
+// WithLogVolumeRetentionPeriod adds the logVolumeRetentionPeriod to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogVolumeRetentionPeriod(logVolumeRetentionPeriod *string) *SnaplockLogCollectionGetParams {
+	o.SetLogVolumeRetentionPeriod(logVolumeRetentionPeriod)
 	return o
 }
 
-// SetLogVolumeRetentionPeriodQueryParameter adds the logVolumeRetentionPeriod to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogVolumeRetentionPeriodQueryParameter(logVolumeRetentionPeriod *string) {
-	o.LogVolumeRetentionPeriodQueryParameter = logVolumeRetentionPeriod
+// SetLogVolumeRetentionPeriod adds the logVolumeRetentionPeriod to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogVolumeRetentionPeriod(logVolumeRetentionPeriod *string) {
+	o.LogVolumeRetentionPeriod = logVolumeRetentionPeriod
 }
 
-// WithLogVolumeVolumeNameQueryParameter adds the logVolumeVolumeName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogVolumeVolumeNameQueryParameter(logVolumeVolumeName *string) *SnaplockLogCollectionGetParams {
-	o.SetLogVolumeVolumeNameQueryParameter(logVolumeVolumeName)
+// WithLogVolumeVolumeName adds the logVolumeVolumeName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogVolumeVolumeName(logVolumeVolumeName *string) *SnaplockLogCollectionGetParams {
+	o.SetLogVolumeVolumeName(logVolumeVolumeName)
 	return o
 }
 
-// SetLogVolumeVolumeNameQueryParameter adds the logVolumeVolumeName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogVolumeVolumeNameQueryParameter(logVolumeVolumeName *string) {
-	o.LogVolumeVolumeNameQueryParameter = logVolumeVolumeName
+// SetLogVolumeVolumeName adds the logVolumeVolumeName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogVolumeVolumeName(logVolumeVolumeName *string) {
+	o.LogVolumeVolumeName = logVolumeVolumeName
 }
 
-// WithLogVolumeVolumeUUIDQueryParameter adds the logVolumeVolumeUUID to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithLogVolumeVolumeUUIDQueryParameter(logVolumeVolumeUUID *string) *SnaplockLogCollectionGetParams {
-	o.SetLogVolumeVolumeUUIDQueryParameter(logVolumeVolumeUUID)
+// WithLogVolumeVolumeUUID adds the logVolumeVolumeUUID to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithLogVolumeVolumeUUID(logVolumeVolumeUUID *string) *SnaplockLogCollectionGetParams {
+	o.SetLogVolumeVolumeUUID(logVolumeVolumeUUID)
 	return o
 }
 
-// SetLogVolumeVolumeUUIDQueryParameter adds the logVolumeVolumeUuid to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetLogVolumeVolumeUUIDQueryParameter(logVolumeVolumeUUID *string) {
-	o.LogVolumeVolumeUUIDQueryParameter = logVolumeVolumeUUID
+// SetLogVolumeVolumeUUID adds the logVolumeVolumeUuid to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetLogVolumeVolumeUUID(logVolumeVolumeUUID *string) {
+	o.LogVolumeVolumeUUID = logVolumeVolumeUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnaplockLogCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnaplockLogCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnaplockLogCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithOrderBy(orderBy []string) *SnaplockLogCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockLogCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnaplockLogCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockLogCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnaplockLogCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SnaplockLogCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithSvmName(svmName *string) *SnaplockLogCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SnaplockLogCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithSvmUUID(svmUUID *string) *SnaplockLogCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,7 +464,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogArchiveBaseNameQueryParameter != nil {
+	if o.LogArchiveBaseName != nil {
 
 		// query param log_archive.base_name
 		var qrLogArchiveBaseName string
 
-		if o.LogArchiveBaseNameQueryParameter != nil {
-			qrLogArchiveBaseName = *o.LogArchiveBaseNameQueryParameter
+		if o.LogArchiveBaseName != nil {
+			qrLogArchiveBaseName = *o.LogArchiveBaseName
 		}
 		qLogArchiveBaseName := qrLogArchiveBaseName
 		if qLogArchiveBaseName != "" {
@@ -492,13 +492,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogArchiveExpiryTimeQueryParameter != nil {
+	if o.LogArchiveExpiryTime != nil {
 
 		// query param log_archive.expiry_time
 		var qrLogArchiveExpiryTime string
 
-		if o.LogArchiveExpiryTimeQueryParameter != nil {
-			qrLogArchiveExpiryTime = *o.LogArchiveExpiryTimeQueryParameter
+		if o.LogArchiveExpiryTime != nil {
+			qrLogArchiveExpiryTime = *o.LogArchiveExpiryTime
 		}
 		qLogArchiveExpiryTime := qrLogArchiveExpiryTime
 		if qLogArchiveExpiryTime != "" {
@@ -509,13 +509,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogArchivePathQueryParameter != nil {
+	if o.LogArchivePath != nil {
 
 		// query param log_archive.path
 		var qrLogArchivePath string
 
-		if o.LogArchivePathQueryParameter != nil {
-			qrLogArchivePath = *o.LogArchivePathQueryParameter
+		if o.LogArchivePath != nil {
+			qrLogArchivePath = *o.LogArchivePath
 		}
 		qLogArchivePath := qrLogArchivePath
 		if qLogArchivePath != "" {
@@ -526,13 +526,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogArchiveSizeQueryParameter != nil {
+	if o.LogArchiveSize != nil {
 
 		// query param log_archive.size
 		var qrLogArchiveSize int64
 
-		if o.LogArchiveSizeQueryParameter != nil {
-			qrLogArchiveSize = *o.LogArchiveSizeQueryParameter
+		if o.LogArchiveSize != nil {
+			qrLogArchiveSize = *o.LogArchiveSize
 		}
 		qLogArchiveSize := swag.FormatInt64(qrLogArchiveSize)
 		if qLogArchiveSize != "" {
@@ -543,13 +543,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogFilesBaseNameQueryParameter != nil {
+	if o.LogFilesBaseName != nil {
 
 		// query param log_files.base_name
 		var qrLogFilesBaseName string
 
-		if o.LogFilesBaseNameQueryParameter != nil {
-			qrLogFilesBaseName = *o.LogFilesBaseNameQueryParameter
+		if o.LogFilesBaseName != nil {
+			qrLogFilesBaseName = *o.LogFilesBaseName
 		}
 		qLogFilesBaseName := qrLogFilesBaseName
 		if qLogFilesBaseName != "" {
@@ -560,13 +560,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogFilesExpiryTimeQueryParameter != nil {
+	if o.LogFilesExpiryTime != nil {
 
 		// query param log_files.expiry_time
 		var qrLogFilesExpiryTime string
 
-		if o.LogFilesExpiryTimeQueryParameter != nil {
-			qrLogFilesExpiryTime = *o.LogFilesExpiryTimeQueryParameter
+		if o.LogFilesExpiryTime != nil {
+			qrLogFilesExpiryTime = *o.LogFilesExpiryTime
 		}
 		qLogFilesExpiryTime := qrLogFilesExpiryTime
 		if qLogFilesExpiryTime != "" {
@@ -577,13 +577,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogFilesPathQueryParameter != nil {
+	if o.LogFilesPath != nil {
 
 		// query param log_files.path
 		var qrLogFilesPath string
 
-		if o.LogFilesPathQueryParameter != nil {
-			qrLogFilesPath = *o.LogFilesPathQueryParameter
+		if o.LogFilesPath != nil {
+			qrLogFilesPath = *o.LogFilesPath
 		}
 		qLogFilesPath := qrLogFilesPath
 		if qLogFilesPath != "" {
@@ -594,13 +594,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogFilesSizeQueryParameter != nil {
+	if o.LogFilesSize != nil {
 
 		// query param log_files.size
 		var qrLogFilesSize int64
 
-		if o.LogFilesSizeQueryParameter != nil {
-			qrLogFilesSize = *o.LogFilesSizeQueryParameter
+		if o.LogFilesSize != nil {
+			qrLogFilesSize = *o.LogFilesSize
 		}
 		qLogFilesSize := swag.FormatInt64(qrLogFilesSize)
 		if qLogFilesSize != "" {
@@ -611,13 +611,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogVolumeMaxLogSizeQueryParameter != nil {
+	if o.LogVolumeMaxLogSize != nil {
 
 		// query param log_volume.max_log_size
 		var qrLogVolumeMaxLogSize int64
 
-		if o.LogVolumeMaxLogSizeQueryParameter != nil {
-			qrLogVolumeMaxLogSize = *o.LogVolumeMaxLogSizeQueryParameter
+		if o.LogVolumeMaxLogSize != nil {
+			qrLogVolumeMaxLogSize = *o.LogVolumeMaxLogSize
 		}
 		qLogVolumeMaxLogSize := swag.FormatInt64(qrLogVolumeMaxLogSize)
 		if qLogVolumeMaxLogSize != "" {
@@ -628,13 +628,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogVolumeRetentionPeriodQueryParameter != nil {
+	if o.LogVolumeRetentionPeriod != nil {
 
 		// query param log_volume.retention_period
 		var qrLogVolumeRetentionPeriod string
 
-		if o.LogVolumeRetentionPeriodQueryParameter != nil {
-			qrLogVolumeRetentionPeriod = *o.LogVolumeRetentionPeriodQueryParameter
+		if o.LogVolumeRetentionPeriod != nil {
+			qrLogVolumeRetentionPeriod = *o.LogVolumeRetentionPeriod
 		}
 		qLogVolumeRetentionPeriod := qrLogVolumeRetentionPeriod
 		if qLogVolumeRetentionPeriod != "" {
@@ -645,13 +645,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogVolumeVolumeNameQueryParameter != nil {
+	if o.LogVolumeVolumeName != nil {
 
 		// query param log_volume.volume.name
 		var qrLogVolumeVolumeName string
 
-		if o.LogVolumeVolumeNameQueryParameter != nil {
-			qrLogVolumeVolumeName = *o.LogVolumeVolumeNameQueryParameter
+		if o.LogVolumeVolumeName != nil {
+			qrLogVolumeVolumeName = *o.LogVolumeVolumeName
 		}
 		qLogVolumeVolumeName := qrLogVolumeVolumeName
 		if qLogVolumeVolumeName != "" {
@@ -662,13 +662,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LogVolumeVolumeUUIDQueryParameter != nil {
+	if o.LogVolumeVolumeUUID != nil {
 
 		// query param log_volume.volume.uuid
 		var qrLogVolumeVolumeUUID string
 
-		if o.LogVolumeVolumeUUIDQueryParameter != nil {
-			qrLogVolumeVolumeUUID = *o.LogVolumeVolumeUUIDQueryParameter
+		if o.LogVolumeVolumeUUID != nil {
+			qrLogVolumeVolumeUUID = *o.LogVolumeVolumeUUID
 		}
 		qLogVolumeVolumeUUID := qrLogVolumeVolumeUUID
 		if qLogVolumeVolumeUUID != "" {
@@ -679,13 +679,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -696,7 +696,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -707,13 +707,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -724,13 +724,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -741,13 +741,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -758,13 +758,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -783,7 +783,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSnaplockLogCollectionGet binds the parameter fields
 func (o *SnaplockLogCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *SnaplockLogCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamSnaplockLogCollectionGet binds the parameter order_by
 func (o *SnaplockLogCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

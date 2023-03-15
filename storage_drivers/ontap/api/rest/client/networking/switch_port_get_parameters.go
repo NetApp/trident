@@ -66,25 +66,25 @@ type SwitchPortGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IdentityIndex.
 
 	   Interface Index
 	*/
-	IdentityIndexPathParameter int64
+	IdentityIndex int64
 
 	/* IdentityName.
 
 	   Interface Name
 	*/
-	IdentityNamePathParameter string
+	IdentityName string
 
 	/* Switch.
 
 	   Switch Name
 	*/
-	SwitchPathParameter string
+	Switch string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *SwitchPortGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the switch port get params
-func (o *SwitchPortGetParams) WithFieldsQueryParameter(fields []string) *SwitchPortGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the switch port get params
+func (o *SwitchPortGetParams) WithFields(fields []string) *SwitchPortGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the switch port get params
-func (o *SwitchPortGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the switch port get params
+func (o *SwitchPortGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentityIndexPathParameter adds the identityIndex to the switch port get params
-func (o *SwitchPortGetParams) WithIdentityIndexPathParameter(identityIndex int64) *SwitchPortGetParams {
-	o.SetIdentityIndexPathParameter(identityIndex)
+// WithIdentityIndex adds the identityIndex to the switch port get params
+func (o *SwitchPortGetParams) WithIdentityIndex(identityIndex int64) *SwitchPortGetParams {
+	o.SetIdentityIndex(identityIndex)
 	return o
 }
 
-// SetIdentityIndexPathParameter adds the identityIndex to the switch port get params
-func (o *SwitchPortGetParams) SetIdentityIndexPathParameter(identityIndex int64) {
-	o.IdentityIndexPathParameter = identityIndex
+// SetIdentityIndex adds the identityIndex to the switch port get params
+func (o *SwitchPortGetParams) SetIdentityIndex(identityIndex int64) {
+	o.IdentityIndex = identityIndex
 }
 
-// WithIdentityNamePathParameter adds the identityName to the switch port get params
-func (o *SwitchPortGetParams) WithIdentityNamePathParameter(identityName string) *SwitchPortGetParams {
-	o.SetIdentityNamePathParameter(identityName)
+// WithIdentityName adds the identityName to the switch port get params
+func (o *SwitchPortGetParams) WithIdentityName(identityName string) *SwitchPortGetParams {
+	o.SetIdentityName(identityName)
 	return o
 }
 
-// SetIdentityNamePathParameter adds the identityName to the switch port get params
-func (o *SwitchPortGetParams) SetIdentityNamePathParameter(identityName string) {
-	o.IdentityNamePathParameter = identityName
+// SetIdentityName adds the identityName to the switch port get params
+func (o *SwitchPortGetParams) SetIdentityName(identityName string) {
+	o.IdentityName = identityName
 }
 
-// WithSwitchPathParameter adds the switchVar to the switch port get params
-func (o *SwitchPortGetParams) WithSwitchPathParameter(switchVar string) *SwitchPortGetParams {
-	o.SetSwitchPathParameter(switchVar)
+// WithSwitch adds the switchVar to the switch port get params
+func (o *SwitchPortGetParams) WithSwitch(switchVar string) *SwitchPortGetParams {
+	o.SetSwitch(switchVar)
 	return o
 }
 
-// SetSwitchPathParameter adds the switch to the switch port get params
-func (o *SwitchPortGetParams) SetSwitchPathParameter(switchVar string) {
-	o.SwitchPathParameter = switchVar
+// SetSwitch adds the switch to the switch port get params
+func (o *SwitchPortGetParams) SetSwitch(switchVar string) {
+	o.Switch = switchVar
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +191,7 @@ func (o *SwitchPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +203,17 @@ func (o *SwitchPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param identity.index
-	if err := r.SetPathParam("identity.index", swag.FormatInt64(o.IdentityIndexPathParameter)); err != nil {
+	if err := r.SetPathParam("identity.index", swag.FormatInt64(o.IdentityIndex)); err != nil {
 		return err
 	}
 
 	// path param identity.name
-	if err := r.SetPathParam("identity.name", o.IdentityNamePathParameter); err != nil {
+	if err := r.SetPathParam("identity.name", o.IdentityName); err != nil {
 		return err
 	}
 
 	// path param switch
-	if err := r.SetPathParam("switch", o.SwitchPathParameter); err != nil {
+	if err := r.SetPathParam("switch", o.Switch); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *SwitchPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamSwitchPortGet binds the parameter fields
 func (o *SwitchPortGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,43 +66,43 @@ type HostsSettingsCollectionGetParams struct {
 
 	   Filter by dns_ttl_enabled
 	*/
-	DNSTTLEnabledQueryParameter *bool
+	DNSTTLEnabled *bool
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NegativeCacheEnabled.
 
 	   Filter by negative_cache_enabled
 	*/
-	NegativeCacheEnabledQueryParameter *bool
+	NegativeCacheEnabled *bool
 
 	/* NegativeTTL.
 
 	   Filter by negative_ttl
 	*/
-	NegativeTTLQueryParameter *string
+	NegativeTTL *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type HostsSettingsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,25 +118,25 @@ type HostsSettingsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TTL.
 
 	   Filter by ttl
 	*/
-	TTLQueryParameter *string
+	TTL *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *HostsSettingsCollectionGetParams) WithDefaults() *HostsSettingsCollecti
 // All values with no default are reset to their zero value.
 func (o *HostsSettingsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := HostsSettingsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *HostsSettingsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDNSTTLEnabledQueryParameter adds the dNSTTLEnabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithDNSTTLEnabledQueryParameter(dNSTTLEnabled *bool) *HostsSettingsCollectionGetParams {
-	o.SetDNSTTLEnabledQueryParameter(dNSTTLEnabled)
+// WithDNSTTLEnabled adds the dNSTTLEnabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithDNSTTLEnabled(dNSTTLEnabled *bool) *HostsSettingsCollectionGetParams {
+	o.SetDNSTTLEnabled(dNSTTLEnabled)
 	return o
 }
 
-// SetDNSTTLEnabledQueryParameter adds the dnsTtlEnabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetDNSTTLEnabledQueryParameter(dNSTTLEnabled *bool) {
-	o.DNSTTLEnabledQueryParameter = dNSTTLEnabled
+// SetDNSTTLEnabled adds the dnsTtlEnabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetDNSTTLEnabled(dNSTTLEnabled *bool) {
+	o.DNSTTLEnabled = dNSTTLEnabled
 }
 
-// WithEnabledQueryParameter adds the enabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *HostsSettingsCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithEnabled(enabled *bool) *HostsSettingsCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithFieldsQueryParameter(fields []string) *HostsSettingsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithFields(fields []string) *HostsSettingsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *HostsSettingsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithMaxRecords(maxRecords *int64) *HostsSettingsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNegativeCacheEnabledQueryParameter adds the negativeCacheEnabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithNegativeCacheEnabledQueryParameter(negativeCacheEnabled *bool) *HostsSettingsCollectionGetParams {
-	o.SetNegativeCacheEnabledQueryParameter(negativeCacheEnabled)
+// WithNegativeCacheEnabled adds the negativeCacheEnabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithNegativeCacheEnabled(negativeCacheEnabled *bool) *HostsSettingsCollectionGetParams {
+	o.SetNegativeCacheEnabled(negativeCacheEnabled)
 	return o
 }
 
-// SetNegativeCacheEnabledQueryParameter adds the negativeCacheEnabled to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetNegativeCacheEnabledQueryParameter(negativeCacheEnabled *bool) {
-	o.NegativeCacheEnabledQueryParameter = negativeCacheEnabled
+// SetNegativeCacheEnabled adds the negativeCacheEnabled to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetNegativeCacheEnabled(negativeCacheEnabled *bool) {
+	o.NegativeCacheEnabled = negativeCacheEnabled
 }
 
-// WithNegativeTTLQueryParameter adds the negativeTTL to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithNegativeTTLQueryParameter(negativeTTL *string) *HostsSettingsCollectionGetParams {
-	o.SetNegativeTTLQueryParameter(negativeTTL)
+// WithNegativeTTL adds the negativeTTL to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithNegativeTTL(negativeTTL *string) *HostsSettingsCollectionGetParams {
+	o.SetNegativeTTL(negativeTTL)
 	return o
 }
 
-// SetNegativeTTLQueryParameter adds the negativeTtl to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetNegativeTTLQueryParameter(negativeTTL *string) {
-	o.NegativeTTLQueryParameter = negativeTTL
+// SetNegativeTTL adds the negativeTtl to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetNegativeTTL(negativeTTL *string) {
+	o.NegativeTTL = negativeTTL
 }
 
-// WithOrderByQueryParameter adds the orderBy to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *HostsSettingsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithOrderBy(orderBy []string) *HostsSettingsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *HostsSettingsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithReturnRecords(returnRecords *bool) *HostsSettingsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *HostsSettingsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *HostsSettingsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *HostsSettingsCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithSvmName(svmName *string) *HostsSettingsCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *HostsSettingsCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithSvmUUID(svmUUID *string) *HostsSettingsCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTTLQueryParameter adds the ttl to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) WithTTLQueryParameter(ttl *string) *HostsSettingsCollectionGetParams {
-	o.SetTTLQueryParameter(ttl)
+// WithTTL adds the ttl to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) WithTTL(ttl *string) *HostsSettingsCollectionGetParams {
+	o.SetTTL(ttl)
 	return o
 }
 
-// SetTTLQueryParameter adds the ttl to the hosts settings collection get params
-func (o *HostsSettingsCollectionGetParams) SetTTLQueryParameter(ttl *string) {
-	o.TTLQueryParameter = ttl
+// SetTTL adds the ttl to the hosts settings collection get params
+func (o *HostsSettingsCollectionGetParams) SetTTL(ttl *string) {
+	o.TTL = ttl
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.DNSTTLEnabledQueryParameter != nil {
+	if o.DNSTTLEnabled != nil {
 
 		// query param dns_ttl_enabled
 		var qrDNSTTLEnabled bool
 
-		if o.DNSTTLEnabledQueryParameter != nil {
-			qrDNSTTLEnabled = *o.DNSTTLEnabledQueryParameter
+		if o.DNSTTLEnabled != nil {
+			qrDNSTTLEnabled = *o.DNSTTLEnabled
 		}
 		qDNSTTLEnabled := swag.FormatBool(qrDNSTTLEnabled)
 		if qDNSTTLEnabled != "" {
@@ -362,13 +362,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -379,7 +379,7 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -390,13 +390,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -407,13 +407,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NegativeCacheEnabledQueryParameter != nil {
+	if o.NegativeCacheEnabled != nil {
 
 		// query param negative_cache_enabled
 		var qrNegativeCacheEnabled bool
 
-		if o.NegativeCacheEnabledQueryParameter != nil {
-			qrNegativeCacheEnabled = *o.NegativeCacheEnabledQueryParameter
+		if o.NegativeCacheEnabled != nil {
+			qrNegativeCacheEnabled = *o.NegativeCacheEnabled
 		}
 		qNegativeCacheEnabled := swag.FormatBool(qrNegativeCacheEnabled)
 		if qNegativeCacheEnabled != "" {
@@ -424,13 +424,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NegativeTTLQueryParameter != nil {
+	if o.NegativeTTL != nil {
 
 		// query param negative_ttl
 		var qrNegativeTTL string
 
-		if o.NegativeTTLQueryParameter != nil {
-			qrNegativeTTL = *o.NegativeTTLQueryParameter
+		if o.NegativeTTL != nil {
+			qrNegativeTTL = *o.NegativeTTL
 		}
 		qNegativeTTL := qrNegativeTTL
 		if qNegativeTTL != "" {
@@ -441,7 +441,7 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -452,13 +452,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +469,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +486,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -503,13 +503,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -520,13 +520,13 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TTLQueryParameter != nil {
+	if o.TTL != nil {
 
 		// query param ttl
 		var qrTTL string
 
-		if o.TTLQueryParameter != nil {
-			qrTTL = *o.TTLQueryParameter
+		if o.TTL != nil {
+			qrTTL = *o.TTL
 		}
 		qTTL := qrTTL
 		if qTTL != "" {
@@ -545,7 +545,7 @@ func (o *HostsSettingsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamHostsSettingsCollectionGet binds the parameter fields
 func (o *HostsSettingsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *HostsSettingsCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamHostsSettingsCollectionGet binds the parameter order_by
 func (o *HostsSettingsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

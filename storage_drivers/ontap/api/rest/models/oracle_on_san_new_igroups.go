@@ -22,16 +22,7 @@ import (
 type OracleOnSanNewIgroups struct {
 
 	// A comment available for use by the administrator.
-	Comment string `json:"comment,omitempty"`
-
-	// igroups
-	Igroups []*OracleOnSanNewIgroupsIgroupsItems0 `json:"igroups,omitempty"`
-
-	// initiator objects
-	InitiatorObjects []*OracleOnSanNewIgroupsInitiatorObjectsItems0 `json:"initiator_objects,omitempty"`
-
-	// initiators
-	Initiators []string `json:"initiators,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// The name of the new initiator group.
 	// Required: true
@@ -39,9 +30,18 @@ type OracleOnSanNewIgroups struct {
 	// Min Length: 1
 	Name *string `json:"name"`
 
+	// oracle on san new igroups inline igroups
+	OracleOnSanNewIgroupsInlineIgroups []*OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
+
+	// oracle on san new igroups inline initiator objects
+	OracleOnSanNewIgroupsInlineInitiatorObjects []*OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem `json:"initiator_objects,omitempty"`
+
+	// oracle on san new igroups inline initiators
+	OracleOnSanNewIgroupsInlineInitiators []*string `json:"initiators,omitempty"`
+
 	// The name of the host OS accessing the application. The default value is the host OS that is running the application.
 	// Enum: [aix hpux hyper_v linux solaris vmware windows xen]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// The protocol of the new initiator group.
 	// Enum: [fcp iscsi mixed]
@@ -52,15 +52,15 @@ type OracleOnSanNewIgroups struct {
 func (m *OracleOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateIgroups(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateInitiatorObjects(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOracleOnSanNewIgroupsInlineIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOracleOnSanNewIgroupsInlineInitiatorObjects(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,54 +78,6 @@ func (m *OracleOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanNewIgroups) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
-			continue
-		}
-
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *OracleOnSanNewIgroups) validateInitiatorObjects(formats strfmt.Registry) error {
-	if swag.IsZero(m.InitiatorObjects) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.InitiatorObjects); i++ {
-		if swag.IsZero(m.InitiatorObjects[i]) { // not required
-			continue
-		}
-
-		if m.InitiatorObjects[i] != nil {
-			if err := m.InitiatorObjects[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *OracleOnSanNewIgroups) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
@@ -138,6 +90,54 @@ func (m *OracleOnSanNewIgroups) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *OracleOnSanNewIgroups) validateOracleOnSanNewIgroupsInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.OracleOnSanNewIgroupsInlineIgroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OracleOnSanNewIgroupsInlineIgroups); i++ {
+		if swag.IsZero(m.OracleOnSanNewIgroupsInlineIgroups[i]) { // not required
+			continue
+		}
+
+		if m.OracleOnSanNewIgroupsInlineIgroups[i] != nil {
+			if err := m.OracleOnSanNewIgroupsInlineIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OracleOnSanNewIgroups) validateOracleOnSanNewIgroupsInlineInitiatorObjects(formats strfmt.Registry) error {
+	if swag.IsZero(m.OracleOnSanNewIgroupsInlineInitiatorObjects) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OracleOnSanNewIgroupsInlineInitiatorObjects); i++ {
+		if swag.IsZero(m.OracleOnSanNewIgroupsInlineInitiatorObjects[i]) { // not required
+			continue
+		}
+
+		if m.OracleOnSanNewIgroupsInlineInitiatorObjects[i] != nil {
+			if err := m.OracleOnSanNewIgroupsInlineInitiatorObjects[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -252,7 +252,7 @@ func (m *OracleOnSanNewIgroups) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -329,11 +329,11 @@ func (m *OracleOnSanNewIgroups) validateProtocol(formats strfmt.Registry) error 
 func (m *OracleOnSanNewIgroups) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateOracleOnSanNewIgroupsInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInitiatorObjects(ctx, formats); err != nil {
+	if err := m.contextValidateOracleOnSanNewIgroupsInlineInitiatorObjects(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -343,12 +343,12 @@ func (m *OracleOnSanNewIgroups) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *OracleOnSanNewIgroups) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanNewIgroups) contextValidateOracleOnSanNewIgroupsInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Igroups); i++ {
+	for i := 0; i < len(m.OracleOnSanNewIgroupsInlineIgroups); i++ {
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.OracleOnSanNewIgroupsInlineIgroups[i] != nil {
+			if err := m.OracleOnSanNewIgroupsInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -361,12 +361,12 @@ func (m *OracleOnSanNewIgroups) contextValidateIgroups(ctx context.Context, form
 	return nil
 }
 
-func (m *OracleOnSanNewIgroups) contextValidateInitiatorObjects(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanNewIgroups) contextValidateOracleOnSanNewIgroupsInlineInitiatorObjects(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.InitiatorObjects); i++ {
+	for i := 0; i < len(m.OracleOnSanNewIgroupsInlineInitiatorObjects); i++ {
 
-		if m.InitiatorObjects[i] != nil {
-			if err := m.InitiatorObjects[i].ContextValidate(ctx, formats); err != nil {
+		if m.OracleOnSanNewIgroupsInlineInitiatorObjects[i] != nil {
+			if err := m.OracleOnSanNewIgroupsInlineInitiatorObjects[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
 				}
@@ -397,30 +397,30 @@ func (m *OracleOnSanNewIgroups) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanNewIgroupsIgroupsItems0 oracle on san new igroups igroups items0
+// OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem oracle on san new igroups inline igroups inline array item
 //
-// swagger:model OracleOnSanNewIgroupsIgroupsItems0
-type OracleOnSanNewIgroupsIgroupsItems0 struct {
+// swagger:model oracle_on_san_new_igroups_inline_igroups_inline_array_item
+type OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem struct {
 
 	// The name of an igroup to nest within a parent igroup. Mutually exclusive with initiators and initiator_objects.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of an igroup to nest within a parent igroup Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this oracle on san new igroups igroups items0
-func (m *OracleOnSanNewIgroupsIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san new igroups inline igroups inline array item
+func (m *OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this oracle on san new igroups igroups items0 based on context it is used
-func (m *OracleOnSanNewIgroupsIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san new igroups inline igroups inline array item based on context it is used
+func (m *OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanNewIgroupsIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -428,8 +428,8 @@ func (m *OracleOnSanNewIgroupsIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanNewIgroupsIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanNewIgroupsIgroupsItems0
+func (m *OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanNewIgroupsInlineIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -437,30 +437,30 @@ func (m *OracleOnSanNewIgroupsIgroupsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanNewIgroupsInitiatorObjectsItems0 oracle on san new igroups initiator objects items0
+// OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem oracle on san new igroups inline initiator objects inline array item
 //
-// swagger:model OracleOnSanNewIgroupsInitiatorObjectsItems0
-type OracleOnSanNewIgroupsInitiatorObjectsItems0 struct {
+// swagger:model oracle_on_san_new_igroups_inline_initiator_objects_inline_array_item
+type OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem struct {
 
 	// A comment available for use by the administrator.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// The WWPN, IQN, or Alias of the initiator. Mutually exclusive with nested igroups and the initiators array.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on san new igroups initiator objects items0
-func (m *OracleOnSanNewIgroupsInitiatorObjectsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san new igroups inline initiator objects inline array item
+func (m *OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this oracle on san new igroups initiator objects items0 based on context it is used
-func (m *OracleOnSanNewIgroupsInitiatorObjectsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san new igroups inline initiator objects inline array item based on context it is used
+func (m *OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanNewIgroupsInitiatorObjectsItems0) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -468,8 +468,8 @@ func (m *OracleOnSanNewIgroupsInitiatorObjectsItems0) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanNewIgroupsInitiatorObjectsItems0) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanNewIgroupsInitiatorObjectsItems0
+func (m *OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanNewIgroupsInlineInitiatorObjectsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

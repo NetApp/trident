@@ -18,7 +18,7 @@ import (
 type CounterDenominator struct {
 
 	// Counter name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this counter denominator

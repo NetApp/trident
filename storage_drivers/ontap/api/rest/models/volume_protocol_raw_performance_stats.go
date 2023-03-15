@@ -20,52 +20,52 @@ import (
 type VolumeProtocolRawPerformanceStats struct {
 
 	// access
-	Access *VolumeProtocolRawPerformanceStatsAccess `json:"access,omitempty"`
+	Access *VolumeProtocolRawPerformanceStatsInlineAccess `json:"access,omitempty"`
 
 	// audit
-	Audit *VolumeProtocolRawPerformanceStatsAudit `json:"audit,omitempty"`
+	Audit *VolumeProtocolRawPerformanceStatsInlineAudit `json:"audit,omitempty"`
 
 	// create
-	Create *VolumeProtocolRawPerformanceStatsCreate `json:"create,omitempty"`
+	Create *VolumeProtocolRawPerformanceStatsInlineCreate `json:"create,omitempty"`
 
 	// getattr
-	Getattr *VolumeProtocolRawPerformanceStatsGetattr `json:"getattr,omitempty"`
+	Getattr *VolumeProtocolRawPerformanceStatsInlineGetattr `json:"getattr,omitempty"`
 
 	// link
-	Link *VolumeProtocolRawPerformanceStatsLink `json:"link,omitempty"`
+	Link *VolumeProtocolRawPerformanceStatsInlineLink `json:"link,omitempty"`
 
 	// lock
-	Lock *VolumeProtocolRawPerformanceStatsLock `json:"lock,omitempty"`
+	Lock *VolumeProtocolRawPerformanceStatsInlineLock `json:"lock,omitempty"`
 
 	// lookup
-	Lookup *VolumeProtocolRawPerformanceStatsLookup `json:"lookup,omitempty"`
+	Lookup *VolumeProtocolRawPerformanceStatsInlineLookup `json:"lookup,omitempty"`
 
 	// open
-	Open *VolumeProtocolRawPerformanceStatsOpen `json:"open,omitempty"`
+	Open *VolumeProtocolRawPerformanceStatsInlineOpen `json:"open,omitempty"`
 
 	// read
-	Read *VolumeProtocolRawPerformanceStatsRead `json:"read,omitempty"`
+	Read *VolumeProtocolRawPerformanceStatsInlineRead `json:"read,omitempty"`
 
 	// readdir
-	Readdir *VolumeProtocolRawPerformanceStatsReaddir `json:"readdir,omitempty"`
+	Readdir *VolumeProtocolRawPerformanceStatsInlineReaddir `json:"readdir,omitempty"`
 
 	// readlink
-	Readlink *VolumeProtocolRawPerformanceStatsReadlink `json:"readlink,omitempty"`
+	Readlink *VolumeProtocolRawPerformanceStatsInlineReadlink `json:"readlink,omitempty"`
 
 	// rename
-	Rename *VolumeProtocolRawPerformanceStatsRename `json:"rename,omitempty"`
+	Rename *VolumeProtocolRawPerformanceStatsInlineRename `json:"rename,omitempty"`
 
 	// setattr
-	Setattr *VolumeProtocolRawPerformanceStatsSetattr `json:"setattr,omitempty"`
+	Setattr *VolumeProtocolRawPerformanceStatsInlineSetattr `json:"setattr,omitempty"`
 
 	// unlink
-	Unlink *VolumeProtocolRawPerformanceStatsUnlink `json:"unlink,omitempty"`
+	Unlink *VolumeProtocolRawPerformanceStatsInlineUnlink `json:"unlink,omitempty"`
 
 	// watch
-	Watch *VolumeProtocolRawPerformanceStatsWatch `json:"watch,omitempty"`
+	Watch *VolumeProtocolRawPerformanceStatsInlineWatch `json:"watch,omitempty"`
 
 	// write
-	Write *VolumeProtocolRawPerformanceStatsWrite `json:"write,omitempty"`
+	Write *VolumeProtocolRawPerformanceStatsInlineWrite `json:"write,omitempty"`
 }
 
 // Validate validates this volume protocol raw performance stats
@@ -730,32 +730,32 @@ func (m *VolumeProtocolRawPerformanceStats) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsAccess Raw count and latency data for access operations.
+// VolumeProtocolRawPerformanceStatsInlineAccess Raw count and latency data for access operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsAccess
-type VolumeProtocolRawPerformanceStatsAccess struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_access
+type VolumeProtocolRawPerformanceStatsInlineAccess struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats access
-func (m *VolumeProtocolRawPerformanceStatsAccess) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline access
+func (m *VolumeProtocolRawPerformanceStatsInlineAccess) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats access based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline access based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsAccess) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineAccess) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -763,8 +763,8 @@ func (m *VolumeProtocolRawPerformanceStatsAccess) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsAccess) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsAccess
+func (m *VolumeProtocolRawPerformanceStatsInlineAccess) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineAccess
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -772,32 +772,32 @@ func (m *VolumeProtocolRawPerformanceStatsAccess) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeProtocolRawPerformanceStatsInlineAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsAudit
-type VolumeProtocolRawPerformanceStatsAudit struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_audit
+type VolumeProtocolRawPerformanceStatsInlineAudit struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats audit
-func (m *VolumeProtocolRawPerformanceStatsAudit) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline audit
+func (m *VolumeProtocolRawPerformanceStatsInlineAudit) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats audit based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline audit based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsAudit) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineAudit) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -805,8 +805,8 @@ func (m *VolumeProtocolRawPerformanceStatsAudit) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsAudit) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsAudit
+func (m *VolumeProtocolRawPerformanceStatsInlineAudit) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineAudit
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -814,26 +814,26 @@ func (m *VolumeProtocolRawPerformanceStatsAudit) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsCreate Raw count and latency data for create operations.
+// VolumeProtocolRawPerformanceStatsInlineCreate Raw count and latency data for create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsCreate
-type VolumeProtocolRawPerformanceStatsCreate struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_create
+type VolumeProtocolRawPerformanceStatsInlineCreate struct {
 
 	// dir
-	Dir *VolumeProtocolRawPerformanceStatsCreateDir `json:"dir,omitempty"`
+	Dir *VolumeProtocolRawPerformanceStatsInlineCreateInlineDir `json:"dir,omitempty"`
 
 	// file
-	File *VolumeProtocolRawPerformanceStatsCreateFile `json:"file,omitempty"`
+	File *VolumeProtocolRawPerformanceStatsInlineCreateInlineFile `json:"file,omitempty"`
 
 	// other
-	Other *VolumeProtocolRawPerformanceStatsCreateOther `json:"other,omitempty"`
+	Other *VolumeProtocolRawPerformanceStatsInlineCreateInlineOther `json:"other,omitempty"`
 
 	// symlink
-	Symlink *VolumeProtocolRawPerformanceStatsCreateSymlink `json:"symlink,omitempty"`
+	Symlink *VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink `json:"symlink,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats create
-func (m *VolumeProtocolRawPerformanceStatsCreate) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline create
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDir(formats); err != nil {
@@ -858,7 +858,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) validateDir(formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) validateDir(formats strfmt.Registry) error {
 	if swag.IsZero(m.Dir) { // not required
 		return nil
 	}
@@ -875,7 +875,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) validateDir(formats strfmt.Reg
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) validateFile(formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) validateFile(formats strfmt.Registry) error {
 	if swag.IsZero(m.File) { // not required
 		return nil
 	}
@@ -892,7 +892,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) validateFile(formats strfmt.Re
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) validateOther(formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) validateOther(formats strfmt.Registry) error {
 	if swag.IsZero(m.Other) { // not required
 		return nil
 	}
@@ -909,7 +909,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) validateOther(formats strfmt.R
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) validateSymlink(formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) validateSymlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Symlink) { // not required
 		return nil
 	}
@@ -926,8 +926,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) validateSymlink(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this volume protocol raw performance stats create based on the context it is used
-func (m *VolumeProtocolRawPerformanceStatsCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume protocol raw performance stats inline create based on the context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDir(ctx, formats); err != nil {
@@ -952,7 +952,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Dir != nil {
 		if err := m.Dir.ContextValidate(ctx, formats); err != nil {
@@ -966,7 +966,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateDir(ctx context
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.File != nil {
 		if err := m.File.ContextValidate(ctx, formats); err != nil {
@@ -980,7 +980,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateFile(ctx contex
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Other != nil {
 		if err := m.Other.ContextValidate(ctx, formats); err != nil {
@@ -994,7 +994,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateOther(ctx conte
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Symlink != nil {
 		if err := m.Symlink.ContextValidate(ctx, formats); err != nil {
@@ -1009,7 +1009,7 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) contextValidateSymlink(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreate) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1017,8 +1017,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreate) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsCreate
+func (m *VolumeProtocolRawPerformanceStatsInlineCreate) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineCreate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1026,32 +1026,32 @@ func (m *VolumeProtocolRawPerformanceStatsCreate) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsCreateDir Raw count and latency data for directory-create operations.
+// VolumeProtocolRawPerformanceStatsInlineCreateInlineDir Raw count and latency data for directory-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsCreateDir
-type VolumeProtocolRawPerformanceStatsCreateDir struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_create_inline_dir
+type VolumeProtocolRawPerformanceStatsInlineCreateInlineDir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats create dir
-func (m *VolumeProtocolRawPerformanceStatsCreateDir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline create inline dir
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineDir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats create dir based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsCreateDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline create inline dir based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateDir) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineDir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1059,8 +1059,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreateDir) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateDir) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsCreateDir
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineDir) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineCreateInlineDir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1068,32 +1068,32 @@ func (m *VolumeProtocolRawPerformanceStatsCreateDir) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsCreateFile Raw count and latency data for file-create operations.
+// VolumeProtocolRawPerformanceStatsInlineCreateInlineFile Raw count and latency data for file-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsCreateFile
-type VolumeProtocolRawPerformanceStatsCreateFile struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_create_inline_file
+type VolumeProtocolRawPerformanceStatsInlineCreateInlineFile struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats create file
-func (m *VolumeProtocolRawPerformanceStatsCreateFile) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline create inline file
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats create file based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsCreateFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline create inline file based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateFile) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1101,8 +1101,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreateFile) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateFile) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsCreateFile
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineFile) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineCreateInlineFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1110,32 +1110,32 @@ func (m *VolumeProtocolRawPerformanceStatsCreateFile) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsCreateOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
+// VolumeProtocolRawPerformanceStatsInlineCreateInlineOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsCreateOther
-type VolumeProtocolRawPerformanceStatsCreateOther struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_create_inline_other
+type VolumeProtocolRawPerformanceStatsInlineCreateInlineOther struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats create other
-func (m *VolumeProtocolRawPerformanceStatsCreateOther) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline create inline other
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineOther) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats create other based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsCreateOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline create inline other based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateOther) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineOther) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1143,8 +1143,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreateOther) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateOther) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsCreateOther
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineOther) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineCreateInlineOther
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1152,32 +1152,32 @@ func (m *VolumeProtocolRawPerformanceStatsCreateOther) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsCreateSymlink Raw count and latency data for symlink-create operations.
+// VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink Raw count and latency data for symlink-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsCreateSymlink
-type VolumeProtocolRawPerformanceStatsCreateSymlink struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_create_inline_symlink
+type VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats create symlink
-func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline create inline symlink
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats create symlink based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline create inline symlink based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1185,8 +1185,8 @@ func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsCreateSymlink
+func (m *VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineCreateInlineSymlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1194,32 +1194,32 @@ func (m *VolumeProtocolRawPerformanceStatsCreateSymlink) UnmarshalBinary(b []byt
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsGetattr Raw count and latency data for getattr operations.
+// VolumeProtocolRawPerformanceStatsInlineGetattr Raw count and latency data for getattr operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsGetattr
-type VolumeProtocolRawPerformanceStatsGetattr struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_getattr
+type VolumeProtocolRawPerformanceStatsInlineGetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats getattr
-func (m *VolumeProtocolRawPerformanceStatsGetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline getattr
+func (m *VolumeProtocolRawPerformanceStatsInlineGetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats getattr based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline getattr based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsGetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineGetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1227,8 +1227,8 @@ func (m *VolumeProtocolRawPerformanceStatsGetattr) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsGetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsGetattr
+func (m *VolumeProtocolRawPerformanceStatsInlineGetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineGetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1236,32 +1236,32 @@ func (m *VolumeProtocolRawPerformanceStatsGetattr) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsLink Raw count and latency data for link operations.
+// VolumeProtocolRawPerformanceStatsInlineLink Raw count and latency data for link operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsLink
-type VolumeProtocolRawPerformanceStatsLink struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_link
+type VolumeProtocolRawPerformanceStatsInlineLink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats link
-func (m *VolumeProtocolRawPerformanceStatsLink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline link
+func (m *VolumeProtocolRawPerformanceStatsInlineLink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats link based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline link based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLink) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineLink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1269,8 +1269,8 @@ func (m *VolumeProtocolRawPerformanceStatsLink) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLink) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsLink
+func (m *VolumeProtocolRawPerformanceStatsInlineLink) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineLink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1278,32 +1278,32 @@ func (m *VolumeProtocolRawPerformanceStatsLink) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsLock Raw count and latency data for lock operations.
+// VolumeProtocolRawPerformanceStatsInlineLock Raw count and latency data for lock operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsLock
-type VolumeProtocolRawPerformanceStatsLock struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_lock
+type VolumeProtocolRawPerformanceStatsInlineLock struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats lock
-func (m *VolumeProtocolRawPerformanceStatsLock) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline lock
+func (m *VolumeProtocolRawPerformanceStatsInlineLock) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats lock based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline lock based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLock) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineLock) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1311,8 +1311,8 @@ func (m *VolumeProtocolRawPerformanceStatsLock) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLock) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsLock
+func (m *VolumeProtocolRawPerformanceStatsInlineLock) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineLock
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1320,32 +1320,32 @@ func (m *VolumeProtocolRawPerformanceStatsLock) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsLookup Raw count and latency data for lookup operations.
+// VolumeProtocolRawPerformanceStatsInlineLookup Raw count and latency data for lookup operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsLookup
-type VolumeProtocolRawPerformanceStatsLookup struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_lookup
+type VolumeProtocolRawPerformanceStatsInlineLookup struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats lookup
-func (m *VolumeProtocolRawPerformanceStatsLookup) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline lookup
+func (m *VolumeProtocolRawPerformanceStatsInlineLookup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats lookup based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline lookup based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLookup) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineLookup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1353,8 +1353,8 @@ func (m *VolumeProtocolRawPerformanceStatsLookup) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsLookup) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsLookup
+func (m *VolumeProtocolRawPerformanceStatsInlineLookup) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineLookup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1362,32 +1362,32 @@ func (m *VolumeProtocolRawPerformanceStatsLookup) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsOpen Raw count and latency data for open operations.
+// VolumeProtocolRawPerformanceStatsInlineOpen Raw count and latency data for open operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsOpen
-type VolumeProtocolRawPerformanceStatsOpen struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_open
+type VolumeProtocolRawPerformanceStatsInlineOpen struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats open
-func (m *VolumeProtocolRawPerformanceStatsOpen) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline open
+func (m *VolumeProtocolRawPerformanceStatsInlineOpen) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats open based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline open based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsOpen) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineOpen) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1395,8 +1395,8 @@ func (m *VolumeProtocolRawPerformanceStatsOpen) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsOpen) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsOpen
+func (m *VolumeProtocolRawPerformanceStatsInlineOpen) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineOpen
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1404,45 +1404,45 @@ func (m *VolumeProtocolRawPerformanceStatsOpen) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
+// VolumeProtocolRawPerformanceStatsInlineRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsRead
-type VolumeProtocolRawPerformanceStatsRead struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_read
+type VolumeProtocolRawPerformanceStatsInlineRead struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats read
-func (m *VolumeProtocolRawPerformanceStatsRead) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline read
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume protocol raw performance stats read based on the context it is used
-func (m *VolumeProtocolRawPerformanceStatsRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume protocol raw performance stats inline read based on the context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -1459,18 +1459,18 @@ func (m *VolumeProtocolRawPerformanceStatsRead) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "read"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "read"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "read"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "read"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -1478,7 +1478,7 @@ func (m *VolumeProtocolRawPerformanceStatsRead) contextValidateTotalTime(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsRead) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1486,8 +1486,8 @@ func (m *VolumeProtocolRawPerformanceStatsRead) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsRead) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsRead
+func (m *VolumeProtocolRawPerformanceStatsInlineRead) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineRead
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1495,32 +1495,32 @@ func (m *VolumeProtocolRawPerformanceStatsRead) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsReaddir Raw count and latency data for readdir operations.
+// VolumeProtocolRawPerformanceStatsInlineReaddir Raw count and latency data for readdir operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsReaddir
-type VolumeProtocolRawPerformanceStatsReaddir struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_readdir
+type VolumeProtocolRawPerformanceStatsInlineReaddir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats readdir
-func (m *VolumeProtocolRawPerformanceStatsReaddir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline readdir
+func (m *VolumeProtocolRawPerformanceStatsInlineReaddir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats readdir based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline readdir based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsReaddir) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineReaddir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1528,8 +1528,8 @@ func (m *VolumeProtocolRawPerformanceStatsReaddir) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsReaddir) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsReaddir
+func (m *VolumeProtocolRawPerformanceStatsInlineReaddir) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineReaddir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1537,32 +1537,32 @@ func (m *VolumeProtocolRawPerformanceStatsReaddir) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsReadlink Raw count and latency data for readlink operations.
+// VolumeProtocolRawPerformanceStatsInlineReadlink Raw count and latency data for readlink operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsReadlink
-type VolumeProtocolRawPerformanceStatsReadlink struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_readlink
+type VolumeProtocolRawPerformanceStatsInlineReadlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats readlink
-func (m *VolumeProtocolRawPerformanceStatsReadlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline readlink
+func (m *VolumeProtocolRawPerformanceStatsInlineReadlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats readlink based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline readlink based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsReadlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineReadlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1570,8 +1570,8 @@ func (m *VolumeProtocolRawPerformanceStatsReadlink) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsReadlink) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsReadlink
+func (m *VolumeProtocolRawPerformanceStatsInlineReadlink) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineReadlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1579,32 +1579,32 @@ func (m *VolumeProtocolRawPerformanceStatsReadlink) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsRename Raw count and latency data for rename operations.
+// VolumeProtocolRawPerformanceStatsInlineRename Raw count and latency data for rename operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsRename
-type VolumeProtocolRawPerformanceStatsRename struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_rename
+type VolumeProtocolRawPerformanceStatsInlineRename struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats rename
-func (m *VolumeProtocolRawPerformanceStatsRename) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline rename
+func (m *VolumeProtocolRawPerformanceStatsInlineRename) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats rename based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline rename based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsRename) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineRename) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1612,8 +1612,8 @@ func (m *VolumeProtocolRawPerformanceStatsRename) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsRename) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsRename
+func (m *VolumeProtocolRawPerformanceStatsInlineRename) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineRename
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1621,32 +1621,32 @@ func (m *VolumeProtocolRawPerformanceStatsRename) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsSetattr Raw count and latency data for setattr operations.
+// VolumeProtocolRawPerformanceStatsInlineSetattr Raw count and latency data for setattr operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsSetattr
-type VolumeProtocolRawPerformanceStatsSetattr struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_setattr
+type VolumeProtocolRawPerformanceStatsInlineSetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats setattr
-func (m *VolumeProtocolRawPerformanceStatsSetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline setattr
+func (m *VolumeProtocolRawPerformanceStatsInlineSetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats setattr based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline setattr based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsSetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineSetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1654,8 +1654,8 @@ func (m *VolumeProtocolRawPerformanceStatsSetattr) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsSetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsSetattr
+func (m *VolumeProtocolRawPerformanceStatsInlineSetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineSetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1663,32 +1663,32 @@ func (m *VolumeProtocolRawPerformanceStatsSetattr) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsUnlink Raw count and latency data for unlink operations.
+// VolumeProtocolRawPerformanceStatsInlineUnlink Raw count and latency data for unlink operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsUnlink
-type VolumeProtocolRawPerformanceStatsUnlink struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_unlink
+type VolumeProtocolRawPerformanceStatsInlineUnlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats unlink
-func (m *VolumeProtocolRawPerformanceStatsUnlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline unlink
+func (m *VolumeProtocolRawPerformanceStatsInlineUnlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats unlink based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline unlink based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsUnlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineUnlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1696,8 +1696,8 @@ func (m *VolumeProtocolRawPerformanceStatsUnlink) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsUnlink) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsUnlink
+func (m *VolumeProtocolRawPerformanceStatsInlineUnlink) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineUnlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1705,32 +1705,32 @@ func (m *VolumeProtocolRawPerformanceStatsUnlink) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeProtocolRawPerformanceStatsInlineWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsWatch
-type VolumeProtocolRawPerformanceStatsWatch struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_watch
+type VolumeProtocolRawPerformanceStatsInlineWatch struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats watch
-func (m *VolumeProtocolRawPerformanceStatsWatch) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline watch
+func (m *VolumeProtocolRawPerformanceStatsInlineWatch) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stats watch based on context it is used
-func (m *VolumeProtocolRawPerformanceStatsWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stats inline watch based on context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsWatch) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineWatch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1738,8 +1738,8 @@ func (m *VolumeProtocolRawPerformanceStatsWatch) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsWatch) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsWatch
+func (m *VolumeProtocolRawPerformanceStatsInlineWatch) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineWatch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1747,45 +1747,45 @@ func (m *VolumeProtocolRawPerformanceStatsWatch) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatsWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
+// VolumeProtocolRawPerformanceStatsInlineWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeProtocolRawPerformanceStatsWrite
-type VolumeProtocolRawPerformanceStatsWrite struct {
+// swagger:model volume_protocol_raw_performance_stats_inline_write
+type VolumeProtocolRawPerformanceStatsInlineWrite struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stats write
-func (m *VolumeProtocolRawPerformanceStatsWrite) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stats inline write
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume protocol raw performance stats write based on the context it is used
-func (m *VolumeProtocolRawPerformanceStatsWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume protocol raw performance stats inline write based on the context it is used
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -1802,18 +1802,18 @@ func (m *VolumeProtocolRawPerformanceStatsWrite) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "write"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "write"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeProtocolRawPerformanceStatsWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "write"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "write"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -1821,7 +1821,7 @@ func (m *VolumeProtocolRawPerformanceStatsWrite) contextValidateTotalTime(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsWrite) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1829,8 +1829,8 @@ func (m *VolumeProtocolRawPerformanceStatsWrite) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatsWrite) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatsWrite
+func (m *VolumeProtocolRawPerformanceStatsInlineWrite) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatsInlineWrite
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

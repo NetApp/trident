@@ -19,14 +19,14 @@ import (
 type TapeDeviceReference struct {
 
 	// links
-	Links *TapeDeviceReferenceLinks `json:"_links,omitempty"`
+	Links *TapeDeviceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// device id
 	// Example: 1a.0
-	DeviceID string `json:"device_id,omitempty"`
+	DeviceID *string `json:"device_id,omitempty"`
 
 	// node
-	Node *TapeDeviceReferenceNode `json:"node,omitempty"`
+	Node *TapeDeviceReferenceInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this tape device reference
@@ -145,17 +145,17 @@ func (m *TapeDeviceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TapeDeviceReferenceLinks tape device reference links
+// TapeDeviceReferenceInlineLinks tape device reference inline links
 //
-// swagger:model TapeDeviceReferenceLinks
-type TapeDeviceReferenceLinks struct {
+// swagger:model tape_device_reference_inline__links
+type TapeDeviceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this tape device reference links
-func (m *TapeDeviceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this tape device reference inline links
+func (m *TapeDeviceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -168,7 +168,7 @@ func (m *TapeDeviceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -185,8 +185,8 @@ func (m *TapeDeviceReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this tape device reference links based on the context it is used
-func (m *TapeDeviceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this tape device reference inline links based on the context it is used
+func (m *TapeDeviceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -199,7 +199,7 @@ func (m *TapeDeviceReferenceLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *TapeDeviceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -214,7 +214,7 @@ func (m *TapeDeviceReferenceLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *TapeDeviceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *TapeDeviceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -222,8 +222,8 @@ func (m *TapeDeviceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TapeDeviceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res TapeDeviceReferenceLinks
+func (m *TapeDeviceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TapeDeviceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -231,25 +231,25 @@ func (m *TapeDeviceReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TapeDeviceReferenceNode tape device reference node
+// TapeDeviceReferenceInlineNode tape device reference inline node
 //
-// swagger:model TapeDeviceReferenceNode
-type TapeDeviceReferenceNode struct {
+// swagger:model tape_device_reference_inline_node
+type TapeDeviceReferenceInlineNode struct {
 
 	// links
-	Links *TapeDeviceReferenceNodeLinks `json:"_links,omitempty"`
+	Links *TapeDeviceReferenceInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this tape device reference node
-func (m *TapeDeviceReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this tape device reference inline node
+func (m *TapeDeviceReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -262,7 +262,7 @@ func (m *TapeDeviceReferenceNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceReferenceNode) validateLinks(formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -279,8 +279,8 @@ func (m *TapeDeviceReferenceNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this tape device reference node based on the context it is used
-func (m *TapeDeviceReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this tape device reference inline node based on the context it is used
+func (m *TapeDeviceReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -293,7 +293,7 @@ func (m *TapeDeviceReferenceNode) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *TapeDeviceReferenceNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -308,7 +308,7 @@ func (m *TapeDeviceReferenceNode) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *TapeDeviceReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *TapeDeviceReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -316,8 +316,8 @@ func (m *TapeDeviceReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TapeDeviceReferenceNode) UnmarshalBinary(b []byte) error {
-	var res TapeDeviceReferenceNode
+func (m *TapeDeviceReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res TapeDeviceReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -325,17 +325,17 @@ func (m *TapeDeviceReferenceNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TapeDeviceReferenceNodeLinks tape device reference node links
+// TapeDeviceReferenceInlineNodeInlineLinks tape device reference inline node inline links
 //
-// swagger:model TapeDeviceReferenceNodeLinks
-type TapeDeviceReferenceNodeLinks struct {
+// swagger:model tape_device_reference_inline_node_inline__links
+type TapeDeviceReferenceInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this tape device reference node links
-func (m *TapeDeviceReferenceNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this tape device reference inline node inline links
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -348,7 +348,7 @@ func (m *TapeDeviceReferenceNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceReferenceNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -365,8 +365,8 @@ func (m *TapeDeviceReferenceNodeLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this tape device reference node links based on the context it is used
-func (m *TapeDeviceReferenceNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this tape device reference inline node inline links based on the context it is used
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -379,7 +379,7 @@ func (m *TapeDeviceReferenceNodeLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *TapeDeviceReferenceNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -394,7 +394,7 @@ func (m *TapeDeviceReferenceNodeLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *TapeDeviceReferenceNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -402,8 +402,8 @@ func (m *TapeDeviceReferenceNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TapeDeviceReferenceNodeLinks) UnmarshalBinary(b []byte) error {
-	var res TapeDeviceReferenceNodeLinks
+func (m *TapeDeviceReferenceInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TapeDeviceReferenceInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

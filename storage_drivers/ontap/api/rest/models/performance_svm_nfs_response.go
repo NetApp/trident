@@ -22,13 +22,14 @@ import (
 type PerformanceSvmNfsResponse struct {
 
 	// links
-	Links *PerformanceSvmNfsResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceSvmNfsResponseRecordsItems0 `json:"records,omitempty"`
+	// performance svm nfs response inline records
+	PerformanceSvmNfsResponseInlineRecords []*PerformanceSvmNfsResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance svm nfs response
@@ -39,7 +40,7 @@ func (m *PerformanceSvmNfsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceSvmNfsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceSvmNfsResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceSvmNfsResponse) validatePerformanceSvmNfsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceSvmNfsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceSvmNfsResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceSvmNfsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceSvmNfsResponseInlineRecords[i] != nil {
+			if err := m.PerformanceSvmNfsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceSvmNfsResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceSvmNfsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceSvmNfsResponse) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponse) contextValidatePerformanceSvmNfsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceSvmNfsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceSvmNfsResponseInlineRecords[i] != nil {
+			if err := m.PerformanceSvmNfsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceSvmNfsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsResponseLinks performance svm nfs response links
+// PerformanceSvmNfsResponseInlineLinks performance svm nfs response inline links
 //
-// swagger:model PerformanceSvmNfsResponseLinks
-type PerformanceSvmNfsResponseLinks struct {
+// swagger:model performance_svm_nfs_response_inline__links
+type PerformanceSvmNfsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceSvmNfsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs response links
-func (m *PerformanceSvmNfsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline links
+func (m *PerformanceSvmNfsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceSvmNfsResponseLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceSvmNfsResponseLinks) validateNext(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceSvmNfsResponseLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response links based on the context it is used
-func (m *PerformanceSvmNfsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline links based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceSvmNfsResponseLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceSvmNfsResponseLinks) contextValidateNext(ctx context.Context
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceSvmNfsResponseLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceSvmNfsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseLinks
+func (m *PerformanceSvmNfsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,23 +287,23 @@ func (m *PerformanceSvmNfsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0 Historical performance numbers, such as IOPS latency and throughput, for SVM-NFS protocol.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItem Historical performance numbers, such as IOPS latency and throughput, for SVM-NFS protocol.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0
-type PerformanceSvmNfsResponseRecordsItems0 struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItem struct {
 
 	// v3
-	V3 *PerformanceSvmNfsResponseRecordsItems0V3 `json:"v3,omitempty"`
+	V3 *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3 `json:"v3,omitempty"`
 
 	// v4
-	V4 *PerformanceSvmNfsResponseRecordsItems0V4 `json:"v4,omitempty"`
+	V4 *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4 `json:"v4,omitempty"`
 
 	// v41
-	V41 *PerformanceSvmNfsResponseRecordsItems0V41 `json:"v41,omitempty"`
+	V41 *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41 `json:"v41,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0
-func (m *PerformanceSvmNfsResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateV3(formats); err != nil {
@@ -323,7 +324,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) validateV3(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) validateV3(formats strfmt.Registry) error {
 	if swag.IsZero(m.V3) { // not required
 		return nil
 	}
@@ -340,7 +341,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) validateV3(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) validateV4(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) validateV4(formats strfmt.Registry) error {
 	if swag.IsZero(m.V4) { // not required
 		return nil
 	}
@@ -357,7 +358,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) validateV4(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) validateV41(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) validateV41(formats strfmt.Registry) error {
 	if swag.IsZero(m.V41) { // not required
 		return nil
 	}
@@ -374,8 +375,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) validateV41(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateV3(ctx, formats); err != nil {
@@ -396,7 +397,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV3(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) contextValidateV3(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.V3 != nil {
 		if err := m.V3.ContextValidate(ctx, formats); err != nil {
@@ -410,7 +411,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV3(ctx context.C
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV4(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) contextValidateV4(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.V4 != nil {
 		if err := m.V4.ContextValidate(ctx, formats); err != nil {
@@ -424,7 +425,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV4(ctx context.C
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV41(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) contextValidateV41(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.V41 != nil {
 		if err := m.V41.ContextValidate(ctx, formats); err != nil {
@@ -439,7 +440,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) contextValidateV41(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -447,8 +448,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -456,35 +457,35 @@ func (m *PerformanceSvmNfsResponseRecordsItems0) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V3 The NFSv3 operations
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3 The NFSv3 operations
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V3
-type PerformanceSvmNfsResponseRecordsItems0V3 struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3 struct {
 
 	// links
-	Links *PerformanceSvmNfsResponseRecordsItems0V3Links `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsResponseRecordsItems0V3Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsResponseRecordsItems0V3Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsResponseRecordsItems0V3Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -493,8 +494,8 @@ type PerformanceSvmNfsResponseRecordsItems0V3 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v3
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v3
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -531,7 +532,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -548,7 +549,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateLinks(formats strfmt.
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V3TypeDurationPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -556,95 +557,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V3TypeDurationPropEnum = append(performanceSvmNfsResponseRecordsItems0V3TypeDurationPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeDurationPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationPT4M captures enum value "PT4M"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationPT4M string = "PT4M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT4M captures enum value "PT4M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationP1D string = "P1D"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsResponseRecordsItems0V3DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V3TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v3"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v3"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -661,7 +662,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateIops(formats strfmt.R
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -678,7 +679,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateLatency(formats strfm
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V3TypeStatusPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -686,145 +687,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V3TypeStatusPropEnum = append(performanceSvmNfsResponseRecordsItems0V3TypeStatusPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeStatusPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusOk captures enum value "ok"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusOk string = "ok"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusOk captures enum value "ok"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusError captures enum value "error"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusError string = "error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusError captures enum value "error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusNotFound string = "not_found"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3
-	// PerformanceSvmNfsResponseRecordsItems0V3
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v3
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsResponseRecordsItems0V3StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V3TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v3"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v3"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -841,7 +842,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateThroughput(formats st
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -853,8 +854,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) validateTimestamp(formats str
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v3 based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v3 based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -891,7 +892,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -905,16 +906,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateLinks(ctx cont
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v3"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v3"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -928,7 +929,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateIops(ctx conte
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -942,16 +943,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateLatency(ctx co
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v3"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v3"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -965,7 +966,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateThroughput(ctx
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "v3"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -975,7 +976,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) contextValidateTimestamp(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -983,8 +984,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V3
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -992,34 +993,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V3Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V3Iops
-type PerformanceSvmNfsResponseRecordsItems0V3Iops struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v3_inline_iops
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v3 iops
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v3 inline iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v3 iops based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v3 inline iops based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1029,7 +1030,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1037,8 +1038,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V3Iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1046,34 +1047,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Iops) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V3Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V3Latency
-type PerformanceSvmNfsResponseRecordsItems0V3Latency struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v3_inline_latency
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v3 latency
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v3 inline latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v3 latency based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v3 inline latency based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1083,7 +1084,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) ContextValidate(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1091,8 +1092,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V3Latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1100,17 +1101,17 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Latency) UnmarshalBinary(b []by
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V3Links performance svm nfs response records items0 v3 links
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks performance svm nfs response inline records inline array item inline v3 inline links
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V3Links
-type PerformanceSvmNfsResponseRecordsItems0V3Links struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v3_inline__links
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v3 links
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v3 inline links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1123,7 +1124,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) Validate(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1140,8 +1141,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) validateSelf(formats str
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v3 links based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v3 inline links based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1154,7 +1155,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1169,7 +1170,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) contextValidateSelf(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1177,8 +1178,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V3Links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1186,31 +1187,31 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Links) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V3Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V3Throughput
-type PerformanceSvmNfsResponseRecordsItems0V3Throughput struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v3_inline_throughput
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v3 throughput
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v3 inline throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v3 throughput based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v3 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1220,7 +1221,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) ContextValidate(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1228,8 +1229,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) MarshalBinary() ([]
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V3Throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV3InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1237,35 +1238,35 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V3Throughput) UnmarshalBinary(b [
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V4 The NFSv4 operations
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4 The NFSv4 operations
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V4
-type PerformanceSvmNfsResponseRecordsItems0V4 struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4 struct {
 
 	// links
-	Links *PerformanceSvmNfsResponseRecordsItems0V4Links `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsResponseRecordsItems0V4Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsResponseRecordsItems0V4Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsResponseRecordsItems0V4Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1274,8 +1275,8 @@ type PerformanceSvmNfsResponseRecordsItems0V4 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v4
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v4
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1312,7 +1313,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1329,7 +1330,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateLinks(formats strfmt.
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V4TypeDurationPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1337,95 +1338,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V4TypeDurationPropEnum = append(performanceSvmNfsResponseRecordsItems0V4TypeDurationPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeDurationPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationPT4M captures enum value "PT4M"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationPT4M string = "PT4M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT4M captures enum value "PT4M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationP1D string = "P1D"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsResponseRecordsItems0V4DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V4TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v4"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v4"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1442,7 +1443,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateIops(formats strfmt.R
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1459,7 +1460,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateLatency(formats strfm
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V4TypeStatusPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1467,145 +1468,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V4TypeStatusPropEnum = append(performanceSvmNfsResponseRecordsItems0V4TypeStatusPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeStatusPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusOk captures enum value "ok"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusOk string = "ok"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusOk captures enum value "ok"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusError captures enum value "error"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusError string = "error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusError captures enum value "error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusNotFound string = "not_found"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4
-	// PerformanceSvmNfsResponseRecordsItems0V4
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v4
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsResponseRecordsItems0V4StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V4TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v4"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v4"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1622,7 +1623,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateThroughput(formats st
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1634,8 +1635,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) validateTimestamp(formats str
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v4 based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v4 based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1672,7 +1673,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1686,16 +1687,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateLinks(ctx cont
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v4"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v4"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1709,7 +1710,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateIops(ctx conte
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1723,16 +1724,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateLatency(ctx co
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v4"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v4"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1746,7 +1747,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateThroughput(ctx
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "v4"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1756,7 +1757,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) contextValidateTimestamp(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1764,8 +1765,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V4
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1773,35 +1774,35 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V41 The NFSv4.1 operations
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41 The NFSv4.1 operations
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V41
-type PerformanceSvmNfsResponseRecordsItems0V41 struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41 struct {
 
 	// links
-	Links *PerformanceSvmNfsResponseRecordsItems0V41Links `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsResponseRecordsItems0V41Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsResponseRecordsItems0V41Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsResponseRecordsItems0V41Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1810,8 +1811,8 @@ type PerformanceSvmNfsResponseRecordsItems0V41 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v41
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v41
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1848,7 +1849,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1865,7 +1866,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateLinks(formats strfmt
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V41TypeDurationPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1873,95 +1874,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V41TypeDurationPropEnum = append(performanceSvmNfsResponseRecordsItems0V41TypeDurationPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeDurationPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationPT4M captures enum value "PT4M"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationPT4M string = "PT4M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT4M captures enum value "PT4M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationP1D string = "P1D"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsResponseRecordsItems0V41DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V41TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v41"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v41"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1978,7 +1979,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateIops(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1995,7 +1996,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateLatency(formats strf
 	return nil
 }
 
-var performanceSvmNfsResponseRecordsItems0V41TypeStatusPropEnum []interface{}
+var performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2003,145 +2004,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsResponseRecordsItems0V41TypeStatusPropEnum = append(performanceSvmNfsResponseRecordsItems0V41TypeStatusPropEnum, v)
+		performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeStatusPropEnum = append(performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusOk captures enum value "ok"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusOk string = "ok"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusOk captures enum value "ok"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusError captures enum value "error"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusError string = "error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusError captures enum value "error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusNotFound string = "not_found"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41
-	// PerformanceSvmNfsResponseRecordsItems0V41
+	// performance_svm_nfs_response_inline_records_inline_array_item_inline_v41
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsResponseRecordsItems0V41StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseRecordsItems0V41TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v41"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v41"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -2158,7 +2159,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateThroughput(formats s
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2170,8 +2171,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) validateTimestamp(formats st
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v41 based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v41 based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2208,7 +2209,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2222,16 +2223,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateLinks(ctx con
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v41"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v41"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -2245,7 +2246,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateIops(ctx cont
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -2259,16 +2260,16 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateLatency(ctx c
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v41"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v41"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -2282,7 +2283,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateThroughput(ct
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "v41"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2292,7 +2293,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) contextValidateTimestamp(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2300,8 +2301,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V41
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2309,34 +2310,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V41Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V41Iops
-type PerformanceSvmNfsResponseRecordsItems0V41Iops struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v41_inline_iops
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v41 iops
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v41 inline iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v41 iops based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v41 inline iops based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2346,7 +2347,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) ContextValidate(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2354,8 +2355,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V41Iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2363,34 +2364,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Iops) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V41Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V41Latency
-type PerformanceSvmNfsResponseRecordsItems0V41Latency struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v41_inline_latency
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v41 latency
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v41 inline latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v41 latency based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v41 inline latency based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2400,7 +2401,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) ContextValidate(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2408,8 +2409,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V41Latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2417,17 +2418,17 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Latency) UnmarshalBinary(b []b
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V41Links performance svm nfs response records items0 v41 links
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks performance svm nfs response inline records inline array item inline v41 inline links
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V41Links
-type PerformanceSvmNfsResponseRecordsItems0V41Links struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v41_inline__links
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v41 links
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v41 inline links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2440,7 +2441,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) Validate(formats strfmt
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2457,8 +2458,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) validateSelf(formats st
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v41 links based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v41 inline links based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2471,7 +2472,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) ContextValidate(ctx con
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2486,7 +2487,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) contextValidateSelf(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2494,8 +2495,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V41Links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2503,31 +2504,31 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Links) UnmarshalBinary(b []byt
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V41Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V41Throughput
-type PerformanceSvmNfsResponseRecordsItems0V41Throughput struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v41_inline_throughput
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v41 throughput
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v41 inline throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v41 throughput based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v41 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2537,7 +2538,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) ContextValidate(ct
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2545,8 +2546,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) MarshalBinary() ([
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V41Throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV41InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2554,34 +2555,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V41Throughput) UnmarshalBinary(b 
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V4Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V4Iops
-type PerformanceSvmNfsResponseRecordsItems0V4Iops struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v4_inline_iops
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v4 iops
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v4 inline iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v4 iops based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v4 inline iops based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2591,7 +2592,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2599,8 +2600,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V4Iops
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2608,34 +2609,34 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Iops) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V4Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V4Latency
-type PerformanceSvmNfsResponseRecordsItems0V4Latency struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v4_inline_latency
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v4 latency
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v4 inline latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v4 latency based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v4 inline latency based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2645,7 +2646,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) ContextValidate(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2653,8 +2654,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V4Latency
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2662,17 +2663,17 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Latency) UnmarshalBinary(b []by
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V4Links performance svm nfs response records items0 v4 links
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks performance svm nfs response inline records inline array item inline v4 inline links
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V4Links
-type PerformanceSvmNfsResponseRecordsItems0V4Links struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v4_inline__links
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v4 links
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v4 inline links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2685,7 +2686,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) Validate(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2702,8 +2703,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) validateSelf(formats str
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v4 links based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v4 inline links based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2716,7 +2717,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2731,7 +2732,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) contextValidateSelf(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2739,8 +2740,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V4Links
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2748,31 +2749,31 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Links) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceSvmNfsResponseRecordsItems0V4Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsResponseRecordsItems0V4Throughput
-type PerformanceSvmNfsResponseRecordsItems0V4Throughput struct {
+// swagger:model performance_svm_nfs_response_inline_records_inline_array_item_inline_v4_inline_throughput
+type PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs response records items0 v4 throughput
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs response inline records inline array item inline v4 inline throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs response records items0 v4 throughput based on the context it is used
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs response inline records inline array item inline v4 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2782,7 +2783,7 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) ContextValidate(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2790,8 +2791,8 @@ func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) MarshalBinary() ([]
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsResponseRecordsItems0V4Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsResponseRecordsItems0V4Throughput
+func (m *PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsResponseInlineRecordsInlineArrayItemInlineV4InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

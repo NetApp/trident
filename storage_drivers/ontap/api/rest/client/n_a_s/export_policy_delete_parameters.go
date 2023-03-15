@@ -66,7 +66,7 @@ type ExportPolicyDeleteParams struct {
 
 	   Export Policy ID
 	*/
-	IDPathParameter int64
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *ExportPolicyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the export policy delete params
-func (o *ExportPolicyDeleteParams) WithIDPathParameter(id int64) *ExportPolicyDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the export policy delete params
+func (o *ExportPolicyDeleteParams) WithID(id int64) *ExportPolicyDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the export policy delete params
-func (o *ExportPolicyDeleteParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the export policy delete params
+func (o *ExportPolicyDeleteParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -141,7 +141,7 @@ func (o *ExportPolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 

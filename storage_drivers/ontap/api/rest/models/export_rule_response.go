@@ -20,13 +20,14 @@ import (
 type ExportRuleResponse struct {
 
 	// links
-	Links *ExportRuleResponseLinks `json:"_links,omitempty"`
+	Links *ExportRuleResponseInlineLinks `json:"_links,omitempty"`
+
+	// export rule response inline records
+	ExportRuleResponseInlineRecords []*ExportRule `json:"records,omitempty"`
 
 	// Number of Export Rule records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ExportRule `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this export rule response
@@ -37,7 +38,7 @@ func (m *ExportRuleResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateExportRuleResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ExportRuleResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRuleResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ExportRuleResponse) validateExportRuleResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportRuleResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ExportRuleResponseInlineRecords); i++ {
+		if swag.IsZero(m.ExportRuleResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ExportRuleResponseInlineRecords[i] != nil {
+			if err := m.ExportRuleResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ExportRuleResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateExportRuleResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ExportRuleResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ExportRuleResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportRuleResponse) contextValidateExportRuleResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ExportRuleResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ExportRuleResponseInlineRecords[i] != nil {
+			if err := m.ExportRuleResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ExportRuleResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportRuleResponseLinks export rule response links
+// ExportRuleResponseInlineLinks export rule response inline links
 //
-// swagger:model ExportRuleResponseLinks
-type ExportRuleResponseLinks struct {
+// swagger:model export_rule_response_inline__links
+type ExportRuleResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ExportRuleResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export rule response links
-func (m *ExportRuleResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export rule response inline links
+func (m *ExportRuleResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ExportRuleResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRuleResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ExportRuleResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ExportRuleResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRuleResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportRuleResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ExportRuleResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export rule response links based on the context it is used
-func (m *ExportRuleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export rule response inline links based on the context it is used
+func (m *ExportRuleResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ExportRuleResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ExportRuleResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportRuleResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ExportRuleResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *ExportRuleResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportRuleResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ExportRuleResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ExportRuleResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportRuleResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ExportRuleResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportRuleResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ExportRuleResponseLinks
+func (m *ExportRuleResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportRuleResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

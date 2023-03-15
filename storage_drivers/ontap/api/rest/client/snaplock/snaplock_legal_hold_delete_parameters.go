@@ -65,7 +65,7 @@ type SnaplockLegalHoldDeleteParams struct {
 
 	   Litigation ID
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SnaplockLegalHoldDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the snaplock legal hold delete params
-func (o *SnaplockLegalHoldDeleteParams) WithIDPathParameter(id string) *SnaplockLegalHoldDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock legal hold delete params
+func (o *SnaplockLegalHoldDeleteParams) WithID(id string) *SnaplockLegalHoldDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock legal hold delete params
-func (o *SnaplockLegalHoldDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock legal hold delete params
+func (o *SnaplockLegalHoldDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SnaplockLegalHoldDeleteParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

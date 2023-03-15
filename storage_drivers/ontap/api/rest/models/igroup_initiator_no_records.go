@@ -20,7 +20,7 @@ import (
 type IgroupInitiatorNoRecords struct {
 
 	// links
-	Links *IgroupInitiatorNoRecordsLinks `json:"_links,omitempty"`
+	Links *IgroupInitiatorNoRecordsInlineLinks `json:"_links,omitempty"`
 
 	// A comment available for use by the administrator. Valid in POST and PATCH.
 	//
@@ -34,7 +34,7 @@ type IgroupInitiatorNoRecords struct {
 	// Example: iqn.1998-01.com.corp.iscsi:name1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this igroup initiator no records
@@ -97,11 +97,11 @@ func (m *IgroupInitiatorNoRecords) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -154,17 +154,17 @@ func (m *IgroupInitiatorNoRecords) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupInitiatorNoRecordsLinks igroup initiator no records links
+// IgroupInitiatorNoRecordsInlineLinks igroup initiator no records inline links
 //
-// swagger:model IgroupInitiatorNoRecordsLinks
-type IgroupInitiatorNoRecordsLinks struct {
+// swagger:model igroup_initiator_no_records_inline__links
+type IgroupInitiatorNoRecordsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup initiator no records links
-func (m *IgroupInitiatorNoRecordsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup initiator no records inline links
+func (m *IgroupInitiatorNoRecordsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -177,7 +177,7 @@ func (m *IgroupInitiatorNoRecordsLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IgroupInitiatorNoRecordsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupInitiatorNoRecordsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -194,8 +194,8 @@ func (m *IgroupInitiatorNoRecordsLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this igroup initiator no records links based on the context it is used
-func (m *IgroupInitiatorNoRecordsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup initiator no records inline links based on the context it is used
+func (m *IgroupInitiatorNoRecordsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -208,7 +208,7 @@ func (m *IgroupInitiatorNoRecordsLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *IgroupInitiatorNoRecordsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupInitiatorNoRecordsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -223,7 +223,7 @@ func (m *IgroupInitiatorNoRecordsLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupInitiatorNoRecordsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -231,8 +231,8 @@ func (m *IgroupInitiatorNoRecordsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupInitiatorNoRecordsLinks
+func (m *IgroupInitiatorNoRecordsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorNoRecordsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

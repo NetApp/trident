@@ -18,16 +18,16 @@ import (
 type MultiAdminVerifyConfig struct {
 
 	// Default time for requests to be approved, in ISO-8601 duration format.
-	ApprovalExpiry string `json:"approval_expiry,omitempty"`
-
-	// List of approval groups that are allowed to approve requests for rules that don't have approval groups.
-	ApprovalGroups []string `json:"approval_groups,omitempty"`
+	ApprovalExpiry *string `json:"approval_expiry,omitempty"`
 
 	// enabled
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Default time for requests to be executed once approved, in ISO-8601 duration format.
-	ExecutionExpiry string `json:"execution_expiry,omitempty"`
+	ExecutionExpiry *string `json:"execution_expiry,omitempty"`
+
+	// List of approval groups that are allowed to approve requests for rules that don't have approval groups.
+	MultiAdminVerifyConfigInlineApprovalGroups []*string `json:"approval_groups,omitempty"`
 
 	// The number of required approvers, excluding the user that made the request.
 	RequiredApprovers *int64 `json:"required_approvers,omitempty"`

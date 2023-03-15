@@ -22,36 +22,33 @@ import (
 type SnapmirrorPolicy struct {
 
 	// links
-	Links *SnapmirrorPolicyLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyInlineLinks `json:"_links,omitempty"`
 
 	// Comment associated with the policy.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Specifies that all the source Snapshot copies (including the one created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
 	// Example: true
-	CopyAllSourceSnapshots bool `json:"copy_all_source_snapshots,omitempty"`
+	CopyAllSourceSnapshots *bool `json:"copy_all_source_snapshots,omitempty"`
 
 	// Specifies that the latest source Snapshot copy (created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
 	// Example: true
-	CopyLatestSourceSnapshot bool `json:"copy_latest_source_snapshot,omitempty"`
+	CopyLatestSourceSnapshot *bool `json:"copy_latest_source_snapshot,omitempty"`
 
 	// Specifies whether a new Snapshot copy should be created on the source at the beginning of an update or resync operation. This is applicable only to async policies. Property can only be set to 'false'.
 	// Example: false
-	CreateSnapshotOnSource bool `json:"create_snapshot_on_source,omitempty"`
+	CreateSnapshotOnSource *bool `json:"create_snapshot_on_source,omitempty"`
 
 	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type.
 	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
-	IdentityPreservation string `json:"identity_preservation,omitempty"`
+	IdentityPreservation *string `json:"identity_preservation,omitempty"`
 
 	// Name of the policy.
 	// Example: Asynchronous
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies whether network compression is enabled for transfers. This is applicable only to the policies of type "async".
 	NetworkCompressionEnabled *bool `json:"network_compression_enabled,omitempty"`
-
-	// Rules for Snapshot copy retention.
-	Retention []*SnapmirrorPolicyRule `json:"retention,omitempty"`
 
 	// Specifies the duration of time for which a change to be propogated to a mirror should be delayed, in seconds. This is an intentional propagation delay between mirrors and is configurable down to zero, which means an immediate propogation. This is supported for policies of type 'continuous'.
 	Rpo *int64 `json:"rpo,omitempty"`
@@ -59,23 +56,26 @@ type SnapmirrorPolicy struct {
 	// Set to "svm" for policies owned by an SVM, otherwise set to "cluster".
 	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
+
+	// Rules for Snapshot copy retention.
+	SnapmirrorPolicyInlineRetention []*SnapmirrorPolicyRule `json:"retention,omitempty"`
 
 	// svm
-	Svm *SnapmirrorPolicySvm `json:"svm,omitempty"`
+	Svm *SnapmirrorPolicyInlineSvm `json:"svm,omitempty"`
 
 	// sync common snapshot schedule
-	SyncCommonSnapshotSchedule *SnapmirrorPolicySyncCommonSnapshotSchedule `json:"sync_common_snapshot_schedule,omitempty"`
+	SyncCommonSnapshotSchedule *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule `json:"sync_common_snapshot_schedule,omitempty"`
 
 	// sync type
 	// Enum: [sync strict_sync automated_failover]
-	SyncType string `json:"sync_type,omitempty"`
+	SyncType *string `json:"sync_type,omitempty"`
 
 	// Throttle in KB/s. Default to unlimited.
-	Throttle int64 `json:"throttle,omitempty"`
+	Throttle *int64 `json:"throttle,omitempty"`
 
 	// transfer schedule
-	TransferSchedule *SnapmirrorPolicyTransferSchedule `json:"transfer_schedule,omitempty"`
+	TransferSchedule *SnapmirrorPolicyInlineTransferSchedule `json:"transfer_schedule,omitempty"`
 
 	// type
 	// Enum: [async sync continuous]
@@ -85,7 +85,7 @@ type SnapmirrorPolicy struct {
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this snapmirror policy
@@ -100,11 +100,11 @@ func (m *SnapmirrorPolicy) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRetention(formats); err != nil {
+	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateScope(formats); err != nil {
+	if err := m.validateSnapmirrorPolicyInlineRetention(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -214,32 +214,8 @@ func (m *SnapmirrorPolicy) validateIdentityPreservation(formats strfmt.Registry)
 	}
 
 	// value enum
-	if err := m.validateIdentityPreservationEnum("identity_preservation", "body", m.IdentityPreservation); err != nil {
+	if err := m.validateIdentityPreservationEnum("identity_preservation", "body", *m.IdentityPreservation); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *SnapmirrorPolicy) validateRetention(formats strfmt.Registry) error {
-	if swag.IsZero(m.Retention) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Retention); i++ {
-		if swag.IsZero(m.Retention[i]) { // not required
-			continue
-		}
-
-		if m.Retention[i] != nil {
-			if err := m.Retention[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("retention" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -294,8 +270,32 @@ func (m *SnapmirrorPolicy) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorPolicy) validateSnapmirrorPolicyInlineRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapmirrorPolicyInlineRetention) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnapmirrorPolicyInlineRetention); i++ {
+		if swag.IsZero(m.SnapmirrorPolicyInlineRetention[i]) { // not required
+			continue
+		}
+
+		if m.SnapmirrorPolicyInlineRetention[i] != nil {
+			if err := m.SnapmirrorPolicyInlineRetention[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("retention" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -394,7 +394,7 @@ func (m *SnapmirrorPolicy) validateSyncType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSyncTypeEnum("sync_type", "body", m.SyncType); err != nil {
+	if err := m.validateSyncTypeEnum("sync_type", "body", *m.SyncType); err != nil {
 		return err
 	}
 
@@ -504,11 +504,11 @@ func (m *SnapmirrorPolicy) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRetention(ctx, formats); err != nil {
+	if err := m.contextValidateScope(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateScope(ctx, formats); err != nil {
+	if err := m.contextValidateSnapmirrorPolicyInlineRetention(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -548,12 +548,21 @@ func (m *SnapmirrorPolicy) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnapmirrorPolicy) contextValidateRetention(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Retention); i++ {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
 
-		if m.Retention[i] != nil {
-			if err := m.Retention[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *SnapmirrorPolicy) contextValidateSnapmirrorPolicyInlineRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SnapmirrorPolicyInlineRetention); i++ {
+
+		if m.SnapmirrorPolicyInlineRetention[i] != nil {
+			if err := m.SnapmirrorPolicyInlineRetention[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("retention" + "." + strconv.Itoa(i))
 				}
@@ -561,15 +570,6 @@ func (m *SnapmirrorPolicy) contextValidateRetention(ctx context.Context, formats
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *SnapmirrorPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
-		return err
 	}
 
 	return nil
@@ -619,7 +619,7 @@ func (m *SnapmirrorPolicy) contextValidateTransferSchedule(ctx context.Context, 
 
 func (m *SnapmirrorPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -644,17 +644,17 @@ func (m *SnapmirrorPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyLinks snapmirror policy links
+// SnapmirrorPolicyInlineLinks snapmirror policy inline links
 //
-// swagger:model SnapmirrorPolicyLinks
-type SnapmirrorPolicyLinks struct {
+// swagger:model snapmirror_policy_inline__links
+type SnapmirrorPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy links
-func (m *SnapmirrorPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline links
+func (m *SnapmirrorPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -667,7 +667,7 @@ func (m *SnapmirrorPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -684,8 +684,8 @@ func (m *SnapmirrorPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy links based on the context it is used
-func (m *SnapmirrorPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline links based on the context it is used
+func (m *SnapmirrorPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -698,7 +698,7 @@ func (m *SnapmirrorPolicyLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnapmirrorPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *SnapmirrorPolicyLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -721,8 +721,8 @@ func (m *SnapmirrorPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyLinks
+func (m *SnapmirrorPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -730,27 +730,27 @@ func (m *SnapmirrorPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicySvm snapmirror policy svm
+// SnapmirrorPolicyInlineSvm snapmirror policy inline svm
 //
-// swagger:model SnapmirrorPolicySvm
-type SnapmirrorPolicySvm struct {
+// swagger:model snapmirror_policy_inline_svm
+type SnapmirrorPolicyInlineSvm struct {
 
 	// links
-	Links *SnapmirrorPolicySvmLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror policy svm
-func (m *SnapmirrorPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline svm
+func (m *SnapmirrorPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -763,7 +763,7 @@ func (m *SnapmirrorPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -780,8 +780,8 @@ func (m *SnapmirrorPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy svm based on the context it is used
-func (m *SnapmirrorPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline svm based on the context it is used
+func (m *SnapmirrorPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -794,7 +794,7 @@ func (m *SnapmirrorPolicySvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SnapmirrorPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -809,7 +809,7 @@ func (m *SnapmirrorPolicySvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -817,8 +817,8 @@ func (m *SnapmirrorPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicySvm) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicySvm
+func (m *SnapmirrorPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -826,17 +826,17 @@ func (m *SnapmirrorPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicySvmLinks snapmirror policy svm links
+// SnapmirrorPolicyInlineSvmInlineLinks snapmirror policy inline svm inline links
 //
-// swagger:model SnapmirrorPolicySvmLinks
-type SnapmirrorPolicySvmLinks struct {
+// swagger:model snapmirror_policy_inline_svm_inline__links
+type SnapmirrorPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy svm links
-func (m *SnapmirrorPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline svm inline links
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -849,7 +849,7 @@ func (m *SnapmirrorPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -866,8 +866,8 @@ func (m *SnapmirrorPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy svm links based on the context it is used
-func (m *SnapmirrorPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline svm inline links based on the context it is used
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -880,7 +880,7 @@ func (m *SnapmirrorPolicySvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SnapmirrorPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -895,7 +895,7 @@ func (m *SnapmirrorPolicySvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -903,8 +903,8 @@ func (m *SnapmirrorPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicySvmLinks
+func (m *SnapmirrorPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -912,25 +912,25 @@ func (m *SnapmirrorPolicySvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicySyncCommonSnapshotSchedule Schedule used to create common Snapshot copies for synchronous relationships.
+// SnapmirrorPolicyInlineSyncCommonSnapshotSchedule Schedule used to create common Snapshot copies for synchronous relationships.
 //
-// swagger:model SnapmirrorPolicySyncCommonSnapshotSchedule
-type SnapmirrorPolicySyncCommonSnapshotSchedule struct {
+// swagger:model snapmirror_policy_inline_sync_common_snapshot_schedule
+type SnapmirrorPolicyInlineSyncCommonSnapshotSchedule struct {
 
 	// links
-	Links *SnapmirrorPolicySyncCommonSnapshotScheduleLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror policy sync common snapshot schedule
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline sync common snapshot schedule
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -943,7 +943,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -960,8 +960,8 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) validateLinks(formats strfm
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy sync common snapshot schedule based on the context it is used
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline sync common snapshot schedule based on the context it is used
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -974,7 +974,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) ContextValidate(ctx context
 	return nil
 }
 
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -989,7 +989,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) contextValidateLinks(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -997,8 +997,8 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicySyncCommonSnapshotSchedule
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineSyncCommonSnapshotSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1006,17 +1006,17 @@ func (m *SnapmirrorPolicySyncCommonSnapshotSchedule) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// SnapmirrorPolicySyncCommonSnapshotScheduleLinks snapmirror policy sync common snapshot schedule links
+// SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks snapmirror policy inline sync common snapshot schedule inline links
 //
-// swagger:model SnapmirrorPolicySyncCommonSnapshotScheduleLinks
-type SnapmirrorPolicySyncCommonSnapshotScheduleLinks struct {
+// swagger:model snapmirror_policy_inline_sync_common_snapshot_schedule_inline__links
+type SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy sync common snapshot schedule links
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline sync common snapshot schedule inline links
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1029,7 +1029,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) Validate(formats strfm
 	return nil
 }
 
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1046,8 +1046,8 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) validateSelf(formats s
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy sync common snapshot schedule links based on the context it is used
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline sync common snapshot schedule inline links based on the context it is used
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1060,7 +1060,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) ContextValidate(ctx co
 	return nil
 }
 
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1075,7 +1075,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) contextValidateSelf(ct
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1083,8 +1083,8 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicySyncCommonSnapshotScheduleLinks
+func (m *SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineSyncCommonSnapshotScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1092,25 +1092,25 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// SnapmirrorPolicyTransferSchedule The schedule used to update asynchronous relationships. Only cron schedules are supported for SnapMirror.
+// SnapmirrorPolicyInlineTransferSchedule The schedule used to update asynchronous relationships. Only cron schedules are supported for SnapMirror.
 //
-// swagger:model SnapmirrorPolicyTransferSchedule
-type SnapmirrorPolicyTransferSchedule struct {
+// swagger:model snapmirror_policy_inline_transfer_schedule
+type SnapmirrorPolicyInlineTransferSchedule struct {
 
 	// links
-	Links *SnapmirrorPolicyTransferScheduleLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyInlineTransferScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror policy transfer schedule
-func (m *SnapmirrorPolicyTransferSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline transfer schedule
+func (m *SnapmirrorPolicyInlineTransferSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1123,7 +1123,7 @@ func (m *SnapmirrorPolicyTransferSchedule) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SnapmirrorPolicyTransferSchedule) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineTransferSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1140,8 +1140,8 @@ func (m *SnapmirrorPolicyTransferSchedule) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy transfer schedule based on the context it is used
-func (m *SnapmirrorPolicyTransferSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline transfer schedule based on the context it is used
+func (m *SnapmirrorPolicyInlineTransferSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1154,7 +1154,7 @@ func (m *SnapmirrorPolicyTransferSchedule) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SnapmirrorPolicyTransferSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineTransferSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1169,7 +1169,7 @@ func (m *SnapmirrorPolicyTransferSchedule) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyTransferSchedule) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineTransferSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1177,8 +1177,8 @@ func (m *SnapmirrorPolicyTransferSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyTransferSchedule) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyTransferSchedule
+func (m *SnapmirrorPolicyInlineTransferSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineTransferSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1186,17 +1186,17 @@ func (m *SnapmirrorPolicyTransferSchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyTransferScheduleLinks snapmirror policy transfer schedule links
+// SnapmirrorPolicyInlineTransferScheduleInlineLinks snapmirror policy inline transfer schedule inline links
 //
-// swagger:model SnapmirrorPolicyTransferScheduleLinks
-type SnapmirrorPolicyTransferScheduleLinks struct {
+// swagger:model snapmirror_policy_inline_transfer_schedule_inline__links
+type SnapmirrorPolicyInlineTransferScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy transfer schedule links
-func (m *SnapmirrorPolicyTransferScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy inline transfer schedule inline links
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1209,7 +1209,7 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *SnapmirrorPolicyTransferScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1226,8 +1226,8 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy transfer schedule links based on the context it is used
-func (m *SnapmirrorPolicyTransferScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy inline transfer schedule inline links based on the context it is used
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1240,7 +1240,7 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *SnapmirrorPolicyTransferScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1255,7 +1255,7 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyTransferScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1263,8 +1263,8 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyTransferScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyTransferScheduleLinks
+func (m *SnapmirrorPolicyInlineTransferScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyInlineTransferScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

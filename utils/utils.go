@@ -1029,3 +1029,12 @@ func PtrToString[T any](v *T) string {
 	}
 	return fmt.Sprintf("%v", *v)
 }
+
+// SlicePtrs converts a slice into a slice of pointers
+func SlicePtrs[T any](slice []T) []*T {
+	var result []*T
+	for _, s := range slice {
+		result = append(result, Ptr(s))
+	}
+	return result
+}

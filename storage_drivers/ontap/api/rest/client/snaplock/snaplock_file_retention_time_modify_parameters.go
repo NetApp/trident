@@ -73,13 +73,13 @@ type SnaplockFileRetentionTimeModifyParams struct {
 
 	   Path of the file in the form "/\<dirpath\>/\<filename\>"
 	*/
-	PathPathParameter string
+	Path string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *SnaplockFileRetentionTimeModifyParams) SetInfo(info *models.SnaplockFil
 	o.Info = info
 }
 
-// WithPathPathParameter adds the path to the snaplock file retention time modify params
-func (o *SnaplockFileRetentionTimeModifyParams) WithPathPathParameter(path string) *SnaplockFileRetentionTimeModifyParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the snaplock file retention time modify params
+func (o *SnaplockFileRetentionTimeModifyParams) WithPath(path string) *SnaplockFileRetentionTimeModifyParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the snaplock file retention time modify params
-func (o *SnaplockFileRetentionTimeModifyParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the snaplock file retention time modify params
+func (o *SnaplockFileRetentionTimeModifyParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snaplock file retention time modify params
-func (o *SnaplockFileRetentionTimeModifyParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnaplockFileRetentionTimeModifyParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snaplock file retention time modify params
+func (o *SnaplockFileRetentionTimeModifyParams) WithVolumeUUID(volumeUUID string) *SnaplockFileRetentionTimeModifyParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snaplock file retention time modify params
-func (o *SnaplockFileRetentionTimeModifyParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snaplock file retention time modify params
+func (o *SnaplockFileRetentionTimeModifyParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *SnaplockFileRetentionTimeModifyParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

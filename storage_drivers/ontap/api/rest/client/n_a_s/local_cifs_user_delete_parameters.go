@@ -65,13 +65,13 @@ type LocalCifsUserDeleteParams struct {
 
 	   Local user SID
 	*/
-	SIDPathParameter string
+	Sid string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *LocalCifsUserDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSIDPathParameter adds the sid to the local cifs user delete params
-func (o *LocalCifsUserDeleteParams) WithSIDPathParameter(sid string) *LocalCifsUserDeleteParams {
-	o.SetSIDPathParameter(sid)
+// WithSid adds the sid to the local cifs user delete params
+func (o *LocalCifsUserDeleteParams) WithSid(sid string) *LocalCifsUserDeleteParams {
+	o.SetSid(sid)
 	return o
 }
 
-// SetSIDPathParameter adds the sid to the local cifs user delete params
-func (o *LocalCifsUserDeleteParams) SetSIDPathParameter(sid string) {
-	o.SIDPathParameter = sid
+// SetSid adds the sid to the local cifs user delete params
+func (o *LocalCifsUserDeleteParams) SetSid(sid string) {
+	o.Sid = sid
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs user delete params
-func (o *LocalCifsUserDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsUserDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs user delete params
+func (o *LocalCifsUserDeleteParams) WithSvmUUID(svmUUID string) *LocalCifsUserDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs user delete params
-func (o *LocalCifsUserDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs user delete params
+func (o *LocalCifsUserDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *LocalCifsUserDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param sid
-	if err := r.SetPathParam("sid", o.SIDPathParameter); err != nil {
+	if err := r.SetPathParam("sid", o.Sid); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

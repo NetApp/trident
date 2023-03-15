@@ -58,6 +58,11 @@ ConsistencyGroupSnapshotCreateCreated describes a response with status code 201,
 Created
 */
 type ConsistencyGroupSnapshotCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.ConsistencyGroupSnapshotResponse
 }
 
@@ -100,6 +105,13 @@ func (o *ConsistencyGroupSnapshotCreateCreated) GetPayload() *models.Consistency
 
 func (o *ConsistencyGroupSnapshotCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.ConsistencyGroupSnapshotResponse)
 
 	// response payload
@@ -121,6 +133,11 @@ ConsistencyGroupSnapshotCreateAccepted describes a response with status code 202
 Accepted
 */
 type ConsistencyGroupSnapshotCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -162,6 +179,13 @@ func (o *ConsistencyGroupSnapshotCreateAccepted) GetPayload() *models.JobLinkRes
 }
 
 func (o *ConsistencyGroupSnapshotCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

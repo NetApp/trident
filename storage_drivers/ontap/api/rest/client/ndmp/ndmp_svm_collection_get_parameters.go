@@ -66,31 +66,31 @@ type NdmpSvmCollectionGetParams struct {
 
 	   Filter by authentication_types
 	*/
-	AuthenticationTypesQueryParameter *string
+	AuthenticationTypes *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type NdmpSvmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,19 +106,19 @@ type NdmpSvmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,14 +138,14 @@ func (o *NdmpSvmCollectionGetParams) WithDefaults() *NdmpSvmCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *NdmpSvmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NdmpSvmCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -187,103 +187,103 @@ func (o *NdmpSvmCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationTypesQueryParameter adds the authenticationTypes to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithAuthenticationTypesQueryParameter(authenticationTypes *string) *NdmpSvmCollectionGetParams {
-	o.SetAuthenticationTypesQueryParameter(authenticationTypes)
+// WithAuthenticationTypes adds the authenticationTypes to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithAuthenticationTypes(authenticationTypes *string) *NdmpSvmCollectionGetParams {
+	o.SetAuthenticationTypes(authenticationTypes)
 	return o
 }
 
-// SetAuthenticationTypesQueryParameter adds the authenticationTypes to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetAuthenticationTypesQueryParameter(authenticationTypes *string) {
-	o.AuthenticationTypesQueryParameter = authenticationTypes
+// SetAuthenticationTypes adds the authenticationTypes to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetAuthenticationTypes(authenticationTypes *string) {
+	o.AuthenticationTypes = authenticationTypes
 }
 
-// WithEnabledQueryParameter adds the enabled to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NdmpSvmCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithEnabled(enabled *bool) *NdmpSvmCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithFieldsQueryParameter(fields []string) *NdmpSvmCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithFields(fields []string) *NdmpSvmCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NdmpSvmCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithMaxRecords(maxRecords *int64) *NdmpSvmCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NdmpSvmCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithOrderBy(orderBy []string) *NdmpSvmCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NdmpSvmCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithReturnRecords(returnRecords *bool) *NdmpSvmCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NdmpSvmCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NdmpSvmCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NdmpSvmCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithSvmName(svmName *string) *NdmpSvmCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NdmpSvmCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) WithSvmUUID(svmUUID *string) *NdmpSvmCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the ndmp svm collection get params
-func (o *NdmpSvmCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ndmp svm collection get params
+func (o *NdmpSvmCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -294,13 +294,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.AuthenticationTypesQueryParameter != nil {
+	if o.AuthenticationTypes != nil {
 
 		// query param authentication_types
 		var qrAuthenticationTypes string
 
-		if o.AuthenticationTypesQueryParameter != nil {
-			qrAuthenticationTypes = *o.AuthenticationTypesQueryParameter
+		if o.AuthenticationTypes != nil {
+			qrAuthenticationTypes = *o.AuthenticationTypes
 		}
 		qAuthenticationTypes := qrAuthenticationTypes
 		if qAuthenticationTypes != "" {
@@ -311,13 +311,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -328,7 +328,7 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -339,13 +339,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -356,7 +356,7 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -367,13 +367,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -384,13 +384,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -401,13 +401,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -418,13 +418,13 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -443,7 +443,7 @@ func (o *NdmpSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamNdmpSvmCollectionGet binds the parameter fields
 func (o *NdmpSvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -460,7 +460,7 @@ func (o *NdmpSvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamNdmpSvmCollectionGet binds the parameter order_by
 func (o *NdmpSvmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

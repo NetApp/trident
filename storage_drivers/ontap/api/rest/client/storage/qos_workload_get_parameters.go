@@ -66,10 +66,10 @@ type QosWorkloadGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// UUID.
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *QosWorkloadGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the qos workload get params
-func (o *QosWorkloadGetParams) WithFieldsQueryParameter(fields []string) *QosWorkloadGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the qos workload get params
+func (o *QosWorkloadGetParams) WithFields(fields []string) *QosWorkloadGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the qos workload get params
-func (o *QosWorkloadGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the qos workload get params
+func (o *QosWorkloadGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the qos workload get params
-func (o *QosWorkloadGetParams) WithUUIDPathParameter(uuid string) *QosWorkloadGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the qos workload get params
+func (o *QosWorkloadGetParams) WithUUID(uuid string) *QosWorkloadGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the qos workload get params
-func (o *QosWorkloadGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the qos workload get params
+func (o *QosWorkloadGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *QosWorkloadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *QosWorkloadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *QosWorkloadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamQosWorkloadGet binds the parameter fields
 func (o *QosWorkloadGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

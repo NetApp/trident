@@ -68,7 +68,7 @@ type StoragePoolCreateParams struct {
 
 	   If set, POST only selects SSDs within five percent of the specified size.
 	*/
-	DiskSizeQueryParameter *int64
+	DiskSize *int64
 
 	/* Info.
 
@@ -80,13 +80,19 @@ type StoragePoolCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
+
+	/* Simulate.
+
+	   When set to "true", the end point returns a simulated layout of the proposed new storage pool, without changing system state.
+	*/
+	Simulate *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,14 +112,14 @@ func (o *StoragePoolCreateParams) WithDefaults() *StoragePoolCreateParams {
 // All values with no default are reset to their zero value.
 func (o *StoragePoolCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := StoragePoolCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +161,15 @@ func (o *StoragePoolCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDiskSizeQueryParameter adds the diskSize to the storage pool create params
-func (o *StoragePoolCreateParams) WithDiskSizeQueryParameter(diskSize *int64) *StoragePoolCreateParams {
-	o.SetDiskSizeQueryParameter(diskSize)
+// WithDiskSize adds the diskSize to the storage pool create params
+func (o *StoragePoolCreateParams) WithDiskSize(diskSize *int64) *StoragePoolCreateParams {
+	o.SetDiskSize(diskSize)
 	return o
 }
 
-// SetDiskSizeQueryParameter adds the diskSize to the storage pool create params
-func (o *StoragePoolCreateParams) SetDiskSizeQueryParameter(diskSize *int64) {
-	o.DiskSizeQueryParameter = diskSize
+// SetDiskSize adds the diskSize to the storage pool create params
+func (o *StoragePoolCreateParams) SetDiskSize(diskSize *int64) {
+	o.DiskSize = diskSize
 }
 
 // WithInfo adds the info to the storage pool create params
@@ -177,26 +183,37 @@ func (o *StoragePoolCreateParams) SetInfo(info *models.StoragePool) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the storage pool create params
-func (o *StoragePoolCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *StoragePoolCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the storage pool create params
+func (o *StoragePoolCreateParams) WithReturnRecords(returnRecords *bool) *StoragePoolCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the storage pool create params
-func (o *StoragePoolCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the storage pool create params
+func (o *StoragePoolCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the storage pool create params
-func (o *StoragePoolCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *StoragePoolCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the storage pool create params
+func (o *StoragePoolCreateParams) WithReturnTimeout(returnTimeout *int64) *StoragePoolCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the storage pool create params
-func (o *StoragePoolCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the storage pool create params
+func (o *StoragePoolCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithSimulate adds the simulate to the storage pool create params
+func (o *StoragePoolCreateParams) WithSimulate(simulate *bool) *StoragePoolCreateParams {
+	o.SetSimulate(simulate)
+	return o
+}
+
+// SetSimulate adds the simulate to the storage pool create params
+func (o *StoragePoolCreateParams) SetSimulate(simulate *bool) {
+	o.Simulate = simulate
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +224,13 @@ func (o *StoragePoolCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.DiskSizeQueryParameter != nil {
+	if o.DiskSize != nil {
 
 		// query param disk_size
 		var qrDiskSize int64
 
-		if o.DiskSizeQueryParameter != nil {
-			qrDiskSize = *o.DiskSizeQueryParameter
+		if o.DiskSize != nil {
+			qrDiskSize = *o.DiskSize
 		}
 		qDiskSize := swag.FormatInt64(qrDiskSize)
 		if qDiskSize != "" {
@@ -229,13 +246,13 @@ func (o *StoragePoolCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -246,18 +263,35 @@ func (o *StoragePoolCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Simulate != nil {
+
+		// query param simulate
+		var qrSimulate bool
+
+		if o.Simulate != nil {
+			qrSimulate = *o.Simulate
+		}
+		qSimulate := swag.FormatBool(qrSimulate)
+		if qSimulate != "" {
+
+			if err := r.SetQueryParam("simulate", qSimulate); err != nil {
 				return err
 			}
 		}

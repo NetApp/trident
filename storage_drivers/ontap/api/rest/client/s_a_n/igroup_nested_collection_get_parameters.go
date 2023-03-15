@@ -66,26 +66,26 @@ type IgroupNestedCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupUUID.
 
 	   The unique identifier of the parent initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -93,7 +93,7 @@ type IgroupNestedCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -101,7 +101,7 @@ type IgroupNestedCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,14 +121,14 @@ func (o *IgroupNestedCollectionGetParams) WithDefaults() *IgroupNestedCollection
 // All values with no default are reset to their zero value.
 func (o *IgroupNestedCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IgroupNestedCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -170,70 +170,70 @@ func (o *IgroupNestedCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithFieldsQueryParameter(fields []string) *IgroupNestedCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithFields(fields []string) *IgroupNestedCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupNestedCollectionGetParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithIgroupUUID(igroupUUID string) *IgroupNestedCollectionGetParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IgroupNestedCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithMaxRecords(maxRecords *int64) *IgroupNestedCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IgroupNestedCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithOrderBy(orderBy []string) *IgroupNestedCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IgroupNestedCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithReturnRecords(returnRecords *bool) *IgroupNestedCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IgroupNestedCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IgroupNestedCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the igroup nested collection get params
-func (o *IgroupNestedCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the igroup nested collection get params
+func (o *IgroupNestedCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -244,7 +244,7 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -256,17 +256,17 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -277,7 +277,7 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -288,13 +288,13 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -305,13 +305,13 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -330,7 +330,7 @@ func (o *IgroupNestedCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamIgroupNestedCollectionGet binds the parameter fields
 func (o *IgroupNestedCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -347,7 +347,7 @@ func (o *IgroupNestedCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamIgroupNestedCollectionGet binds the parameter order_by
 func (o *IgroupNestedCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

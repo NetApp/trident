@@ -21,10 +21,7 @@ import (
 type SnapmirrorEndpoint struct {
 
 	// cluster
-	Cluster *SnapmirrorEndpointCluster `json:"cluster,omitempty"`
-
-	// Mandatory property for a Consistency Group endpoint. Specifies the list of FlexVol volumes for a Consistency Group.
-	ConsistencyGroupVolumes []*SnapmirrorEndpointConsistencyGroupVolumesItems0 `json:"consistency_group_volumes,omitempty"`
+	Cluster *SnapmirrorEndpointInlineCluster `json:"cluster,omitempty"`
 
 	// Optional property to specify the IPSpace of the SVM.
 	// Example: Default
@@ -37,10 +34,13 @@ type SnapmirrorEndpoint struct {
 	// NON-ONTAP               - objstore1:/objstore
 	//
 	// Example: svm1:volume1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
+
+	// Mandatory property for a Consistency Group endpoint. Specifies the list of FlexVol volumes for a Consistency Group.
+	SnapmirrorEndpointInlineConsistencyGroupVolumes []*SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem `json:"consistency_group_volumes,omitempty"`
 
 	// svm
-	Svm *SnapmirrorEndpointSvm `json:"svm,omitempty"`
+	Svm *SnapmirrorEndpointInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this snapmirror endpoint
@@ -51,7 +51,7 @@ func (m *SnapmirrorEndpoint) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateConsistencyGroupVolumes(formats); err != nil {
+	if err := m.validateSnapmirrorEndpointInlineConsistencyGroupVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -82,18 +82,18 @@ func (m *SnapmirrorEndpoint) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorEndpoint) validateConsistencyGroupVolumes(formats strfmt.Registry) error {
-	if swag.IsZero(m.ConsistencyGroupVolumes) { // not required
+func (m *SnapmirrorEndpoint) validateSnapmirrorEndpointInlineConsistencyGroupVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapmirrorEndpointInlineConsistencyGroupVolumes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.ConsistencyGroupVolumes); i++ {
-		if swag.IsZero(m.ConsistencyGroupVolumes[i]) { // not required
+	for i := 0; i < len(m.SnapmirrorEndpointInlineConsistencyGroupVolumes); i++ {
+		if swag.IsZero(m.SnapmirrorEndpointInlineConsistencyGroupVolumes[i]) { // not required
 			continue
 		}
 
-		if m.ConsistencyGroupVolumes[i] != nil {
-			if err := m.ConsistencyGroupVolumes[i].Validate(formats); err != nil {
+		if m.SnapmirrorEndpointInlineConsistencyGroupVolumes[i] != nil {
+			if err := m.SnapmirrorEndpointInlineConsistencyGroupVolumes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("consistency_group_volumes" + "." + strconv.Itoa(i))
 				}
@@ -131,7 +131,7 @@ func (m *SnapmirrorEndpoint) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateConsistencyGroupVolumes(ctx, formats); err != nil {
+	if err := m.contextValidateSnapmirrorEndpointInlineConsistencyGroupVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,12 +159,12 @@ func (m *SnapmirrorEndpoint) contextValidateCluster(ctx context.Context, formats
 	return nil
 }
 
-func (m *SnapmirrorEndpoint) contextValidateConsistencyGroupVolumes(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorEndpoint) contextValidateSnapmirrorEndpointInlineConsistencyGroupVolumes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ConsistencyGroupVolumes); i++ {
+	for i := 0; i < len(m.SnapmirrorEndpointInlineConsistencyGroupVolumes); i++ {
 
-		if m.ConsistencyGroupVolumes[i] != nil {
-			if err := m.ConsistencyGroupVolumes[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnapmirrorEndpointInlineConsistencyGroupVolumes[i] != nil {
+			if err := m.SnapmirrorEndpointInlineConsistencyGroupVolumes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("consistency_group_volumes" + "." + strconv.Itoa(i))
 				}
@@ -209,26 +209,26 @@ func (m *SnapmirrorEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorEndpointCluster snapmirror endpoint cluster
+// SnapmirrorEndpointInlineCluster snapmirror endpoint inline cluster
 //
-// swagger:model SnapmirrorEndpointCluster
-type SnapmirrorEndpointCluster struct {
+// swagger:model snapmirror_endpoint_inline_cluster
+type SnapmirrorEndpointInlineCluster struct {
 
 	// links
-	Links *SnapmirrorEndpointClusterLinks `json:"_links,omitempty"`
+	Links *SnapmirrorEndpointInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror endpoint cluster
-func (m *SnapmirrorEndpointCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror endpoint inline cluster
+func (m *SnapmirrorEndpointInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -245,7 +245,7 @@ func (m *SnapmirrorEndpointCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorEndpointCluster) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -262,7 +262,7 @@ func (m *SnapmirrorEndpointCluster) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SnapmirrorEndpointCluster) validateUUID(formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -274,8 +274,8 @@ func (m *SnapmirrorEndpointCluster) validateUUID(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this snapmirror endpoint cluster based on the context it is used
-func (m *SnapmirrorEndpointCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror endpoint inline cluster based on the context it is used
+func (m *SnapmirrorEndpointInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -288,7 +288,7 @@ func (m *SnapmirrorEndpointCluster) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *SnapmirrorEndpointCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -303,7 +303,7 @@ func (m *SnapmirrorEndpointCluster) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorEndpointCluster) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorEndpointInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -311,8 +311,8 @@ func (m *SnapmirrorEndpointCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointCluster) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointCluster
+func (m *SnapmirrorEndpointInlineCluster) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -320,17 +320,17 @@ func (m *SnapmirrorEndpointCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorEndpointClusterLinks snapmirror endpoint cluster links
+// SnapmirrorEndpointInlineClusterInlineLinks snapmirror endpoint inline cluster inline links
 //
-// swagger:model SnapmirrorEndpointClusterLinks
-type SnapmirrorEndpointClusterLinks struct {
+// swagger:model snapmirror_endpoint_inline_cluster_inline__links
+type SnapmirrorEndpointInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror endpoint cluster links
-func (m *SnapmirrorEndpointClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror endpoint inline cluster inline links
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -343,7 +343,7 @@ func (m *SnapmirrorEndpointClusterLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SnapmirrorEndpointClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -360,8 +360,8 @@ func (m *SnapmirrorEndpointClusterLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this snapmirror endpoint cluster links based on the context it is used
-func (m *SnapmirrorEndpointClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror endpoint inline cluster inline links based on the context it is used
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -374,7 +374,7 @@ func (m *SnapmirrorEndpointClusterLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SnapmirrorEndpointClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -389,7 +389,7 @@ func (m *SnapmirrorEndpointClusterLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorEndpointClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -397,8 +397,8 @@ func (m *SnapmirrorEndpointClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointClusterLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointClusterLinks
+func (m *SnapmirrorEndpointInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -406,32 +406,32 @@ func (m *SnapmirrorEndpointClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorEndpointConsistencyGroupVolumesItems0 snapmirror endpoint consistency group volumes items0
+// SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem snapmirror endpoint inline consistency group volumes inline array item
 //
-// swagger:model SnapmirrorEndpointConsistencyGroupVolumesItems0
-type SnapmirrorEndpointConsistencyGroupVolumesItems0 struct {
+// swagger:model snapmirror_endpoint_inline_consistency_group_volumes_inline_array_item
+type SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem struct {
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror endpoint consistency group volumes items0
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror endpoint inline consistency group volumes inline array item
+func (m *SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this snapmirror endpoint consistency group volumes items0 based on context it is used
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snapmirror endpoint inline consistency group volumes inline array item based on context it is used
+func (m *SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -439,8 +439,8 @@ func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointConsistencyGroupVolumesItems0
+func (m *SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointInlineConsistencyGroupVolumesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,27 +448,27 @@ func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) UnmarshalBinary(b []by
 	return nil
 }
 
-// SnapmirrorEndpointSvm snapmirror endpoint svm
+// SnapmirrorEndpointInlineSvm snapmirror endpoint inline svm
 //
-// swagger:model SnapmirrorEndpointSvm
-type SnapmirrorEndpointSvm struct {
+// swagger:model snapmirror_endpoint_inline_svm
+type SnapmirrorEndpointInlineSvm struct {
 
 	// links
-	Links *SnapmirrorEndpointSvmLinks `json:"_links,omitempty"`
+	Links *SnapmirrorEndpointInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapmirror endpoint svm
-func (m *SnapmirrorEndpointSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror endpoint inline svm
+func (m *SnapmirrorEndpointInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -481,7 +481,7 @@ func (m *SnapmirrorEndpointSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorEndpointSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -498,8 +498,8 @@ func (m *SnapmirrorEndpointSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapmirror endpoint svm based on the context it is used
-func (m *SnapmirrorEndpointSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror endpoint inline svm based on the context it is used
+func (m *SnapmirrorEndpointInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -512,7 +512,7 @@ func (m *SnapmirrorEndpointSvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnapmirrorEndpointSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -527,7 +527,7 @@ func (m *SnapmirrorEndpointSvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorEndpointSvm) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorEndpointInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -535,8 +535,8 @@ func (m *SnapmirrorEndpointSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointSvm) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointSvm
+func (m *SnapmirrorEndpointInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -544,17 +544,17 @@ func (m *SnapmirrorEndpointSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorEndpointSvmLinks snapmirror endpoint svm links
+// SnapmirrorEndpointInlineSvmInlineLinks snapmirror endpoint inline svm inline links
 //
-// swagger:model SnapmirrorEndpointSvmLinks
-type SnapmirrorEndpointSvmLinks struct {
+// swagger:model snapmirror_endpoint_inline_svm_inline__links
+type SnapmirrorEndpointInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror endpoint svm links
-func (m *SnapmirrorEndpointSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror endpoint inline svm inline links
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -567,7 +567,7 @@ func (m *SnapmirrorEndpointSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapmirrorEndpointSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -584,8 +584,8 @@ func (m *SnapmirrorEndpointSvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this snapmirror endpoint svm links based on the context it is used
-func (m *SnapmirrorEndpointSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror endpoint inline svm inline links based on the context it is used
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -598,7 +598,7 @@ func (m *SnapmirrorEndpointSvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnapmirrorEndpointSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -613,7 +613,7 @@ func (m *SnapmirrorEndpointSvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorEndpointSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -621,8 +621,8 @@ func (m *SnapmirrorEndpointSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointSvmLinks
+func (m *SnapmirrorEndpointInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

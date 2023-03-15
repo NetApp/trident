@@ -66,31 +66,31 @@ type CifsSessionGetParams struct {
 
 	   Unique identifier for the SMB connection.
 	*/
-	ConnectionIDPathParameter int64
+	ConnectionID int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Identifier.
 
 	   Unique identifier for the SMB session.
 	*/
-	IdentifierPathParameter int64
+	Identifier int64
 
 	/* NodeUUID.
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,59 +145,59 @@ func (o *CifsSessionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConnectionIDPathParameter adds the connectionID to the cifs session get params
-func (o *CifsSessionGetParams) WithConnectionIDPathParameter(connectionID int64) *CifsSessionGetParams {
-	o.SetConnectionIDPathParameter(connectionID)
+// WithConnectionID adds the connectionID to the cifs session get params
+func (o *CifsSessionGetParams) WithConnectionID(connectionID int64) *CifsSessionGetParams {
+	o.SetConnectionID(connectionID)
 	return o
 }
 
-// SetConnectionIDPathParameter adds the connectionId to the cifs session get params
-func (o *CifsSessionGetParams) SetConnectionIDPathParameter(connectionID int64) {
-	o.ConnectionIDPathParameter = connectionID
+// SetConnectionID adds the connectionId to the cifs session get params
+func (o *CifsSessionGetParams) SetConnectionID(connectionID int64) {
+	o.ConnectionID = connectionID
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs session get params
-func (o *CifsSessionGetParams) WithFieldsQueryParameter(fields []string) *CifsSessionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs session get params
+func (o *CifsSessionGetParams) WithFields(fields []string) *CifsSessionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs session get params
-func (o *CifsSessionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs session get params
+func (o *CifsSessionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentifierPathParameter adds the identifier to the cifs session get params
-func (o *CifsSessionGetParams) WithIdentifierPathParameter(identifier int64) *CifsSessionGetParams {
-	o.SetIdentifierPathParameter(identifier)
+// WithIdentifier adds the identifier to the cifs session get params
+func (o *CifsSessionGetParams) WithIdentifier(identifier int64) *CifsSessionGetParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierPathParameter adds the identifier to the cifs session get params
-func (o *CifsSessionGetParams) SetIdentifierPathParameter(identifier int64) {
-	o.IdentifierPathParameter = identifier
+// SetIdentifier adds the identifier to the cifs session get params
+func (o *CifsSessionGetParams) SetIdentifier(identifier int64) {
+	o.Identifier = identifier
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the cifs session get params
-func (o *CifsSessionGetParams) WithNodeUUIDPathParameter(nodeUUID string) *CifsSessionGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs session get params
+func (o *CifsSessionGetParams) WithNodeUUID(nodeUUID string) *CifsSessionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the cifs session get params
-func (o *CifsSessionGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs session get params
+func (o *CifsSessionGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs session get params
-func (o *CifsSessionGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSessionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs session get params
+func (o *CifsSessionGetParams) WithSvmUUID(svmUUID string) *CifsSessionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs session get params
-func (o *CifsSessionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs session get params
+func (o *CifsSessionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -209,11 +209,11 @@ func (o *CifsSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	var res []error
 
 	// path param connection_id
-	if err := r.SetPathParam("connection_id", swag.FormatInt64(o.ConnectionIDPathParameter)); err != nil {
+	if err := r.SetPathParam("connection_id", swag.FormatInt64(o.ConnectionID)); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -225,17 +225,17 @@ func (o *CifsSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param identifier
-	if err := r.SetPathParam("identifier", swag.FormatInt64(o.IdentifierPathParameter)); err != nil {
+	if err := r.SetPathParam("identifier", swag.FormatInt64(o.Identifier)); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (o *CifsSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamCifsSessionGet binds the parameter fields
 func (o *CifsSessionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

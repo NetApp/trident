@@ -66,25 +66,25 @@ type KeyManagerKeysGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* KeyID.
 
 	   Key identifier.
 	*/
-	KeyIDPathParameter string
+	KeyID string
 
 	/* NodeUUID.
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* SecurityKeyManagerUUID.
 
 	   Key manager UUID.
 	*/
-	SecurityKeyManagerUUIDPathParameter string
+	SecurityKeyManagerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *KeyManagerKeysGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the key manager keys get params
-func (o *KeyManagerKeysGetParams) WithFieldsQueryParameter(fields []string) *KeyManagerKeysGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the key manager keys get params
+func (o *KeyManagerKeysGetParams) WithFields(fields []string) *KeyManagerKeysGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the key manager keys get params
-func (o *KeyManagerKeysGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the key manager keys get params
+func (o *KeyManagerKeysGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithKeyIDPathParameter adds the keyID to the key manager keys get params
-func (o *KeyManagerKeysGetParams) WithKeyIDPathParameter(keyID string) *KeyManagerKeysGetParams {
-	o.SetKeyIDPathParameter(keyID)
+// WithKeyID adds the keyID to the key manager keys get params
+func (o *KeyManagerKeysGetParams) WithKeyID(keyID string) *KeyManagerKeysGetParams {
+	o.SetKeyID(keyID)
 	return o
 }
 
-// SetKeyIDPathParameter adds the keyId to the key manager keys get params
-func (o *KeyManagerKeysGetParams) SetKeyIDPathParameter(keyID string) {
-	o.KeyIDPathParameter = keyID
+// SetKeyID adds the keyId to the key manager keys get params
+func (o *KeyManagerKeysGetParams) SetKeyID(keyID string) {
+	o.KeyID = keyID
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the key manager keys get params
-func (o *KeyManagerKeysGetParams) WithNodeUUIDPathParameter(nodeUUID string) *KeyManagerKeysGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the key manager keys get params
+func (o *KeyManagerKeysGetParams) WithNodeUUID(nodeUUID string) *KeyManagerKeysGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the key manager keys get params
-func (o *KeyManagerKeysGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the key manager keys get params
+func (o *KeyManagerKeysGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithSecurityKeyManagerUUIDPathParameter adds the securityKeyManagerUUID to the key manager keys get params
-func (o *KeyManagerKeysGetParams) WithSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID string) *KeyManagerKeysGetParams {
-	o.SetSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID)
+// WithSecurityKeyManagerUUID adds the securityKeyManagerUUID to the key manager keys get params
+func (o *KeyManagerKeysGetParams) WithSecurityKeyManagerUUID(securityKeyManagerUUID string) *KeyManagerKeysGetParams {
+	o.SetSecurityKeyManagerUUID(securityKeyManagerUUID)
 	return o
 }
 
-// SetSecurityKeyManagerUUIDPathParameter adds the securityKeyManagerUuid to the key manager keys get params
-func (o *KeyManagerKeysGetParams) SetSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID string) {
-	o.SecurityKeyManagerUUIDPathParameter = securityKeyManagerUUID
+// SetSecurityKeyManagerUUID adds the securityKeyManagerUuid to the key manager keys get params
+func (o *KeyManagerKeysGetParams) SetSecurityKeyManagerUUID(securityKeyManagerUUID string) {
+	o.SecurityKeyManagerUUID = securityKeyManagerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +191,7 @@ func (o *KeyManagerKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +203,17 @@ func (o *KeyManagerKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param key_id
-	if err := r.SetPathParam("key_id", o.KeyIDPathParameter); err != nil {
+	if err := r.SetPathParam("key_id", o.KeyID); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param security_key_manager.uuid
-	if err := r.SetPathParam("security_key_manager.uuid", o.SecurityKeyManagerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("security_key_manager.uuid", o.SecurityKeyManagerUUID); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *KeyManagerKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamKeyManagerKeysGet binds the parameter fields
 func (o *KeyManagerKeysGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,25 +66,25 @@ type NameMappingPositionGetParams struct {
 
 	   Direction
 	*/
-	DirectionPathParameter string
+	Direction string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Position of the entry in the list
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *NameMappingPositionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDirectionPathParameter adds the direction to the name mapping position get params
-func (o *NameMappingPositionGetParams) WithDirectionPathParameter(direction string) *NameMappingPositionGetParams {
-	o.SetDirectionPathParameter(direction)
+// WithDirection adds the direction to the name mapping position get params
+func (o *NameMappingPositionGetParams) WithDirection(direction string) *NameMappingPositionGetParams {
+	o.SetDirection(direction)
 	return o
 }
 
-// SetDirectionPathParameter adds the direction to the name mapping position get params
-func (o *NameMappingPositionGetParams) SetDirectionPathParameter(direction string) {
-	o.DirectionPathParameter = direction
+// SetDirection adds the direction to the name mapping position get params
+func (o *NameMappingPositionGetParams) SetDirection(direction string) {
+	o.Direction = direction
 }
 
-// WithFieldsQueryParameter adds the fields to the name mapping position get params
-func (o *NameMappingPositionGetParams) WithFieldsQueryParameter(fields []string) *NameMappingPositionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the name mapping position get params
+func (o *NameMappingPositionGetParams) WithFields(fields []string) *NameMappingPositionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the name mapping position get params
-func (o *NameMappingPositionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the name mapping position get params
+func (o *NameMappingPositionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the name mapping position get params
-func (o *NameMappingPositionGetParams) WithIndexPathParameter(index int64) *NameMappingPositionGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the name mapping position get params
+func (o *NameMappingPositionGetParams) WithIndex(index int64) *NameMappingPositionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the name mapping position get params
-func (o *NameMappingPositionGetParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the name mapping position get params
+func (o *NameMappingPositionGetParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the name mapping position get params
-func (o *NameMappingPositionGetParams) WithSVMUUIDPathParameter(svmUUID string) *NameMappingPositionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the name mapping position get params
+func (o *NameMappingPositionGetParams) WithSvmUUID(svmUUID string) *NameMappingPositionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the name mapping position get params
-func (o *NameMappingPositionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the name mapping position get params
+func (o *NameMappingPositionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,11 +192,11 @@ func (o *NameMappingPositionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param direction
-	if err := r.SetPathParam("direction", o.DirectionPathParameter); err != nil {
+	if err := r.SetPathParam("direction", o.Direction); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -208,12 +208,12 @@ func (o *NameMappingPositionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *NameMappingPositionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamNameMappingPositionGet binds the parameter fields
 func (o *NameMappingPositionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

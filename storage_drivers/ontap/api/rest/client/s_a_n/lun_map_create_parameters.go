@@ -69,14 +69,14 @@ type LunMapCreateParams struct {
 	   The name of an ONTAP cluster node to add to the default reporting nodes for the LUN map. The HA partner for the node is also added.
 
 	*/
-	AdditionalReportingNodeNameQueryParameter *string
+	AdditionalReportingNodeName *string
 
 	/* AdditionalReportingNodeUUID.
 
 	   The unique identifier of an ONTAP cluster node to add to the default reporting nodes for the LUN map. The HA partner for the node is also added.
 
 	*/
-	AdditionalReportingNodeUUIDQueryParameter *string
+	AdditionalReportingNodeUUID *string
 
 	/* Info.
 
@@ -89,7 +89,7 @@ type LunMapCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -109,11 +109,11 @@ func (o *LunMapCreateParams) WithDefaults() *LunMapCreateParams {
 // All values with no default are reset to their zero value.
 func (o *LunMapCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := LunMapCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,26 +155,26 @@ func (o *LunMapCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAdditionalReportingNodeNameQueryParameter adds the additionalReportingNodeName to the lun map create params
-func (o *LunMapCreateParams) WithAdditionalReportingNodeNameQueryParameter(additionalReportingNodeName *string) *LunMapCreateParams {
-	o.SetAdditionalReportingNodeNameQueryParameter(additionalReportingNodeName)
+// WithAdditionalReportingNodeName adds the additionalReportingNodeName to the lun map create params
+func (o *LunMapCreateParams) WithAdditionalReportingNodeName(additionalReportingNodeName *string) *LunMapCreateParams {
+	o.SetAdditionalReportingNodeName(additionalReportingNodeName)
 	return o
 }
 
-// SetAdditionalReportingNodeNameQueryParameter adds the additionalReportingNodeName to the lun map create params
-func (o *LunMapCreateParams) SetAdditionalReportingNodeNameQueryParameter(additionalReportingNodeName *string) {
-	o.AdditionalReportingNodeNameQueryParameter = additionalReportingNodeName
+// SetAdditionalReportingNodeName adds the additionalReportingNodeName to the lun map create params
+func (o *LunMapCreateParams) SetAdditionalReportingNodeName(additionalReportingNodeName *string) {
+	o.AdditionalReportingNodeName = additionalReportingNodeName
 }
 
-// WithAdditionalReportingNodeUUIDQueryParameter adds the additionalReportingNodeUUID to the lun map create params
-func (o *LunMapCreateParams) WithAdditionalReportingNodeUUIDQueryParameter(additionalReportingNodeUUID *string) *LunMapCreateParams {
-	o.SetAdditionalReportingNodeUUIDQueryParameter(additionalReportingNodeUUID)
+// WithAdditionalReportingNodeUUID adds the additionalReportingNodeUUID to the lun map create params
+func (o *LunMapCreateParams) WithAdditionalReportingNodeUUID(additionalReportingNodeUUID *string) *LunMapCreateParams {
+	o.SetAdditionalReportingNodeUUID(additionalReportingNodeUUID)
 	return o
 }
 
-// SetAdditionalReportingNodeUUIDQueryParameter adds the additionalReportingNodeUuid to the lun map create params
-func (o *LunMapCreateParams) SetAdditionalReportingNodeUUIDQueryParameter(additionalReportingNodeUUID *string) {
-	o.AdditionalReportingNodeUUIDQueryParameter = additionalReportingNodeUUID
+// SetAdditionalReportingNodeUUID adds the additionalReportingNodeUuid to the lun map create params
+func (o *LunMapCreateParams) SetAdditionalReportingNodeUUID(additionalReportingNodeUUID *string) {
+	o.AdditionalReportingNodeUUID = additionalReportingNodeUUID
 }
 
 // WithInfo adds the info to the lun map create params
@@ -188,15 +188,15 @@ func (o *LunMapCreateParams) SetInfo(info *models.LunMap) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun map create params
-func (o *LunMapCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunMapCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun map create params
+func (o *LunMapCreateParams) WithReturnRecords(returnRecords *bool) *LunMapCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun map create params
-func (o *LunMapCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun map create params
+func (o *LunMapCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +207,13 @@ func (o *LunMapCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.AdditionalReportingNodeNameQueryParameter != nil {
+	if o.AdditionalReportingNodeName != nil {
 
 		// query param additional_reporting_node.name
 		var qrAdditionalReportingNodeName string
 
-		if o.AdditionalReportingNodeNameQueryParameter != nil {
-			qrAdditionalReportingNodeName = *o.AdditionalReportingNodeNameQueryParameter
+		if o.AdditionalReportingNodeName != nil {
+			qrAdditionalReportingNodeName = *o.AdditionalReportingNodeName
 		}
 		qAdditionalReportingNodeName := qrAdditionalReportingNodeName
 		if qAdditionalReportingNodeName != "" {
@@ -224,13 +224,13 @@ func (o *LunMapCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.AdditionalReportingNodeUUIDQueryParameter != nil {
+	if o.AdditionalReportingNodeUUID != nil {
 
 		// query param additional_reporting_node.uuid
 		var qrAdditionalReportingNodeUUID string
 
-		if o.AdditionalReportingNodeUUIDQueryParameter != nil {
-			qrAdditionalReportingNodeUUID = *o.AdditionalReportingNodeUUIDQueryParameter
+		if o.AdditionalReportingNodeUUID != nil {
+			qrAdditionalReportingNodeUUID = *o.AdditionalReportingNodeUUID
 		}
 		qAdditionalReportingNodeUUID := qrAdditionalReportingNodeUUID
 		if qAdditionalReportingNodeUUID != "" {
@@ -246,13 +246,13 @@ func (o *LunMapCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

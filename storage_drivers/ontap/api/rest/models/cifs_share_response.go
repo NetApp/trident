@@ -20,13 +20,14 @@ import (
 type CifsShareResponse struct {
 
 	// links
-	Links *CifsShareResponseLinks `json:"_links,omitempty"`
+	Links *CifsShareResponseInlineLinks `json:"_links,omitempty"`
+
+	// cifs share response inline records
+	CifsShareResponseInlineRecords []*CifsShare `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CifsShare `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cifs share response
@@ -37,7 +38,7 @@ func (m *CifsShareResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCifsShareResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CifsShareResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CifsShareResponse) validateCifsShareResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsShareResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CifsShareResponseInlineRecords); i++ {
+		if swag.IsZero(m.CifsShareResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CifsShareResponseInlineRecords[i] != nil {
+			if err := m.CifsShareResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CifsShareResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCifsShareResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CifsShareResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsShareResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareResponse) contextValidateCifsShareResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CifsShareResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsShareResponseInlineRecords[i] != nil {
+			if err := m.CifsShareResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CifsShareResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareResponseLinks cifs share response links
+// CifsShareResponseInlineLinks cifs share response inline links
 //
-// swagger:model CifsShareResponseLinks
-type CifsShareResponseLinks struct {
+// swagger:model cifs_share_response_inline__links
+type CifsShareResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CifsShareResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share response links
-func (m *CifsShareResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share response inline links
+func (m *CifsShareResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CifsShareResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CifsShareResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CifsShareResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CifsShareResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share response links based on the context it is used
-func (m *CifsShareResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share response inline links based on the context it is used
+func (m *CifsShareResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CifsShareResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsShareResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CifsShareResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *CifsShareResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CifsShareResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsShareResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CifsShareResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CifsShareResponseLinks
+func (m *CifsShareResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

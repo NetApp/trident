@@ -66,85 +66,85 @@ type PortsetCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupsName.
 
 	   Filter by igroups.name
 	*/
-	IgroupsNameQueryParameter *string
+	IgroupsName *string
 
 	/* IgroupsUUID.
 
 	   Filter by igroups.uuid
 	*/
-	IgroupsUUIDQueryParameter *string
+	IgroupsUUID *string
 
 	/* InterfacesFcName.
 
 	   Filter by interfaces.fc.name
 	*/
-	InterfacesFcNameQueryParameter *string
+	InterfacesFcName *string
 
 	/* InterfacesFcUUID.
 
 	   Filter by interfaces.fc.uuid
 	*/
-	InterfacesFcUUIDQueryParameter *string
+	InterfacesFcUUID *string
 
 	/* InterfacesFcWwpn.
 
 	   Filter by interfaces.fc.wwpn
 	*/
-	InterfacesFcWwpnQueryParameter *string
+	InterfacesFcWwpn *string
 
 	/* InterfacesIPIPAddress.
 
 	   Filter by interfaces.ip.ip.address
 	*/
-	InterfacesIPIPAddressQueryParameter *string
+	InterfacesIPIPAddress *string
 
 	/* InterfacesIPName.
 
 	   Filter by interfaces.ip.name
 	*/
-	InterfacesIPNameQueryParameter *string
+	InterfacesIPName *string
 
 	/* InterfacesIPUUID.
 
 	   Filter by interfaces.ip.uuid
 	*/
-	InterfacesIPUUIDQueryParameter *string
+	InterfacesIPUUID *string
 
 	/* InterfacesUUID.
 
 	   Filter by interfaces.uuid
 	*/
-	InterfacesUUIDQueryParameter *string
+	InterfacesUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -152,7 +152,7 @@ type PortsetCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -160,25 +160,25 @@ type PortsetCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *PortsetCollectionGetParams) WithDefaults() *PortsetCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *PortsetCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PortsetCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *PortsetCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the portset collection get params
-func (o *PortsetCollectionGetParams) WithFieldsQueryParameter(fields []string) *PortsetCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the portset collection get params
+func (o *PortsetCollectionGetParams) WithFields(fields []string) *PortsetCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the portset collection get params
-func (o *PortsetCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the portset collection get params
+func (o *PortsetCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupsNameQueryParameter adds the igroupsName to the portset collection get params
-func (o *PortsetCollectionGetParams) WithIgroupsNameQueryParameter(igroupsName *string) *PortsetCollectionGetParams {
-	o.SetIgroupsNameQueryParameter(igroupsName)
+// WithIgroupsName adds the igroupsName to the portset collection get params
+func (o *PortsetCollectionGetParams) WithIgroupsName(igroupsName *string) *PortsetCollectionGetParams {
+	o.SetIgroupsName(igroupsName)
 	return o
 }
 
-// SetIgroupsNameQueryParameter adds the igroupsName to the portset collection get params
-func (o *PortsetCollectionGetParams) SetIgroupsNameQueryParameter(igroupsName *string) {
-	o.IgroupsNameQueryParameter = igroupsName
+// SetIgroupsName adds the igroupsName to the portset collection get params
+func (o *PortsetCollectionGetParams) SetIgroupsName(igroupsName *string) {
+	o.IgroupsName = igroupsName
 }
 
-// WithIgroupsUUIDQueryParameter adds the igroupsUUID to the portset collection get params
-func (o *PortsetCollectionGetParams) WithIgroupsUUIDQueryParameter(igroupsUUID *string) *PortsetCollectionGetParams {
-	o.SetIgroupsUUIDQueryParameter(igroupsUUID)
+// WithIgroupsUUID adds the igroupsUUID to the portset collection get params
+func (o *PortsetCollectionGetParams) WithIgroupsUUID(igroupsUUID *string) *PortsetCollectionGetParams {
+	o.SetIgroupsUUID(igroupsUUID)
 	return o
 }
 
-// SetIgroupsUUIDQueryParameter adds the igroupsUuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetIgroupsUUIDQueryParameter(igroupsUUID *string) {
-	o.IgroupsUUIDQueryParameter = igroupsUUID
+// SetIgroupsUUID adds the igroupsUuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetIgroupsUUID(igroupsUUID *string) {
+	o.IgroupsUUID = igroupsUUID
 }
 
-// WithInterfacesFcNameQueryParameter adds the interfacesFcName to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesFcNameQueryParameter(interfacesFcName *string) *PortsetCollectionGetParams {
-	o.SetInterfacesFcNameQueryParameter(interfacesFcName)
+// WithInterfacesFcName adds the interfacesFcName to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesFcName(interfacesFcName *string) *PortsetCollectionGetParams {
+	o.SetInterfacesFcName(interfacesFcName)
 	return o
 }
 
-// SetInterfacesFcNameQueryParameter adds the interfacesFcName to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesFcNameQueryParameter(interfacesFcName *string) {
-	o.InterfacesFcNameQueryParameter = interfacesFcName
+// SetInterfacesFcName adds the interfacesFcName to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesFcName(interfacesFcName *string) {
+	o.InterfacesFcName = interfacesFcName
 }
 
-// WithInterfacesFcUUIDQueryParameter adds the interfacesFcUUID to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesFcUUIDQueryParameter(interfacesFcUUID *string) *PortsetCollectionGetParams {
-	o.SetInterfacesFcUUIDQueryParameter(interfacesFcUUID)
+// WithInterfacesFcUUID adds the interfacesFcUUID to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesFcUUID(interfacesFcUUID *string) *PortsetCollectionGetParams {
+	o.SetInterfacesFcUUID(interfacesFcUUID)
 	return o
 }
 
-// SetInterfacesFcUUIDQueryParameter adds the interfacesFcUuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesFcUUIDQueryParameter(interfacesFcUUID *string) {
-	o.InterfacesFcUUIDQueryParameter = interfacesFcUUID
+// SetInterfacesFcUUID adds the interfacesFcUuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesFcUUID(interfacesFcUUID *string) {
+	o.InterfacesFcUUID = interfacesFcUUID
 }
 
-// WithInterfacesFcWwpnQueryParameter adds the interfacesFcWwpn to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesFcWwpnQueryParameter(interfacesFcWwpn *string) *PortsetCollectionGetParams {
-	o.SetInterfacesFcWwpnQueryParameter(interfacesFcWwpn)
+// WithInterfacesFcWwpn adds the interfacesFcWwpn to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesFcWwpn(interfacesFcWwpn *string) *PortsetCollectionGetParams {
+	o.SetInterfacesFcWwpn(interfacesFcWwpn)
 	return o
 }
 
-// SetInterfacesFcWwpnQueryParameter adds the interfacesFcWwpn to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesFcWwpnQueryParameter(interfacesFcWwpn *string) {
-	o.InterfacesFcWwpnQueryParameter = interfacesFcWwpn
+// SetInterfacesFcWwpn adds the interfacesFcWwpn to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesFcWwpn(interfacesFcWwpn *string) {
+	o.InterfacesFcWwpn = interfacesFcWwpn
 }
 
-// WithInterfacesIPIPAddressQueryParameter adds the interfacesIPIPAddress to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesIPIPAddressQueryParameter(interfacesIPIPAddress *string) *PortsetCollectionGetParams {
-	o.SetInterfacesIPIPAddressQueryParameter(interfacesIPIPAddress)
+// WithInterfacesIPIPAddress adds the interfacesIPIPAddress to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesIPIPAddress(interfacesIPIPAddress *string) *PortsetCollectionGetParams {
+	o.SetInterfacesIPIPAddress(interfacesIPIPAddress)
 	return o
 }
 
-// SetInterfacesIPIPAddressQueryParameter adds the interfacesIpIpAddress to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesIPIPAddressQueryParameter(interfacesIPIPAddress *string) {
-	o.InterfacesIPIPAddressQueryParameter = interfacesIPIPAddress
+// SetInterfacesIPIPAddress adds the interfacesIpIpAddress to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesIPIPAddress(interfacesIPIPAddress *string) {
+	o.InterfacesIPIPAddress = interfacesIPIPAddress
 }
 
-// WithInterfacesIPNameQueryParameter adds the interfacesIPName to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesIPNameQueryParameter(interfacesIPName *string) *PortsetCollectionGetParams {
-	o.SetInterfacesIPNameQueryParameter(interfacesIPName)
+// WithInterfacesIPName adds the interfacesIPName to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesIPName(interfacesIPName *string) *PortsetCollectionGetParams {
+	o.SetInterfacesIPName(interfacesIPName)
 	return o
 }
 
-// SetInterfacesIPNameQueryParameter adds the interfacesIpName to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesIPNameQueryParameter(interfacesIPName *string) {
-	o.InterfacesIPNameQueryParameter = interfacesIPName
+// SetInterfacesIPName adds the interfacesIpName to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesIPName(interfacesIPName *string) {
+	o.InterfacesIPName = interfacesIPName
 }
 
-// WithInterfacesIPUUIDQueryParameter adds the interfacesIPUUID to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesIPUUIDQueryParameter(interfacesIPUUID *string) *PortsetCollectionGetParams {
-	o.SetInterfacesIPUUIDQueryParameter(interfacesIPUUID)
+// WithInterfacesIPUUID adds the interfacesIPUUID to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesIPUUID(interfacesIPUUID *string) *PortsetCollectionGetParams {
+	o.SetInterfacesIPUUID(interfacesIPUUID)
 	return o
 }
 
-// SetInterfacesIPUUIDQueryParameter adds the interfacesIpUuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesIPUUIDQueryParameter(interfacesIPUUID *string) {
-	o.InterfacesIPUUIDQueryParameter = interfacesIPUUID
+// SetInterfacesIPUUID adds the interfacesIpUuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesIPUUID(interfacesIPUUID *string) {
+	o.InterfacesIPUUID = interfacesIPUUID
 }
 
-// WithInterfacesUUIDQueryParameter adds the interfacesUUID to the portset collection get params
-func (o *PortsetCollectionGetParams) WithInterfacesUUIDQueryParameter(interfacesUUID *string) *PortsetCollectionGetParams {
-	o.SetInterfacesUUIDQueryParameter(interfacesUUID)
+// WithInterfacesUUID adds the interfacesUUID to the portset collection get params
+func (o *PortsetCollectionGetParams) WithInterfacesUUID(interfacesUUID *string) *PortsetCollectionGetParams {
+	o.SetInterfacesUUID(interfacesUUID)
 	return o
 }
 
-// SetInterfacesUUIDQueryParameter adds the interfacesUuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetInterfacesUUIDQueryParameter(interfacesUUID *string) {
-	o.InterfacesUUIDQueryParameter = interfacesUUID
+// SetInterfacesUUID adds the interfacesUuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetInterfacesUUID(interfacesUUID *string) {
+	o.InterfacesUUID = interfacesUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the portset collection get params
-func (o *PortsetCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PortsetCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the portset collection get params
+func (o *PortsetCollectionGetParams) WithMaxRecords(maxRecords *int64) *PortsetCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the portset collection get params
-func (o *PortsetCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the portset collection get params
+func (o *PortsetCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the portset collection get params
-func (o *PortsetCollectionGetParams) WithNameQueryParameter(name *string) *PortsetCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the portset collection get params
+func (o *PortsetCollectionGetParams) WithName(name *string) *PortsetCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the portset collection get params
-func (o *PortsetCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the portset collection get params
+func (o *PortsetCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the portset collection get params
-func (o *PortsetCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PortsetCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the portset collection get params
+func (o *PortsetCollectionGetParams) WithOrderBy(orderBy []string) *PortsetCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the portset collection get params
-func (o *PortsetCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the portset collection get params
+func (o *PortsetCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the portset collection get params
-func (o *PortsetCollectionGetParams) WithProtocolQueryParameter(protocol *string) *PortsetCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the portset collection get params
+func (o *PortsetCollectionGetParams) WithProtocol(protocol *string) *PortsetCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the portset collection get params
-func (o *PortsetCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the portset collection get params
+func (o *PortsetCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the portset collection get params
-func (o *PortsetCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PortsetCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the portset collection get params
+func (o *PortsetCollectionGetParams) WithReturnRecords(returnRecords *bool) *PortsetCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the portset collection get params
-func (o *PortsetCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the portset collection get params
+func (o *PortsetCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the portset collection get params
-func (o *PortsetCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PortsetCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the portset collection get params
+func (o *PortsetCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PortsetCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the portset collection get params
-func (o *PortsetCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the portset collection get params
+func (o *PortsetCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the portset collection get params
-func (o *PortsetCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *PortsetCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the portset collection get params
+func (o *PortsetCollectionGetParams) WithSvmName(svmName *string) *PortsetCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the portset collection get params
-func (o *PortsetCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the portset collection get params
+func (o *PortsetCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the portset collection get params
-func (o *PortsetCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *PortsetCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the portset collection get params
+func (o *PortsetCollectionGetParams) WithSvmUUID(svmUUID *string) *PortsetCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the portset collection get params
-func (o *PortsetCollectionGetParams) WithUUIDQueryParameter(uuid *string) *PortsetCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the portset collection get params
+func (o *PortsetCollectionGetParams) WithUUID(uuid *string) *PortsetCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the portset collection get params
-func (o *PortsetCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the portset collection get params
+func (o *PortsetCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,7 +464,7 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IgroupsNameQueryParameter != nil {
+	if o.IgroupsName != nil {
 
 		// query param igroups.name
 		var qrIgroupsName string
 
-		if o.IgroupsNameQueryParameter != nil {
-			qrIgroupsName = *o.IgroupsNameQueryParameter
+		if o.IgroupsName != nil {
+			qrIgroupsName = *o.IgroupsName
 		}
 		qIgroupsName := qrIgroupsName
 		if qIgroupsName != "" {
@@ -492,13 +492,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IgroupsUUIDQueryParameter != nil {
+	if o.IgroupsUUID != nil {
 
 		// query param igroups.uuid
 		var qrIgroupsUUID string
 
-		if o.IgroupsUUIDQueryParameter != nil {
-			qrIgroupsUUID = *o.IgroupsUUIDQueryParameter
+		if o.IgroupsUUID != nil {
+			qrIgroupsUUID = *o.IgroupsUUID
 		}
 		qIgroupsUUID := qrIgroupsUUID
 		if qIgroupsUUID != "" {
@@ -509,13 +509,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesFcNameQueryParameter != nil {
+	if o.InterfacesFcName != nil {
 
 		// query param interfaces.fc.name
 		var qrInterfacesFcName string
 
-		if o.InterfacesFcNameQueryParameter != nil {
-			qrInterfacesFcName = *o.InterfacesFcNameQueryParameter
+		if o.InterfacesFcName != nil {
+			qrInterfacesFcName = *o.InterfacesFcName
 		}
 		qInterfacesFcName := qrInterfacesFcName
 		if qInterfacesFcName != "" {
@@ -526,13 +526,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesFcUUIDQueryParameter != nil {
+	if o.InterfacesFcUUID != nil {
 
 		// query param interfaces.fc.uuid
 		var qrInterfacesFcUUID string
 
-		if o.InterfacesFcUUIDQueryParameter != nil {
-			qrInterfacesFcUUID = *o.InterfacesFcUUIDQueryParameter
+		if o.InterfacesFcUUID != nil {
+			qrInterfacesFcUUID = *o.InterfacesFcUUID
 		}
 		qInterfacesFcUUID := qrInterfacesFcUUID
 		if qInterfacesFcUUID != "" {
@@ -543,13 +543,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesFcWwpnQueryParameter != nil {
+	if o.InterfacesFcWwpn != nil {
 
 		// query param interfaces.fc.wwpn
 		var qrInterfacesFcWwpn string
 
-		if o.InterfacesFcWwpnQueryParameter != nil {
-			qrInterfacesFcWwpn = *o.InterfacesFcWwpnQueryParameter
+		if o.InterfacesFcWwpn != nil {
+			qrInterfacesFcWwpn = *o.InterfacesFcWwpn
 		}
 		qInterfacesFcWwpn := qrInterfacesFcWwpn
 		if qInterfacesFcWwpn != "" {
@@ -560,13 +560,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesIPIPAddressQueryParameter != nil {
+	if o.InterfacesIPIPAddress != nil {
 
 		// query param interfaces.ip.ip.address
 		var qrInterfacesIPIPAddress string
 
-		if o.InterfacesIPIPAddressQueryParameter != nil {
-			qrInterfacesIPIPAddress = *o.InterfacesIPIPAddressQueryParameter
+		if o.InterfacesIPIPAddress != nil {
+			qrInterfacesIPIPAddress = *o.InterfacesIPIPAddress
 		}
 		qInterfacesIPIPAddress := qrInterfacesIPIPAddress
 		if qInterfacesIPIPAddress != "" {
@@ -577,13 +577,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesIPNameQueryParameter != nil {
+	if o.InterfacesIPName != nil {
 
 		// query param interfaces.ip.name
 		var qrInterfacesIPName string
 
-		if o.InterfacesIPNameQueryParameter != nil {
-			qrInterfacesIPName = *o.InterfacesIPNameQueryParameter
+		if o.InterfacesIPName != nil {
+			qrInterfacesIPName = *o.InterfacesIPName
 		}
 		qInterfacesIPName := qrInterfacesIPName
 		if qInterfacesIPName != "" {
@@ -594,13 +594,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesIPUUIDQueryParameter != nil {
+	if o.InterfacesIPUUID != nil {
 
 		// query param interfaces.ip.uuid
 		var qrInterfacesIPUUID string
 
-		if o.InterfacesIPUUIDQueryParameter != nil {
-			qrInterfacesIPUUID = *o.InterfacesIPUUIDQueryParameter
+		if o.InterfacesIPUUID != nil {
+			qrInterfacesIPUUID = *o.InterfacesIPUUID
 		}
 		qInterfacesIPUUID := qrInterfacesIPUUID
 		if qInterfacesIPUUID != "" {
@@ -611,13 +611,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfacesUUIDQueryParameter != nil {
+	if o.InterfacesUUID != nil {
 
 		// query param interfaces.uuid
 		var qrInterfacesUUID string
 
-		if o.InterfacesUUIDQueryParameter != nil {
-			qrInterfacesUUID = *o.InterfacesUUIDQueryParameter
+		if o.InterfacesUUID != nil {
+			qrInterfacesUUID = *o.InterfacesUUID
 		}
 		qInterfacesUUID := qrInterfacesUUID
 		if qInterfacesUUID != "" {
@@ -628,13 +628,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -645,13 +645,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -662,7 +662,7 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -673,13 +673,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -690,13 +690,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -707,13 +707,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -724,13 +724,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -741,13 +741,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -758,13 +758,13 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -783,7 +783,7 @@ func (o *PortsetCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamPortsetCollectionGet binds the parameter fields
 func (o *PortsetCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *PortsetCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamPortsetCollectionGet binds the parameter order_by
 func (o *PortsetCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,19 +66,19 @@ type NdmpNodeSessionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* OwnerUUID.
 
 	   The NDMP node or SVM UUID based on whether NDMP is operating in node-scope or SVM-scope mode.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* SessionID.
 
 	   NDMP session identifier
 	*/
-	SessionIDPathParameter string
+	SessionID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *NdmpNodeSessionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) WithFieldsQueryParameter(fields []string) *NdmpNodeSessionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) WithFields(fields []string) *NdmpNodeSessionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *NdmpNodeSessionGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) WithOwnerUUID(ownerUUID string) *NdmpNodeSessionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithSessionIDPathParameter adds the sessionID to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) WithSessionIDPathParameter(sessionID string) *NdmpNodeSessionGetParams {
-	o.SetSessionIDPathParameter(sessionID)
+// WithSessionID adds the sessionID to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) WithSessionID(sessionID string) *NdmpNodeSessionGetParams {
+	o.SetSessionID(sessionID)
 	return o
 }
 
-// SetSessionIDPathParameter adds the sessionId to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) SetSessionIDPathParameter(sessionID string) {
-	o.SessionIDPathParameter = sessionID
+// SetSessionID adds the sessionId to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) SetSessionID(sessionID string) {
+	o.SessionID = sessionID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *NdmpNodeSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *NdmpNodeSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
 	// path param session.id
-	if err := r.SetPathParam("session.id", o.SessionIDPathParameter); err != nil {
+	if err := r.SetPathParam("session.id", o.SessionID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *NdmpNodeSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamNdmpNodeSessionGet binds the parameter fields
 func (o *NdmpNodeSessionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

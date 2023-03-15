@@ -22,16 +22,16 @@ type SoftwarePackageDownloadGet struct {
 
 	// Code corresponds to download message
 	// Example: 10551496
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Download progress details
 	// Example: Package download in progress
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Download status of the package
 	// Example: success
 	// Enum: [not_started running success failure]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this software package download get
@@ -117,7 +117,7 @@ func (m *SoftwarePackageDownloadGet) validateState(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

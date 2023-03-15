@@ -74,13 +74,13 @@ type ExportRuleCreateParams struct {
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *ExportRuleCreateParams) WithDefaults() *ExportRuleCreateParams {
 // All values with no default are reset to their zero value.
 func (o *ExportRuleCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := ExportRuleCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *ExportRuleCreateParams) SetInfo(info *models.ExportRule) {
 	o.Info = info
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule create params
-func (o *ExportRuleCreateParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleCreateParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule create params
+func (o *ExportRuleCreateParams) WithPolicyID(policyID int64) *ExportRuleCreateParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule create params
-func (o *ExportRuleCreateParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule create params
+func (o *ExportRuleCreateParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the export rule create params
-func (o *ExportRuleCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportRuleCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the export rule create params
+func (o *ExportRuleCreateParams) WithReturnRecords(returnRecords *bool) *ExportRuleCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the export rule create params
-func (o *ExportRuleCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the export rule create params
+func (o *ExportRuleCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -193,17 +193,17 @@ func (o *ExportRuleCreateParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

@@ -66,19 +66,19 @@ type SnapshotGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SnapshotGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapshot get params
-func (o *SnapshotGetParams) WithFieldsQueryParameter(fields []string) *SnapshotGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapshot get params
+func (o *SnapshotGetParams) WithFields(fields []string) *SnapshotGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapshot get params
-func (o *SnapshotGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapshot get params
+func (o *SnapshotGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot get params
-func (o *SnapshotGetParams) WithUUIDPathParameter(uuid string) *SnapshotGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapshot get params
+func (o *SnapshotGetParams) WithUUID(uuid string) *SnapshotGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapshot get params
-func (o *SnapshotGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapshot get params
+func (o *SnapshotGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snapshot get params
-func (o *SnapshotGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnapshotGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snapshot get params
+func (o *SnapshotGetParams) WithVolumeUUID(volumeUUID string) *SnapshotGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snapshot get params
-func (o *SnapshotGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snapshot get params
+func (o *SnapshotGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SnapshotGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SnapshotGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SnapshotGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamSnapshotGet binds the parameter fields
 func (o *SnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

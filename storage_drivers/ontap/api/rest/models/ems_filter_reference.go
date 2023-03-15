@@ -19,11 +19,11 @@ import (
 type EmsFilterReference struct {
 
 	// links
-	Links *EmsFilterReferenceLinks `json:"_links,omitempty"`
+	Links *EmsFilterReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: important-events
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this ems filter reference
@@ -103,17 +103,17 @@ func (m *EmsFilterReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsFilterReferenceLinks ems filter reference links
+// EmsFilterReferenceInlineLinks ems filter reference inline links
 //
-// swagger:model EmsFilterReferenceLinks
-type EmsFilterReferenceLinks struct {
+// swagger:model ems_filter_reference_inline__links
+type EmsFilterReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems filter reference links
-func (m *EmsFilterReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems filter reference inline links
+func (m *EmsFilterReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *EmsFilterReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsFilterReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsFilterReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *EmsFilterReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems filter reference links based on the context it is used
-func (m *EmsFilterReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems filter reference inline links based on the context it is used
+func (m *EmsFilterReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *EmsFilterReferenceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EmsFilterReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *EmsFilterReferenceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *EmsFilterReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsFilterReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *EmsFilterReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsFilterReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res EmsFilterReferenceLinks
+func (m *EmsFilterReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsFilterReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -65,19 +65,19 @@ type RolePrivilegeDeleteParams struct {
 
 	   Role name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Role owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* Path.
 
 	   REST API path or command/command directory path
 	*/
-	PathPathParameter string
+	Path string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,37 +132,37 @@ func (o *RolePrivilegeDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) WithNamePathParameter(name string) *RolePrivilegeDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) WithName(name string) *RolePrivilegeDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *RolePrivilegeDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) WithOwnerUUID(ownerUUID string) *RolePrivilegeDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithPathPathParameter adds the path to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) WithPathPathParameter(path string) *RolePrivilegeDeleteParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) WithPath(path string) *RolePrivilegeDeleteParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the role privilege delete params
-func (o *RolePrivilegeDeleteParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the role privilege delete params
+func (o *RolePrivilegeDeleteParams) SetPath(path string) {
+	o.Path = path
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,17 +174,17 @@ func (o *RolePrivilegeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 

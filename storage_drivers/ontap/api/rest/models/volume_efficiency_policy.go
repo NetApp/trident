@@ -21,45 +21,45 @@ import (
 type VolumeEfficiencyPolicy struct {
 
 	// links
-	Links *VolumeEfficiencyPolicyLinks `json:"_links,omitempty"`
+	Links *VolumeEfficiencyPolicyInlineLinks `json:"_links,omitempty"`
 
 	// A comment associated with the volume efficiency policy.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// This field is used with the policy type "scheduled" to indicate the allowed duration for a session, in hours. Possible value is a number between 0 and 999 inclusive. Default is unlimited indicated by value 0.
 	// Example: 5
-	Duration int64 `json:"duration,omitempty"`
+	Duration *int64 `json:"duration,omitempty"`
 
 	// Is the volume efficiency policy enabled?
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Name of the volume efficiency policy.
 	// Example: default
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// QoS policy for the sis operation. Possible values are background and best_effort. In background, sis operation will run in background with minimal or no impact on data serving client operations. In best_effort, sis operations may have some impact on data serving client operations.
 	// Enum: [background best_effort]
-	QosPolicy string `json:"qos_policy,omitempty"`
+	QosPolicy *string `json:"qos_policy,omitempty"`
 
 	// schedule
-	Schedule *VolumeEfficiencyPolicySchedule `json:"schedule,omitempty"`
+	Schedule *VolumeEfficiencyPolicyInlineSchedule `json:"schedule,omitempty"`
 
 	// This field is used with the policy type "threshold" to indicate the threshold percentage for triggering the volume efficiency policy. It is mutuallly exclusive of the schedule.
 	// Example: 30
-	StartThresholdPercent int64 `json:"start_threshold_percent,omitempty"`
+	StartThresholdPercent *int64 `json:"start_threshold_percent,omitempty"`
 
 	// svm
-	Svm *VolumeEfficiencyPolicySvm `json:"svm,omitempty"`
+	Svm *VolumeEfficiencyPolicyInlineSvm `json:"svm,omitempty"`
 
 	// Type of volume efficiency policy.
 	// Enum: [threshold scheduled]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Unique identifier of volume efficiency policy.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this volume efficiency policy
@@ -158,7 +158,7 @@ func (m *VolumeEfficiencyPolicy) validateQosPolicy(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateQosPolicyEnum("qos_policy", "body", m.QosPolicy); err != nil {
+	if err := m.validateQosPolicyEnum("qos_policy", "body", *m.QosPolicy); err != nil {
 		return err
 	}
 
@@ -248,7 +248,7 @@ func (m *VolumeEfficiencyPolicy) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -325,7 +325,7 @@ func (m *VolumeEfficiencyPolicy) contextValidateSvm(ctx context.Context, formats
 
 func (m *VolumeEfficiencyPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -350,17 +350,17 @@ func (m *VolumeEfficiencyPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicyLinks volume efficiency policy links
+// VolumeEfficiencyPolicyInlineLinks volume efficiency policy inline links
 //
-// swagger:model VolumeEfficiencyPolicyLinks
-type VolumeEfficiencyPolicyLinks struct {
+// swagger:model volume_efficiency_policy_inline__links
+type VolumeEfficiencyPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this volume efficiency policy links
-func (m *VolumeEfficiencyPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy inline links
+func (m *VolumeEfficiencyPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -373,7 +373,7 @@ func (m *VolumeEfficiencyPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -390,8 +390,8 @@ func (m *VolumeEfficiencyPolicyLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this volume efficiency policy links based on the context it is used
-func (m *VolumeEfficiencyPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume efficiency policy inline links based on the context it is used
+func (m *VolumeEfficiencyPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -404,7 +404,7 @@ func (m *VolumeEfficiencyPolicyLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -419,7 +419,7 @@ func (m *VolumeEfficiencyPolicyLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -427,8 +427,8 @@ func (m *VolumeEfficiencyPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicyLinks
+func (m *VolumeEfficiencyPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -436,28 +436,28 @@ func (m *VolumeEfficiencyPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicySchedule volume efficiency policy schedule
+// VolumeEfficiencyPolicyInlineSchedule volume efficiency policy inline schedule
 //
-// swagger:model VolumeEfficiencyPolicySchedule
-type VolumeEfficiencyPolicySchedule struct {
+// swagger:model volume_efficiency_policy_inline_schedule
+type VolumeEfficiencyPolicyInlineSchedule struct {
 
 	// Schedule at which volume efficiency policies are captured on the SVM. Some common schedules already defined in the system are hourly, daily, weekly, at 5 minute intervals, and at 8 hour intervals. Volume efficiency policies with custom schedules can be referenced.
 	// Example: daily
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this volume efficiency policy schedule
-func (m *VolumeEfficiencyPolicySchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy inline schedule
+func (m *VolumeEfficiencyPolicyInlineSchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume efficiency policy schedule based on context it is used
-func (m *VolumeEfficiencyPolicySchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume efficiency policy inline schedule based on context it is used
+func (m *VolumeEfficiencyPolicyInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySchedule) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyInlineSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -465,8 +465,8 @@ func (m *VolumeEfficiencyPolicySchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySchedule) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicySchedule
+func (m *VolumeEfficiencyPolicyInlineSchedule) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyInlineSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -474,27 +474,27 @@ func (m *VolumeEfficiencyPolicySchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicySvm volume efficiency policy svm
+// VolumeEfficiencyPolicyInlineSvm volume efficiency policy inline svm
 //
-// swagger:model VolumeEfficiencyPolicySvm
-type VolumeEfficiencyPolicySvm struct {
+// swagger:model volume_efficiency_policy_inline_svm
+type VolumeEfficiencyPolicyInlineSvm struct {
 
 	// links
-	Links *VolumeEfficiencyPolicySvmLinks `json:"_links,omitempty"`
+	Links *VolumeEfficiencyPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this volume efficiency policy svm
-func (m *VolumeEfficiencyPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy inline svm
+func (m *VolumeEfficiencyPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -507,7 +507,7 @@ func (m *VolumeEfficiencyPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -524,8 +524,8 @@ func (m *VolumeEfficiencyPolicySvm) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this volume efficiency policy svm based on the context it is used
-func (m *VolumeEfficiencyPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume efficiency policy inline svm based on the context it is used
+func (m *VolumeEfficiencyPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -538,7 +538,7 @@ func (m *VolumeEfficiencyPolicySvm) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -553,7 +553,7 @@ func (m *VolumeEfficiencyPolicySvm) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -561,8 +561,8 @@ func (m *VolumeEfficiencyPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySvm) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicySvm
+func (m *VolumeEfficiencyPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -570,17 +570,17 @@ func (m *VolumeEfficiencyPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicySvmLinks volume efficiency policy svm links
+// VolumeEfficiencyPolicyInlineSvmInlineLinks volume efficiency policy inline svm inline links
 //
-// swagger:model VolumeEfficiencyPolicySvmLinks
-type VolumeEfficiencyPolicySvmLinks struct {
+// swagger:model volume_efficiency_policy_inline_svm_inline__links
+type VolumeEfficiencyPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this volume efficiency policy svm links
-func (m *VolumeEfficiencyPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy inline svm inline links
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -593,7 +593,7 @@ func (m *VolumeEfficiencyPolicySvmLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -610,8 +610,8 @@ func (m *VolumeEfficiencyPolicySvmLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this volume efficiency policy svm links based on the context it is used
-func (m *VolumeEfficiencyPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume efficiency policy inline svm inline links based on the context it is used
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -624,7 +624,7 @@ func (m *VolumeEfficiencyPolicySvmLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -639,7 +639,7 @@ func (m *VolumeEfficiencyPolicySvmLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -647,8 +647,8 @@ func (m *VolumeEfficiencyPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicySvmLinks
+func (m *VolumeEfficiencyPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

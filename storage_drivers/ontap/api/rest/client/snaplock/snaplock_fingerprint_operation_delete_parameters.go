@@ -65,7 +65,7 @@ type SnaplockFingerprintOperationDeleteParams struct {
 
 	   Unique identifier of the operation
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SnaplockFingerprintOperationDeleteParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the snaplock fingerprint operation delete params
-func (o *SnaplockFingerprintOperationDeleteParams) WithIDPathParameter(id string) *SnaplockFingerprintOperationDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock fingerprint operation delete params
+func (o *SnaplockFingerprintOperationDeleteParams) WithID(id string) *SnaplockFingerprintOperationDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock fingerprint operation delete params
-func (o *SnaplockFingerprintOperationDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock fingerprint operation delete params
+func (o *SnaplockFingerprintOperationDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SnaplockFingerprintOperationDeleteParams) WriteToRequest(r runtime.Clie
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

@@ -66,133 +66,133 @@ type AuditCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* EventsAuthorizationPolicy.
 
 	   Filter by events.authorization_policy
 	*/
-	EventsAuthorizationPolicyQueryParameter *bool
+	EventsAuthorizationPolicy *bool
 
 	/* EventsCapStaging.
 
 	   Filter by events.cap_staging
 	*/
-	EventsCapStagingQueryParameter *bool
+	EventsCapStaging *bool
 
 	/* EventsCifsLogonLogoff.
 
 	   Filter by events.cifs_logon_logoff
 	*/
-	EventsCifsLogonLogoffQueryParameter *bool
+	EventsCifsLogonLogoff *bool
 
 	/* EventsFileOperations.
 
 	   Filter by events.file_operations
 	*/
-	EventsFileOperationsQueryParameter *bool
+	EventsFileOperations *bool
 
 	/* EventsFileShare.
 
 	   Filter by events.file_share
 	*/
-	EventsFileShareQueryParameter *bool
+	EventsFileShare *bool
 
 	/* EventsSecurityGroup.
 
 	   Filter by events.security_group
 	*/
-	EventsSecurityGroupQueryParameter *bool
+	EventsSecurityGroup *bool
 
 	/* EventsUserAccount.
 
 	   Filter by events.user_account
 	*/
-	EventsUserAccountQueryParameter *bool
+	EventsUserAccount *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Guarantee.
 
 	   Filter by guarantee
 	*/
-	GuaranteeQueryParameter *bool
+	Guarantee *bool
 
 	/* LogFormat.
 
 	   Filter by log.format
 	*/
-	LogFormatQueryParameter *string
+	LogFormat *string
 
 	/* LogRetentionCount.
 
 	   Filter by log.retention.count
 	*/
-	LogRetentionCountQueryParameter *int64
+	LogRetentionCount *int64
 
 	/* LogRetentionDuration.
 
 	   Filter by log.retention.duration
 	*/
-	LogRetentionDurationQueryParameter *string
+	LogRetentionDuration *string
 
 	/* LogRotationScheduleDays.
 
 	   Filter by log.rotation.schedule.days
 	*/
-	LogRotationScheduleDaysQueryParameter *int64
+	LogRotationScheduleDays *int64
 
 	/* LogRotationScheduleHours.
 
 	   Filter by log.rotation.schedule.hours
 	*/
-	LogRotationScheduleHoursQueryParameter *int64
+	LogRotationScheduleHours *int64
 
 	/* LogRotationScheduleMinutes.
 
 	   Filter by log.rotation.schedule.minutes
 	*/
-	LogRotationScheduleMinutesQueryParameter *int64
+	LogRotationScheduleMinutes *int64
 
 	/* LogRotationScheduleMonths.
 
 	   Filter by log.rotation.schedule.months
 	*/
-	LogRotationScheduleMonthsQueryParameter *int64
+	LogRotationScheduleMonths *int64
 
 	/* LogRotationScheduleWeekdays.
 
 	   Filter by log.rotation.schedule.weekdays
 	*/
-	LogRotationScheduleWeekdaysQueryParameter *int64
+	LogRotationScheduleWeekdays *int64
 
 	/* LogRotationSize.
 
 	   Filter by log.rotation.size
 	*/
-	LogRotationSizeQueryParameter *int64
+	LogRotationSize *int64
 
 	/* LogPath.
 
 	   Filter by log_path
 	*/
-	LogPathQueryParameter *string
+	LogPath *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -200,7 +200,7 @@ type AuditCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -208,19 +208,19 @@ type AuditCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -240,14 +240,14 @@ func (o *AuditCollectionGetParams) WithDefaults() *AuditCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *AuditCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AuditCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -289,290 +289,290 @@ func (o *AuditCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the audit collection get params
-func (o *AuditCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *AuditCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the audit collection get params
+func (o *AuditCollectionGetParams) WithEnabled(enabled *bool) *AuditCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the audit collection get params
-func (o *AuditCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the audit collection get params
+func (o *AuditCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithEventsAuthorizationPolicyQueryParameter adds the eventsAuthorizationPolicy to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsAuthorizationPolicyQueryParameter(eventsAuthorizationPolicy *bool) *AuditCollectionGetParams {
-	o.SetEventsAuthorizationPolicyQueryParameter(eventsAuthorizationPolicy)
+// WithEventsAuthorizationPolicy adds the eventsAuthorizationPolicy to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsAuthorizationPolicy(eventsAuthorizationPolicy *bool) *AuditCollectionGetParams {
+	o.SetEventsAuthorizationPolicy(eventsAuthorizationPolicy)
 	return o
 }
 
-// SetEventsAuthorizationPolicyQueryParameter adds the eventsAuthorizationPolicy to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsAuthorizationPolicyQueryParameter(eventsAuthorizationPolicy *bool) {
-	o.EventsAuthorizationPolicyQueryParameter = eventsAuthorizationPolicy
+// SetEventsAuthorizationPolicy adds the eventsAuthorizationPolicy to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsAuthorizationPolicy(eventsAuthorizationPolicy *bool) {
+	o.EventsAuthorizationPolicy = eventsAuthorizationPolicy
 }
 
-// WithEventsCapStagingQueryParameter adds the eventsCapStaging to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsCapStagingQueryParameter(eventsCapStaging *bool) *AuditCollectionGetParams {
-	o.SetEventsCapStagingQueryParameter(eventsCapStaging)
+// WithEventsCapStaging adds the eventsCapStaging to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsCapStaging(eventsCapStaging *bool) *AuditCollectionGetParams {
+	o.SetEventsCapStaging(eventsCapStaging)
 	return o
 }
 
-// SetEventsCapStagingQueryParameter adds the eventsCapStaging to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsCapStagingQueryParameter(eventsCapStaging *bool) {
-	o.EventsCapStagingQueryParameter = eventsCapStaging
+// SetEventsCapStaging adds the eventsCapStaging to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsCapStaging(eventsCapStaging *bool) {
+	o.EventsCapStaging = eventsCapStaging
 }
 
-// WithEventsCifsLogonLogoffQueryParameter adds the eventsCifsLogonLogoff to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsCifsLogonLogoffQueryParameter(eventsCifsLogonLogoff *bool) *AuditCollectionGetParams {
-	o.SetEventsCifsLogonLogoffQueryParameter(eventsCifsLogonLogoff)
+// WithEventsCifsLogonLogoff adds the eventsCifsLogonLogoff to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsCifsLogonLogoff(eventsCifsLogonLogoff *bool) *AuditCollectionGetParams {
+	o.SetEventsCifsLogonLogoff(eventsCifsLogonLogoff)
 	return o
 }
 
-// SetEventsCifsLogonLogoffQueryParameter adds the eventsCifsLogonLogoff to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsCifsLogonLogoffQueryParameter(eventsCifsLogonLogoff *bool) {
-	o.EventsCifsLogonLogoffQueryParameter = eventsCifsLogonLogoff
+// SetEventsCifsLogonLogoff adds the eventsCifsLogonLogoff to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsCifsLogonLogoff(eventsCifsLogonLogoff *bool) {
+	o.EventsCifsLogonLogoff = eventsCifsLogonLogoff
 }
 
-// WithEventsFileOperationsQueryParameter adds the eventsFileOperations to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsFileOperationsQueryParameter(eventsFileOperations *bool) *AuditCollectionGetParams {
-	o.SetEventsFileOperationsQueryParameter(eventsFileOperations)
+// WithEventsFileOperations adds the eventsFileOperations to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsFileOperations(eventsFileOperations *bool) *AuditCollectionGetParams {
+	o.SetEventsFileOperations(eventsFileOperations)
 	return o
 }
 
-// SetEventsFileOperationsQueryParameter adds the eventsFileOperations to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsFileOperationsQueryParameter(eventsFileOperations *bool) {
-	o.EventsFileOperationsQueryParameter = eventsFileOperations
+// SetEventsFileOperations adds the eventsFileOperations to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsFileOperations(eventsFileOperations *bool) {
+	o.EventsFileOperations = eventsFileOperations
 }
 
-// WithEventsFileShareQueryParameter adds the eventsFileShare to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsFileShareQueryParameter(eventsFileShare *bool) *AuditCollectionGetParams {
-	o.SetEventsFileShareQueryParameter(eventsFileShare)
+// WithEventsFileShare adds the eventsFileShare to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsFileShare(eventsFileShare *bool) *AuditCollectionGetParams {
+	o.SetEventsFileShare(eventsFileShare)
 	return o
 }
 
-// SetEventsFileShareQueryParameter adds the eventsFileShare to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsFileShareQueryParameter(eventsFileShare *bool) {
-	o.EventsFileShareQueryParameter = eventsFileShare
+// SetEventsFileShare adds the eventsFileShare to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsFileShare(eventsFileShare *bool) {
+	o.EventsFileShare = eventsFileShare
 }
 
-// WithEventsSecurityGroupQueryParameter adds the eventsSecurityGroup to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsSecurityGroupQueryParameter(eventsSecurityGroup *bool) *AuditCollectionGetParams {
-	o.SetEventsSecurityGroupQueryParameter(eventsSecurityGroup)
+// WithEventsSecurityGroup adds the eventsSecurityGroup to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsSecurityGroup(eventsSecurityGroup *bool) *AuditCollectionGetParams {
+	o.SetEventsSecurityGroup(eventsSecurityGroup)
 	return o
 }
 
-// SetEventsSecurityGroupQueryParameter adds the eventsSecurityGroup to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsSecurityGroupQueryParameter(eventsSecurityGroup *bool) {
-	o.EventsSecurityGroupQueryParameter = eventsSecurityGroup
+// SetEventsSecurityGroup adds the eventsSecurityGroup to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsSecurityGroup(eventsSecurityGroup *bool) {
+	o.EventsSecurityGroup = eventsSecurityGroup
 }
 
-// WithEventsUserAccountQueryParameter adds the eventsUserAccount to the audit collection get params
-func (o *AuditCollectionGetParams) WithEventsUserAccountQueryParameter(eventsUserAccount *bool) *AuditCollectionGetParams {
-	o.SetEventsUserAccountQueryParameter(eventsUserAccount)
+// WithEventsUserAccount adds the eventsUserAccount to the audit collection get params
+func (o *AuditCollectionGetParams) WithEventsUserAccount(eventsUserAccount *bool) *AuditCollectionGetParams {
+	o.SetEventsUserAccount(eventsUserAccount)
 	return o
 }
 
-// SetEventsUserAccountQueryParameter adds the eventsUserAccount to the audit collection get params
-func (o *AuditCollectionGetParams) SetEventsUserAccountQueryParameter(eventsUserAccount *bool) {
-	o.EventsUserAccountQueryParameter = eventsUserAccount
+// SetEventsUserAccount adds the eventsUserAccount to the audit collection get params
+func (o *AuditCollectionGetParams) SetEventsUserAccount(eventsUserAccount *bool) {
+	o.EventsUserAccount = eventsUserAccount
 }
 
-// WithFieldsQueryParameter adds the fields to the audit collection get params
-func (o *AuditCollectionGetParams) WithFieldsQueryParameter(fields []string) *AuditCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the audit collection get params
+func (o *AuditCollectionGetParams) WithFields(fields []string) *AuditCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the audit collection get params
-func (o *AuditCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the audit collection get params
+func (o *AuditCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGuaranteeQueryParameter adds the guarantee to the audit collection get params
-func (o *AuditCollectionGetParams) WithGuaranteeQueryParameter(guarantee *bool) *AuditCollectionGetParams {
-	o.SetGuaranteeQueryParameter(guarantee)
+// WithGuarantee adds the guarantee to the audit collection get params
+func (o *AuditCollectionGetParams) WithGuarantee(guarantee *bool) *AuditCollectionGetParams {
+	o.SetGuarantee(guarantee)
 	return o
 }
 
-// SetGuaranteeQueryParameter adds the guarantee to the audit collection get params
-func (o *AuditCollectionGetParams) SetGuaranteeQueryParameter(guarantee *bool) {
-	o.GuaranteeQueryParameter = guarantee
+// SetGuarantee adds the guarantee to the audit collection get params
+func (o *AuditCollectionGetParams) SetGuarantee(guarantee *bool) {
+	o.Guarantee = guarantee
 }
 
-// WithLogFormatQueryParameter adds the logFormat to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogFormatQueryParameter(logFormat *string) *AuditCollectionGetParams {
-	o.SetLogFormatQueryParameter(logFormat)
+// WithLogFormat adds the logFormat to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogFormat(logFormat *string) *AuditCollectionGetParams {
+	o.SetLogFormat(logFormat)
 	return o
 }
 
-// SetLogFormatQueryParameter adds the logFormat to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogFormatQueryParameter(logFormat *string) {
-	o.LogFormatQueryParameter = logFormat
+// SetLogFormat adds the logFormat to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogFormat(logFormat *string) {
+	o.LogFormat = logFormat
 }
 
-// WithLogRetentionCountQueryParameter adds the logRetentionCount to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRetentionCountQueryParameter(logRetentionCount *int64) *AuditCollectionGetParams {
-	o.SetLogRetentionCountQueryParameter(logRetentionCount)
+// WithLogRetentionCount adds the logRetentionCount to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRetentionCount(logRetentionCount *int64) *AuditCollectionGetParams {
+	o.SetLogRetentionCount(logRetentionCount)
 	return o
 }
 
-// SetLogRetentionCountQueryParameter adds the logRetentionCount to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRetentionCountQueryParameter(logRetentionCount *int64) {
-	o.LogRetentionCountQueryParameter = logRetentionCount
+// SetLogRetentionCount adds the logRetentionCount to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRetentionCount(logRetentionCount *int64) {
+	o.LogRetentionCount = logRetentionCount
 }
 
-// WithLogRetentionDurationQueryParameter adds the logRetentionDuration to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRetentionDurationQueryParameter(logRetentionDuration *string) *AuditCollectionGetParams {
-	o.SetLogRetentionDurationQueryParameter(logRetentionDuration)
+// WithLogRetentionDuration adds the logRetentionDuration to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRetentionDuration(logRetentionDuration *string) *AuditCollectionGetParams {
+	o.SetLogRetentionDuration(logRetentionDuration)
 	return o
 }
 
-// SetLogRetentionDurationQueryParameter adds the logRetentionDuration to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRetentionDurationQueryParameter(logRetentionDuration *string) {
-	o.LogRetentionDurationQueryParameter = logRetentionDuration
+// SetLogRetentionDuration adds the logRetentionDuration to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRetentionDuration(logRetentionDuration *string) {
+	o.LogRetentionDuration = logRetentionDuration
 }
 
-// WithLogRotationScheduleDaysQueryParameter adds the logRotationScheduleDays to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationScheduleDaysQueryParameter(logRotationScheduleDays *int64) *AuditCollectionGetParams {
-	o.SetLogRotationScheduleDaysQueryParameter(logRotationScheduleDays)
+// WithLogRotationScheduleDays adds the logRotationScheduleDays to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationScheduleDays(logRotationScheduleDays *int64) *AuditCollectionGetParams {
+	o.SetLogRotationScheduleDays(logRotationScheduleDays)
 	return o
 }
 
-// SetLogRotationScheduleDaysQueryParameter adds the logRotationScheduleDays to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationScheduleDaysQueryParameter(logRotationScheduleDays *int64) {
-	o.LogRotationScheduleDaysQueryParameter = logRotationScheduleDays
+// SetLogRotationScheduleDays adds the logRotationScheduleDays to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationScheduleDays(logRotationScheduleDays *int64) {
+	o.LogRotationScheduleDays = logRotationScheduleDays
 }
 
-// WithLogRotationScheduleHoursQueryParameter adds the logRotationScheduleHours to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationScheduleHoursQueryParameter(logRotationScheduleHours *int64) *AuditCollectionGetParams {
-	o.SetLogRotationScheduleHoursQueryParameter(logRotationScheduleHours)
+// WithLogRotationScheduleHours adds the logRotationScheduleHours to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationScheduleHours(logRotationScheduleHours *int64) *AuditCollectionGetParams {
+	o.SetLogRotationScheduleHours(logRotationScheduleHours)
 	return o
 }
 
-// SetLogRotationScheduleHoursQueryParameter adds the logRotationScheduleHours to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationScheduleHoursQueryParameter(logRotationScheduleHours *int64) {
-	o.LogRotationScheduleHoursQueryParameter = logRotationScheduleHours
+// SetLogRotationScheduleHours adds the logRotationScheduleHours to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationScheduleHours(logRotationScheduleHours *int64) {
+	o.LogRotationScheduleHours = logRotationScheduleHours
 }
 
-// WithLogRotationScheduleMinutesQueryParameter adds the logRotationScheduleMinutes to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationScheduleMinutesQueryParameter(logRotationScheduleMinutes *int64) *AuditCollectionGetParams {
-	o.SetLogRotationScheduleMinutesQueryParameter(logRotationScheduleMinutes)
+// WithLogRotationScheduleMinutes adds the logRotationScheduleMinutes to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationScheduleMinutes(logRotationScheduleMinutes *int64) *AuditCollectionGetParams {
+	o.SetLogRotationScheduleMinutes(logRotationScheduleMinutes)
 	return o
 }
 
-// SetLogRotationScheduleMinutesQueryParameter adds the logRotationScheduleMinutes to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationScheduleMinutesQueryParameter(logRotationScheduleMinutes *int64) {
-	o.LogRotationScheduleMinutesQueryParameter = logRotationScheduleMinutes
+// SetLogRotationScheduleMinutes adds the logRotationScheduleMinutes to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationScheduleMinutes(logRotationScheduleMinutes *int64) {
+	o.LogRotationScheduleMinutes = logRotationScheduleMinutes
 }
 
-// WithLogRotationScheduleMonthsQueryParameter adds the logRotationScheduleMonths to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationScheduleMonthsQueryParameter(logRotationScheduleMonths *int64) *AuditCollectionGetParams {
-	o.SetLogRotationScheduleMonthsQueryParameter(logRotationScheduleMonths)
+// WithLogRotationScheduleMonths adds the logRotationScheduleMonths to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationScheduleMonths(logRotationScheduleMonths *int64) *AuditCollectionGetParams {
+	o.SetLogRotationScheduleMonths(logRotationScheduleMonths)
 	return o
 }
 
-// SetLogRotationScheduleMonthsQueryParameter adds the logRotationScheduleMonths to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationScheduleMonthsQueryParameter(logRotationScheduleMonths *int64) {
-	o.LogRotationScheduleMonthsQueryParameter = logRotationScheduleMonths
+// SetLogRotationScheduleMonths adds the logRotationScheduleMonths to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationScheduleMonths(logRotationScheduleMonths *int64) {
+	o.LogRotationScheduleMonths = logRotationScheduleMonths
 }
 
-// WithLogRotationScheduleWeekdaysQueryParameter adds the logRotationScheduleWeekdays to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationScheduleWeekdaysQueryParameter(logRotationScheduleWeekdays *int64) *AuditCollectionGetParams {
-	o.SetLogRotationScheduleWeekdaysQueryParameter(logRotationScheduleWeekdays)
+// WithLogRotationScheduleWeekdays adds the logRotationScheduleWeekdays to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationScheduleWeekdays(logRotationScheduleWeekdays *int64) *AuditCollectionGetParams {
+	o.SetLogRotationScheduleWeekdays(logRotationScheduleWeekdays)
 	return o
 }
 
-// SetLogRotationScheduleWeekdaysQueryParameter adds the logRotationScheduleWeekdays to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationScheduleWeekdaysQueryParameter(logRotationScheduleWeekdays *int64) {
-	o.LogRotationScheduleWeekdaysQueryParameter = logRotationScheduleWeekdays
+// SetLogRotationScheduleWeekdays adds the logRotationScheduleWeekdays to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationScheduleWeekdays(logRotationScheduleWeekdays *int64) {
+	o.LogRotationScheduleWeekdays = logRotationScheduleWeekdays
 }
 
-// WithLogRotationSizeQueryParameter adds the logRotationSize to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogRotationSizeQueryParameter(logRotationSize *int64) *AuditCollectionGetParams {
-	o.SetLogRotationSizeQueryParameter(logRotationSize)
+// WithLogRotationSize adds the logRotationSize to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogRotationSize(logRotationSize *int64) *AuditCollectionGetParams {
+	o.SetLogRotationSize(logRotationSize)
 	return o
 }
 
-// SetLogRotationSizeQueryParameter adds the logRotationSize to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogRotationSizeQueryParameter(logRotationSize *int64) {
-	o.LogRotationSizeQueryParameter = logRotationSize
+// SetLogRotationSize adds the logRotationSize to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogRotationSize(logRotationSize *int64) {
+	o.LogRotationSize = logRotationSize
 }
 
-// WithLogPathQueryParameter adds the logPath to the audit collection get params
-func (o *AuditCollectionGetParams) WithLogPathQueryParameter(logPath *string) *AuditCollectionGetParams {
-	o.SetLogPathQueryParameter(logPath)
+// WithLogPath adds the logPath to the audit collection get params
+func (o *AuditCollectionGetParams) WithLogPath(logPath *string) *AuditCollectionGetParams {
+	o.SetLogPath(logPath)
 	return o
 }
 
-// SetLogPathQueryParameter adds the logPath to the audit collection get params
-func (o *AuditCollectionGetParams) SetLogPathQueryParameter(logPath *string) {
-	o.LogPathQueryParameter = logPath
+// SetLogPath adds the logPath to the audit collection get params
+func (o *AuditCollectionGetParams) SetLogPath(logPath *string) {
+	o.LogPath = logPath
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the audit collection get params
-func (o *AuditCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AuditCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the audit collection get params
+func (o *AuditCollectionGetParams) WithMaxRecords(maxRecords *int64) *AuditCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the audit collection get params
-func (o *AuditCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the audit collection get params
+func (o *AuditCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the audit collection get params
-func (o *AuditCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AuditCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the audit collection get params
+func (o *AuditCollectionGetParams) WithOrderBy(orderBy []string) *AuditCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the audit collection get params
-func (o *AuditCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the audit collection get params
+func (o *AuditCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the audit collection get params
-func (o *AuditCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AuditCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the audit collection get params
+func (o *AuditCollectionGetParams) WithReturnRecords(returnRecords *bool) *AuditCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the audit collection get params
-func (o *AuditCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the audit collection get params
+func (o *AuditCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the audit collection get params
-func (o *AuditCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AuditCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the audit collection get params
+func (o *AuditCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AuditCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the audit collection get params
-func (o *AuditCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the audit collection get params
+func (o *AuditCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the audit collection get params
-func (o *AuditCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *AuditCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the audit collection get params
+func (o *AuditCollectionGetParams) WithSvmName(svmName *string) *AuditCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the audit collection get params
-func (o *AuditCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the audit collection get params
+func (o *AuditCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the audit collection get params
-func (o *AuditCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *AuditCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the audit collection get params
+func (o *AuditCollectionGetParams) WithSvmUUID(svmUUID *string) *AuditCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the audit collection get params
-func (o *AuditCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the audit collection get params
+func (o *AuditCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -583,13 +583,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -600,13 +600,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsAuthorizationPolicyQueryParameter != nil {
+	if o.EventsAuthorizationPolicy != nil {
 
 		// query param events.authorization_policy
 		var qrEventsAuthorizationPolicy bool
 
-		if o.EventsAuthorizationPolicyQueryParameter != nil {
-			qrEventsAuthorizationPolicy = *o.EventsAuthorizationPolicyQueryParameter
+		if o.EventsAuthorizationPolicy != nil {
+			qrEventsAuthorizationPolicy = *o.EventsAuthorizationPolicy
 		}
 		qEventsAuthorizationPolicy := swag.FormatBool(qrEventsAuthorizationPolicy)
 		if qEventsAuthorizationPolicy != "" {
@@ -617,13 +617,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsCapStagingQueryParameter != nil {
+	if o.EventsCapStaging != nil {
 
 		// query param events.cap_staging
 		var qrEventsCapStaging bool
 
-		if o.EventsCapStagingQueryParameter != nil {
-			qrEventsCapStaging = *o.EventsCapStagingQueryParameter
+		if o.EventsCapStaging != nil {
+			qrEventsCapStaging = *o.EventsCapStaging
 		}
 		qEventsCapStaging := swag.FormatBool(qrEventsCapStaging)
 		if qEventsCapStaging != "" {
@@ -634,13 +634,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsCifsLogonLogoffQueryParameter != nil {
+	if o.EventsCifsLogonLogoff != nil {
 
 		// query param events.cifs_logon_logoff
 		var qrEventsCifsLogonLogoff bool
 
-		if o.EventsCifsLogonLogoffQueryParameter != nil {
-			qrEventsCifsLogonLogoff = *o.EventsCifsLogonLogoffQueryParameter
+		if o.EventsCifsLogonLogoff != nil {
+			qrEventsCifsLogonLogoff = *o.EventsCifsLogonLogoff
 		}
 		qEventsCifsLogonLogoff := swag.FormatBool(qrEventsCifsLogonLogoff)
 		if qEventsCifsLogonLogoff != "" {
@@ -651,13 +651,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsFileOperationsQueryParameter != nil {
+	if o.EventsFileOperations != nil {
 
 		// query param events.file_operations
 		var qrEventsFileOperations bool
 
-		if o.EventsFileOperationsQueryParameter != nil {
-			qrEventsFileOperations = *o.EventsFileOperationsQueryParameter
+		if o.EventsFileOperations != nil {
+			qrEventsFileOperations = *o.EventsFileOperations
 		}
 		qEventsFileOperations := swag.FormatBool(qrEventsFileOperations)
 		if qEventsFileOperations != "" {
@@ -668,13 +668,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsFileShareQueryParameter != nil {
+	if o.EventsFileShare != nil {
 
 		// query param events.file_share
 		var qrEventsFileShare bool
 
-		if o.EventsFileShareQueryParameter != nil {
-			qrEventsFileShare = *o.EventsFileShareQueryParameter
+		if o.EventsFileShare != nil {
+			qrEventsFileShare = *o.EventsFileShare
 		}
 		qEventsFileShare := swag.FormatBool(qrEventsFileShare)
 		if qEventsFileShare != "" {
@@ -685,13 +685,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsSecurityGroupQueryParameter != nil {
+	if o.EventsSecurityGroup != nil {
 
 		// query param events.security_group
 		var qrEventsSecurityGroup bool
 
-		if o.EventsSecurityGroupQueryParameter != nil {
-			qrEventsSecurityGroup = *o.EventsSecurityGroupQueryParameter
+		if o.EventsSecurityGroup != nil {
+			qrEventsSecurityGroup = *o.EventsSecurityGroup
 		}
 		qEventsSecurityGroup := swag.FormatBool(qrEventsSecurityGroup)
 		if qEventsSecurityGroup != "" {
@@ -702,13 +702,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.EventsUserAccountQueryParameter != nil {
+	if o.EventsUserAccount != nil {
 
 		// query param events.user_account
 		var qrEventsUserAccount bool
 
-		if o.EventsUserAccountQueryParameter != nil {
-			qrEventsUserAccount = *o.EventsUserAccountQueryParameter
+		if o.EventsUserAccount != nil {
+			qrEventsUserAccount = *o.EventsUserAccount
 		}
 		qEventsUserAccount := swag.FormatBool(qrEventsUserAccount)
 		if qEventsUserAccount != "" {
@@ -719,7 +719,7 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -730,13 +730,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.GuaranteeQueryParameter != nil {
+	if o.Guarantee != nil {
 
 		// query param guarantee
 		var qrGuarantee bool
 
-		if o.GuaranteeQueryParameter != nil {
-			qrGuarantee = *o.GuaranteeQueryParameter
+		if o.Guarantee != nil {
+			qrGuarantee = *o.Guarantee
 		}
 		qGuarantee := swag.FormatBool(qrGuarantee)
 		if qGuarantee != "" {
@@ -747,13 +747,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogFormatQueryParameter != nil {
+	if o.LogFormat != nil {
 
 		// query param log.format
 		var qrLogFormat string
 
-		if o.LogFormatQueryParameter != nil {
-			qrLogFormat = *o.LogFormatQueryParameter
+		if o.LogFormat != nil {
+			qrLogFormat = *o.LogFormat
 		}
 		qLogFormat := qrLogFormat
 		if qLogFormat != "" {
@@ -764,13 +764,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRetentionCountQueryParameter != nil {
+	if o.LogRetentionCount != nil {
 
 		// query param log.retention.count
 		var qrLogRetentionCount int64
 
-		if o.LogRetentionCountQueryParameter != nil {
-			qrLogRetentionCount = *o.LogRetentionCountQueryParameter
+		if o.LogRetentionCount != nil {
+			qrLogRetentionCount = *o.LogRetentionCount
 		}
 		qLogRetentionCount := swag.FormatInt64(qrLogRetentionCount)
 		if qLogRetentionCount != "" {
@@ -781,13 +781,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRetentionDurationQueryParameter != nil {
+	if o.LogRetentionDuration != nil {
 
 		// query param log.retention.duration
 		var qrLogRetentionDuration string
 
-		if o.LogRetentionDurationQueryParameter != nil {
-			qrLogRetentionDuration = *o.LogRetentionDurationQueryParameter
+		if o.LogRetentionDuration != nil {
+			qrLogRetentionDuration = *o.LogRetentionDuration
 		}
 		qLogRetentionDuration := qrLogRetentionDuration
 		if qLogRetentionDuration != "" {
@@ -798,13 +798,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationScheduleDaysQueryParameter != nil {
+	if o.LogRotationScheduleDays != nil {
 
 		// query param log.rotation.schedule.days
 		var qrLogRotationScheduleDays int64
 
-		if o.LogRotationScheduleDaysQueryParameter != nil {
-			qrLogRotationScheduleDays = *o.LogRotationScheduleDaysQueryParameter
+		if o.LogRotationScheduleDays != nil {
+			qrLogRotationScheduleDays = *o.LogRotationScheduleDays
 		}
 		qLogRotationScheduleDays := swag.FormatInt64(qrLogRotationScheduleDays)
 		if qLogRotationScheduleDays != "" {
@@ -815,13 +815,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationScheduleHoursQueryParameter != nil {
+	if o.LogRotationScheduleHours != nil {
 
 		// query param log.rotation.schedule.hours
 		var qrLogRotationScheduleHours int64
 
-		if o.LogRotationScheduleHoursQueryParameter != nil {
-			qrLogRotationScheduleHours = *o.LogRotationScheduleHoursQueryParameter
+		if o.LogRotationScheduleHours != nil {
+			qrLogRotationScheduleHours = *o.LogRotationScheduleHours
 		}
 		qLogRotationScheduleHours := swag.FormatInt64(qrLogRotationScheduleHours)
 		if qLogRotationScheduleHours != "" {
@@ -832,13 +832,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationScheduleMinutesQueryParameter != nil {
+	if o.LogRotationScheduleMinutes != nil {
 
 		// query param log.rotation.schedule.minutes
 		var qrLogRotationScheduleMinutes int64
 
-		if o.LogRotationScheduleMinutesQueryParameter != nil {
-			qrLogRotationScheduleMinutes = *o.LogRotationScheduleMinutesQueryParameter
+		if o.LogRotationScheduleMinutes != nil {
+			qrLogRotationScheduleMinutes = *o.LogRotationScheduleMinutes
 		}
 		qLogRotationScheduleMinutes := swag.FormatInt64(qrLogRotationScheduleMinutes)
 		if qLogRotationScheduleMinutes != "" {
@@ -849,13 +849,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationScheduleMonthsQueryParameter != nil {
+	if o.LogRotationScheduleMonths != nil {
 
 		// query param log.rotation.schedule.months
 		var qrLogRotationScheduleMonths int64
 
-		if o.LogRotationScheduleMonthsQueryParameter != nil {
-			qrLogRotationScheduleMonths = *o.LogRotationScheduleMonthsQueryParameter
+		if o.LogRotationScheduleMonths != nil {
+			qrLogRotationScheduleMonths = *o.LogRotationScheduleMonths
 		}
 		qLogRotationScheduleMonths := swag.FormatInt64(qrLogRotationScheduleMonths)
 		if qLogRotationScheduleMonths != "" {
@@ -866,13 +866,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationScheduleWeekdaysQueryParameter != nil {
+	if o.LogRotationScheduleWeekdays != nil {
 
 		// query param log.rotation.schedule.weekdays
 		var qrLogRotationScheduleWeekdays int64
 
-		if o.LogRotationScheduleWeekdaysQueryParameter != nil {
-			qrLogRotationScheduleWeekdays = *o.LogRotationScheduleWeekdaysQueryParameter
+		if o.LogRotationScheduleWeekdays != nil {
+			qrLogRotationScheduleWeekdays = *o.LogRotationScheduleWeekdays
 		}
 		qLogRotationScheduleWeekdays := swag.FormatInt64(qrLogRotationScheduleWeekdays)
 		if qLogRotationScheduleWeekdays != "" {
@@ -883,13 +883,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogRotationSizeQueryParameter != nil {
+	if o.LogRotationSize != nil {
 
 		// query param log.rotation.size
 		var qrLogRotationSize int64
 
-		if o.LogRotationSizeQueryParameter != nil {
-			qrLogRotationSize = *o.LogRotationSizeQueryParameter
+		if o.LogRotationSize != nil {
+			qrLogRotationSize = *o.LogRotationSize
 		}
 		qLogRotationSize := swag.FormatInt64(qrLogRotationSize)
 		if qLogRotationSize != "" {
@@ -900,13 +900,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LogPathQueryParameter != nil {
+	if o.LogPath != nil {
 
 		// query param log_path
 		var qrLogPath string
 
-		if o.LogPathQueryParameter != nil {
-			qrLogPath = *o.LogPathQueryParameter
+		if o.LogPath != nil {
+			qrLogPath = *o.LogPath
 		}
 		qLogPath := qrLogPath
 		if qLogPath != "" {
@@ -917,13 +917,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -934,7 +934,7 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -945,13 +945,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -962,13 +962,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -979,13 +979,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -996,13 +996,13 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1021,7 +1021,7 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamAuditCollectionGet binds the parameter fields
 func (o *AuditCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1038,7 +1038,7 @@ func (o *AuditCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamAuditCollectionGet binds the parameter order_by
 func (o *AuditCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

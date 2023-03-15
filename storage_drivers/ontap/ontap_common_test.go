@@ -28,6 +28,11 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+// ToIPAddressPointer takes a models.IPAddress and returns a pointer
+// func ToIPAddressPointer(ipAddress models.IPAddress) *models.IPAddress {
+// 	return &ipAddress
+// }
+
 func NewAPIResponse(
 	client, version, status, reason, errno string,
 ) *api.APIResponse {
@@ -112,11 +117,11 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
 			var records []*models.Svm
-			records = append(records, &models.Svm{Name: svmName, UUID: svmUUID})
+			records = append(records, &models.Svm{Name: utils.Ptr(svmName), UUID: utils.Ptr(svmUUID)})
 			result := &svm.SvmCollectionGetOK{
 				Payload: &models.SvmResponse{
-					NumRecords: int64(len(records)),
-					Records:    records,
+					NumRecords:               utils.Ptr(int64((len(records)))),
+					SvmResponseInlineRecords: records,
 				},
 			}
 			return result, nil
@@ -398,7 +403,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: nil,
+					AggregateResponseInlineRecords: nil,
 				},
 			}
 
@@ -418,7 +423,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{},
+					AggregateResponseInlineRecords: []*models.Aggregate{},
 				},
 			}
 
@@ -442,8 +447,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{
-						{Name: "aggr2"},
+					AggregateResponseInlineRecords: []*models.Aggregate{
+						{Name: utils.Ptr("aggr2")},
 					},
 				},
 			}
@@ -468,9 +473,9 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{
+					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name:  aggr,
+							Name:  utils.Ptr(aggr),
 							Space: nil,
 						},
 					},
@@ -497,10 +502,10 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{
+					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: aggr,
-							Space: &models.AggregateSpace{
+							Name: utils.Ptr(aggr),
+							Space: &models.AggregateInlineSpace{
 								BlockStorage: nil,
 							},
 						},
@@ -528,16 +533,17 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{
+					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: aggr,
-							Space: &models.AggregateSpace{
-								Footprint: 8496407527424,
-								BlockStorage: &models.AggregateSpaceBlockStorage{
-									Size:                                11689104961536,
-									UsedIncludingSnapshotReserve:        9090249289728,
-									UsedIncludingSnapshotReservePercent: 78,
-									VolumeFootprintsPercent:             73,
+							Name: utils.Ptr(aggr),
+							Space: &models.AggregateInlineSpace{
+								Footprint: utils.Ptr(int64(8496407527424)),
+								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
+									Size:                                utils.Ptr(int64(11689104961536)),
+									Used:                                utils.Ptr(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        utils.Ptr(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: utils.Ptr(int64(78)),
+									VolumeFootprintsPercent:             utils.Ptr(int64(73)),
 								},
 							},
 						},
@@ -565,22 +571,23 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
-					Records: []*models.Aggregate{
+					AggregateResponseInlineRecords: []*models.Aggregate{
 						{
-							Name: aggr,
-							Space: &models.AggregateSpace{
-								Footprint: 8496407527424,
-								BlockStorage: &models.AggregateSpaceBlockStorage{
-									Size:                                11689104961536,
-									UsedIncludingSnapshotReserve:        9090249289728,
-									UsedIncludingSnapshotReservePercent: 78,
-									VolumeFootprintsPercent:             73,
+							Name: utils.Ptr(aggr),
+							Space: &models.AggregateInlineSpace{
+								Footprint: utils.Ptr(int64(8496407527424)),
+								BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
+									Size:                                utils.Ptr(int64(11689104961536)),
+									Used:                                utils.Ptr(int64(9090249289728)),
+									UsedIncludingSnapshotReserve:        utils.Ptr(int64(9090249289728)),
+									UsedIncludingSnapshotReservePercent: utils.Ptr(int64(78)),
+									VolumeFootprintsPercent:             utils.Ptr(int64(73)),
 								},
 							},
 						},
 						{
 							// extra entry for cloud tier
-							Name: aggr,
+							Name: utils.Ptr(aggr),
 						},
 					},
 				},
@@ -1850,7 +1857,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: []*models.IPInterface{},
+					IPInterfaceResponseInlineRecords: []*models.IPInterface{},
 				},
 			}
 			return result, nil
@@ -1870,7 +1877,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: []*models.IPInterface{},
+					IPInterfaceResponseInlineRecords: []*models.IPInterface{},
 				},
 			}
 			return result, nil
@@ -1890,13 +1897,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -1907,7 +1914,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -1927,13 +1934,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -1944,7 +1951,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -1964,13 +1971,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -1981,7 +1988,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2001,13 +2008,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2018,7 +2025,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2038,13 +2045,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2055,7 +2062,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2077,13 +2084,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2094,7 +2101,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2116,13 +2123,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2133,7 +2140,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2155,13 +2162,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2170,9 +2177,9 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	// Extra entry but without IP address
 	info := &models.IPInterface{
-		Location: &models.IPInterfaceLocation{
-			Node: &models.IPInterfaceLocationNode{
-				Name: "node1",
+		Location: &models.IPInterfaceInlineLocation{
+			Node: &models.IPInterfaceInlineLocationInlineNode{
+				Name: utils.Ptr("node1"),
 			},
 		},
 	}
@@ -2182,7 +2189,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil
@@ -2204,13 +2211,13 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	for ip, node := range ipToNodeMapping {
 		info := &models.IPInterface{
-			Location: &models.IPInterfaceLocation{
-				Node: &models.IPInterfaceLocationNode{
-					Name: node,
+			Location: &models.IPInterfaceInlineLocation{
+				Node: &models.IPInterfaceInlineLocationInlineNode{
+					Name: utils.Ptr(node),
 				},
 			},
 			IP: &models.IPInfo{
-				Address: models.IPAddress(ip),
+				Address: utils.Ptr(models.IPAddress(ip)),
 			},
 		}
 
@@ -2220,7 +2227,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 	// Extra entry but without IP address
 	info = &models.IPInterface{
 		IP: &models.IPInfo{
-			Address: "1.2.3.4",
+			Address: utils.Ptr(models.IPAddress("1.2.3.4")),
 		},
 	}
 	infos = append(infos, info)
@@ -2229,7 +2236,7 @@ func TestRestGetSLMLifs(t *testing.T) {
 		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
 			result := &networking.NetworkIPInterfacesGetOK{
 				Payload: &models.IPInterfaceResponse{
-					Records: infos,
+					IPInterfaceResponseInlineRecords: infos,
 				},
 			}
 			return result, nil

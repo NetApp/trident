@@ -1480,3 +1480,11 @@ func TestPtr(t *testing.T) {
 	pa := Ptr(a)
 	assert.Equal(t, a, *pa)
 }
+
+func TestSlicePtrs(t *testing.T) {
+	slice := []string{"hello", "world"}
+	result := SlicePtrs(slice)
+	assert.True(t, len(slice) == len(result))
+	assert.Equal(t, slice[0], *result[0])
+	assert.Equal(t, slice[1], *result[1])
+}

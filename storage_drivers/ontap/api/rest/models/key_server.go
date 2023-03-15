@@ -21,35 +21,35 @@ import (
 type KeyServer struct {
 
 	// links
-	Links *KeyServerLinks `json:"_links,omitempty"`
-
-	// Password credentials for connecting with the key server. This is not audited.
-	// Example: password
-	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Links *KeyServerInlineLinks `json:"_links,omitempty"`
 
 	// An array of key servers specified to add multiple key servers to a key manager in a single API call. Valid in POST only and not valid if `server` is provided.
 	//
 	// Max Items: 4
-	Records []*KeyServerRecordsItems0 `json:"records,omitempty"`
+	KeyServerInlineRecords []*KeyServerInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// A list of the secondary key servers associated with the primary key server.
 	// Example: ["secondary1.com","10.1.2.3"]
-	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
+	KeyServerInlineSecondaryKeyServers []*string `json:"secondary_key_servers,omitempty"`
+
+	// Password credentials for connecting with the key server. This is not audited.
+	// Example: password
+	// Format: password
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
 	// Example: keyserver1.com:5698
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.
 	// Example: 60
 	// Maximum: 60
 	// Minimum: 1
-	Timeout int64 `json:"timeout,omitempty"`
+	Timeout *int64 `json:"timeout,omitempty"`
 
 	// KMIP username credentials for connecting with the key server.
 	// Example: username
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // Validate validates this key server
@@ -60,11 +60,11 @@ func (m *KeyServer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePassword(formats); err != nil {
+	if err := m.validateKeyServerInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePassword(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,36 +95,24 @@ func (m *KeyServer) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyServer) validatePassword(formats strfmt.Registry) error {
-	if swag.IsZero(m.Password) { // not required
+func (m *KeyServer) validateKeyServerInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.KeyServerInlineRecords) { // not required
 		return nil
 	}
 
-	if err := validate.FormatOf("password", "body", "password", m.Password.String(), formats); err != nil {
+	iKeyServerInlineRecordsSize := int64(len(m.KeyServerInlineRecords))
+
+	if err := validate.MaxItems("records", "body", iKeyServerInlineRecordsSize, 4); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (m *KeyServer) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	iRecordsSize := int64(len(m.Records))
-
-	if err := validate.MaxItems("records", "body", iRecordsSize, 4); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.KeyServerInlineRecords); i++ {
+		if swag.IsZero(m.KeyServerInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.KeyServerInlineRecords[i] != nil {
+			if err := m.KeyServerInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -137,16 +125,28 @@ func (m *KeyServer) validateRecords(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *KeyServer) validatePassword(formats strfmt.Registry) error {
+	if swag.IsZero(m.Password) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("password", "body", "password", m.Password.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *KeyServer) validateTimeout(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timeout) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("timeout", "body", m.Timeout, 1, false); err != nil {
+	if err := validate.MinimumInt("timeout", "body", *m.Timeout, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("timeout", "body", m.Timeout, 60, false); err != nil {
+	if err := validate.MaximumInt("timeout", "body", *m.Timeout, 60, false); err != nil {
 		return err
 	}
 
@@ -161,7 +161,7 @@ func (m *KeyServer) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateKeyServerInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,12 +185,12 @@ func (m *KeyServer) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *KeyServer) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyServer) contextValidateKeyServerInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.KeyServerInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.KeyServerInlineRecords[i] != nil {
+			if err := m.KeyServerInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -221,17 +221,17 @@ func (m *KeyServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KeyServerLinks key server links
+// KeyServerInlineLinks key server inline links
 //
-// swagger:model KeyServerLinks
-type KeyServerLinks struct {
+// swagger:model key_server_inline__links
+type KeyServerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this key server links
-func (m *KeyServerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this key server inline links
+func (m *KeyServerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -244,7 +244,7 @@ func (m *KeyServerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyServerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KeyServerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -261,8 +261,8 @@ func (m *KeyServerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this key server links based on the context it is used
-func (m *KeyServerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this key server inline links based on the context it is used
+func (m *KeyServerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -275,7 +275,7 @@ func (m *KeyServerLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *KeyServerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyServerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -290,7 +290,7 @@ func (m *KeyServerLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *KeyServerLinks) MarshalBinary() ([]byte, error) {
+func (m *KeyServerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -298,8 +298,8 @@ func (m *KeyServerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KeyServerLinks) UnmarshalBinary(b []byte) error {
-	var res KeyServerLinks
+func (m *KeyServerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KeyServerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -307,36 +307,36 @@ func (m *KeyServerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KeyServerRecordsItems0 key server records items0
+// KeyServerInlineRecordsInlineArrayItem key server inline records inline array item
 //
-// swagger:model KeyServerRecordsItems0
-type KeyServerRecordsItems0 struct {
+// swagger:model key_server_inline_records_inline_array_item
+type KeyServerInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *KeyServerRecordsItems0Links `json:"_links,omitempty"`
+	Links *KeyServerInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// Password credentials for connecting with the key server. This is not audited.
 	// Example: password
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
 	// Example: bulkkeyserver.com:5698
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.
 	// Example: 60
 	// Maximum: 60
 	// Minimum: 1
-	Timeout int64 `json:"timeout,omitempty"`
+	Timeout *int64 `json:"timeout,omitempty"`
 
 	// KMIP username credentials for connecting with the key server.
 	// Example: username
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
-// Validate validates this key server records items0
-func (m *KeyServerRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this key server inline records inline array item
+func (m *KeyServerInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -357,7 +357,7 @@ func (m *KeyServerRecordsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyServerRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -374,7 +374,7 @@ func (m *KeyServerRecordsItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyServerRecordsItems0) validatePassword(formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItem) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
@@ -386,24 +386,24 @@ func (m *KeyServerRecordsItems0) validatePassword(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *KeyServerRecordsItems0) validateTimeout(formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItem) validateTimeout(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timeout) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("timeout", "body", m.Timeout, 1, false); err != nil {
+	if err := validate.MinimumInt("timeout", "body", *m.Timeout, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("timeout", "body", m.Timeout, 60, false); err != nil {
+	if err := validate.MaximumInt("timeout", "body", *m.Timeout, 60, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this key server records items0 based on the context it is used
-func (m *KeyServerRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this key server inline records inline array item based on the context it is used
+func (m *KeyServerInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -416,7 +416,7 @@ func (m *KeyServerRecordsItems0) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *KeyServerRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -431,7 +431,7 @@ func (m *KeyServerRecordsItems0) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *KeyServerRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *KeyServerInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -439,8 +439,8 @@ func (m *KeyServerRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KeyServerRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res KeyServerRecordsItems0
+func (m *KeyServerInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res KeyServerInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,17 +448,17 @@ func (m *KeyServerRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KeyServerRecordsItems0Links key server records items0 links
+// KeyServerInlineRecordsInlineArrayItemInlineLinks key server inline records inline array item inline links
 //
-// swagger:model KeyServerRecordsItems0Links
-type KeyServerRecordsItems0Links struct {
+// swagger:model key_server_inline_records_inline_array_item_inline__links
+type KeyServerInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this key server records items0 links
-func (m *KeyServerRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this key server inline records inline array item inline links
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -471,7 +471,7 @@ func (m *KeyServerRecordsItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyServerRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -488,8 +488,8 @@ func (m *KeyServerRecordsItems0Links) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this key server records items0 links based on the context it is used
-func (m *KeyServerRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this key server inline records inline array item inline links based on the context it is used
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -502,7 +502,7 @@ func (m *KeyServerRecordsItems0Links) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *KeyServerRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -517,7 +517,7 @@ func (m *KeyServerRecordsItems0Links) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *KeyServerRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -525,8 +525,8 @@ func (m *KeyServerRecordsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KeyServerRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res KeyServerRecordsItems0Links
+func (m *KeyServerInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KeyServerInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

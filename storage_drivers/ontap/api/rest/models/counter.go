@@ -59,26 +59,26 @@ import (
 type Counter struct {
 
 	// List of labels and values for the second dimension.
-	Counters []*Counter2d `json:"counters,omitempty"`
+	CounterInlineCounters []*Counter2d `json:"counters,omitempty"`
 
 	// List of labels for the first dimension.
-	Labels []string `json:"labels,omitempty"`
-
-	// Counter name.
-	Name string `json:"name,omitempty"`
-
-	// Scalar value.
-	Value int64 `json:"value,omitempty"`
+	CounterInlineLabels []*string `json:"labels,omitempty"`
 
 	// List of values in a one-dimensional counter.
-	Values []int64 `json:"values,omitempty"`
+	CounterInlineValues []*int64 `json:"values,omitempty"`
+
+	// Counter name.
+	Name *string `json:"name,omitempty"`
+
+	// Scalar value.
+	Value *int64 `json:"value,omitempty"`
 }
 
 // Validate validates this counter
 func (m *Counter) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCounters(formats); err != nil {
+	if err := m.validateCounterInlineCounters(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,18 +88,18 @@ func (m *Counter) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Counter) validateCounters(formats strfmt.Registry) error {
-	if swag.IsZero(m.Counters) { // not required
+func (m *Counter) validateCounterInlineCounters(formats strfmt.Registry) error {
+	if swag.IsZero(m.CounterInlineCounters) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Counters); i++ {
-		if swag.IsZero(m.Counters[i]) { // not required
+	for i := 0; i < len(m.CounterInlineCounters); i++ {
+		if swag.IsZero(m.CounterInlineCounters[i]) { // not required
 			continue
 		}
 
-		if m.Counters[i] != nil {
-			if err := m.Counters[i].Validate(formats); err != nil {
+		if m.CounterInlineCounters[i] != nil {
+			if err := m.CounterInlineCounters[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
 				}
@@ -116,7 +116,7 @@ func (m *Counter) validateCounters(formats strfmt.Registry) error {
 func (m *Counter) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateCounters(ctx, formats); err != nil {
+	if err := m.contextValidateCounterInlineCounters(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -126,12 +126,12 @@ func (m *Counter) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
-func (m *Counter) contextValidateCounters(ctx context.Context, formats strfmt.Registry) error {
+func (m *Counter) contextValidateCounterInlineCounters(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Counters); i++ {
+	for i := 0; i < len(m.CounterInlineCounters); i++ {
 
-		if m.Counters[i] != nil {
-			if err := m.Counters[i].ContextValidate(ctx, formats); err != nil {
+		if m.CounterInlineCounters[i] != nil {
+			if err := m.CounterInlineCounters[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
 				}

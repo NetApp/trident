@@ -22,17 +22,17 @@ import (
 type SecurityAssociationResponse struct {
 
 	// links
-	Links *SecurityAssociationResponseLinks `json:"_links,omitempty"`
+	Links *SecurityAssociationResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
-	Error *SecurityAssociationResponseError `json:"error,omitempty"`
+	Error *SecurityAssociationResponseInlineError `json:"error,omitempty"`
 
 	// Number of records
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SecurityAssociationResponseRecordsItems0 `json:"records,omitempty"`
+	// security association response inline records
+	SecurityAssociationResponseInlineRecords []*SecurityAssociationResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this security association response
@@ -47,7 +47,7 @@ func (m *SecurityAssociationResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSecurityAssociationResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -91,18 +91,18 @@ func (m *SecurityAssociationResponse) validateError(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SecurityAssociationResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SecurityAssociationResponse) validateSecurityAssociationResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityAssociationResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SecurityAssociationResponseInlineRecords); i++ {
+		if swag.IsZero(m.SecurityAssociationResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SecurityAssociationResponseInlineRecords[i] != nil {
+			if err := m.SecurityAssociationResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -127,7 +127,7 @@ func (m *SecurityAssociationResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSecurityAssociationResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -165,12 +165,12 @@ func (m *SecurityAssociationResponse) contextValidateError(ctx context.Context, 
 	return nil
 }
 
-func (m *SecurityAssociationResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponse) contextValidateSecurityAssociationResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SecurityAssociationResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SecurityAssociationResponseInlineRecords[i] != nil {
+			if err := m.SecurityAssociationResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -201,10 +201,10 @@ func (m *SecurityAssociationResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAssociationResponseError security association response error
+// SecurityAssociationResponseInlineError security association response inline error
 //
-// swagger:model SecurityAssociationResponseError
-type SecurityAssociationResponseError struct {
+// swagger:model security_association_response_inline_error
+type SecurityAssociationResponseInlineError struct {
 
 	// Message arguments
 	// Read Only: true
@@ -213,21 +213,21 @@ type SecurityAssociationResponseError struct {
 	// Error code
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// The target parameter that caused the error.
 	// Example: uuid
 	// Read Only: true
-	Target string `json:"target,omitempty"`
+	Target *string `json:"target,omitempty"`
 }
 
-// Validate validates this security association response error
-func (m *SecurityAssociationResponseError) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline error
+func (m *SecurityAssociationResponseInlineError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateArguments(formats); err != nil {
@@ -240,7 +240,7 @@ func (m *SecurityAssociationResponseError) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SecurityAssociationResponseError) validateArguments(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineError) validateArguments(formats strfmt.Registry) error {
 	if swag.IsZero(m.Arguments) { // not required
 		return nil
 	}
@@ -264,8 +264,8 @@ func (m *SecurityAssociationResponseError) validateArguments(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this security association response error based on the context it is used
-func (m *SecurityAssociationResponseError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline error based on the context it is used
+func (m *SecurityAssociationResponseInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateArguments(ctx, formats); err != nil {
@@ -290,7 +290,7 @@ func (m *SecurityAssociationResponseError) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SecurityAssociationResponseError) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineError) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "error"+"."+"arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
 		return err
@@ -312,27 +312,27 @@ func (m *SecurityAssociationResponseError) contextValidateArguments(ctx context.
 	return nil
 }
 
-func (m *SecurityAssociationResponseError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SecurityAssociationResponseError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SecurityAssociationResponseError) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineError) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"target", "body", string(m.Target)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"target", "body", m.Target); err != nil {
 		return err
 	}
 
@@ -340,7 +340,7 @@ func (m *SecurityAssociationResponseError) contextValidateTarget(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseError) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -348,8 +348,8 @@ func (m *SecurityAssociationResponseError) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseError) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseError
+func (m *SecurityAssociationResponseInlineError) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -357,10 +357,10 @@ func (m *SecurityAssociationResponseError) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAssociationResponseLinks security association response links
+// SecurityAssociationResponseInlineLinks security association response inline links
 //
-// swagger:model SecurityAssociationResponseLinks
-type SecurityAssociationResponseLinks struct {
+// swagger:model security_association_response_inline__links
+type SecurityAssociationResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -369,8 +369,8 @@ type SecurityAssociationResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security association response links
-func (m *SecurityAssociationResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline links
+func (m *SecurityAssociationResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -387,7 +387,7 @@ func (m *SecurityAssociationResponseLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SecurityAssociationResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -404,7 +404,7 @@ func (m *SecurityAssociationResponseLinks) validateNext(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SecurityAssociationResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -421,8 +421,8 @@ func (m *SecurityAssociationResponseLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this security association response links based on the context it is used
-func (m *SecurityAssociationResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline links based on the context it is used
+func (m *SecurityAssociationResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -439,7 +439,7 @@ func (m *SecurityAssociationResponseLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SecurityAssociationResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -453,7 +453,7 @@ func (m *SecurityAssociationResponseLinks) contextValidateNext(ctx context.Conte
 	return nil
 }
 
-func (m *SecurityAssociationResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -468,7 +468,7 @@ func (m *SecurityAssociationResponseLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -476,8 +476,8 @@ func (m *SecurityAssociationResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseLinks
+func (m *SecurityAssociationResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -485,52 +485,52 @@ func (m *SecurityAssociationResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0 Security association object for IPsec security association and IKE (Internet Key Exchange) security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItem Security association object for IPsec security association and IKE (Internet Key Exchange) security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0
-type SecurityAssociationResponseRecordsItems0 struct {
+// swagger:model security_association_response_inline_records_inline_array_item
+type SecurityAssociationResponseInlineRecordsInlineArrayItem struct {
 
 	// Cipher suite for the security association.
 	// Enum: [suite_aescbc suiteb_gcm256 suiteb_gmac256]
 	CipherSuite *string `json:"cipher_suite,omitempty"`
 
 	// ike
-	Ike *SecurityAssociationResponseRecordsItems0Ike `json:"ike,omitempty"`
+	Ike *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke `json:"ike,omitempty"`
 
 	// ipsec
-	Ipsec *SecurityAssociationResponseRecordsItems0Ipsec `json:"ipsec,omitempty"`
+	Ipsec *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec `json:"ipsec,omitempty"`
 
 	// Lifetime for the security association in seconds.
-	Lifetime int64 `json:"lifetime,omitempty"`
+	Lifetime *int64 `json:"lifetime,omitempty"`
 
 	// Local address of the security association.
-	LocalAddress string `json:"local_address,omitempty"`
+	LocalAddress *string `json:"local_address,omitempty"`
 
 	// node
-	Node *SecurityAssociationResponseRecordsItems0Node `json:"node,omitempty"`
+	Node *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Policy name for the security association.
-	PolicyName string `json:"policy_name,omitempty"`
+	PolicyName *string `json:"policy_name,omitempty"`
 
 	// Remote address of the security association.
-	RemoteAddress string `json:"remote_address,omitempty"`
+	RemoteAddress *string `json:"remote_address,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
 
 	// svm
-	Svm *SecurityAssociationResponseRecordsItems0Svm `json:"svm,omitempty"`
+	Svm *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm `json:"svm,omitempty"`
 
 	// Type of security association, it can be IPsec or IKE (Internet Key Exchange).
 	// Enum: [ipsec ike]
 	Type *string `json:"type,omitempty"`
 
 	// Unique identifier of the security association.
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security association response records items0
-func (m *SecurityAssociationResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCipherSuite(formats); err != nil {
@@ -567,7 +567,7 @@ func (m *SecurityAssociationResponseRecordsItems0) Validate(formats strfmt.Regis
 	return nil
 }
 
-var securityAssociationResponseRecordsItems0TypeCipherSuitePropEnum []interface{}
+var securityAssociationResponseInlineRecordsInlineArrayItemTypeCipherSuitePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -575,52 +575,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityAssociationResponseRecordsItems0TypeCipherSuitePropEnum = append(securityAssociationResponseRecordsItems0TypeCipherSuitePropEnum, v)
+		securityAssociationResponseInlineRecordsInlineArrayItemTypeCipherSuitePropEnum = append(securityAssociationResponseInlineRecordsInlineArrayItemTypeCipherSuitePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0
-	// SecurityAssociationResponseRecordsItems0
+	// security_association_response_inline_records_inline_array_item
+	// SecurityAssociationResponseInlineRecordsInlineArrayItem
 	// cipher_suite
 	// CipherSuite
 	// suite_aescbc
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0CipherSuiteSuiteAescbc captures enum value "suite_aescbc"
-	SecurityAssociationResponseRecordsItems0CipherSuiteSuiteAescbc string = "suite_aescbc"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuiteAescbc captures enum value "suite_aescbc"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuiteAescbc string = "suite_aescbc"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0
-	// SecurityAssociationResponseRecordsItems0
+	// security_association_response_inline_records_inline_array_item
+	// SecurityAssociationResponseInlineRecordsInlineArrayItem
 	// cipher_suite
 	// CipherSuite
 	// suiteb_gcm256
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0CipherSuiteSuitebGcm256 captures enum value "suiteb_gcm256"
-	SecurityAssociationResponseRecordsItems0CipherSuiteSuitebGcm256 string = "suiteb_gcm256"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuitebGcm256 captures enum value "suiteb_gcm256"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuitebGcm256 string = "suiteb_gcm256"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0
-	// SecurityAssociationResponseRecordsItems0
+	// security_association_response_inline_records_inline_array_item
+	// SecurityAssociationResponseInlineRecordsInlineArrayItem
 	// cipher_suite
 	// CipherSuite
 	// suiteb_gmac256
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0CipherSuiteSuitebGmac256 captures enum value "suiteb_gmac256"
-	SecurityAssociationResponseRecordsItems0CipherSuiteSuitebGmac256 string = "suiteb_gmac256"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuitebGmac256 captures enum value "suiteb_gmac256"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemCipherSuiteSuitebGmac256 string = "suiteb_gmac256"
 )
 
 // prop value enum
-func (m *SecurityAssociationResponseRecordsItems0) validateCipherSuiteEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityAssociationResponseRecordsItems0TypeCipherSuitePropEnum, true); err != nil {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateCipherSuiteEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAssociationResponseInlineRecordsInlineArrayItemTypeCipherSuitePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateCipherSuite(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateCipherSuite(formats strfmt.Registry) error {
 	if swag.IsZero(m.CipherSuite) { // not required
 		return nil
 	}
@@ -633,7 +633,7 @@ func (m *SecurityAssociationResponseRecordsItems0) validateCipherSuite(formats s
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateIke(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateIke(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ike) { // not required
 		return nil
 	}
@@ -650,7 +650,7 @@ func (m *SecurityAssociationResponseRecordsItems0) validateIke(formats strfmt.Re
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateIpsec(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateIpsec(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipsec) { // not required
 		return nil
 	}
@@ -667,7 +667,7 @@ func (m *SecurityAssociationResponseRecordsItems0) validateIpsec(formats strfmt.
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateNode(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -684,22 +684,24 @@ func (m *SecurityAssociationResponseRecordsItems0) validateNode(formats strfmt.R
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateScope(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateSvm(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -716,7 +718,7 @@ func (m *SecurityAssociationResponseRecordsItems0) validateSvm(formats strfmt.Re
 	return nil
 }
 
-var securityAssociationResponseRecordsItems0TypeTypePropEnum []interface{}
+var securityAssociationResponseInlineRecordsInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -724,42 +726,42 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityAssociationResponseRecordsItems0TypeTypePropEnum = append(securityAssociationResponseRecordsItems0TypeTypePropEnum, v)
+		securityAssociationResponseInlineRecordsInlineArrayItemTypeTypePropEnum = append(securityAssociationResponseInlineRecordsInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0
-	// SecurityAssociationResponseRecordsItems0
+	// security_association_response_inline_records_inline_array_item
+	// SecurityAssociationResponseInlineRecordsInlineArrayItem
 	// type
 	// Type
 	// ipsec
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0TypeIpsec captures enum value "ipsec"
-	SecurityAssociationResponseRecordsItems0TypeIpsec string = "ipsec"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemTypeIpsec captures enum value "ipsec"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemTypeIpsec string = "ipsec"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0
-	// SecurityAssociationResponseRecordsItems0
+	// security_association_response_inline_records_inline_array_item
+	// SecurityAssociationResponseInlineRecordsInlineArrayItem
 	// type
 	// Type
 	// ike
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0TypeIke captures enum value "ike"
-	SecurityAssociationResponseRecordsItems0TypeIke string = "ike"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemTypeIke captures enum value "ike"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemTypeIke string = "ike"
 )
 
 // prop value enum
-func (m *SecurityAssociationResponseRecordsItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityAssociationResponseRecordsItems0TypeTypePropEnum, true); err != nil {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAssociationResponseInlineRecordsInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) validateType(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
@@ -772,8 +774,8 @@ func (m *SecurityAssociationResponseRecordsItems0) validateType(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIke(ctx, formats); err != nil {
@@ -802,7 +804,7 @@ func (m *SecurityAssociationResponseRecordsItems0) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) contextValidateIke(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) contextValidateIke(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ike != nil {
 		if err := m.Ike.ContextValidate(ctx, formats); err != nil {
@@ -816,7 +818,7 @@ func (m *SecurityAssociationResponseRecordsItems0) contextValidateIke(ctx contex
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) contextValidateIpsec(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) contextValidateIpsec(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipsec != nil {
 		if err := m.Ipsec.ContextValidate(ctx, formats); err != nil {
@@ -830,7 +832,7 @@ func (m *SecurityAssociationResponseRecordsItems0) contextValidateIpsec(ctx cont
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -844,19 +846,21 @@ func (m *SecurityAssociationResponseRecordsItems0) contextValidateNode(ctx conte
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -871,7 +875,7 @@ func (m *SecurityAssociationResponseRecordsItems0) contextValidateSvm(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -879,8 +883,8 @@ func (m *SecurityAssociationResponseRecordsItems0) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -888,34 +892,34 @@ func (m *SecurityAssociationResponseRecordsItems0) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0Ike Objects containing parameters specific to IKE (Internet Key Exchange) security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke Objects containing parameters specific to IKE (Internet Key Exchange) security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0Ike
-type SecurityAssociationResponseRecordsItems0Ike struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_ike
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke struct {
 
 	// Authentication method for internet key exchange protocol.
 	// Enum: [none psk cert]
 	Authentication *string `json:"authentication,omitempty"`
 
 	// Initiator's security parameter index for the IKE security association.
-	InitiatorSecurityParameterIndex string `json:"initiator_security_parameter_index,omitempty"`
+	InitiatorSecurityParameterIndex *string `json:"initiator_security_parameter_index,omitempty"`
 
 	// Indicates whether or not IKE has been initiated by this node.
-	IsInitiator bool `json:"is_initiator,omitempty"`
+	IsInitiator *bool `json:"is_initiator,omitempty"`
 
 	// Responder's security parameter index for the IKE security association.
-	ResponderSecurityParameterIndex string `json:"responder_security_parameter_index,omitempty"`
+	ResponderSecurityParameterIndex *string `json:"responder_security_parameter_index,omitempty"`
 
 	// State of the IKE connection.
 	// Enum: [none connecting established dead_peer_probe]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Internet key exchange protocol version.
-	Version int64 `json:"version,omitempty"`
+	Version *int64 `json:"version,omitempty"`
 }
 
-// Validate validates this security association response records items0 ike
-func (m *SecurityAssociationResponseRecordsItems0Ike) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline ike
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAuthentication(formats); err != nil {
@@ -932,7 +936,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ike) Validate(formats strfmt.Re
 	return nil
 }
 
-var securityAssociationResponseRecordsItems0IkeTypeAuthenticationPropEnum []interface{}
+var securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeAuthenticationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -940,52 +944,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityAssociationResponseRecordsItems0IkeTypeAuthenticationPropEnum = append(securityAssociationResponseRecordsItems0IkeTypeAuthenticationPropEnum, v)
+		securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeAuthenticationPropEnum = append(securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeAuthenticationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// authentication
 	// Authentication
 	// none
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeAuthenticationNone captures enum value "none"
-	SecurityAssociationResponseRecordsItems0IkeAuthenticationNone string = "none"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationNone captures enum value "none"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// authentication
 	// Authentication
 	// psk
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeAuthenticationPsk captures enum value "psk"
-	SecurityAssociationResponseRecordsItems0IkeAuthenticationPsk string = "psk"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationPsk captures enum value "psk"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationPsk string = "psk"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// authentication
 	// Authentication
 	// cert
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeAuthenticationCert captures enum value "cert"
-	SecurityAssociationResponseRecordsItems0IkeAuthenticationCert string = "cert"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationCert captures enum value "cert"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeAuthenticationCert string = "cert"
 )
 
 // prop value enum
-func (m *SecurityAssociationResponseRecordsItems0Ike) validateAuthenticationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityAssociationResponseRecordsItems0IkeTypeAuthenticationPropEnum, true); err != nil {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) validateAuthenticationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeAuthenticationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ike) validateAuthentication(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) validateAuthentication(formats strfmt.Registry) error {
 	if swag.IsZero(m.Authentication) { // not required
 		return nil
 	}
@@ -998,7 +1002,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ike) validateAuthentication(for
 	return nil
 }
 
-var securityAssociationResponseRecordsItems0IkeTypeStatePropEnum []interface{}
+var securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1006,81 +1010,81 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityAssociationResponseRecordsItems0IkeTypeStatePropEnum = append(securityAssociationResponseRecordsItems0IkeTypeStatePropEnum, v)
+		securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeStatePropEnum = append(securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// state
 	// State
 	// none
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeStateNone captures enum value "none"
-	SecurityAssociationResponseRecordsItems0IkeStateNone string = "none"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateNone captures enum value "none"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// state
 	// State
 	// connecting
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeStateConnecting captures enum value "connecting"
-	SecurityAssociationResponseRecordsItems0IkeStateConnecting string = "connecting"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateConnecting captures enum value "connecting"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateConnecting string = "connecting"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// state
 	// State
 	// established
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeStateEstablished captures enum value "established"
-	SecurityAssociationResponseRecordsItems0IkeStateEstablished string = "established"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateEstablished captures enum value "established"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateEstablished string = "established"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ike
-	// SecurityAssociationResponseRecordsItems0Ike
+	// security_association_response_inline_records_inline_array_item_inline_ike
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	// state
 	// State
 	// dead_peer_probe
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IkeStateDeadPeerProbe captures enum value "dead_peer_probe"
-	SecurityAssociationResponseRecordsItems0IkeStateDeadPeerProbe string = "dead_peer_probe"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateDeadPeerProbe captures enum value "dead_peer_probe"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIkeStateDeadPeerProbe string = "dead_peer_probe"
 )
 
 // prop value enum
-func (m *SecurityAssociationResponseRecordsItems0Ike) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityAssociationResponseRecordsItems0IkeTypeStatePropEnum, true); err != nil {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAssociationResponseInlineRecordsInlineArrayItemInlineIkeTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ike) validateState(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("ike"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("ike"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this security association response records items0 ike based on context it is used
-func (m *SecurityAssociationResponseRecordsItems0Ike) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security association response inline records inline array item inline ike based on context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Ike) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1088,8 +1092,8 @@ func (m *SecurityAssociationResponseRecordsItems0Ike) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Ike) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0Ike
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIke
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1097,27 +1101,27 @@ func (m *SecurityAssociationResponseRecordsItems0Ike) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0Ipsec Objects containing parameters specific to IPsec security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec Objects containing parameters specific to IPsec security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0Ipsec
-type SecurityAssociationResponseRecordsItems0Ipsec struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_ipsec
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec struct {
 
 	// Action for the IPsec security association.
 	// Enum: [bypass discard esp_transport]
 	Action *string `json:"action,omitempty"`
 
 	// inbound
-	Inbound *SecurityAssociationResponseRecordsItems0IpsecInbound `json:"inbound,omitempty"`
+	Inbound *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound `json:"inbound,omitempty"`
 
 	// outbound
-	Outbound *SecurityAssociationResponseRecordsItems0IpsecOutbound `json:"outbound,omitempty"`
+	Outbound *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound `json:"outbound,omitempty"`
 
 	// State of the IPsec security association.
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this security association response records items0 ipsec
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline ipsec
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAction(formats); err != nil {
@@ -1138,7 +1142,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) Validate(formats strfmt.
 	return nil
 }
 
-var securityAssociationResponseRecordsItems0IpsecTypeActionPropEnum []interface{}
+var securityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1146,52 +1150,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityAssociationResponseRecordsItems0IpsecTypeActionPropEnum = append(securityAssociationResponseRecordsItems0IpsecTypeActionPropEnum, v)
+		securityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecTypeActionPropEnum = append(securityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecTypeActionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ipsec
-	// SecurityAssociationResponseRecordsItems0Ipsec
+	// security_association_response_inline_records_inline_array_item_inline_ipsec
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec
 	// action
 	// Action
 	// bypass
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IpsecActionBypass captures enum value "bypass"
-	SecurityAssociationResponseRecordsItems0IpsecActionBypass string = "bypass"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionBypass captures enum value "bypass"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionBypass string = "bypass"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ipsec
-	// SecurityAssociationResponseRecordsItems0Ipsec
+	// security_association_response_inline_records_inline_array_item_inline_ipsec
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec
 	// action
 	// Action
 	// discard
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IpsecActionDiscard captures enum value "discard"
-	SecurityAssociationResponseRecordsItems0IpsecActionDiscard string = "discard"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionDiscard captures enum value "discard"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionDiscard string = "discard"
 
 	// BEGIN DEBUGGING
-	// SecurityAssociationResponseRecordsItems0Ipsec
-	// SecurityAssociationResponseRecordsItems0Ipsec
+	// security_association_response_inline_records_inline_array_item_inline_ipsec
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec
 	// action
 	// Action
 	// esp_transport
 	// END DEBUGGING
-	// SecurityAssociationResponseRecordsItems0IpsecActionEspTransport captures enum value "esp_transport"
-	SecurityAssociationResponseRecordsItems0IpsecActionEspTransport string = "esp_transport"
+	// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionEspTransport captures enum value "esp_transport"
+	SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecActionEspTransport string = "esp_transport"
 )
 
 // prop value enum
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateActionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityAssociationResponseRecordsItems0IpsecTypeActionPropEnum, true); err != nil {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) validateActionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecTypeActionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateAction(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) validateAction(formats strfmt.Registry) error {
 	if swag.IsZero(m.Action) { // not required
 		return nil
 	}
@@ -1204,7 +1208,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateAction(formats s
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateInbound(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) validateInbound(formats strfmt.Registry) error {
 	if swag.IsZero(m.Inbound) { // not required
 		return nil
 	}
@@ -1221,7 +1225,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateInbound(formats 
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateOutbound(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) validateOutbound(formats strfmt.Registry) error {
 	if swag.IsZero(m.Outbound) { // not required
 		return nil
 	}
@@ -1238,8 +1242,8 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) validateOutbound(formats
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 ipsec based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item inline ipsec based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInbound(ctx, formats); err != nil {
@@ -1256,7 +1260,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) contextValidateInbound(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) contextValidateInbound(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Inbound != nil {
 		if err := m.Inbound.ContextValidate(ctx, formats); err != nil {
@@ -1270,7 +1274,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) contextValidateInbound(c
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) contextValidateOutbound(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) contextValidateOutbound(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Outbound != nil {
 		if err := m.Outbound.ContextValidate(ctx, formats); err != nil {
@@ -1285,7 +1289,7 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) contextValidateOutbound(
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1293,8 +1297,8 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Ipsec) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0Ipsec
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsec
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1302,33 +1306,33 @@ func (m *SecurityAssociationResponseRecordsItems0Ipsec) UnmarshalBinary(b []byte
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0IpsecInbound Status for inbound parameters for the IPsec security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound Status for inbound parameters for the IPsec security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0IpsecInbound
-type SecurityAssociationResponseRecordsItems0IpsecInbound struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_ipsec_inline_inbound
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound struct {
 
 	// Number of inbound bytes for the IPsec security association.
-	Bytes int64 `json:"bytes,omitempty"`
+	Bytes *int64 `json:"bytes,omitempty"`
 
 	// Number of inbound packets for the IPsec security association.
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 
 	// Inbound security parameter index for the IPSec security association.
-	SecurityParameterIndex string `json:"security_parameter_index,omitempty"`
+	SecurityParameterIndex *string `json:"security_parameter_index,omitempty"`
 }
 
-// Validate validates this security association response records items0 ipsec inbound
-func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline ipsec inline inbound
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security association response records items0 ipsec inbound based on context it is used
-func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security association response inline records inline array item inline ipsec inline inbound based on context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1336,8 +1340,8 @@ func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) MarshalBinary() (
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0IpsecInbound
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineInbound
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1345,33 +1349,33 @@ func (m *SecurityAssociationResponseRecordsItems0IpsecInbound) UnmarshalBinary(b
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0IpsecOutbound Status for outbound parameters for the IPsec security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound Status for outbound parameters for the IPsec security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0IpsecOutbound
-type SecurityAssociationResponseRecordsItems0IpsecOutbound struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_ipsec_inline_outbound
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound struct {
 
 	// Number of outbound bytes for the IPsec security association.
-	Bytes int64 `json:"bytes,omitempty"`
+	Bytes *int64 `json:"bytes,omitempty"`
 
 	// Number of outbound packets for the IPsec security association.
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 
 	// Outbound security parameter index for the IPSec security association.
-	SecurityParameterIndex string `json:"security_parameter_index,omitempty"`
+	SecurityParameterIndex *string `json:"security_parameter_index,omitempty"`
 }
 
-// Validate validates this security association response records items0 ipsec outbound
-func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline ipsec inline outbound
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security association response records items0 ipsec outbound based on context it is used
-func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security association response inline records inline array item inline ipsec inline outbound based on context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1379,8 +1383,8 @@ func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) MarshalBinary() 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0IpsecOutbound
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineIpsecInlineOutbound
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1388,25 +1392,25 @@ func (m *SecurityAssociationResponseRecordsItems0IpsecOutbound) UnmarshalBinary(
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0Node Node with the security association.
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode Node with the security association.
 //
-// swagger:model SecurityAssociationResponseRecordsItems0Node
-type SecurityAssociationResponseRecordsItems0Node struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_node
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *SecurityAssociationResponseRecordsItems0NodeLinks `json:"_links,omitempty"`
+	Links *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security association response records items0 node
-func (m *SecurityAssociationResponseRecordsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline node
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1419,7 +1423,7 @@ func (m *SecurityAssociationResponseRecordsItems0Node) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1436,8 +1440,8 @@ func (m *SecurityAssociationResponseRecordsItems0Node) validateLinks(formats str
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 node based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item inline node based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1450,7 +1454,7 @@ func (m *SecurityAssociationResponseRecordsItems0Node) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1465,7 +1469,7 @@ func (m *SecurityAssociationResponseRecordsItems0Node) contextValidateLinks(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1473,8 +1477,8 @@ func (m *SecurityAssociationResponseRecordsItems0Node) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Node) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0Node
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1482,17 +1486,17 @@ func (m *SecurityAssociationResponseRecordsItems0Node) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0NodeLinks security association response records items0 node links
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks security association response inline records inline array item inline node inline links
 //
-// swagger:model SecurityAssociationResponseRecordsItems0NodeLinks
-type SecurityAssociationResponseRecordsItems0NodeLinks struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_node_inline__links
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security association response records items0 node links
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline node inline links
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1505,7 +1509,7 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) Validate(formats str
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1522,8 +1526,8 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) validateSelf(formats
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 node links based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item inline node inline links based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1536,7 +1540,7 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) ContextValidate(ctx 
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1551,7 +1555,7 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) contextValidateSelf(
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1559,8 +1563,8 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0NodeLinks
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1568,27 +1572,27 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) UnmarshalBinary(b []
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0Svm security association response records items0 svm
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm security association response inline records inline array item inline svm
 //
-// swagger:model SecurityAssociationResponseRecordsItems0Svm
-type SecurityAssociationResponseRecordsItems0Svm struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_svm
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm struct {
 
 	// links
-	Links *SecurityAssociationResponseRecordsItems0SvmLinks `json:"_links,omitempty"`
+	Links *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security association response records items0 svm
-func (m *SecurityAssociationResponseRecordsItems0Svm) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline svm
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1601,7 +1605,7 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Svm) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1618,8 +1622,8 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) validateLinks(formats strf
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 svm based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item inline svm based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1632,7 +1636,7 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0Svm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1647,7 +1651,7 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) contextValidateLinks(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Svm) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1655,8 +1659,8 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0Svm) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0Svm
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1664,17 +1668,17 @@ func (m *SecurityAssociationResponseRecordsItems0Svm) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0SvmLinks security association response records items0 svm links
+// SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks security association response inline records inline array item inline svm inline links
 //
-// swagger:model SecurityAssociationResponseRecordsItems0SvmLinks
-type SecurityAssociationResponseRecordsItems0SvmLinks struct {
+// swagger:model security_association_response_inline_records_inline_array_item_inline_svm_inline__links
+type SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security association response records items0 svm links
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security association response inline records inline array item inline svm inline links
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1687,7 +1691,7 @@ func (m *SecurityAssociationResponseRecordsItems0SvmLinks) Validate(formats strf
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1704,8 +1708,8 @@ func (m *SecurityAssociationResponseRecordsItems0SvmLinks) validateSelf(formats 
 	return nil
 }
 
-// ContextValidate validate this security association response records items0 svm links based on the context it is used
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security association response inline records inline array item inline svm inline links based on the context it is used
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1718,7 +1722,7 @@ func (m *SecurityAssociationResponseRecordsItems0SvmLinks) ContextValidate(ctx c
 	return nil
 }
 
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1733,7 +1737,7 @@ func (m *SecurityAssociationResponseRecordsItems0SvmLinks) contextValidateSelf(c
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1741,8 +1745,8 @@ func (m *SecurityAssociationResponseRecordsItems0SvmLinks) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAssociationResponseRecordsItems0SvmLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAssociationResponseRecordsItems0SvmLinks
+func (m *SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAssociationResponseInlineRecordsInlineArrayItemInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

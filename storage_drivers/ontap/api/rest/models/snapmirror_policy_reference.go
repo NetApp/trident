@@ -20,16 +20,16 @@ import (
 type SnapmirrorPolicyReference struct {
 
 	// links
-	Links *SnapmirrorPolicyReferenceLinks `json:"_links,omitempty"`
+	Links *SnapmirrorPolicyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: Asynchronous
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this snapmirror policy reference
@@ -125,17 +125,17 @@ func (m *SnapmirrorPolicyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyReferenceLinks snapmirror policy reference links
+// SnapmirrorPolicyReferenceInlineLinks snapmirror policy reference inline links
 //
-// swagger:model SnapmirrorPolicyReferenceLinks
-type SnapmirrorPolicyReferenceLinks struct {
+// swagger:model snapmirror_policy_reference_inline__links
+type SnapmirrorPolicyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror policy reference links
-func (m *SnapmirrorPolicyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror policy reference inline links
+func (m *SnapmirrorPolicyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -148,7 +148,7 @@ func (m *SnapmirrorPolicyReferenceLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SnapmirrorPolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -165,8 +165,8 @@ func (m *SnapmirrorPolicyReferenceLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this snapmirror policy reference links based on the context it is used
-func (m *SnapmirrorPolicyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror policy reference inline links based on the context it is used
+func (m *SnapmirrorPolicyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -179,7 +179,7 @@ func (m *SnapmirrorPolicyReferenceLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SnapmirrorPolicyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorPolicyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -194,7 +194,7 @@ func (m *SnapmirrorPolicyReferenceLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorPolicyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -202,8 +202,8 @@ func (m *SnapmirrorPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorPolicyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorPolicyReferenceLinks
+func (m *SnapmirrorPolicyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorPolicyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

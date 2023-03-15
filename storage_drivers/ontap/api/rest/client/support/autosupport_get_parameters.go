@@ -66,7 +66,7 @@ type AutosupportGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *AutosupportGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the autosupport get params
-func (o *AutosupportGetParams) WithFieldsQueryParameter(fields []string) *AutosupportGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the autosupport get params
+func (o *AutosupportGetParams) WithFields(fields []string) *AutosupportGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the autosupport get params
-func (o *AutosupportGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the autosupport get params
+func (o *AutosupportGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *AutosupportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *AutosupportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamAutosupportGet binds the parameter fields
 func (o *AutosupportGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

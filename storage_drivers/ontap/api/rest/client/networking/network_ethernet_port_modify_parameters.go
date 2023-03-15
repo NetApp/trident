@@ -70,7 +70,7 @@ type NetworkEthernetPortModifyParams struct {
 
 	   Port UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *NetworkEthernetPortModifyParams) SetInfo(info *models.Port) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the network ethernet port modify params
-func (o *NetworkEthernetPortModifyParams) WithUUIDPathParameter(uuid string) *NetworkEthernetPortModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ethernet port modify params
+func (o *NetworkEthernetPortModifyParams) WithUUID(uuid string) *NetworkEthernetPortModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ethernet port modify params
-func (o *NetworkEthernetPortModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ethernet port modify params
+func (o *NetworkEthernetPortModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *NetworkEthernetPortModifyParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

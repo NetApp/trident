@@ -84,6 +84,8 @@ type ClientService interface {
 
 	ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotGetOK, error)
 
+	ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyOK, *ConsistencyGroupSnapshotModifyAccepted, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
@@ -91,7 +93,7 @@ type ClientService interface {
 	ApplicationCollectionGet Retrieves applications.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `<template>` the property corresponding to the `template.name` of the application
 ### Query examples
 Numerous queries are available for classifying and sorting applications:
@@ -668,7 +670,7 @@ func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo run
 	ApplicationGet Retrieves an application
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `<template>` the property corresponding to the `template.name` of the application
 ### Property overview
 An application includes three main groups or properties.
@@ -1145,7 +1147,7 @@ func (a *Client) ApplicationTemplateGet(params *ApplicationTemplateGetParams, au
 When volume granular properties, such as, the storage SLC, Fabric Pool tiering are not the same for all the existing volumes of a consistency group, the corresponding property is not reported at consistency group granularity. It is only reported if all the volumes of the consistency group have the same value for that property.
 <br>If this consistency group instance is part of a replication relationship, the "replicated" parameter will be true. Otherwise, it is false. Also, the "replicated" parameter will not be present in the output for Nested-consistency groups, it is included only for single and top-level consistency groups. If this consistency group instance is the source of a replication relationship, the "replication_source" parameter will be true. Otherwise, it is false.
 ## Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `volumes`
 * `luns`
 * `namespaces`
@@ -1302,7 +1304,7 @@ func (a *Client) ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, au
 	ConsistencyGroupGet Retrieves a single consistency group.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `volumes`
 * `luns`
 * `namespaces`
@@ -1350,26 +1352,6 @@ func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo
 <br>Note that this operation will never delete storage elements. You can specify only elements that should be added to the consistency group regardless of existing storage objects.
 ## Related ONTAP commands
 N/A. There are no ONTAP commands for managing consistency groups.
-## Examples:
-### Adding namespaces to an existing volume in an existing consistency group
-To add two NVMe Namespaces to an existing volume in an existing consistency group, create a new subsystem and bind the new namespaces to it.
-```
-curl -X PATCH 'https://<mgmt-ip>/api/application/consistency-groups/6f51748a-0a7f-11ec-a449-005056bbcf9f' -d '{ "namespaces": [ { "name": "/vol/vol1/new_namespace", "space": { "size": "10M" }, "os_type": "windows", "provisioning_options": { "count": 2 }, "subsystem_map": { "subsystem": { "name": "mySubsystem", "hosts": [ { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host1" }, { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host2" } ] } } } ] }'
-#### Response:
-```
-
-	{
-	  "job": {
-	    "uuid": "8c9cabf3-0a88-11ec-a449-005056bbcf9f",
-	    "_links": {
-	      "self": {
-	        "href": "/api/cluster/jobs/8c9cabf3-0a88-11ec-a449-005056bbcf9f"
-	      }
-	    }
-	  }
-	}
-
-```
 */
 func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyOK, *ConsistencyGroupModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1412,7 +1394,7 @@ func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, au
 	ConsistencyGroupSnapshotCollectionGet Retrieves Snapshot copies for a consistency group.
 
 ## Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `is_partial`
 * `missing_voumes.uuid`
 * `missing_voumes.name`
@@ -1541,7 +1523,7 @@ func (a *Client) ConsistencyGroupSnapshotDelete(params *ConsistencyGroupSnapshot
 	ConsistencyGroupSnapshotGet Retrieves details of a specific snapshot for a consistency group.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `is_partial`
 * `missing_voumes.uuid`
 * `missing_voumes.name`
@@ -1579,6 +1561,61 @@ func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGet
 	// unexpected success response
 	unexpectedSuccess := result.(*ConsistencyGroupSnapshotGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ConsistencyGroupSnapshotModify Completes a Snapshot copy operation of a consistency group.
+
+## Example
+### Completing a Snapshot copy operation
+
+	The following example shows how to complete the Snapshot copy operation by committing an existing Snapshot copy to disk:
+	```
+	curl -X PATCH https://<mgmt-ip>/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498?action=commit
+	```
+
+#### Response:
+
+	```
+	{
+	}
+	```
+*/
+func (a *Client) ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyOK, *ConsistencyGroupSnapshotModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConsistencyGroupSnapshotModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "consistency_group_snapshot_modify",
+		Method:             "PATCH",
+		PathPattern:        "/application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConsistencyGroupSnapshotModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ConsistencyGroupSnapshotModifyOK:
+		return value, nil, nil
+	case *ConsistencyGroupSnapshotModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConsistencyGroupSnapshotModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

@@ -66,13 +66,13 @@ type NetworkIPInterfaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   IP interface UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *NetworkIPInterfaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip interface get params
-func (o *NetworkIPInterfaceGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPInterfaceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip interface get params
+func (o *NetworkIPInterfaceGetParams) WithFields(fields []string) *NetworkIPInterfaceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip interface get params
-func (o *NetworkIPInterfaceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip interface get params
+func (o *NetworkIPInterfaceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the network ip interface get params
-func (o *NetworkIPInterfaceGetParams) WithUUIDPathParameter(uuid string) *NetworkIPInterfaceGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ip interface get params
+func (o *NetworkIPInterfaceGetParams) WithUUID(uuid string) *NetworkIPInterfaceGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ip interface get params
-func (o *NetworkIPInterfaceGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ip interface get params
+func (o *NetworkIPInterfaceGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *NetworkIPInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *NetworkIPInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *NetworkIPInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamNetworkIPInterfaceGet binds the parameter fields
 func (o *NetworkIPInterfaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

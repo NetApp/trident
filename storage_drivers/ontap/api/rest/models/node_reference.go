@@ -19,15 +19,15 @@ import (
 type NodeReference struct {
 
 	// links
-	Links *NodeReferenceLinks `json:"_links,omitempty"`
+	Links *NodeReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this node reference
@@ -107,17 +107,17 @@ func (m *NodeReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeReferenceLinks node reference links
+// NodeReferenceInlineLinks node reference inline links
 //
-// swagger:model NodeReferenceLinks
-type NodeReferenceLinks struct {
+// swagger:model node_reference_inline__links
+type NodeReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node reference links
-func (m *NodeReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this node reference inline links
+func (m *NodeReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *NodeReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NodeReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *NodeReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node reference links based on the context it is used
-func (m *NodeReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node reference inline links based on the context it is used
+func (m *NodeReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *NodeReferenceLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NodeReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *NodeReferenceLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NodeReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *NodeReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *NodeReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res NodeReferenceLinks
+func (m *NodeReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

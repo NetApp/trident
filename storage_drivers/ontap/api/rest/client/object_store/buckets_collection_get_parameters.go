@@ -66,175 +66,187 @@ type BucketsCollectionGetParams struct {
 
 	   Filter by audit_event_selector.access
 	*/
-	AuditEventSelectorAccessQueryParameter *string
+	AuditEventSelectorAccess *string
 
 	/* AuditEventSelectorPermission.
 
 	   Filter by audit_event_selector.permission
 	*/
-	AuditEventSelectorPermissionQueryParameter *string
+	AuditEventSelectorPermission *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* EncryptionEnabled.
 
 	   Filter by encryption.enabled
 	*/
-	EncryptionEnabledQueryParameter *bool
+	EncryptionEnabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LogicalUsedSize.
 
 	   Filter by logical_used_size
 	*/
-	LogicalUsedSizeQueryParameter *int64
+	LogicalUsedSize *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
+
+	/* NasPath.
+
+	   Filter by nas_path
+	*/
+	NasPath *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PolicyStatementsActions.
 
 	   Filter by policy.statements.actions
 	*/
-	PolicyStatementsActionsQueryParameter *string
+	PolicyStatementsActions *string
 
 	/* PolicyStatementsConditionsDelimiters.
 
 	   Filter by policy.statements.conditions.delimiters
 	*/
-	PolicyStatementsConditionsDelimitersQueryParameter *string
+	PolicyStatementsConditionsDelimiters *string
 
 	/* PolicyStatementsConditionsMaxKeys.
 
 	   Filter by policy.statements.conditions.max_keys
 	*/
-	PolicyStatementsConditionsMaxKeysQueryParameter *int64
+	PolicyStatementsConditionsMaxKeys *int64
 
 	/* PolicyStatementsConditionsOperator.
 
 	   Filter by policy.statements.conditions.operator
 	*/
-	PolicyStatementsConditionsOperatorQueryParameter *string
+	PolicyStatementsConditionsOperator *string
 
 	/* PolicyStatementsConditionsPrefixes.
 
 	   Filter by policy.statements.conditions.prefixes
 	*/
-	PolicyStatementsConditionsPrefixesQueryParameter *string
+	PolicyStatementsConditionsPrefixes *string
 
 	/* PolicyStatementsConditionsSourceIps.
 
 	   Filter by policy.statements.conditions.source_ips
 	*/
-	PolicyStatementsConditionsSourceIPsQueryParameter *string
+	PolicyStatementsConditionsSourceIps *string
 
 	/* PolicyStatementsConditionsUsernames.
 
 	   Filter by policy.statements.conditions.usernames
 	*/
-	PolicyStatementsConditionsUsernamesQueryParameter *string
+	PolicyStatementsConditionsUsernames *string
 
 	/* PolicyStatementsEffect.
 
 	   Filter by policy.statements.effect
 	*/
-	PolicyStatementsEffectQueryParameter *string
+	PolicyStatementsEffect *string
 
 	/* PolicyStatementsPrincipals.
 
 	   Filter by policy.statements.principals
 	*/
-	PolicyStatementsPrincipalsQueryParameter *string
+	PolicyStatementsPrincipals *string
 
 	/* PolicyStatementsResources.
 
 	   Filter by policy.statements.resources
 	*/
-	PolicyStatementsResourcesQueryParameter *string
+	PolicyStatementsResources *string
 
 	/* PolicyStatementsSid.
 
 	   Filter by policy.statements.sid
 	*/
-	PolicyStatementsSIDQueryParameter *string
+	PolicyStatementsSid *string
 
 	/* ProtectionStatusDestinationIsCloud.
 
 	   Filter by protection_status.destination.is_cloud
 	*/
-	ProtectionStatusDestinationIsCloudQueryParameter *bool
+	ProtectionStatusDestinationIsCloud *bool
+
+	/* ProtectionStatusDestinationIsExternalCloud.
+
+	   Filter by protection_status.destination.is_external_cloud
+	*/
+	ProtectionStatusDestinationIsExternalCloud *bool
 
 	/* ProtectionStatusDestinationIsOntap.
 
 	   Filter by protection_status.destination.is_ontap
 	*/
-	ProtectionStatusDestinationIsOntapQueryParameter *bool
+	ProtectionStatusDestinationIsOntap *bool
 
 	/* ProtectionStatusIsProtected.
 
 	   Filter by protection_status.is_protected
 	*/
-	ProtectionStatusIsProtectedQueryParameter *bool
+	ProtectionStatusIsProtected *bool
 
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
 	*/
-	QosPolicyMaxThroughputIopsQueryParameter *int64
+	QosPolicyMaxThroughputIops *int64
 
 	/* QosPolicyMaxThroughputMbps.
 
 	   Filter by qos_policy.max_throughput_mbps
 	*/
-	QosPolicyMaxThroughputMbpsQueryParameter *int64
+	QosPolicyMaxThroughputMbps *int64
 
 	/* QosPolicyMinThroughputIops.
 
 	   Filter by qos_policy.min_throughput_iops
 	*/
-	QosPolicyMinThroughputIopsQueryParameter *int64
+	QosPolicyMinThroughputIops *int64
 
 	/* QosPolicyMinThroughputMbps.
 
 	   Filter by qos_policy.min_throughput_mbps
 	*/
-	QosPolicyMinThroughputMbpsQueryParameter *int64
+	QosPolicyMinThroughputMbps *int64
 
 	/* QosPolicyName.
 
 	   Filter by qos_policy.name
 	*/
-	QosPolicyNameQueryParameter *string
+	QosPolicyName *string
 
 	/* QosPolicyUUID.
 
 	   Filter by qos_policy.uuid
 	*/
-	QosPolicyUUIDQueryParameter *string
+	QosPolicyUUID *string
 
 	/* ReturnRecords.
 
@@ -242,7 +254,7 @@ type BucketsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -250,55 +262,61 @@ type BucketsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Role.
 
 	   Filter by role
 	*/
-	RoleQueryParameter *string
+	Role *string
 
 	/* Size.
 
 	   Filter by size
 	*/
-	SizeQueryParameter *int64
+	Size *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
+
+	/* Type.
+
+	   Filter by type
+	*/
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VersioningState.
 
 	   Filter by versioning_state
 	*/
-	VersioningStateQueryParameter *string
+	VersioningState *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -318,14 +336,14 @@ func (o *BucketsCollectionGetParams) WithDefaults() *BucketsCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *BucketsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := BucketsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -367,433 +385,466 @@ func (o *BucketsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuditEventSelectorAccessQueryParameter adds the auditEventSelectorAccess to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess *string) *BucketsCollectionGetParams {
-	o.SetAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess)
+// WithAuditEventSelectorAccess adds the auditEventSelectorAccess to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithAuditEventSelectorAccess(auditEventSelectorAccess *string) *BucketsCollectionGetParams {
+	o.SetAuditEventSelectorAccess(auditEventSelectorAccess)
 	return o
 }
 
-// SetAuditEventSelectorAccessQueryParameter adds the auditEventSelectorAccess to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess *string) {
-	o.AuditEventSelectorAccessQueryParameter = auditEventSelectorAccess
+// SetAuditEventSelectorAccess adds the auditEventSelectorAccess to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetAuditEventSelectorAccess(auditEventSelectorAccess *string) {
+	o.AuditEventSelectorAccess = auditEventSelectorAccess
 }
 
-// WithAuditEventSelectorPermissionQueryParameter adds the auditEventSelectorPermission to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission *string) *BucketsCollectionGetParams {
-	o.SetAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission)
+// WithAuditEventSelectorPermission adds the auditEventSelectorPermission to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithAuditEventSelectorPermission(auditEventSelectorPermission *string) *BucketsCollectionGetParams {
+	o.SetAuditEventSelectorPermission(auditEventSelectorPermission)
 	return o
 }
 
-// SetAuditEventSelectorPermissionQueryParameter adds the auditEventSelectorPermission to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission *string) {
-	o.AuditEventSelectorPermissionQueryParameter = auditEventSelectorPermission
+// SetAuditEventSelectorPermission adds the auditEventSelectorPermission to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetAuditEventSelectorPermission(auditEventSelectorPermission *string) {
+	o.AuditEventSelectorPermission = auditEventSelectorPermission
 }
 
-// WithCommentQueryParameter adds the comment to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithCommentQueryParameter(comment *string) *BucketsCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithComment(comment *string) *BucketsCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithEncryptionEnabledQueryParameter adds the encryptionEnabled to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithEncryptionEnabledQueryParameter(encryptionEnabled *bool) *BucketsCollectionGetParams {
-	o.SetEncryptionEnabledQueryParameter(encryptionEnabled)
+// WithEncryptionEnabled adds the encryptionEnabled to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithEncryptionEnabled(encryptionEnabled *bool) *BucketsCollectionGetParams {
+	o.SetEncryptionEnabled(encryptionEnabled)
 	return o
 }
 
-// SetEncryptionEnabledQueryParameter adds the encryptionEnabled to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetEncryptionEnabledQueryParameter(encryptionEnabled *bool) {
-	o.EncryptionEnabledQueryParameter = encryptionEnabled
+// SetEncryptionEnabled adds the encryptionEnabled to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetEncryptionEnabled(encryptionEnabled *bool) {
+	o.EncryptionEnabled = encryptionEnabled
 }
 
-// WithFieldsQueryParameter adds the fields to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithFieldsQueryParameter(fields []string) *BucketsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithFields(fields []string) *BucketsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLogicalUsedSizeQueryParameter adds the logicalUsedSize to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithLogicalUsedSizeQueryParameter(logicalUsedSize *int64) *BucketsCollectionGetParams {
-	o.SetLogicalUsedSizeQueryParameter(logicalUsedSize)
+// WithLogicalUsedSize adds the logicalUsedSize to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithLogicalUsedSize(logicalUsedSize *int64) *BucketsCollectionGetParams {
+	o.SetLogicalUsedSize(logicalUsedSize)
 	return o
 }
 
-// SetLogicalUsedSizeQueryParameter adds the logicalUsedSize to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetLogicalUsedSizeQueryParameter(logicalUsedSize *int64) {
-	o.LogicalUsedSizeQueryParameter = logicalUsedSize
+// SetLogicalUsedSize adds the logicalUsedSize to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetLogicalUsedSize(logicalUsedSize *int64) {
+	o.LogicalUsedSize = logicalUsedSize
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *BucketsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithMaxRecords(maxRecords *int64) *BucketsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithNameQueryParameter(name *string) *BucketsCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithName(name *string) *BucketsCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *BucketsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithNasPath adds the nasPath to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithNasPath(nasPath *string) *BucketsCollectionGetParams {
+	o.SetNasPath(nasPath)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetNasPath adds the nasPath to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetNasPath(nasPath *string) {
+	o.NasPath = nasPath
 }
 
-// WithPolicyStatementsActionsQueryParameter adds the policyStatementsActions to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsActionsQueryParameter(policyStatementsActions *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsActionsQueryParameter(policyStatementsActions)
+// WithOrderBy adds the orderBy to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithOrderBy(orderBy []string) *BucketsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetPolicyStatementsActionsQueryParameter adds the policyStatementsActions to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsActionsQueryParameter(policyStatementsActions *string) {
-	o.PolicyStatementsActionsQueryParameter = policyStatementsActions
+// SetOrderBy adds the orderBy to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPolicyStatementsConditionsDelimitersQueryParameter adds the policyStatementsConditionsDelimiters to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters)
+// WithPolicyStatementsActions adds the policyStatementsActions to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsActions(policyStatementsActions *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsActions(policyStatementsActions)
 	return o
 }
 
-// SetPolicyStatementsConditionsDelimitersQueryParameter adds the policyStatementsConditionsDelimiters to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters *string) {
-	o.PolicyStatementsConditionsDelimitersQueryParameter = policyStatementsConditionsDelimiters
+// SetPolicyStatementsActions adds the policyStatementsActions to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsActions(policyStatementsActions *string) {
+	o.PolicyStatementsActions = policyStatementsActions
 }
 
-// WithPolicyStatementsConditionsMaxKeysQueryParameter adds the policyStatementsConditionsMaxKeys to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys *int64) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys)
+// WithPolicyStatementsConditionsDelimiters adds the policyStatementsConditionsDelimiters to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsDelimiters(policyStatementsConditionsDelimiters *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsDelimiters(policyStatementsConditionsDelimiters)
 	return o
 }
 
-// SetPolicyStatementsConditionsMaxKeysQueryParameter adds the policyStatementsConditionsMaxKeys to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys *int64) {
-	o.PolicyStatementsConditionsMaxKeysQueryParameter = policyStatementsConditionsMaxKeys
+// SetPolicyStatementsConditionsDelimiters adds the policyStatementsConditionsDelimiters to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsDelimiters(policyStatementsConditionsDelimiters *string) {
+	o.PolicyStatementsConditionsDelimiters = policyStatementsConditionsDelimiters
 }
 
-// WithPolicyStatementsConditionsOperatorQueryParameter adds the policyStatementsConditionsOperator to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator)
+// WithPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys)
 	return o
 }
 
-// SetPolicyStatementsConditionsOperatorQueryParameter adds the policyStatementsConditionsOperator to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator *string) {
-	o.PolicyStatementsConditionsOperatorQueryParameter = policyStatementsConditionsOperator
+// SetPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) {
+	o.PolicyStatementsConditionsMaxKeys = policyStatementsConditionsMaxKeys
 }
 
-// WithPolicyStatementsConditionsPrefixesQueryParameter adds the policyStatementsConditionsPrefixes to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes)
+// WithPolicyStatementsConditionsOperator adds the policyStatementsConditionsOperator to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsOperator(policyStatementsConditionsOperator *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsOperator(policyStatementsConditionsOperator)
 	return o
 }
 
-// SetPolicyStatementsConditionsPrefixesQueryParameter adds the policyStatementsConditionsPrefixes to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes *string) {
-	o.PolicyStatementsConditionsPrefixesQueryParameter = policyStatementsConditionsPrefixes
+// SetPolicyStatementsConditionsOperator adds the policyStatementsConditionsOperator to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsOperator(policyStatementsConditionsOperator *string) {
+	o.PolicyStatementsConditionsOperator = policyStatementsConditionsOperator
 }
 
-// WithPolicyStatementsConditionsSourceIPsQueryParameter adds the policyStatementsConditionsSourceIps to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps)
+// WithPolicyStatementsConditionsPrefixes adds the policyStatementsConditionsPrefixes to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsPrefixes(policyStatementsConditionsPrefixes *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsPrefixes(policyStatementsConditionsPrefixes)
 	return o
 }
 
-// SetPolicyStatementsConditionsSourceIPsQueryParameter adds the policyStatementsConditionsSourceIps to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps *string) {
-	o.PolicyStatementsConditionsSourceIPsQueryParameter = policyStatementsConditionsSourceIps
+// SetPolicyStatementsConditionsPrefixes adds the policyStatementsConditionsPrefixes to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsPrefixes(policyStatementsConditionsPrefixes *string) {
+	o.PolicyStatementsConditionsPrefixes = policyStatementsConditionsPrefixes
 }
 
-// WithPolicyStatementsConditionsUsernamesQueryParameter adds the policyStatementsConditionsUsernames to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames)
+// WithPolicyStatementsConditionsSourceIps adds the policyStatementsConditionsSourceIps to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsSourceIps(policyStatementsConditionsSourceIps *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsSourceIps(policyStatementsConditionsSourceIps)
 	return o
 }
 
-// SetPolicyStatementsConditionsUsernamesQueryParameter adds the policyStatementsConditionsUsernames to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames *string) {
-	o.PolicyStatementsConditionsUsernamesQueryParameter = policyStatementsConditionsUsernames
+// SetPolicyStatementsConditionsSourceIps adds the policyStatementsConditionsSourceIps to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsSourceIps(policyStatementsConditionsSourceIps *string) {
+	o.PolicyStatementsConditionsSourceIps = policyStatementsConditionsSourceIps
 }
 
-// WithPolicyStatementsEffectQueryParameter adds the policyStatementsEffect to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsEffectQueryParameter(policyStatementsEffect *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsEffectQueryParameter(policyStatementsEffect)
+// WithPolicyStatementsConditionsUsernames adds the policyStatementsConditionsUsernames to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsUsernames(policyStatementsConditionsUsernames *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsUsernames(policyStatementsConditionsUsernames)
 	return o
 }
 
-// SetPolicyStatementsEffectQueryParameter adds the policyStatementsEffect to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsEffectQueryParameter(policyStatementsEffect *string) {
-	o.PolicyStatementsEffectQueryParameter = policyStatementsEffect
+// SetPolicyStatementsConditionsUsernames adds the policyStatementsConditionsUsernames to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsUsernames(policyStatementsConditionsUsernames *string) {
+	o.PolicyStatementsConditionsUsernames = policyStatementsConditionsUsernames
 }
 
-// WithPolicyStatementsPrincipalsQueryParameter adds the policyStatementsPrincipals to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals)
+// WithPolicyStatementsEffect adds the policyStatementsEffect to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsEffect(policyStatementsEffect *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsEffect(policyStatementsEffect)
 	return o
 }
 
-// SetPolicyStatementsPrincipalsQueryParameter adds the policyStatementsPrincipals to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals *string) {
-	o.PolicyStatementsPrincipalsQueryParameter = policyStatementsPrincipals
+// SetPolicyStatementsEffect adds the policyStatementsEffect to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsEffect(policyStatementsEffect *string) {
+	o.PolicyStatementsEffect = policyStatementsEffect
 }
 
-// WithPolicyStatementsResourcesQueryParameter adds the policyStatementsResources to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsResourcesQueryParameter(policyStatementsResources *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsResourcesQueryParameter(policyStatementsResources)
+// WithPolicyStatementsPrincipals adds the policyStatementsPrincipals to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsPrincipals(policyStatementsPrincipals *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsPrincipals(policyStatementsPrincipals)
 	return o
 }
 
-// SetPolicyStatementsResourcesQueryParameter adds the policyStatementsResources to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsResourcesQueryParameter(policyStatementsResources *string) {
-	o.PolicyStatementsResourcesQueryParameter = policyStatementsResources
+// SetPolicyStatementsPrincipals adds the policyStatementsPrincipals to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsPrincipals(policyStatementsPrincipals *string) {
+	o.PolicyStatementsPrincipals = policyStatementsPrincipals
 }
 
-// WithPolicyStatementsSIDQueryParameter adds the policyStatementsSid to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithPolicyStatementsSIDQueryParameter(policyStatementsSid *string) *BucketsCollectionGetParams {
-	o.SetPolicyStatementsSIDQueryParameter(policyStatementsSid)
+// WithPolicyStatementsResources adds the policyStatementsResources to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsResources(policyStatementsResources *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsResources(policyStatementsResources)
 	return o
 }
 
-// SetPolicyStatementsSIDQueryParameter adds the policyStatementsSid to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetPolicyStatementsSIDQueryParameter(policyStatementsSid *string) {
-	o.PolicyStatementsSIDQueryParameter = policyStatementsSid
+// SetPolicyStatementsResources adds the policyStatementsResources to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsResources(policyStatementsResources *string) {
+	o.PolicyStatementsResources = policyStatementsResources
 }
 
-// WithProtectionStatusDestinationIsCloudQueryParameter adds the protectionStatusDestinationIsCloud to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud *bool) *BucketsCollectionGetParams {
-	o.SetProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud)
+// WithPolicyStatementsSid adds the policyStatementsSid to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsSid(policyStatementsSid *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsSid(policyStatementsSid)
 	return o
 }
 
-// SetProtectionStatusDestinationIsCloudQueryParameter adds the protectionStatusDestinationIsCloud to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud *bool) {
-	o.ProtectionStatusDestinationIsCloudQueryParameter = protectionStatusDestinationIsCloud
+// SetPolicyStatementsSid adds the policyStatementsSid to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsSid(policyStatementsSid *string) {
+	o.PolicyStatementsSid = policyStatementsSid
 }
 
-// WithProtectionStatusDestinationIsOntapQueryParameter adds the protectionStatusDestinationIsOntap to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap *bool) *BucketsCollectionGetParams {
-	o.SetProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap)
+// WithProtectionStatusDestinationIsCloud adds the protectionStatusDestinationIsCloud to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithProtectionStatusDestinationIsCloud(protectionStatusDestinationIsCloud *bool) *BucketsCollectionGetParams {
+	o.SetProtectionStatusDestinationIsCloud(protectionStatusDestinationIsCloud)
 	return o
 }
 
-// SetProtectionStatusDestinationIsOntapQueryParameter adds the protectionStatusDestinationIsOntap to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap *bool) {
-	o.ProtectionStatusDestinationIsOntapQueryParameter = protectionStatusDestinationIsOntap
+// SetProtectionStatusDestinationIsCloud adds the protectionStatusDestinationIsCloud to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetProtectionStatusDestinationIsCloud(protectionStatusDestinationIsCloud *bool) {
+	o.ProtectionStatusDestinationIsCloud = protectionStatusDestinationIsCloud
 }
 
-// WithProtectionStatusIsProtectedQueryParameter adds the protectionStatusIsProtected to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected *bool) *BucketsCollectionGetParams {
-	o.SetProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected)
+// WithProtectionStatusDestinationIsExternalCloud adds the protectionStatusDestinationIsExternalCloud to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithProtectionStatusDestinationIsExternalCloud(protectionStatusDestinationIsExternalCloud *bool) *BucketsCollectionGetParams {
+	o.SetProtectionStatusDestinationIsExternalCloud(protectionStatusDestinationIsExternalCloud)
 	return o
 }
 
-// SetProtectionStatusIsProtectedQueryParameter adds the protectionStatusIsProtected to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected *bool) {
-	o.ProtectionStatusIsProtectedQueryParameter = protectionStatusIsProtected
+// SetProtectionStatusDestinationIsExternalCloud adds the protectionStatusDestinationIsExternalCloud to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetProtectionStatusDestinationIsExternalCloud(protectionStatusDestinationIsExternalCloud *bool) {
+	o.ProtectionStatusDestinationIsExternalCloud = protectionStatusDestinationIsExternalCloud
 }
 
-// WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *BucketsCollectionGetParams {
-	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
+// WithProtectionStatusDestinationIsOntap adds the protectionStatusDestinationIsOntap to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithProtectionStatusDestinationIsOntap(protectionStatusDestinationIsOntap *bool) *BucketsCollectionGetParams {
+	o.SetProtectionStatusDestinationIsOntap(protectionStatusDestinationIsOntap)
 	return o
 }
 
-// SetQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) {
-	o.QosPolicyMaxThroughputIopsQueryParameter = qosPolicyMaxThroughputIops
+// SetProtectionStatusDestinationIsOntap adds the protectionStatusDestinationIsOntap to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetProtectionStatusDestinationIsOntap(protectionStatusDestinationIsOntap *bool) {
+	o.ProtectionStatusDestinationIsOntap = protectionStatusDestinationIsOntap
 }
 
-// WithQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) *BucketsCollectionGetParams {
-	o.SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps)
+// WithProtectionStatusIsProtected adds the protectionStatusIsProtected to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithProtectionStatusIsProtected(protectionStatusIsProtected *bool) *BucketsCollectionGetParams {
+	o.SetProtectionStatusIsProtected(protectionStatusIsProtected)
 	return o
 }
 
-// SetQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) {
-	o.QosPolicyMaxThroughputMbpsQueryParameter = qosPolicyMaxThroughputMbps
+// SetProtectionStatusIsProtected adds the protectionStatusIsProtected to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetProtectionStatusIsProtected(protectionStatusIsProtected *bool) {
+	o.ProtectionStatusIsProtected = protectionStatusIsProtected
 }
 
-// WithQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) *BucketsCollectionGetParams {
-	o.SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops)
+// WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *BucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
-	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+// SetQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) {
+	o.QosPolicyMaxThroughputIops = qosPolicyMaxThroughputIops
 }
 
-// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *BucketsCollectionGetParams {
-	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+// WithQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) *BucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
-	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
+// SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
+	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
 }
 
-// WithQosPolicyNameQueryParameter adds the qosPolicyName to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *BucketsCollectionGetParams {
-	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+// WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) *BucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops)
 	return o
 }
 
-// SetQosPolicyNameQueryParameter adds the qosPolicyName to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
-	o.QosPolicyNameQueryParameter = qosPolicyName
+// SetQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) {
+	o.QosPolicyMinThroughputIops = qosPolicyMinThroughputIops
 }
 
-// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *BucketsCollectionGetParams {
-	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+// WithQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) *BucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
-	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+// SetQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbps = qosPolicyMinThroughputMbps
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *BucketsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithQosPolicyName adds the qosPolicyName to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *BucketsCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetQosPolicyName adds the qosPolicyName to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *BucketsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithQosPolicyUUID adds the qosPolicyUUID to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *BucketsCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetQosPolicyUUID adds the qosPolicyUuid to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
 }
 
-// WithRoleQueryParameter adds the role to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithRoleQueryParameter(role *string) *BucketsCollectionGetParams {
-	o.SetRoleQueryParameter(role)
+// WithReturnRecords adds the returnRecords to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithReturnRecords(returnRecords *bool) *BucketsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetRoleQueryParameter adds the role to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetRoleQueryParameter(role *string) {
-	o.RoleQueryParameter = role
+// SetReturnRecords adds the returnRecords to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSizeQueryParameter adds the size to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithSizeQueryParameter(size *int64) *BucketsCollectionGetParams {
-	o.SetSizeQueryParameter(size)
+// WithReturnTimeout adds the returnTimeout to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *BucketsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSizeQueryParameter adds the size to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetSizeQueryParameter(size *int64) {
-	o.SizeQueryParameter = size
+// SetReturnTimeout adds the returnTimeout to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *BucketsCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithRole adds the role to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithRole(role *string) *BucketsCollectionGetParams {
+	o.SetRole(role)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetRole adds the role to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetRole(role *string) {
+	o.Role = role
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *BucketsCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSize adds the size to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSize(size *int64) *BucketsCollectionGetParams {
+	o.SetSize(size)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSize adds the size to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSize(size *int64) {
+	o.Size = size
 }
 
-// WithUUIDQueryParameter adds the uuid to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithUUIDQueryParameter(uuid *string) *BucketsCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithSvmName adds the svmName to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSvmName(svmName *string) *BucketsCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetSvmName adds the svmName to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithVersioningStateQueryParameter adds the versioningState to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithVersioningStateQueryParameter(versioningState *string) *BucketsCollectionGetParams {
-	o.SetVersioningStateQueryParameter(versioningState)
+// WithSvmUUID adds the svmUUID to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSvmUUID(svmUUID string) *BucketsCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetVersioningStateQueryParameter adds the versioningState to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetVersioningStateQueryParameter(versioningState *string) {
-	o.VersioningStateQueryParameter = versioningState
+// SetSvmUUID adds the svmUuid to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *BucketsCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithType adds the typeVar to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithType(typeVar *string) *BucketsCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetType adds the type to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the buckets collection get params
-func (o *BucketsCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *BucketsCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithUUID adds the uuid to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithUUID(uuid *string) *BucketsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the buckets collection get params
-func (o *BucketsCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetUUID adds the uuid to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVersioningState adds the versioningState to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithVersioningState(versioningState *string) *BucketsCollectionGetParams {
+	o.SetVersioningState(versioningState)
+	return o
+}
+
+// SetVersioningState adds the versioningState to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetVersioningState(versioningState *string) {
+	o.VersioningState = versioningState
+}
+
+// WithVolumeName adds the volumeName to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithVolumeName(volumeName *string) *BucketsCollectionGetParams {
+	o.SetVolumeName(volumeName)
+	return o
+}
+
+// SetVolumeName adds the volumeName to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
+}
+
+// WithVolumeUUID adds the volumeUUID to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithVolumeUUID(volumeUUID *string) *BucketsCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
+	return o
+}
+
+// SetVolumeUUID adds the volumeUuid to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -804,13 +855,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.AuditEventSelectorAccessQueryParameter != nil {
+	if o.AuditEventSelectorAccess != nil {
 
 		// query param audit_event_selector.access
 		var qrAuditEventSelectorAccess string
 
-		if o.AuditEventSelectorAccessQueryParameter != nil {
-			qrAuditEventSelectorAccess = *o.AuditEventSelectorAccessQueryParameter
+		if o.AuditEventSelectorAccess != nil {
+			qrAuditEventSelectorAccess = *o.AuditEventSelectorAccess
 		}
 		qAuditEventSelectorAccess := qrAuditEventSelectorAccess
 		if qAuditEventSelectorAccess != "" {
@@ -821,13 +872,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.AuditEventSelectorPermissionQueryParameter != nil {
+	if o.AuditEventSelectorPermission != nil {
 
 		// query param audit_event_selector.permission
 		var qrAuditEventSelectorPermission string
 
-		if o.AuditEventSelectorPermissionQueryParameter != nil {
-			qrAuditEventSelectorPermission = *o.AuditEventSelectorPermissionQueryParameter
+		if o.AuditEventSelectorPermission != nil {
+			qrAuditEventSelectorPermission = *o.AuditEventSelectorPermission
 		}
 		qAuditEventSelectorPermission := qrAuditEventSelectorPermission
 		if qAuditEventSelectorPermission != "" {
@@ -838,13 +889,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -855,13 +906,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.EncryptionEnabledQueryParameter != nil {
+	if o.EncryptionEnabled != nil {
 
 		// query param encryption.enabled
 		var qrEncryptionEnabled bool
 
-		if o.EncryptionEnabledQueryParameter != nil {
-			qrEncryptionEnabled = *o.EncryptionEnabledQueryParameter
+		if o.EncryptionEnabled != nil {
+			qrEncryptionEnabled = *o.EncryptionEnabled
 		}
 		qEncryptionEnabled := swag.FormatBool(qrEncryptionEnabled)
 		if qEncryptionEnabled != "" {
@@ -872,7 +923,7 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -883,13 +934,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.LogicalUsedSizeQueryParameter != nil {
+	if o.LogicalUsedSize != nil {
 
 		// query param logical_used_size
 		var qrLogicalUsedSize int64
 
-		if o.LogicalUsedSizeQueryParameter != nil {
-			qrLogicalUsedSize = *o.LogicalUsedSizeQueryParameter
+		if o.LogicalUsedSize != nil {
+			qrLogicalUsedSize = *o.LogicalUsedSize
 		}
 		qLogicalUsedSize := swag.FormatInt64(qrLogicalUsedSize)
 		if qLogicalUsedSize != "" {
@@ -900,13 +951,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -917,13 +968,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -934,7 +985,24 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.NasPath != nil {
+
+		// query param nas_path
+		var qrNasPath string
+
+		if o.NasPath != nil {
+			qrNasPath = *o.NasPath
+		}
+		qNasPath := qrNasPath
+		if qNasPath != "" {
+
+			if err := r.SetQueryParam("nas_path", qNasPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -945,13 +1013,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsActionsQueryParameter != nil {
+	if o.PolicyStatementsActions != nil {
 
 		// query param policy.statements.actions
 		var qrPolicyStatementsActions string
 
-		if o.PolicyStatementsActionsQueryParameter != nil {
-			qrPolicyStatementsActions = *o.PolicyStatementsActionsQueryParameter
+		if o.PolicyStatementsActions != nil {
+			qrPolicyStatementsActions = *o.PolicyStatementsActions
 		}
 		qPolicyStatementsActions := qrPolicyStatementsActions
 		if qPolicyStatementsActions != "" {
@@ -962,13 +1030,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsDelimitersQueryParameter != nil {
+	if o.PolicyStatementsConditionsDelimiters != nil {
 
 		// query param policy.statements.conditions.delimiters
 		var qrPolicyStatementsConditionsDelimiters string
 
-		if o.PolicyStatementsConditionsDelimitersQueryParameter != nil {
-			qrPolicyStatementsConditionsDelimiters = *o.PolicyStatementsConditionsDelimitersQueryParameter
+		if o.PolicyStatementsConditionsDelimiters != nil {
+			qrPolicyStatementsConditionsDelimiters = *o.PolicyStatementsConditionsDelimiters
 		}
 		qPolicyStatementsConditionsDelimiters := qrPolicyStatementsConditionsDelimiters
 		if qPolicyStatementsConditionsDelimiters != "" {
@@ -979,13 +1047,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsMaxKeysQueryParameter != nil {
+	if o.PolicyStatementsConditionsMaxKeys != nil {
 
 		// query param policy.statements.conditions.max_keys
 		var qrPolicyStatementsConditionsMaxKeys int64
 
-		if o.PolicyStatementsConditionsMaxKeysQueryParameter != nil {
-			qrPolicyStatementsConditionsMaxKeys = *o.PolicyStatementsConditionsMaxKeysQueryParameter
+		if o.PolicyStatementsConditionsMaxKeys != nil {
+			qrPolicyStatementsConditionsMaxKeys = *o.PolicyStatementsConditionsMaxKeys
 		}
 		qPolicyStatementsConditionsMaxKeys := swag.FormatInt64(qrPolicyStatementsConditionsMaxKeys)
 		if qPolicyStatementsConditionsMaxKeys != "" {
@@ -996,13 +1064,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsOperatorQueryParameter != nil {
+	if o.PolicyStatementsConditionsOperator != nil {
 
 		// query param policy.statements.conditions.operator
 		var qrPolicyStatementsConditionsOperator string
 
-		if o.PolicyStatementsConditionsOperatorQueryParameter != nil {
-			qrPolicyStatementsConditionsOperator = *o.PolicyStatementsConditionsOperatorQueryParameter
+		if o.PolicyStatementsConditionsOperator != nil {
+			qrPolicyStatementsConditionsOperator = *o.PolicyStatementsConditionsOperator
 		}
 		qPolicyStatementsConditionsOperator := qrPolicyStatementsConditionsOperator
 		if qPolicyStatementsConditionsOperator != "" {
@@ -1013,13 +1081,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsPrefixesQueryParameter != nil {
+	if o.PolicyStatementsConditionsPrefixes != nil {
 
 		// query param policy.statements.conditions.prefixes
 		var qrPolicyStatementsConditionsPrefixes string
 
-		if o.PolicyStatementsConditionsPrefixesQueryParameter != nil {
-			qrPolicyStatementsConditionsPrefixes = *o.PolicyStatementsConditionsPrefixesQueryParameter
+		if o.PolicyStatementsConditionsPrefixes != nil {
+			qrPolicyStatementsConditionsPrefixes = *o.PolicyStatementsConditionsPrefixes
 		}
 		qPolicyStatementsConditionsPrefixes := qrPolicyStatementsConditionsPrefixes
 		if qPolicyStatementsConditionsPrefixes != "" {
@@ -1030,13 +1098,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsSourceIPsQueryParameter != nil {
+	if o.PolicyStatementsConditionsSourceIps != nil {
 
 		// query param policy.statements.conditions.source_ips
 		var qrPolicyStatementsConditionsSourceIps string
 
-		if o.PolicyStatementsConditionsSourceIPsQueryParameter != nil {
-			qrPolicyStatementsConditionsSourceIps = *o.PolicyStatementsConditionsSourceIPsQueryParameter
+		if o.PolicyStatementsConditionsSourceIps != nil {
+			qrPolicyStatementsConditionsSourceIps = *o.PolicyStatementsConditionsSourceIps
 		}
 		qPolicyStatementsConditionsSourceIps := qrPolicyStatementsConditionsSourceIps
 		if qPolicyStatementsConditionsSourceIps != "" {
@@ -1047,13 +1115,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsConditionsUsernamesQueryParameter != nil {
+	if o.PolicyStatementsConditionsUsernames != nil {
 
 		// query param policy.statements.conditions.usernames
 		var qrPolicyStatementsConditionsUsernames string
 
-		if o.PolicyStatementsConditionsUsernamesQueryParameter != nil {
-			qrPolicyStatementsConditionsUsernames = *o.PolicyStatementsConditionsUsernamesQueryParameter
+		if o.PolicyStatementsConditionsUsernames != nil {
+			qrPolicyStatementsConditionsUsernames = *o.PolicyStatementsConditionsUsernames
 		}
 		qPolicyStatementsConditionsUsernames := qrPolicyStatementsConditionsUsernames
 		if qPolicyStatementsConditionsUsernames != "" {
@@ -1064,13 +1132,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsEffectQueryParameter != nil {
+	if o.PolicyStatementsEffect != nil {
 
 		// query param policy.statements.effect
 		var qrPolicyStatementsEffect string
 
-		if o.PolicyStatementsEffectQueryParameter != nil {
-			qrPolicyStatementsEffect = *o.PolicyStatementsEffectQueryParameter
+		if o.PolicyStatementsEffect != nil {
+			qrPolicyStatementsEffect = *o.PolicyStatementsEffect
 		}
 		qPolicyStatementsEffect := qrPolicyStatementsEffect
 		if qPolicyStatementsEffect != "" {
@@ -1081,13 +1149,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsPrincipalsQueryParameter != nil {
+	if o.PolicyStatementsPrincipals != nil {
 
 		// query param policy.statements.principals
 		var qrPolicyStatementsPrincipals string
 
-		if o.PolicyStatementsPrincipalsQueryParameter != nil {
-			qrPolicyStatementsPrincipals = *o.PolicyStatementsPrincipalsQueryParameter
+		if o.PolicyStatementsPrincipals != nil {
+			qrPolicyStatementsPrincipals = *o.PolicyStatementsPrincipals
 		}
 		qPolicyStatementsPrincipals := qrPolicyStatementsPrincipals
 		if qPolicyStatementsPrincipals != "" {
@@ -1098,13 +1166,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsResourcesQueryParameter != nil {
+	if o.PolicyStatementsResources != nil {
 
 		// query param policy.statements.resources
 		var qrPolicyStatementsResources string
 
-		if o.PolicyStatementsResourcesQueryParameter != nil {
-			qrPolicyStatementsResources = *o.PolicyStatementsResourcesQueryParameter
+		if o.PolicyStatementsResources != nil {
+			qrPolicyStatementsResources = *o.PolicyStatementsResources
 		}
 		qPolicyStatementsResources := qrPolicyStatementsResources
 		if qPolicyStatementsResources != "" {
@@ -1115,13 +1183,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PolicyStatementsSIDQueryParameter != nil {
+	if o.PolicyStatementsSid != nil {
 
 		// query param policy.statements.sid
 		var qrPolicyStatementsSid string
 
-		if o.PolicyStatementsSIDQueryParameter != nil {
-			qrPolicyStatementsSid = *o.PolicyStatementsSIDQueryParameter
+		if o.PolicyStatementsSid != nil {
+			qrPolicyStatementsSid = *o.PolicyStatementsSid
 		}
 		qPolicyStatementsSid := qrPolicyStatementsSid
 		if qPolicyStatementsSid != "" {
@@ -1132,13 +1200,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ProtectionStatusDestinationIsCloudQueryParameter != nil {
+	if o.ProtectionStatusDestinationIsCloud != nil {
 
 		// query param protection_status.destination.is_cloud
 		var qrProtectionStatusDestinationIsCloud bool
 
-		if o.ProtectionStatusDestinationIsCloudQueryParameter != nil {
-			qrProtectionStatusDestinationIsCloud = *o.ProtectionStatusDestinationIsCloudQueryParameter
+		if o.ProtectionStatusDestinationIsCloud != nil {
+			qrProtectionStatusDestinationIsCloud = *o.ProtectionStatusDestinationIsCloud
 		}
 		qProtectionStatusDestinationIsCloud := swag.FormatBool(qrProtectionStatusDestinationIsCloud)
 		if qProtectionStatusDestinationIsCloud != "" {
@@ -1149,13 +1217,30 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ProtectionStatusDestinationIsOntapQueryParameter != nil {
+	if o.ProtectionStatusDestinationIsExternalCloud != nil {
+
+		// query param protection_status.destination.is_external_cloud
+		var qrProtectionStatusDestinationIsExternalCloud bool
+
+		if o.ProtectionStatusDestinationIsExternalCloud != nil {
+			qrProtectionStatusDestinationIsExternalCloud = *o.ProtectionStatusDestinationIsExternalCloud
+		}
+		qProtectionStatusDestinationIsExternalCloud := swag.FormatBool(qrProtectionStatusDestinationIsExternalCloud)
+		if qProtectionStatusDestinationIsExternalCloud != "" {
+
+			if err := r.SetQueryParam("protection_status.destination.is_external_cloud", qProtectionStatusDestinationIsExternalCloud); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtectionStatusDestinationIsOntap != nil {
 
 		// query param protection_status.destination.is_ontap
 		var qrProtectionStatusDestinationIsOntap bool
 
-		if o.ProtectionStatusDestinationIsOntapQueryParameter != nil {
-			qrProtectionStatusDestinationIsOntap = *o.ProtectionStatusDestinationIsOntapQueryParameter
+		if o.ProtectionStatusDestinationIsOntap != nil {
+			qrProtectionStatusDestinationIsOntap = *o.ProtectionStatusDestinationIsOntap
 		}
 		qProtectionStatusDestinationIsOntap := swag.FormatBool(qrProtectionStatusDestinationIsOntap)
 		if qProtectionStatusDestinationIsOntap != "" {
@@ -1166,13 +1251,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ProtectionStatusIsProtectedQueryParameter != nil {
+	if o.ProtectionStatusIsProtected != nil {
 
 		// query param protection_status.is_protected
 		var qrProtectionStatusIsProtected bool
 
-		if o.ProtectionStatusIsProtectedQueryParameter != nil {
-			qrProtectionStatusIsProtected = *o.ProtectionStatusIsProtectedQueryParameter
+		if o.ProtectionStatusIsProtected != nil {
+			qrProtectionStatusIsProtected = *o.ProtectionStatusIsProtected
 		}
 		qProtectionStatusIsProtected := swag.FormatBool(qrProtectionStatusIsProtected)
 		if qProtectionStatusIsProtected != "" {
@@ -1183,13 +1268,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
 		var qrQosPolicyMaxThroughputIops int64
 
-		if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIopsQueryParameter
+		if o.QosPolicyMaxThroughputIops != nil {
+			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIops
 		}
 		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
 		if qQosPolicyMaxThroughputIops != "" {
@@ -1200,13 +1285,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputMbps != nil {
 
 		// query param qos_policy.max_throughput_mbps
 		var qrQosPolicyMaxThroughputMbps int64
 
-		if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbpsQueryParameter
+		if o.QosPolicyMaxThroughputMbps != nil {
+			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbps
 		}
 		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
 		if qQosPolicyMaxThroughputMbps != "" {
@@ -1217,13 +1302,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMinThroughputIops != nil {
 
 		// query param qos_policy.min_throughput_iops
 		var qrQosPolicyMinThroughputIops int64
 
-		if o.QosPolicyMinThroughputIopsQueryParameter != nil {
-			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIopsQueryParameter
+		if o.QosPolicyMinThroughputIops != nil {
+			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIops
 		}
 		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
 		if qQosPolicyMinThroughputIops != "" {
@@ -1234,13 +1319,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMinThroughputMbps != nil {
 
 		// query param qos_policy.min_throughput_mbps
 		var qrQosPolicyMinThroughputMbps int64
 
-		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		if o.QosPolicyMinThroughputMbps != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbps
 		}
 		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
 		if qQosPolicyMinThroughputMbps != "" {
@@ -1251,13 +1336,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyNameQueryParameter != nil {
+	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
 		var qrQosPolicyName string
 
-		if o.QosPolicyNameQueryParameter != nil {
-			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
 		}
 		qQosPolicyName := qrQosPolicyName
 		if qQosPolicyName != "" {
@@ -1268,13 +1353,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.QosPolicyUUIDQueryParameter != nil {
+	if o.QosPolicyUUID != nil {
 
 		// query param qos_policy.uuid
 		var qrQosPolicyUUID string
 
-		if o.QosPolicyUUIDQueryParameter != nil {
-			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
 		}
 		qQosPolicyUUID := qrQosPolicyUUID
 		if qQosPolicyUUID != "" {
@@ -1285,13 +1370,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1302,13 +1387,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1319,13 +1404,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.RoleQueryParameter != nil {
+	if o.Role != nil {
 
 		// query param role
 		var qrRole string
 
-		if o.RoleQueryParameter != nil {
-			qrRole = *o.RoleQueryParameter
+		if o.Role != nil {
+			qrRole = *o.Role
 		}
 		qRole := qrRole
 		if qRole != "" {
@@ -1336,13 +1421,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SizeQueryParameter != nil {
+	if o.Size != nil {
 
 		// query param size
 		var qrSize int64
 
-		if o.SizeQueryParameter != nil {
-			qrSize = *o.SizeQueryParameter
+		if o.Size != nil {
+			qrSize = *o.Size
 		}
 		qSize := swag.FormatInt64(qrSize)
 		if qSize != "" {
@@ -1353,13 +1438,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1371,17 +1456,34 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.Type != nil {
+
+		// query param type
+		var qrType string
+
+		if o.Type != nil {
+			qrType = *o.Type
+		}
+		qType := qrType
+		if qType != "" {
+
+			if err := r.SetQueryParam("type", qType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1392,13 +1494,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.VersioningStateQueryParameter != nil {
+	if o.VersioningState != nil {
 
 		// query param versioning_state
 		var qrVersioningState string
 
-		if o.VersioningStateQueryParameter != nil {
-			qrVersioningState = *o.VersioningStateQueryParameter
+		if o.VersioningState != nil {
+			qrVersioningState = *o.VersioningState
 		}
 		qVersioningState := qrVersioningState
 		if qVersioningState != "" {
@@ -1409,13 +1511,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -1426,13 +1528,13 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -1451,7 +1553,7 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamBucketsCollectionGet binds the parameter fields
 func (o *BucketsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1468,7 +1570,7 @@ func (o *BucketsCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamBucketsCollectionGet binds the parameter order_by
 func (o *BucketsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -21,7 +21,7 @@ import (
 type FlexcacheRelationship struct {
 
 	// cluster
-	Cluster *FlexcacheRelationshipCluster `json:"cluster,omitempty"`
+	Cluster *FlexcacheRelationshipInlineCluster `json:"cluster,omitempty"`
 
 	// Creation time of the relationship.
 	// Example: 2018-06-04T19:00:00Z
@@ -32,22 +32,22 @@ type FlexcacheRelationship struct {
 	// Cluster managerment IP of the remote cluster.
 	// Example: 10.10.10.7
 	// Read Only: true
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// Size of the remote volume.
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Volume state
 	// Read Only: true
 	// Enum: [error mixed offline online]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *FlexcacheRelationshipSvm `json:"svm,omitempty"`
+	Svm *FlexcacheRelationshipInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *FlexcacheRelationshipVolume `json:"volume,omitempty"`
+	Volume *FlexcacheRelationshipInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this flexcache relationship
@@ -178,7 +178,7 @@ func (m *FlexcacheRelationship) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -282,7 +282,7 @@ func (m *FlexcacheRelationship) contextValidateCreateTime(ctx context.Context, f
 
 func (m *FlexcacheRelationship) contextValidateIPAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ip_address", "body", string(m.IPAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "ip_address", "body", m.IPAddress); err != nil {
 		return err
 	}
 
@@ -291,7 +291,7 @@ func (m *FlexcacheRelationship) contextValidateIPAddress(ctx context.Context, fo
 
 func (m *FlexcacheRelationship) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -300,7 +300,7 @@ func (m *FlexcacheRelationship) contextValidateSize(ctx context.Context, formats
 
 func (m *FlexcacheRelationship) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -353,26 +353,26 @@ func (m *FlexcacheRelationship) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipCluster flexcache relationship cluster
+// FlexcacheRelationshipInlineCluster flexcache relationship inline cluster
 //
-// swagger:model FlexcacheRelationshipCluster
-type FlexcacheRelationshipCluster struct {
+// swagger:model flexcache_relationship_inline_cluster
+type FlexcacheRelationshipInlineCluster struct {
 
 	// links
-	Links *FlexcacheRelationshipClusterLinks `json:"_links,omitempty"`
+	Links *FlexcacheRelationshipInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this flexcache relationship cluster
-func (m *FlexcacheRelationshipCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline cluster
+func (m *FlexcacheRelationshipInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -389,7 +389,7 @@ func (m *FlexcacheRelationshipCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheRelationshipCluster) validateLinks(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -406,7 +406,7 @@ func (m *FlexcacheRelationshipCluster) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *FlexcacheRelationshipCluster) validateUUID(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -418,8 +418,8 @@ func (m *FlexcacheRelationshipCluster) validateUUID(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship cluster based on the context it is used
-func (m *FlexcacheRelationshipCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline cluster based on the context it is used
+func (m *FlexcacheRelationshipInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -432,7 +432,7 @@ func (m *FlexcacheRelationshipCluster) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *FlexcacheRelationshipCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -447,7 +447,7 @@ func (m *FlexcacheRelationshipCluster) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipCluster) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -455,8 +455,8 @@ func (m *FlexcacheRelationshipCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipCluster) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipCluster
+func (m *FlexcacheRelationshipInlineCluster) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -464,17 +464,17 @@ func (m *FlexcacheRelationshipCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipClusterLinks flexcache relationship cluster links
+// FlexcacheRelationshipInlineClusterInlineLinks flexcache relationship inline cluster inline links
 //
-// swagger:model FlexcacheRelationshipClusterLinks
-type FlexcacheRelationshipClusterLinks struct {
+// swagger:model flexcache_relationship_inline_cluster_inline__links
+type FlexcacheRelationshipInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this flexcache relationship cluster links
-func (m *FlexcacheRelationshipClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline cluster inline links
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -487,7 +487,7 @@ func (m *FlexcacheRelationshipClusterLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *FlexcacheRelationshipClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -504,8 +504,8 @@ func (m *FlexcacheRelationshipClusterLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship cluster links based on the context it is used
-func (m *FlexcacheRelationshipClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline cluster inline links based on the context it is used
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -518,7 +518,7 @@ func (m *FlexcacheRelationshipClusterLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *FlexcacheRelationshipClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -533,7 +533,7 @@ func (m *FlexcacheRelationshipClusterLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -541,8 +541,8 @@ func (m *FlexcacheRelationshipClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipClusterLinks) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipClusterLinks
+func (m *FlexcacheRelationshipInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -550,27 +550,27 @@ func (m *FlexcacheRelationshipClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipSvm flexcache relationship svm
+// FlexcacheRelationshipInlineSvm flexcache relationship inline svm
 //
-// swagger:model FlexcacheRelationshipSvm
-type FlexcacheRelationshipSvm struct {
+// swagger:model flexcache_relationship_inline_svm
+type FlexcacheRelationshipInlineSvm struct {
 
 	// links
-	Links *FlexcacheRelationshipSvmLinks `json:"_links,omitempty"`
+	Links *FlexcacheRelationshipInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this flexcache relationship svm
-func (m *FlexcacheRelationshipSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline svm
+func (m *FlexcacheRelationshipInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -583,7 +583,7 @@ func (m *FlexcacheRelationshipSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheRelationshipSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -600,8 +600,8 @@ func (m *FlexcacheRelationshipSvm) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship svm based on the context it is used
-func (m *FlexcacheRelationshipSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline svm based on the context it is used
+func (m *FlexcacheRelationshipInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -614,7 +614,7 @@ func (m *FlexcacheRelationshipSvm) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FlexcacheRelationshipSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -629,7 +629,7 @@ func (m *FlexcacheRelationshipSvm) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipSvm) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -637,8 +637,8 @@ func (m *FlexcacheRelationshipSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipSvm) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipSvm
+func (m *FlexcacheRelationshipInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -646,17 +646,17 @@ func (m *FlexcacheRelationshipSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipSvmLinks flexcache relationship svm links
+// FlexcacheRelationshipInlineSvmInlineLinks flexcache relationship inline svm inline links
 //
-// swagger:model FlexcacheRelationshipSvmLinks
-type FlexcacheRelationshipSvmLinks struct {
+// swagger:model flexcache_relationship_inline_svm_inline__links
+type FlexcacheRelationshipInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this flexcache relationship svm links
-func (m *FlexcacheRelationshipSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline svm inline links
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -669,7 +669,7 @@ func (m *FlexcacheRelationshipSvmLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *FlexcacheRelationshipSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -686,8 +686,8 @@ func (m *FlexcacheRelationshipSvmLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship svm links based on the context it is used
-func (m *FlexcacheRelationshipSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline svm inline links based on the context it is used
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -700,7 +700,7 @@ func (m *FlexcacheRelationshipSvmLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *FlexcacheRelationshipSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -715,7 +715,7 @@ func (m *FlexcacheRelationshipSvmLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -723,8 +723,8 @@ func (m *FlexcacheRelationshipSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipSvmLinks
+func (m *FlexcacheRelationshipInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -732,25 +732,25 @@ func (m *FlexcacheRelationshipSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipVolume flexcache relationship volume
+// FlexcacheRelationshipInlineVolume flexcache relationship inline volume
 //
-// swagger:model FlexcacheRelationshipVolume
-type FlexcacheRelationshipVolume struct {
+// swagger:model flexcache_relationship_inline_volume
+type FlexcacheRelationshipInlineVolume struct {
 
 	// links
-	Links *FlexcacheRelationshipVolumeLinks `json:"_links,omitempty"`
+	Links *FlexcacheRelationshipInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this flexcache relationship volume
-func (m *FlexcacheRelationshipVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline volume
+func (m *FlexcacheRelationshipInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -763,7 +763,7 @@ func (m *FlexcacheRelationshipVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheRelationshipVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -780,8 +780,8 @@ func (m *FlexcacheRelationshipVolume) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship volume based on the context it is used
-func (m *FlexcacheRelationshipVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline volume based on the context it is used
+func (m *FlexcacheRelationshipInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -794,7 +794,7 @@ func (m *FlexcacheRelationshipVolume) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *FlexcacheRelationshipVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -809,7 +809,7 @@ func (m *FlexcacheRelationshipVolume) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipVolume) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -817,8 +817,8 @@ func (m *FlexcacheRelationshipVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipVolume) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipVolume
+func (m *FlexcacheRelationshipInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -826,17 +826,17 @@ func (m *FlexcacheRelationshipVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheRelationshipVolumeLinks flexcache relationship volume links
+// FlexcacheRelationshipInlineVolumeInlineLinks flexcache relationship inline volume inline links
 //
-// swagger:model FlexcacheRelationshipVolumeLinks
-type FlexcacheRelationshipVolumeLinks struct {
+// swagger:model flexcache_relationship_inline_volume_inline__links
+type FlexcacheRelationshipInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this flexcache relationship volume links
-func (m *FlexcacheRelationshipVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache relationship inline volume inline links
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -849,7 +849,7 @@ func (m *FlexcacheRelationshipVolumeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *FlexcacheRelationshipVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -866,8 +866,8 @@ func (m *FlexcacheRelationshipVolumeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this flexcache relationship volume links based on the context it is used
-func (m *FlexcacheRelationshipVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache relationship inline volume inline links based on the context it is used
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -880,7 +880,7 @@ func (m *FlexcacheRelationshipVolumeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *FlexcacheRelationshipVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -895,7 +895,7 @@ func (m *FlexcacheRelationshipVolumeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheRelationshipVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -903,8 +903,8 @@ func (m *FlexcacheRelationshipVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheRelationshipVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FlexcacheRelationshipVolumeLinks
+func (m *FlexcacheRelationshipInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FlexcacheRelationshipInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -69,21 +69,21 @@ type ConsistencyGroupSnapshotCreateParams struct {
 	   Initiates the Snapshot copy create operation. The start of the Snapshot copy operation can optionally use a timeout value specified by "action_timeout". The Snapshot copy is commited by calling PATCH on the Snapshot copy href link with action specified as "commit".
 
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* ActionTimeout.
 
 	   Duration to complete the 2-phase Snapshot copy operation. This also specifies the maximum duration that the write-fence remains in effect on the volumes associated with this consistency group. Default is 7 seconds with a valid range of 1 to 90 seconds.
 
 	*/
-	ActionTimeoutQueryParameter *int64
+	ActionTimeout *int64
 
 	/* ConsistencyGroupUUID.
 
 	   The unique identifier of the consistency group to retrieve.
 
 	*/
-	ConsistencyGroupUUIDPathParameter string
+	ConsistencyGroupUUID string
 
 	/* Info.
 
@@ -96,13 +96,13 @@ type ConsistencyGroupSnapshotCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -122,14 +122,14 @@ func (o *ConsistencyGroupSnapshotCreateParams) WithDefaults() *ConsistencyGroupS
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupSnapshotCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ConsistencyGroupSnapshotCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -171,37 +171,37 @@ func (o *ConsistencyGroupSnapshotCreateParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) WithActionQueryParameter(action *string) *ConsistencyGroupSnapshotCreateParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithAction(action *string) *ConsistencyGroupSnapshotCreateParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithActionTimeoutQueryParameter adds the actionTimeout to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) WithActionTimeoutQueryParameter(actionTimeout *int64) *ConsistencyGroupSnapshotCreateParams {
-	o.SetActionTimeoutQueryParameter(actionTimeout)
+// WithActionTimeout adds the actionTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithActionTimeout(actionTimeout *int64) *ConsistencyGroupSnapshotCreateParams {
+	o.SetActionTimeout(actionTimeout)
 	return o
 }
 
-// SetActionTimeoutQueryParameter adds the actionTimeout to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) SetActionTimeoutQueryParameter(actionTimeout *int64) {
-	o.ActionTimeoutQueryParameter = actionTimeout
+// SetActionTimeout adds the actionTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetActionTimeout(actionTimeout *int64) {
+	o.ActionTimeout = actionTimeout
 }
 
-// WithConsistencyGroupUUIDPathParameter adds the consistencyGroupUUID to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) WithConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) *ConsistencyGroupSnapshotCreateParams {
-	o.SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID)
+// WithConsistencyGroupUUID adds the consistencyGroupUUID to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithConsistencyGroupUUID(consistencyGroupUUID string) *ConsistencyGroupSnapshotCreateParams {
+	o.SetConsistencyGroupUUID(consistencyGroupUUID)
 	return o
 }
 
-// SetConsistencyGroupUUIDPathParameter adds the consistencyGroupUuid to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) {
-	o.ConsistencyGroupUUIDPathParameter = consistencyGroupUUID
+// SetConsistencyGroupUUID adds the consistencyGroupUuid to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetConsistencyGroupUUID(consistencyGroupUUID string) {
+	o.ConsistencyGroupUUID = consistencyGroupUUID
 }
 
 // WithInfo adds the info to the consistency group snapshot create params
@@ -215,26 +215,26 @@ func (o *ConsistencyGroupSnapshotCreateParams) SetInfo(info *models.ConsistencyG
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ConsistencyGroupSnapshotCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithReturnRecords(returnRecords *bool) *ConsistencyGroupSnapshotCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConsistencyGroupSnapshotCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupSnapshotCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot create params
-func (o *ConsistencyGroupSnapshotCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -245,13 +245,13 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -262,13 +262,13 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ActionTimeoutQueryParameter != nil {
+	if o.ActionTimeout != nil {
 
 		// query param action_timeout
 		var qrActionTimeout int64
 
-		if o.ActionTimeoutQueryParameter != nil {
-			qrActionTimeout = *o.ActionTimeoutQueryParameter
+		if o.ActionTimeout != nil {
+			qrActionTimeout = *o.ActionTimeout
 		}
 		qActionTimeout := swag.FormatInt64(qrActionTimeout)
 		if qActionTimeout != "" {
@@ -280,7 +280,7 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param consistency_group.uuid
-	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -289,13 +289,13 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -306,13 +306,13 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

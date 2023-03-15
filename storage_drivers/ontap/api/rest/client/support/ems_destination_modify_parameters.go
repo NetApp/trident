@@ -73,7 +73,7 @@ type EmsDestinationModifyParams struct {
 
 	   Destination name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *EmsDestinationModifyParams) SetInfo(info *models.EmsDestination) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the ems destination modify params
-func (o *EmsDestinationModifyParams) WithNamePathParameter(name string) *EmsDestinationModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems destination modify params
+func (o *EmsDestinationModifyParams) WithName(name string) *EmsDestinationModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems destination modify params
-func (o *EmsDestinationModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems destination modify params
+func (o *EmsDestinationModifyParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *EmsDestinationModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

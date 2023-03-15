@@ -68,7 +68,7 @@ type ExportRuleClientsCreateParams struct {
 
 	   Export Rule Index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type ExportRuleClientsCreateParams struct {
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *ExportRuleClientsCreateParams) WithDefaults() *ExportRuleClientsCreateP
 // All values with no default are reset to their zero value.
 func (o *ExportRuleClientsCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := ExportRuleClientsCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *ExportRuleClientsCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) WithIndexPathParameter(index int64) *ExportRuleClientsCreateParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) WithIndex(index int64) *ExportRuleClientsCreateParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) SetIndex(index int64) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the export rule clients create params
@@ -174,26 +174,26 @@ func (o *ExportRuleClientsCreateParams) SetInfo(info *models.ExportClient) {
 	o.Info = info
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleClientsCreateParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) WithPolicyID(policyID int64) *ExportRuleClientsCreateParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportRuleClientsCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) WithReturnRecords(returnRecords *bool) *ExportRuleClientsCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,7 +205,7 @@ func (o *ExportRuleClientsCreateParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -215,17 +215,17 @@ func (o *ExportRuleClientsCreateParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

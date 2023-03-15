@@ -66,19 +66,19 @@ type CifsShareGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Share Name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CifsShareGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs share get params
-func (o *CifsShareGetParams) WithFieldsQueryParameter(fields []string) *CifsShareGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs share get params
+func (o *CifsShareGetParams) WithFields(fields []string) *CifsShareGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs share get params
-func (o *CifsShareGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs share get params
+func (o *CifsShareGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the cifs share get params
-func (o *CifsShareGetParams) WithNamePathParameter(name string) *CifsShareGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the cifs share get params
+func (o *CifsShareGetParams) WithName(name string) *CifsShareGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the cifs share get params
-func (o *CifsShareGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the cifs share get params
+func (o *CifsShareGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs share get params
-func (o *CifsShareGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs share get params
+func (o *CifsShareGetParams) WithSvmUUID(svmUUID string) *CifsShareGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs share get params
-func (o *CifsShareGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs share get params
+func (o *CifsShareGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *CifsShareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *CifsShareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CifsShareGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamCifsShareGet binds the parameter fields
 func (o *CifsShareGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -52,6 +52,11 @@ ExportRuleCreateCreated describes a response with status code 201, with default 
 Created
 */
 type ExportRuleCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.ExportRuleResponse
 }
 
@@ -93,6 +98,13 @@ func (o *ExportRuleCreateCreated) GetPayload() *models.ExportRuleResponse {
 }
 
 func (o *ExportRuleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.ExportRuleResponse)
 

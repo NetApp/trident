@@ -66,19 +66,19 @@ type NvmeSubsystemHostCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type NvmeSubsystemHostCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,14 +94,14 @@ type NvmeSubsystemHostCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,14 +121,14 @@ func (o *NvmeSubsystemHostCollectionGetParams) WithDefaults() *NvmeSubsystemHost
 // All values with no default are reset to their zero value.
 func (o *NvmeSubsystemHostCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeSubsystemHostCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -170,70 +170,70 @@ func (o *NvmeSubsystemHostCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemHostCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithFields(fields []string) *NvmeSubsystemHostCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeSubsystemHostCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeSubsystemHostCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeSubsystemHostCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithOrderBy(orderBy []string) *NvmeSubsystemHostCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeSubsystemHostCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeSubsystemHostCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeSubsystemHostCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeSubsystemHostCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemHostCollectionGetParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemHostCollectionGetParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem host collection get params
-func (o *NvmeSubsystemHostCollectionGetParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem host collection get params
+func (o *NvmeSubsystemHostCollectionGetParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -244,7 +244,7 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -255,13 +255,13 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -272,7 +272,7 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -283,13 +283,13 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -300,13 +300,13 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -318,7 +318,7 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 
@@ -330,7 +330,7 @@ func (o *NvmeSubsystemHostCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamNvmeSubsystemHostCollectionGet binds the parameter fields
 func (o *NvmeSubsystemHostCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -347,7 +347,7 @@ func (o *NvmeSubsystemHostCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamNvmeSubsystemHostCollectionGet binds the parameter order_by
 func (o *NvmeSubsystemHostCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

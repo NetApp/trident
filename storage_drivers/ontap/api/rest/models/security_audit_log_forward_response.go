@@ -20,13 +20,14 @@ import (
 type SecurityAuditLogForwardResponse struct {
 
 	// links
-	Links *SecurityAuditLogForwardResponseLinks `json:"_links,omitempty"`
+	Links *SecurityAuditLogForwardResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SecurityAuditLogForward `json:"records,omitempty"`
+	// security audit log forward response inline records
+	SecurityAuditLogForwardResponseInlineRecords []*SecurityAuditLogForward `json:"records,omitempty"`
 }
 
 // Validate validates this security audit log forward response
@@ -37,7 +38,7 @@ func (m *SecurityAuditLogForwardResponse) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSecurityAuditLogForwardResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SecurityAuditLogForwardResponse) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SecurityAuditLogForwardResponse) validateSecurityAuditLogForwardResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityAuditLogForwardResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SecurityAuditLogForwardResponseInlineRecords); i++ {
+		if swag.IsZero(m.SecurityAuditLogForwardResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SecurityAuditLogForwardResponseInlineRecords[i] != nil {
+			if err := m.SecurityAuditLogForwardResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SecurityAuditLogForwardResponse) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSecurityAuditLogForwardResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SecurityAuditLogForwardResponse) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogForwardResponse) contextValidateSecurityAuditLogForwardResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SecurityAuditLogForwardResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SecurityAuditLogForwardResponseInlineRecords[i] != nil {
+			if err := m.SecurityAuditLogForwardResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SecurityAuditLogForwardResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLogForwardResponseLinks security audit log forward response links
+// SecurityAuditLogForwardResponseInlineLinks security audit log forward response inline links
 //
-// swagger:model SecurityAuditLogForwardResponseLinks
-type SecurityAuditLogForwardResponseLinks struct {
+// swagger:model security_audit_log_forward_response_inline__links
+type SecurityAuditLogForwardResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SecurityAuditLogForwardResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security audit log forward response links
-func (m *SecurityAuditLogForwardResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit log forward response inline links
+func (m *SecurityAuditLogForwardResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SecurityAuditLogForwardResponseLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SecurityAuditLogForwardResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SecurityAuditLogForwardResponseLinks) validateNext(formats strfmt.Regis
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAuditLogForwardResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SecurityAuditLogForwardResponseLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this security audit log forward response links based on the context it is used
-func (m *SecurityAuditLogForwardResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit log forward response inline links based on the context it is used
+func (m *SecurityAuditLogForwardResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SecurityAuditLogForwardResponseLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogForwardResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SecurityAuditLogForwardResponseLinks) contextValidateNext(ctx context.C
 	return nil
 }
 
-func (m *SecurityAuditLogForwardResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogForwardResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SecurityAuditLogForwardResponseLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLogForwardResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditLogForwardResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SecurityAuditLogForwardResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLogForwardResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLogForwardResponseLinks
+func (m *SecurityAuditLogForwardResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogForwardResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,61 +66,61 @@ type AutosupportMessageCollectionGetParams struct {
 
 	   Filter by destination
 	*/
-	DestinationQueryParameter *string
+	Destination *string
 
 	/* ErrorCode.
 
 	   Filter by error.code
 	*/
-	ErrorCodeQueryParameter *int64
+	ErrorCode *int64
 
 	/* ErrorMessage.
 
 	   Filter by error.message
 	*/
-	ErrorMessageQueryParameter *string
+	ErrorMessage *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* GeneratedOn.
 
 	   Filter by generated_on
 	*/
-	GeneratedOnQueryParameter *string
+	GeneratedOn *string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type AutosupportMessageCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,19 +136,19 @@ type AutosupportMessageCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Subject.
 
 	   Filter by subject
 	*/
-	SubjectQueryParameter *string
+	Subject *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *AutosupportMessageCollectionGetParams) WithDefaults() *AutosupportMessa
 // All values with no default are reset to their zero value.
 func (o *AutosupportMessageCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AutosupportMessageCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *AutosupportMessageCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithDestinationQueryParameter adds the destination to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithDestinationQueryParameter(destination *string) *AutosupportMessageCollectionGetParams {
-	o.SetDestinationQueryParameter(destination)
+// WithDestination adds the destination to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithDestination(destination *string) *AutosupportMessageCollectionGetParams {
+	o.SetDestination(destination)
 	return o
 }
 
-// SetDestinationQueryParameter adds the destination to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetDestinationQueryParameter(destination *string) {
-	o.DestinationQueryParameter = destination
+// SetDestination adds the destination to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetDestination(destination *string) {
+	o.Destination = destination
 }
 
-// WithErrorCodeQueryParameter adds the errorCode to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithErrorCodeQueryParameter(errorCode *int64) *AutosupportMessageCollectionGetParams {
-	o.SetErrorCodeQueryParameter(errorCode)
+// WithErrorCode adds the errorCode to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithErrorCode(errorCode *int64) *AutosupportMessageCollectionGetParams {
+	o.SetErrorCode(errorCode)
 	return o
 }
 
-// SetErrorCodeQueryParameter adds the errorCode to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetErrorCodeQueryParameter(errorCode *int64) {
-	o.ErrorCodeQueryParameter = errorCode
+// SetErrorCode adds the errorCode to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetErrorCode(errorCode *int64) {
+	o.ErrorCode = errorCode
 }
 
-// WithErrorMessageQueryParameter adds the errorMessage to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithErrorMessageQueryParameter(errorMessage *string) *AutosupportMessageCollectionGetParams {
-	o.SetErrorMessageQueryParameter(errorMessage)
+// WithErrorMessage adds the errorMessage to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithErrorMessage(errorMessage *string) *AutosupportMessageCollectionGetParams {
+	o.SetErrorMessage(errorMessage)
 	return o
 }
 
-// SetErrorMessageQueryParameter adds the errorMessage to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetErrorMessageQueryParameter(errorMessage *string) {
-	o.ErrorMessageQueryParameter = errorMessage
+// SetErrorMessage adds the errorMessage to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetErrorMessage(errorMessage *string) {
+	o.ErrorMessage = errorMessage
 }
 
-// WithFieldsQueryParameter adds the fields to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithFieldsQueryParameter(fields []string) *AutosupportMessageCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithFields(fields []string) *AutosupportMessageCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGeneratedOnQueryParameter adds the generatedOn to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithGeneratedOnQueryParameter(generatedOn *string) *AutosupportMessageCollectionGetParams {
-	o.SetGeneratedOnQueryParameter(generatedOn)
+// WithGeneratedOn adds the generatedOn to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithGeneratedOn(generatedOn *string) *AutosupportMessageCollectionGetParams {
+	o.SetGeneratedOn(generatedOn)
 	return o
 }
 
-// SetGeneratedOnQueryParameter adds the generatedOn to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetGeneratedOnQueryParameter(generatedOn *string) {
-	o.GeneratedOnQueryParameter = generatedOn
+// SetGeneratedOn adds the generatedOn to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetGeneratedOn(generatedOn *string) {
+	o.GeneratedOn = generatedOn
 }
 
-// WithIndexQueryParameter adds the index to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithIndexQueryParameter(index *int64) *AutosupportMessageCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithIndex(index *int64) *AutosupportMessageCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AutosupportMessageCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithMaxRecords(maxRecords *int64) *AutosupportMessageCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *AutosupportMessageCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithNodeName(nodeName *string) *AutosupportMessageCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *AutosupportMessageCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithNodeUUID(nodeUUID *string) *AutosupportMessageCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AutosupportMessageCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithOrderBy(orderBy []string) *AutosupportMessageCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AutosupportMessageCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithReturnRecords(returnRecords *bool) *AutosupportMessageCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AutosupportMessageCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AutosupportMessageCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithStateQueryParameter(state *string) *AutosupportMessageCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithState(state *string) *AutosupportMessageCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSubjectQueryParameter adds the subject to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) WithSubjectQueryParameter(subject *string) *AutosupportMessageCollectionGetParams {
-	o.SetSubjectQueryParameter(subject)
+// WithSubject adds the subject to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) WithSubject(subject *string) *AutosupportMessageCollectionGetParams {
+	o.SetSubject(subject)
 	return o
 }
 
-// SetSubjectQueryParameter adds the subject to the autosupport message collection get params
-func (o *AutosupportMessageCollectionGetParams) SetSubjectQueryParameter(subject *string) {
-	o.SubjectQueryParameter = subject
+// SetSubject adds the subject to the autosupport message collection get params
+func (o *AutosupportMessageCollectionGetParams) SetSubject(subject *string) {
+	o.Subject = subject
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +379,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.DestinationQueryParameter != nil {
+	if o.Destination != nil {
 
 		// query param destination
 		var qrDestination string
 
-		if o.DestinationQueryParameter != nil {
-			qrDestination = *o.DestinationQueryParameter
+		if o.Destination != nil {
+			qrDestination = *o.Destination
 		}
 		qDestination := qrDestination
 		if qDestination != "" {
@@ -396,13 +396,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ErrorCodeQueryParameter != nil {
+	if o.ErrorCode != nil {
 
 		// query param error.code
 		var qrErrorCode int64
 
-		if o.ErrorCodeQueryParameter != nil {
-			qrErrorCode = *o.ErrorCodeQueryParameter
+		if o.ErrorCode != nil {
+			qrErrorCode = *o.ErrorCode
 		}
 		qErrorCode := swag.FormatInt64(qrErrorCode)
 		if qErrorCode != "" {
@@ -413,13 +413,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ErrorMessageQueryParameter != nil {
+	if o.ErrorMessage != nil {
 
 		// query param error.message
 		var qrErrorMessage string
 
-		if o.ErrorMessageQueryParameter != nil {
-			qrErrorMessage = *o.ErrorMessageQueryParameter
+		if o.ErrorMessage != nil {
+			qrErrorMessage = *o.ErrorMessage
 		}
 		qErrorMessage := qrErrorMessage
 		if qErrorMessage != "" {
@@ -430,7 +430,7 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -441,13 +441,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.GeneratedOnQueryParameter != nil {
+	if o.GeneratedOn != nil {
 
 		// query param generated_on
 		var qrGeneratedOn string
 
-		if o.GeneratedOnQueryParameter != nil {
-			qrGeneratedOn = *o.GeneratedOnQueryParameter
+		if o.GeneratedOn != nil {
+			qrGeneratedOn = *o.GeneratedOn
 		}
 		qGeneratedOn := qrGeneratedOn
 		if qGeneratedOn != "" {
@@ -458,13 +458,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -475,13 +475,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -509,13 +509,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -526,7 +526,7 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -537,13 +537,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -588,13 +588,13 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.SubjectQueryParameter != nil {
+	if o.Subject != nil {
 
 		// query param subject
 		var qrSubject string
 
-		if o.SubjectQueryParameter != nil {
-			qrSubject = *o.SubjectQueryParameter
+		if o.Subject != nil {
+			qrSubject = *o.Subject
 		}
 		qSubject := qrSubject
 		if qSubject != "" {
@@ -613,7 +613,7 @@ func (o *AutosupportMessageCollectionGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamAutosupportMessageCollectionGet binds the parameter fields
 func (o *AutosupportMessageCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *AutosupportMessageCollectionGetParams) bindParamFields(formats strfmt.R
 
 // bindParamAutosupportMessageCollectionGet binds the parameter order_by
 func (o *AutosupportMessageCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

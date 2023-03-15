@@ -20,13 +20,14 @@ import (
 type MultiAdminVerifyRuleResponse struct {
 
 	// links
-	Links *MultiAdminVerifyRuleResponseLinks `json:"_links,omitempty"`
+	Links *MultiAdminVerifyRuleResponseInlineLinks `json:"_links,omitempty"`
+
+	// multi admin verify rule response inline records
+	MultiAdminVerifyRuleResponseInlineRecords []*MultiAdminVerifyRule `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*MultiAdminVerifyRule `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this multi admin verify rule response
@@ -37,7 +38,7 @@ func (m *MultiAdminVerifyRuleResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateMultiAdminVerifyRuleResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *MultiAdminVerifyRuleResponse) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *MultiAdminVerifyRuleResponse) validateMultiAdminVerifyRuleResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.MultiAdminVerifyRuleResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.MultiAdminVerifyRuleResponseInlineRecords); i++ {
+		if swag.IsZero(m.MultiAdminVerifyRuleResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.MultiAdminVerifyRuleResponseInlineRecords[i] != nil {
+			if err := m.MultiAdminVerifyRuleResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *MultiAdminVerifyRuleResponse) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateMultiAdminVerifyRuleResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *MultiAdminVerifyRuleResponse) contextValidateLinks(ctx context.Context,
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleResponse) contextValidateMultiAdminVerifyRuleResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.MultiAdminVerifyRuleResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.MultiAdminVerifyRuleResponseInlineRecords[i] != nil {
+			if err := m.MultiAdminVerifyRuleResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *MultiAdminVerifyRuleResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyRuleResponseLinks multi admin verify rule response links
+// MultiAdminVerifyRuleResponseInlineLinks multi admin verify rule response inline links
 //
-// swagger:model MultiAdminVerifyRuleResponseLinks
-type MultiAdminVerifyRuleResponseLinks struct {
+// swagger:model multi_admin_verify_rule_response_inline__links
+type MultiAdminVerifyRuleResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type MultiAdminVerifyRuleResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this multi admin verify rule response links
-func (m *MultiAdminVerifyRuleResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify rule response inline links
+func (m *MultiAdminVerifyRuleResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *MultiAdminVerifyRuleResponseLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *MultiAdminVerifyRuleResponseLinks) validateNext(formats strfmt.Registry
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *MultiAdminVerifyRuleResponseLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this multi admin verify rule response links based on the context it is used
-func (m *MultiAdminVerifyRuleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify rule response inline links based on the context it is used
+func (m *MultiAdminVerifyRuleResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *MultiAdminVerifyRuleResponseLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *MultiAdminVerifyRuleResponseLinks) contextValidateNext(ctx context.Cont
 	return nil
 }
 
-func (m *MultiAdminVerifyRuleResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyRuleResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *MultiAdminVerifyRuleResponseLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyRuleResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *MultiAdminVerifyRuleResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyRuleResponseLinks) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyRuleResponseLinks
+func (m *MultiAdminVerifyRuleResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyRuleResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

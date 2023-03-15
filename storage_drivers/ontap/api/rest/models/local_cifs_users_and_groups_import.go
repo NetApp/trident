@@ -21,33 +21,33 @@ import (
 type LocalCifsUsersAndGroupsImport struct {
 
 	// links
-	Links *LocalCifsUsersAndGroupsImportLinks `json:"_links,omitempty"`
+	Links *LocalCifsUsersAndGroupsImportInlineLinks `json:"_links,omitempty"`
 
 	// Password to decrypt the compressed file.
 	// Max Length: 128
-	DecryptionPassword string `json:"decryption_password,omitempty"`
+	DecryptionPassword *string `json:"decryption_password,omitempty"`
 
 	// detailed status
-	DetailedStatus *LocalCifsUsersAndGroupsImportDetailedStatus `json:"detailed_status,omitempty"`
+	DetailedStatus *LocalCifsUsersAndGroupsImportInlineDetailedStatus `json:"detailed_status,omitempty"`
 
 	// Number of elements ignored.
-	ElementsIgnored int64 `json:"elements_ignored,omitempty"`
+	ElementsIgnored *int64 `json:"elements_ignored,omitempty"`
 
 	// Number of elements successfully imported.
-	ElementsImported int64 `json:"elements_imported,omitempty"`
+	ElementsImported *int64 `json:"elements_imported,omitempty"`
 
 	// import uri
-	ImportURI *LocalCifsUsersAndGroupsImportImportURI `json:"import_uri,omitempty"`
+	ImportURI *LocalCifsUsersAndGroupsImportInlineImportURI `json:"import_uri,omitempty"`
 
 	// Operation status.
 	// Enum: [failed success success_with_warnings in_progress unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// status uri
-	StatusURI *LocalCifsUsersAndGroupsImportStatusURI `json:"status_uri,omitempty"`
+	StatusURI *LocalCifsUsersAndGroupsImportInlineStatusURI `json:"status_uri,omitempty"`
 
 	// svm
-	Svm *LocalCifsUsersAndGroupsImportSvm `json:"svm,omitempty"`
+	Svm *LocalCifsUsersAndGroupsImportInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this local cifs users and groups import
@@ -110,7 +110,7 @@ func (m *LocalCifsUsersAndGroupsImport) validateDecryptionPassword(formats strfm
 		return nil
 	}
 
-	if err := validate.MaxLength("decryption_password", "body", m.DecryptionPassword, 128); err != nil {
+	if err := validate.MaxLength("decryption_password", "body", *m.DecryptionPassword, 128); err != nil {
 		return err
 	}
 
@@ -230,7 +230,7 @@ func (m *LocalCifsUsersAndGroupsImport) validateState(formats strfmt.Registry) e
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -389,33 +389,33 @@ func (m *LocalCifsUsersAndGroupsImport) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportDetailedStatus local cifs users and groups import detailed status
+// LocalCifsUsersAndGroupsImportInlineDetailedStatus local cifs users and groups import inline detailed status
 //
-// swagger:model LocalCifsUsersAndGroupsImportDetailedStatus
-type LocalCifsUsersAndGroupsImportDetailedStatus struct {
+// swagger:model local_cifs_users_and_groups_import_inline_detailed_status
+type LocalCifsUsersAndGroupsImportInlineDetailedStatus struct {
 
 	// Code corresponding to the import status failure.
 	//
 	// Example: 6684732
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Detailed description of the import status.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import detailed status
-func (m *LocalCifsUsersAndGroupsImportDetailedStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline detailed status
+func (m *LocalCifsUsersAndGroupsImportInlineDetailedStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this local cifs users and groups import detailed status based on context it is used
-func (m *LocalCifsUsersAndGroupsImportDetailedStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this local cifs users and groups import inline detailed status based on context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineDetailedStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportDetailedStatus) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineDetailedStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -423,8 +423,8 @@ func (m *LocalCifsUsersAndGroupsImportDetailedStatus) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportDetailedStatus) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportDetailedStatus
+func (m *LocalCifsUsersAndGroupsImportInlineDetailedStatus) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineDetailedStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -432,27 +432,27 @@ func (m *LocalCifsUsersAndGroupsImportDetailedStatus) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportImportURI local cifs users and groups import import URI
+// LocalCifsUsersAndGroupsImportInlineImportURI local cifs users and groups import inline import uri
 //
-// swagger:model LocalCifsUsersAndGroupsImportImportURI
-type LocalCifsUsersAndGroupsImportImportURI struct {
+// swagger:model local_cifs_users_and_groups_import_inline_import_uri
+type LocalCifsUsersAndGroupsImportInlineImportURI struct {
 
 	// Password of the specified URI.
 	// Max Length: 128
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// URI from which to load the input file containing the CIFS local users and groups. The file must be encrypted using the 7zip utility. URI can be FTP or HTTP.
 	// Example: http://web.sample.com/web1/file1.7z
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Username of the specified URI.
 	// Example: user1
 	// Max Length: 128
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import import URI
-func (m *LocalCifsUsersAndGroupsImportImportURI) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline import uri
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePassword(formats); err != nil {
@@ -469,37 +469,37 @@ func (m *LocalCifsUsersAndGroupsImportImportURI) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportImportURI) validatePassword(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("import_uri"+"."+"password", "body", m.Password, 128); err != nil {
+	if err := validate.MaxLength("import_uri"+"."+"password", "body", *m.Password, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportImportURI) validateUsername(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) validateUsername(formats strfmt.Registry) error {
 	if swag.IsZero(m.Username) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("import_uri"+"."+"username", "body", m.Username, 128); err != nil {
+	if err := validate.MaxLength("import_uri"+"."+"username", "body", *m.Username, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this local cifs users and groups import import URI based on context it is used
-func (m *LocalCifsUsersAndGroupsImportImportURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this local cifs users and groups import inline import uri based on context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportImportURI) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -507,8 +507,8 @@ func (m *LocalCifsUsersAndGroupsImportImportURI) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportImportURI) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportImportURI
+func (m *LocalCifsUsersAndGroupsImportInlineImportURI) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineImportURI
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -516,17 +516,17 @@ func (m *LocalCifsUsersAndGroupsImportImportURI) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportLinks local cifs users and groups import links
+// LocalCifsUsersAndGroupsImportInlineLinks local cifs users and groups import inline links
 //
-// swagger:model LocalCifsUsersAndGroupsImportLinks
-type LocalCifsUsersAndGroupsImportLinks struct {
+// swagger:model local_cifs_users_and_groups_import_inline__links
+type LocalCifsUsersAndGroupsImportInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import links
-func (m *LocalCifsUsersAndGroupsImportLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline links
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -539,7 +539,7 @@ func (m *LocalCifsUsersAndGroupsImportLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -556,8 +556,8 @@ func (m *LocalCifsUsersAndGroupsImportLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this local cifs users and groups import links based on the context it is used
-func (m *LocalCifsUsersAndGroupsImportLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs users and groups import inline links based on the context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -570,7 +570,7 @@ func (m *LocalCifsUsersAndGroupsImportLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -585,7 +585,7 @@ func (m *LocalCifsUsersAndGroupsImportLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -593,8 +593,8 @@ func (m *LocalCifsUsersAndGroupsImportLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportLinks) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportLinks
+func (m *LocalCifsUsersAndGroupsImportInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -602,27 +602,27 @@ func (m *LocalCifsUsersAndGroupsImportLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportStatusURI local cifs users and groups import status URI
+// LocalCifsUsersAndGroupsImportInlineStatusURI local cifs users and groups import inline status uri
 //
-// swagger:model LocalCifsUsersAndGroupsImportStatusURI
-type LocalCifsUsersAndGroupsImportStatusURI struct {
+// swagger:model local_cifs_users_and_groups_import_inline_status_uri
+type LocalCifsUsersAndGroupsImportInlineStatusURI struct {
 
 	// Password of the specified URI.
 	// Max Length: 128
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// URI from which to load the input file containing the CIFS local users and groups. The file must be encrypted using the 7zip utility. URI can be FTP or HTTP.
 	// Example: http://web.sample.com/web1/file1.7z
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Username of the specified URI.
 	// Example: user1
 	// Max Length: 128
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import status URI
-func (m *LocalCifsUsersAndGroupsImportStatusURI) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline status uri
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePassword(formats); err != nil {
@@ -639,37 +639,37 @@ func (m *LocalCifsUsersAndGroupsImportStatusURI) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportStatusURI) validatePassword(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("status_uri"+"."+"password", "body", m.Password, 128); err != nil {
+	if err := validate.MaxLength("status_uri"+"."+"password", "body", *m.Password, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportStatusURI) validateUsername(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) validateUsername(formats strfmt.Registry) error {
 	if swag.IsZero(m.Username) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("status_uri"+"."+"username", "body", m.Username, 128); err != nil {
+	if err := validate.MaxLength("status_uri"+"."+"username", "body", *m.Username, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this local cifs users and groups import status URI based on context it is used
-func (m *LocalCifsUsersAndGroupsImportStatusURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this local cifs users and groups import inline status uri based on context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportStatusURI) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -677,8 +677,8 @@ func (m *LocalCifsUsersAndGroupsImportStatusURI) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportStatusURI) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportStatusURI
+func (m *LocalCifsUsersAndGroupsImportInlineStatusURI) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineStatusURI
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -686,27 +686,27 @@ func (m *LocalCifsUsersAndGroupsImportStatusURI) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportSvm local cifs users and groups import svm
+// LocalCifsUsersAndGroupsImportInlineSvm local cifs users and groups import inline svm
 //
-// swagger:model LocalCifsUsersAndGroupsImportSvm
-type LocalCifsUsersAndGroupsImportSvm struct {
+// swagger:model local_cifs_users_and_groups_import_inline_svm
+type LocalCifsUsersAndGroupsImportInlineSvm struct {
 
 	// links
-	Links *LocalCifsUsersAndGroupsImportSvmLinks `json:"_links,omitempty"`
+	Links *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import svm
-func (m *LocalCifsUsersAndGroupsImportSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline svm
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -719,7 +719,7 @@ func (m *LocalCifsUsersAndGroupsImportSvm) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportSvm) validateLinks(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -736,8 +736,8 @@ func (m *LocalCifsUsersAndGroupsImportSvm) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this local cifs users and groups import svm based on the context it is used
-func (m *LocalCifsUsersAndGroupsImportSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs users and groups import inline svm based on the context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -750,7 +750,7 @@ func (m *LocalCifsUsersAndGroupsImportSvm) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -765,7 +765,7 @@ func (m *LocalCifsUsersAndGroupsImportSvm) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportSvm) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -773,8 +773,8 @@ func (m *LocalCifsUsersAndGroupsImportSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportSvm) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportSvm
+func (m *LocalCifsUsersAndGroupsImportInlineSvm) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -782,17 +782,17 @@ func (m *LocalCifsUsersAndGroupsImportSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsUsersAndGroupsImportSvmLinks local cifs users and groups import svm links
+// LocalCifsUsersAndGroupsImportInlineSvmInlineLinks local cifs users and groups import inline svm inline links
 //
-// swagger:model LocalCifsUsersAndGroupsImportSvmLinks
-type LocalCifsUsersAndGroupsImportSvmLinks struct {
+// swagger:model local_cifs_users_and_groups_import_inline_svm_inline__links
+type LocalCifsUsersAndGroupsImportInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local cifs users and groups import svm links
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs users and groups import inline svm inline links
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -805,7 +805,7 @@ func (m *LocalCifsUsersAndGroupsImportSvmLinks) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -822,8 +822,8 @@ func (m *LocalCifsUsersAndGroupsImportSvmLinks) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this local cifs users and groups import svm links based on the context it is used
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs users and groups import inline svm inline links based on the context it is used
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -836,7 +836,7 @@ func (m *LocalCifsUsersAndGroupsImportSvmLinks) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -851,7 +851,7 @@ func (m *LocalCifsUsersAndGroupsImportSvmLinks) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -859,8 +859,8 @@ func (m *LocalCifsUsersAndGroupsImportSvmLinks) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsUsersAndGroupsImportSvmLinks) UnmarshalBinary(b []byte) error {
-	var res LocalCifsUsersAndGroupsImportSvmLinks
+func (m *LocalCifsUsersAndGroupsImportInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalCifsUsersAndGroupsImportInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

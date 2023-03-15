@@ -66,7 +66,7 @@ type ClusterNtpKeysDeleteParams struct {
 
 	   Key identifier
 	*/
-	IDPathParameter int64
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *ClusterNtpKeysDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the cluster ntp keys delete params
-func (o *ClusterNtpKeysDeleteParams) WithIDPathParameter(id int64) *ClusterNtpKeysDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the cluster ntp keys delete params
+func (o *ClusterNtpKeysDeleteParams) WithID(id int64) *ClusterNtpKeysDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the cluster ntp keys delete params
-func (o *ClusterNtpKeysDeleteParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the cluster ntp keys delete params
+func (o *ClusterNtpKeysDeleteParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -141,7 +141,7 @@ func (o *ClusterNtpKeysDeleteParams) WriteToRequest(r runtime.ClientRequest, reg
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 

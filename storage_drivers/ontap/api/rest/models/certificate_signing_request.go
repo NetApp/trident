@@ -22,7 +22,7 @@ import (
 type CertificateSigningRequest struct {
 
 	// links
-	Links *CertificateSigningRequestLinks `json:"_links,omitempty"`
+	Links *CertificateSigningRequestInlineLinks `json:"_links,omitempty"`
 
 	// Asymmetric Encryption Algorithm.
 	// Enum: [rsa ecc]
@@ -30,32 +30,32 @@ type CertificateSigningRequest struct {
 
 	// A Certificate Signing Request (CSR) provided to a CA for obtaining a CA-signed certificate.
 	// Read Only: true
-	Csr string `json:"csr,omitempty"`
+	Csr *string `json:"csr,omitempty"`
 
 	// A list of extended key usage extensions.
-	ExtendedKeyUsages []string `json:"extended_key_usages,omitempty"`
+	ExtendedKeyUsages []*string `json:"extended_key_usages,omitempty"`
 
 	// Private key generated for the CSR.
 	// Read Only: true
-	GeneratedPrivateKey string `json:"generated_private_key,omitempty"`
+	GeneratedPrivateKey *string `json:"generated_private_key,omitempty"`
 
 	// Hashing function.
 	// Enum: [sha256 sha224 sha384 sha512]
 	HashFunction *string `json:"hash_function,omitempty"`
 
 	// A list of key usage extensions.
-	KeyUsages []string `json:"key_usages,omitempty"`
+	KeyUsages []*string `json:"key_usages,omitempty"`
 
 	// Security strength of the certificate in bits.
 	// Enum: [112 128 192]
 	SecurityStrength *int64 `json:"security_strength,omitempty"`
 
 	// subject alternatives
-	SubjectAlternatives *CertificateSigningRequestSubjectAlternatives `json:"subject_alternatives,omitempty"`
+	SubjectAlternatives *CertificateSigningRequestInlineSubjectAlternatives `json:"subject_alternatives,omitempty"`
 
 	// Subject name details of the certificate. The format is a list of comma separated key=value pairs.
 	// Example: C=US,O=NTAP,CN=test.domain.com
-	SubjectName string `json:"subject_name,omitempty"`
+	SubjectName *string `json:"subject_name,omitempty"`
 }
 
 // Validate validates this certificate signing request
@@ -194,9 +194,12 @@ func (m *CertificateSigningRequest) validateExtendedKeyUsages(formats strfmt.Reg
 	}
 
 	for i := 0; i < len(m.ExtendedKeyUsages); i++ {
+		if swag.IsZero(m.ExtendedKeyUsages[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateExtendedKeyUsagesItemsEnum("extended_key_usages"+"."+strconv.Itoa(i), "body", m.ExtendedKeyUsages[i]); err != nil {
+		if err := m.validateExtendedKeyUsagesItemsEnum("extended_key_usages"+"."+strconv.Itoa(i), "body", *m.ExtendedKeyUsages[i]); err != nil {
 			return err
 		}
 
@@ -306,9 +309,12 @@ func (m *CertificateSigningRequest) validateKeyUsages(formats strfmt.Registry) e
 	}
 
 	for i := 0; i < len(m.KeyUsages); i++ {
+		if swag.IsZero(m.KeyUsages[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateKeyUsagesItemsEnum("key_usages"+"."+strconv.Itoa(i), "body", m.KeyUsages[i]); err != nil {
+		if err := m.validateKeyUsagesItemsEnum("key_usages"+"."+strconv.Itoa(i), "body", *m.KeyUsages[i]); err != nil {
 			return err
 		}
 
@@ -409,7 +415,7 @@ func (m *CertificateSigningRequest) contextValidateLinks(ctx context.Context, fo
 
 func (m *CertificateSigningRequest) contextValidateCsr(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "csr", "body", string(m.Csr)); err != nil {
+	if err := validate.ReadOnly(ctx, "csr", "body", m.Csr); err != nil {
 		return err
 	}
 
@@ -418,7 +424,7 @@ func (m *CertificateSigningRequest) contextValidateCsr(ctx context.Context, form
 
 func (m *CertificateSigningRequest) contextValidateGeneratedPrivateKey(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "generated_private_key", "body", string(m.GeneratedPrivateKey)); err != nil {
+	if err := validate.ReadOnly(ctx, "generated_private_key", "body", m.GeneratedPrivateKey); err != nil {
 		return err
 	}
 
@@ -457,17 +463,17 @@ func (m *CertificateSigningRequest) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CertificateSigningRequestLinks certificate signing request links
+// CertificateSigningRequestInlineLinks certificate signing request inline links
 //
-// swagger:model CertificateSigningRequestLinks
-type CertificateSigningRequestLinks struct {
+// swagger:model certificate_signing_request_inline__links
+type CertificateSigningRequestInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this certificate signing request links
-func (m *CertificateSigningRequestLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this certificate signing request inline links
+func (m *CertificateSigningRequestInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -480,7 +486,7 @@ func (m *CertificateSigningRequestLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *CertificateSigningRequestLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CertificateSigningRequestInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -497,8 +503,8 @@ func (m *CertificateSigningRequestLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this certificate signing request links based on the context it is used
-func (m *CertificateSigningRequestLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this certificate signing request inline links based on the context it is used
+func (m *CertificateSigningRequestInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -511,7 +517,7 @@ func (m *CertificateSigningRequestLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *CertificateSigningRequestLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CertificateSigningRequestInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -526,7 +532,7 @@ func (m *CertificateSigningRequestLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *CertificateSigningRequestLinks) MarshalBinary() ([]byte, error) {
+func (m *CertificateSigningRequestInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -534,8 +540,8 @@ func (m *CertificateSigningRequestLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CertificateSigningRequestLinks) UnmarshalBinary(b []byte) error {
-	var res CertificateSigningRequestLinks
+func (m *CertificateSigningRequestInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CertificateSigningRequestInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -543,36 +549,36 @@ func (m *CertificateSigningRequestLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CertificateSigningRequestSubjectAlternatives certificate signing request subject alternatives
+// CertificateSigningRequestInlineSubjectAlternatives certificate signing request inline subject alternatives
 //
-// swagger:model CertificateSigningRequestSubjectAlternatives
-type CertificateSigningRequestSubjectAlternatives struct {
+// swagger:model certificate_signing_request_inline_subject_alternatives
+type CertificateSigningRequestInlineSubjectAlternatives struct {
 
 	// A list of DNS names for Subject Alternate name extension.
-	DNS []string `json:"dns,omitempty"`
+	DNS []*string `json:"dns,omitempty"`
 
 	// A list of email addresses for Subject Alternate name extension
-	Email []string `json:"email,omitempty"`
+	Email []*string `json:"email,omitempty"`
 
 	// A list of IP addresses for Subject Alternate name extension.
-	IP []string `json:"ip,omitempty"`
+	IP []*string `json:"ip,omitempty"`
 
 	// A list of URIs for Subject Alternate name extension.
-	URI []string `json:"uri,omitempty"`
+	URI []*string `json:"uri,omitempty"`
 }
 
-// Validate validates this certificate signing request subject alternatives
-func (m *CertificateSigningRequestSubjectAlternatives) Validate(formats strfmt.Registry) error {
+// Validate validates this certificate signing request inline subject alternatives
+func (m *CertificateSigningRequestInlineSubjectAlternatives) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this certificate signing request subject alternatives based on context it is used
-func (m *CertificateSigningRequestSubjectAlternatives) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this certificate signing request inline subject alternatives based on context it is used
+func (m *CertificateSigningRequestInlineSubjectAlternatives) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CertificateSigningRequestSubjectAlternatives) MarshalBinary() ([]byte, error) {
+func (m *CertificateSigningRequestInlineSubjectAlternatives) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -580,8 +586,8 @@ func (m *CertificateSigningRequestSubjectAlternatives) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *CertificateSigningRequestSubjectAlternatives) UnmarshalBinary(b []byte) error {
-	var res CertificateSigningRequestSubjectAlternatives
+func (m *CertificateSigningRequestInlineSubjectAlternatives) UnmarshalBinary(b []byte) error {
+	var res CertificateSigningRequestInlineSubjectAlternatives
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

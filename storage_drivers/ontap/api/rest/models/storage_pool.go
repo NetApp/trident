@@ -22,28 +22,28 @@ import (
 type StoragePool struct {
 
 	// links
-	Links *StoragePoolLinks `json:"_links,omitempty"`
+	Links *StoragePoolInlineLinks `json:"_links,omitempty"`
 
 	// capacity
-	Capacity *StoragePoolCapacity `json:"capacity,omitempty"`
+	Capacity *StoragePoolInlineCapacity `json:"capacity,omitempty"`
 
 	// health
-	Health *StoragePoolHealth `json:"health,omitempty"`
+	Health *StoragePoolInlineHealth `json:"health,omitempty"`
 
 	// Storage pool name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Nodes that can use this storage pool for their aggregates.
-	Nodes []*NodeReference `json:"nodes,omitempty"`
+	StoragePoolInlineNodes []*NodeReference `json:"nodes,omitempty"`
 
 	// Storage type for the disks used to create the storage pool.
 	// Read Only: true
 	// Enum: [SSD]
-	StorageType string `json:"storage_type,omitempty"`
+	StorageType *string `json:"storage_type,omitempty"`
 
 	// Storage pool UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this storage pool
@@ -62,7 +62,7 @@ func (m *StoragePool) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNodes(formats); err != nil {
+	if err := m.validateStoragePoolInlineNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -127,18 +127,18 @@ func (m *StoragePool) validateHealth(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePool) validateNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Nodes) { // not required
+func (m *StoragePool) validateStoragePoolInlineNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePoolInlineNodes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Nodes); i++ {
-		if swag.IsZero(m.Nodes[i]) { // not required
+	for i := 0; i < len(m.StoragePoolInlineNodes); i++ {
+		if swag.IsZero(m.StoragePoolInlineNodes[i]) { // not required
 			continue
 		}
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].Validate(formats); err != nil {
+		if m.StoragePoolInlineNodes[i] != nil {
+			if err := m.StoragePoolInlineNodes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -190,7 +190,7 @@ func (m *StoragePool) validateStorageType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStorageTypeEnum("storage_type", "body", m.StorageType); err != nil {
+	if err := m.validateStorageTypeEnum("storage_type", "body", *m.StorageType); err != nil {
 		return err
 	}
 
@@ -213,7 +213,7 @@ func (m *StoragePool) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNodes(ctx, formats); err != nil {
+	if err := m.contextValidateStoragePoolInlineNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -273,12 +273,12 @@ func (m *StoragePool) contextValidateHealth(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *StoragePool) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePool) contextValidateStoragePoolInlineNodes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Nodes); i++ {
+	for i := 0; i < len(m.StoragePoolInlineNodes); i++ {
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].ContextValidate(ctx, formats); err != nil {
+		if m.StoragePoolInlineNodes[i] != nil {
+			if err := m.StoragePoolInlineNodes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -293,7 +293,7 @@ func (m *StoragePool) contextValidateNodes(ctx context.Context, formats strfmt.R
 
 func (m *StoragePool) contextValidateStorageType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_type", "body", string(m.StorageType)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_type", "body", m.StorageType); err != nil {
 		return err
 	}
 
@@ -302,7 +302,7 @@ func (m *StoragePool) contextValidateStorageType(ctx context.Context, formats st
 
 func (m *StoragePool) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -327,34 +327,34 @@ func (m *StoragePool) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolCapacity storage pool capacity
+// StoragePoolInlineCapacity storage pool inline capacity
 //
-// swagger:model StoragePoolCapacity
-type StoragePoolCapacity struct {
+// swagger:model storage_pool_inline_capacity
+type StoragePoolInlineCapacity struct {
 
 	// The number of disks in the storage pool.
-	DiskCount int64 `json:"disk_count,omitempty"`
+	DiskCount *int64 `json:"disk_count,omitempty"`
 
 	// Properties of each disk used in the shared storage pool.
 	Disks []*StoragePoolDisk `json:"disks,omitempty"`
 
 	// Remaining usable capacity in the flash pool, in bytes.
 	// Read Only: true
-	Remaining int64 `json:"remaining,omitempty"`
+	Remaining *int64 `json:"remaining,omitempty"`
 
 	// Properties of spare allocation units.
 	SpareAllocationUnits []*StoragePoolSpareAllocationUnit `json:"spare_allocation_units,omitempty"`
 
 	// Total size of the flash pool, in bytes.
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Information about the storage pool allocation units participating in the cache tier of an aggregate.
 	UsedAllocationUnits []*StoragePoolUsedAllocationUnit `json:"used_allocation_units,omitempty"`
 }
 
-// Validate validates this storage pool capacity
-func (m *StoragePoolCapacity) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool inline capacity
+func (m *StoragePoolInlineCapacity) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDisks(formats); err != nil {
@@ -375,7 +375,7 @@ func (m *StoragePoolCapacity) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolCapacity) validateDisks(formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) validateDisks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Disks) { // not required
 		return nil
 	}
@@ -399,7 +399,7 @@ func (m *StoragePoolCapacity) validateDisks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolCapacity) validateSpareAllocationUnits(formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) validateSpareAllocationUnits(formats strfmt.Registry) error {
 	if swag.IsZero(m.SpareAllocationUnits) { // not required
 		return nil
 	}
@@ -423,7 +423,7 @@ func (m *StoragePoolCapacity) validateSpareAllocationUnits(formats strfmt.Regist
 	return nil
 }
 
-func (m *StoragePoolCapacity) validateUsedAllocationUnits(formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) validateUsedAllocationUnits(formats strfmt.Registry) error {
 	if swag.IsZero(m.UsedAllocationUnits) { // not required
 		return nil
 	}
@@ -447,8 +447,8 @@ func (m *StoragePoolCapacity) validateUsedAllocationUnits(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this storage pool capacity based on the context it is used
-func (m *StoragePoolCapacity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool inline capacity based on the context it is used
+func (m *StoragePoolInlineCapacity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDisks(ctx, formats); err != nil {
@@ -477,7 +477,7 @@ func (m *StoragePoolCapacity) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *StoragePoolCapacity) contextValidateDisks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) contextValidateDisks(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Disks); i++ {
 
@@ -495,16 +495,16 @@ func (m *StoragePoolCapacity) contextValidateDisks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePoolCapacity) contextValidateRemaining(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) contextValidateRemaining(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "capacity"+"."+"remaining", "body", int64(m.Remaining)); err != nil {
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"remaining", "body", m.Remaining); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StoragePoolCapacity) contextValidateSpareAllocationUnits(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) contextValidateSpareAllocationUnits(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.SpareAllocationUnits); i++ {
 
@@ -522,16 +522,16 @@ func (m *StoragePoolCapacity) contextValidateSpareAllocationUnits(ctx context.Co
 	return nil
 }
 
-func (m *StoragePoolCapacity) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "capacity"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StoragePoolCapacity) contextValidateUsedAllocationUnits(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineCapacity) contextValidateUsedAllocationUnits(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.UsedAllocationUnits); i++ {
 
@@ -550,7 +550,7 @@ func (m *StoragePoolCapacity) contextValidateUsedAllocationUnits(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolCapacity) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolInlineCapacity) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -558,8 +558,8 @@ func (m *StoragePoolCapacity) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolCapacity) UnmarshalBinary(b []byte) error {
-	var res StoragePoolCapacity
+func (m *StoragePoolInlineCapacity) UnmarshalBinary(b []byte) error {
+	var res StoragePoolInlineCapacity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -567,10 +567,10 @@ func (m *StoragePoolCapacity) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolHealth Properties that outline shared storage pool health.
+// StoragePoolInlineHealth Properties that outline shared storage pool health.
 //
-// swagger:model StoragePoolHealth
-type StoragePoolHealth struct {
+// swagger:model storage_pool_inline_health
+type StoragePoolInlineHealth struct {
 
 	// Indicates whether the storage pool is able to participate in provisioning operations.
 	// Read Only: true
@@ -579,15 +579,15 @@ type StoragePoolHealth struct {
 	// The state of the shared storage pool.
 	// Read Only: true
 	// Enum: [normal degraded creating deleting reassigning growing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Indicates why the storage pool is unhealthy. This property is not returned for healthy storage pools.
 	// Read Only: true
 	UnhealthyReason *Error `json:"unhealthy_reason,omitempty"`
 }
 
-// Validate validates this storage pool health
-func (m *StoragePoolHealth) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool inline health
+func (m *StoragePoolInlineHealth) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -604,7 +604,7 @@ func (m *StoragePoolHealth) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storagePoolHealthTypeStatePropEnum []interface{}
+var storagePoolInlineHealthTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -612,95 +612,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storagePoolHealthTypeStatePropEnum = append(storagePoolHealthTypeStatePropEnum, v)
+		storagePoolInlineHealthTypeStatePropEnum = append(storagePoolInlineHealthTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// normal
 	// END DEBUGGING
-	// StoragePoolHealthStateNormal captures enum value "normal"
-	StoragePoolHealthStateNormal string = "normal"
+	// StoragePoolInlineHealthStateNormal captures enum value "normal"
+	StoragePoolInlineHealthStateNormal string = "normal"
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// degraded
 	// END DEBUGGING
-	// StoragePoolHealthStateDegraded captures enum value "degraded"
-	StoragePoolHealthStateDegraded string = "degraded"
+	// StoragePoolInlineHealthStateDegraded captures enum value "degraded"
+	StoragePoolInlineHealthStateDegraded string = "degraded"
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// creating
 	// END DEBUGGING
-	// StoragePoolHealthStateCreating captures enum value "creating"
-	StoragePoolHealthStateCreating string = "creating"
+	// StoragePoolInlineHealthStateCreating captures enum value "creating"
+	StoragePoolInlineHealthStateCreating string = "creating"
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// deleting
 	// END DEBUGGING
-	// StoragePoolHealthStateDeleting captures enum value "deleting"
-	StoragePoolHealthStateDeleting string = "deleting"
+	// StoragePoolInlineHealthStateDeleting captures enum value "deleting"
+	StoragePoolInlineHealthStateDeleting string = "deleting"
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// reassigning
 	// END DEBUGGING
-	// StoragePoolHealthStateReassigning captures enum value "reassigning"
-	StoragePoolHealthStateReassigning string = "reassigning"
+	// StoragePoolInlineHealthStateReassigning captures enum value "reassigning"
+	StoragePoolInlineHealthStateReassigning string = "reassigning"
 
 	// BEGIN DEBUGGING
-	// StoragePoolHealth
-	// StoragePoolHealth
+	// storage_pool_inline_health
+	// StoragePoolInlineHealth
 	// state
 	// State
 	// growing
 	// END DEBUGGING
-	// StoragePoolHealthStateGrowing captures enum value "growing"
-	StoragePoolHealthStateGrowing string = "growing"
+	// StoragePoolInlineHealthStateGrowing captures enum value "growing"
+	StoragePoolInlineHealthStateGrowing string = "growing"
 )
 
 // prop value enum
-func (m *StoragePoolHealth) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storagePoolHealthTypeStatePropEnum, true); err != nil {
+func (m *StoragePoolInlineHealth) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storagePoolInlineHealthTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StoragePoolHealth) validateState(formats strfmt.Registry) error {
+func (m *StoragePoolInlineHealth) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("health"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("health"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StoragePoolHealth) validateUnhealthyReason(formats strfmt.Registry) error {
+func (m *StoragePoolInlineHealth) validateUnhealthyReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.UnhealthyReason) { // not required
 		return nil
 	}
@@ -717,8 +717,8 @@ func (m *StoragePoolHealth) validateUnhealthyReason(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this storage pool health based on the context it is used
-func (m *StoragePoolHealth) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool inline health based on the context it is used
+func (m *StoragePoolInlineHealth) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIsHealthy(ctx, formats); err != nil {
@@ -739,7 +739,7 @@ func (m *StoragePoolHealth) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *StoragePoolHealth) contextValidateIsHealthy(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineHealth) contextValidateIsHealthy(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "health"+"."+"is_healthy", "body", m.IsHealthy); err != nil {
 		return err
@@ -748,16 +748,16 @@ func (m *StoragePoolHealth) contextValidateIsHealthy(ctx context.Context, format
 	return nil
 }
 
-func (m *StoragePoolHealth) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineHealth) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "health"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "health"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StoragePoolHealth) contextValidateUnhealthyReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineHealth) contextValidateUnhealthyReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.UnhealthyReason != nil {
 		if err := m.UnhealthyReason.ContextValidate(ctx, formats); err != nil {
@@ -772,7 +772,7 @@ func (m *StoragePoolHealth) contextValidateUnhealthyReason(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolHealth) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolInlineHealth) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -780,8 +780,8 @@ func (m *StoragePoolHealth) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolHealth) UnmarshalBinary(b []byte) error {
-	var res StoragePoolHealth
+func (m *StoragePoolInlineHealth) UnmarshalBinary(b []byte) error {
+	var res StoragePoolInlineHealth
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -789,17 +789,17 @@ func (m *StoragePoolHealth) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolLinks storage pool links
+// StoragePoolInlineLinks storage pool inline links
 //
-// swagger:model StoragePoolLinks
-type StoragePoolLinks struct {
+// swagger:model storage_pool_inline__links
+type StoragePoolInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage pool links
-func (m *StoragePoolLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool inline links
+func (m *StoragePoolInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -812,7 +812,7 @@ func (m *StoragePoolLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePoolInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -829,8 +829,8 @@ func (m *StoragePoolLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage pool links based on the context it is used
-func (m *StoragePoolLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool inline links based on the context it is used
+func (m *StoragePoolInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -843,7 +843,7 @@ func (m *StoragePoolLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *StoragePoolLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -858,7 +858,7 @@ func (m *StoragePoolLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -866,8 +866,8 @@ func (m *StoragePoolLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePoolLinks
+func (m *StoragePoolInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePoolInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

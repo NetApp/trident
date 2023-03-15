@@ -21,24 +21,27 @@ import (
 type SecurityAuditLogForward struct {
 
 	// Destination syslog|splunk host to forward audit records to. This can be an IP address (IPv4|IPv6) or a hostname.
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// This is the standard Syslog Facility value that is used when sending audit records to a remote server.
 	// Enum: [kern user local0 local1 local2 local3 local4 local5 local6 local7]
-	Facility string `json:"facility,omitempty"`
+	Facility *string `json:"facility,omitempty"`
+
+	// ipspace
+	Ipspace *SecurityAuditLogForwardInlineIpspace `json:"ipspace,omitempty"`
 
 	// Destination Port. The default port depends on the protocol chosen:
 	// For un-encrypted destinations the default port is 514.
 	// For encrypted destinations the default port is 6514.
 	//
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Log forwarding protocol
 	// Enum: [udp_unencrypted tcp_unencrypted tcp_encrypted]
 	Protocol *string `json:"protocol,omitempty"`
 
 	// This is only applicable when the protocol is tcp_encrypted. This controls whether the remote server's certificate is validated. Setting "verify_server" to "true" will enforce validation of remote server's certificate. Setting "verify_server" to "false" will not enforce validation of remote server's certificate.
-	VerifyServer bool `json:"verify_server,omitempty"`
+	VerifyServer *bool `json:"verify_server,omitempty"`
 }
 
 // Validate validates this security audit log forward
@@ -46,6 +49,10 @@ func (m *SecurityAuditLogForward) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFacility(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIpspace(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -188,8 +195,25 @@ func (m *SecurityAuditLogForward) validateFacility(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateFacilityEnum("facility", "body", m.Facility); err != nil {
+	if err := m.validateFacilityEnum("facility", "body", *m.Facility); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityAuditLogForward) validateIpspace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ipspace) { // not required
+		return nil
+	}
+
+	if m.Ipspace != nil {
+		if err := m.Ipspace.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -261,8 +285,31 @@ func (m *SecurityAuditLogForward) validateProtocol(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this security audit log forward based on context it is used
+// ContextValidate validate this security audit log forward based on the context it is used
 func (m *SecurityAuditLogForward) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIpspace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForward) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ipspace != nil {
+		if err := m.Ipspace.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -277,6 +324,186 @@ func (m *SecurityAuditLogForward) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SecurityAuditLogForward) UnmarshalBinary(b []byte) error {
 	var res SecurityAuditLogForward
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityAuditLogForwardInlineIpspace security audit log forward inline ipspace
+//
+// swagger:model security_audit_log_forward_inline_ipspace
+type SecurityAuditLogForwardInlineIpspace struct {
+
+	// links
+	Links *SecurityAuditLogForwardInlineIpspaceInlineLinks `json:"_links,omitempty"`
+
+	// IPspace name
+	// Example: exchange
+	Name *string `json:"name,omitempty"`
+
+	// IPspace UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this security audit log forward inline ipspace
+func (m *SecurityAuditLogForwardInlineIpspace) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForwardInlineIpspace) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security audit log forward inline ipspace based on the context it is used
+func (m *SecurityAuditLogForwardInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForwardInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityAuditLogForwardInlineIpspace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityAuditLogForwardInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogForwardInlineIpspace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityAuditLogForwardInlineIpspaceInlineLinks security audit log forward inline ipspace inline links
+//
+// swagger:model security_audit_log_forward_inline_ipspace_inline__links
+type SecurityAuditLogForwardInlineIpspaceInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this security audit log forward inline ipspace inline links
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this security audit log forward inline ipspace inline links based on the context it is used
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityAuditLogForwardInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogForwardInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -71,14 +71,14 @@ type IgroupDeleteParams struct {
 	<b>This parameter should be used with caution.</b>
 
 	*/
-	AllowDeleteWhileMappedQueryParameter *bool
+	AllowDeleteWhileMapped *bool
 
 	/* UUID.
 
 	   The unique identifier of the initiator group.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *IgroupDeleteParams) WithDefaults() *IgroupDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *IgroupDeleteParams) SetDefaults() {
 	var (
-		allowDeleteWhileMappedQueryParameterDefault = bool(false)
+		allowDeleteWhileMappedDefault = bool(false)
 	)
 
 	val := IgroupDeleteParams{
-		AllowDeleteWhileMappedQueryParameter: &allowDeleteWhileMappedQueryParameterDefault,
+		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,26 +144,26 @@ func (o *IgroupDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the igroup delete params
-func (o *IgroupDeleteParams) WithAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) *IgroupDeleteParams {
-	o.SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped)
+// WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the igroup delete params
+func (o *IgroupDeleteParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *IgroupDeleteParams {
+	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
 	return o
 }
 
-// SetAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the igroup delete params
-func (o *IgroupDeleteParams) SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) {
-	o.AllowDeleteWhileMappedQueryParameter = allowDeleteWhileMapped
+// SetAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the igroup delete params
+func (o *IgroupDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) {
+	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
-// WithUUIDPathParameter adds the uuid to the igroup delete params
-func (o *IgroupDeleteParams) WithUUIDPathParameter(uuid string) *IgroupDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the igroup delete params
+func (o *IgroupDeleteParams) WithUUID(uuid string) *IgroupDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the igroup delete params
-func (o *IgroupDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the igroup delete params
+func (o *IgroupDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +174,13 @@ func (o *IgroupDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.AllowDeleteWhileMappedQueryParameter != nil {
+	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
 		var qrAllowDeleteWhileMapped bool
 
-		if o.AllowDeleteWhileMappedQueryParameter != nil {
-			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMappedQueryParameter
+		if o.AllowDeleteWhileMapped != nil {
+			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMapped
 		}
 		qAllowDeleteWhileMapped := swag.FormatBool(qrAllowDeleteWhileMapped)
 		if qAllowDeleteWhileMapped != "" {
@@ -192,7 +192,7 @@ func (o *IgroupDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

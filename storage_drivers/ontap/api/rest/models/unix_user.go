@@ -19,29 +19,29 @@ import (
 type UnixUser struct {
 
 	// links
-	Links *UnixUserLinks `json:"_links,omitempty"`
+	Links *UnixUserInlineLinks `json:"_links,omitempty"`
 
 	// User's full name.
 	//
-	FullName string `json:"full_name,omitempty"`
+	FullName *string `json:"full_name,omitempty"`
 
 	// UNIX user ID of the specified user.
 	//
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// UNIX user name to be added to the local database.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Primary group ID to which the user belongs.
 	//
-	PrimaryGid int64 `json:"primary_gid,omitempty"`
+	PrimaryGid *int64 `json:"primary_gid,omitempty"`
 
 	// Indicates whether or not the validation for the specified UNIX user name is disabled.
 	SkipNameValidation *bool `json:"skip_name_validation,omitempty"`
 
 	// svm
-	Svm *UnixUserSvm `json:"svm,omitempty"`
+	Svm *UnixUserInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this unix user
@@ -160,17 +160,17 @@ func (m *UnixUser) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserLinks unix user links
+// UnixUserInlineLinks unix user inline links
 //
-// swagger:model UnixUserLinks
-type UnixUserLinks struct {
+// swagger:model unix_user_inline__links
+type UnixUserInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix user links
-func (m *UnixUserLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user inline links
+func (m *UnixUserInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -183,7 +183,7 @@ func (m *UnixUserLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixUserInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -200,8 +200,8 @@ func (m *UnixUserLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user links based on the context it is used
-func (m *UnixUserLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user inline links based on the context it is used
+func (m *UnixUserInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -214,7 +214,7 @@ func (m *UnixUserLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *UnixUserLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -229,7 +229,7 @@ func (m *UnixUserLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixUserInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -237,8 +237,8 @@ func (m *UnixUserLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserLinks) UnmarshalBinary(b []byte) error {
-	var res UnixUserLinks
+func (m *UnixUserInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixUserInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -246,27 +246,27 @@ func (m *UnixUserLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserSvm unix user svm
+// UnixUserInlineSvm unix user inline svm
 //
-// swagger:model UnixUserSvm
-type UnixUserSvm struct {
+// swagger:model unix_user_inline_svm
+type UnixUserInlineSvm struct {
 
 	// links
-	Links *UnixUserSvmLinks `json:"_links,omitempty"`
+	Links *UnixUserInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this unix user svm
-func (m *UnixUserSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user inline svm
+func (m *UnixUserInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -279,7 +279,7 @@ func (m *UnixUserSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserSvm) validateLinks(formats strfmt.Registry) error {
+func (m *UnixUserInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -296,8 +296,8 @@ func (m *UnixUserSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user svm based on the context it is used
-func (m *UnixUserSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user inline svm based on the context it is used
+func (m *UnixUserInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -310,7 +310,7 @@ func (m *UnixUserSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *UnixUserSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -325,7 +325,7 @@ func (m *UnixUserSvm) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserSvm) MarshalBinary() ([]byte, error) {
+func (m *UnixUserInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -333,8 +333,8 @@ func (m *UnixUserSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserSvm) UnmarshalBinary(b []byte) error {
-	var res UnixUserSvm
+func (m *UnixUserInlineSvm) UnmarshalBinary(b []byte) error {
+	var res UnixUserInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -342,17 +342,17 @@ func (m *UnixUserSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserSvmLinks unix user svm links
+// UnixUserInlineSvmInlineLinks unix user inline svm inline links
 //
-// swagger:model UnixUserSvmLinks
-type UnixUserSvmLinks struct {
+// swagger:model unix_user_inline_svm_inline__links
+type UnixUserInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix user svm links
-func (m *UnixUserSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user inline svm inline links
+func (m *UnixUserInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -365,7 +365,7 @@ func (m *UnixUserSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixUserInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -382,8 +382,8 @@ func (m *UnixUserSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user svm links based on the context it is used
-func (m *UnixUserSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user inline svm inline links based on the context it is used
+func (m *UnixUserInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -396,7 +396,7 @@ func (m *UnixUserSvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *UnixUserSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -411,7 +411,7 @@ func (m *UnixUserSvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixUserInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -419,8 +419,8 @@ func (m *UnixUserSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserSvmLinks) UnmarshalBinary(b []byte) error {
-	var res UnixUserSvmLinks
+func (m *UnixUserInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixUserInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

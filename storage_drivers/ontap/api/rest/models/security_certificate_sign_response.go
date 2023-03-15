@@ -18,7 +18,7 @@ import (
 type SecurityCertificateSignResponse struct {
 
 	// CA signed public key Certificate
-	PublicCertificate string `json:"public_certificate,omitempty"`
+	PublicCertificate *string `json:"public_certificate,omitempty"`
 }
 
 // Validate validates this security certificate sign response

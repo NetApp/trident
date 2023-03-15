@@ -20,11 +20,11 @@ type DetailedStatusCodeMessage struct {
 	// Code corresponding to the import status failure.
 	//
 	// Example: 6684732
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Detailed description of the import status.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this detailed status code message

@@ -66,13 +66,13 @@ type ChassisGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Chassis ID
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ChassisGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the chassis get params
-func (o *ChassisGetParams) WithFieldsQueryParameter(fields []string) *ChassisGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the chassis get params
+func (o *ChassisGetParams) WithFields(fields []string) *ChassisGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the chassis get params
-func (o *ChassisGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the chassis get params
+func (o *ChassisGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the chassis get params
-func (o *ChassisGetParams) WithIDPathParameter(id string) *ChassisGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the chassis get params
+func (o *ChassisGetParams) WithID(id string) *ChassisGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the chassis get params
-func (o *ChassisGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the chassis get params
+func (o *ChassisGetParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ChassisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ChassisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ChassisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamChassisGet binds the parameter fields
 func (o *ChassisGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

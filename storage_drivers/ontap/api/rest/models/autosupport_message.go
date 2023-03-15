@@ -24,10 +24,10 @@ type AutosupportMessage struct {
 	// Example: http
 	// Read Only: true
 	// Enum: [smtp http noteto retransmit]
-	Destination string `json:"destination,omitempty"`
+	Destination *string `json:"destination,omitempty"`
 
 	// error
-	Error *AutosupportMessageError `json:"error,omitempty"`
+	Error *AutosupportMessageInlineError `json:"error,omitempty"`
 
 	// Date and Time of AutoSupport generation in ISO-8601 format
 	// Example: 2019-03-25T17:30:04-04:00
@@ -38,25 +38,25 @@ type AutosupportMessage struct {
 	// Sequence number of the AutoSupport
 	// Example: 9
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// Message included in the AutoSupport subject
 	// Example: invoked_test_autosupport_rest
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// node
-	Node *AutosupportMessageNode `json:"node,omitempty"`
+	Node *AutosupportMessageInlineNode `json:"node,omitempty"`
 
 	// State of AutoSupport delivery
 	// Example: sent_successful
 	// Read Only: true
 	// Enum: [initializing collection_failed collection_in_progress queued transmitting sent_successful ignore re_queued transmission_failed ondemand_ignore cancelled]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Subject line for the AutoSupport
 	// Example: WEEKLY_LOG
 	// Read Only: true
-	Subject string `json:"subject,omitempty"`
+	Subject *string `json:"subject,omitempty"`
 
 	// Type of AutoSupport collection to issue
 	// Example: test
@@ -66,7 +66,7 @@ type AutosupportMessage struct {
 	// Alternate destination for the AutoSupport
 	// Example: http://1.2.3.4/delivery_uri
 	// Format: uri
-	URI strfmt.URI `json:"uri,omitempty"`
+	URI *strfmt.URI `json:"uri,omitempty"`
 }
 
 // Validate validates this autosupport message
@@ -176,7 +176,7 @@ func (m *AutosupportMessage) validateDestination(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateDestinationEnum("destination", "body", m.Destination); err != nil {
+	if err := m.validateDestinationEnum("destination", "body", *m.Destination); err != nil {
 		return err
 	}
 
@@ -368,7 +368,7 @@ func (m *AutosupportMessage) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -493,7 +493,7 @@ func (m *AutosupportMessage) ContextValidate(ctx context.Context, formats strfmt
 
 func (m *AutosupportMessage) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "destination", "body", string(m.Destination)); err != nil {
+	if err := validate.ReadOnly(ctx, "destination", "body", m.Destination); err != nil {
 		return err
 	}
 
@@ -525,7 +525,7 @@ func (m *AutosupportMessage) contextValidateGeneratedOn(ctx context.Context, for
 
 func (m *AutosupportMessage) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -548,7 +548,7 @@ func (m *AutosupportMessage) contextValidateNode(ctx context.Context, formats st
 
 func (m *AutosupportMessage) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -557,7 +557,7 @@ func (m *AutosupportMessage) contextValidateState(ctx context.Context, formats s
 
 func (m *AutosupportMessage) contextValidateSubject(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subject", "body", string(m.Subject)); err != nil {
+	if err := validate.ReadOnly(ctx, "subject", "body", m.Subject); err != nil {
 		return err
 	}
 
@@ -582,29 +582,29 @@ func (m *AutosupportMessage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutosupportMessageError Last error during delivery attempt. Empty if "status=sent-successful".
+// AutosupportMessageInlineError Last error during delivery attempt. Empty if "status=sent-successful".
 //
-// swagger:model AutosupportMessageError
-type AutosupportMessageError struct {
+// swagger:model autosupport_message_inline_error
+type AutosupportMessageInlineError struct {
 
 	// Error code
 	// Example: 53149746
 	// Read Only: true
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Error message
 	// Example: Could not resolve host: test.com
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this autosupport message error
-func (m *AutosupportMessageError) Validate(formats strfmt.Registry) error {
+// Validate validates this autosupport message inline error
+func (m *AutosupportMessageInlineError) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this autosupport message error based on the context it is used
-func (m *AutosupportMessageError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this autosupport message inline error based on the context it is used
+func (m *AutosupportMessageInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -621,18 +621,18 @@ func (m *AutosupportMessageError) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AutosupportMessageError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", int64(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AutosupportMessageError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -640,7 +640,7 @@ func (m *AutosupportMessageError) contextValidateMessage(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *AutosupportMessageError) MarshalBinary() ([]byte, error) {
+func (m *AutosupportMessageInlineError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -648,8 +648,8 @@ func (m *AutosupportMessageError) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutosupportMessageError) UnmarshalBinary(b []byte) error {
-	var res AutosupportMessageError
+func (m *AutosupportMessageInlineError) UnmarshalBinary(b []byte) error {
+	var res AutosupportMessageInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -657,25 +657,25 @@ func (m *AutosupportMessageError) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutosupportMessageNode autosupport message node
+// AutosupportMessageInlineNode autosupport message inline node
 //
-// swagger:model AutosupportMessageNode
-type AutosupportMessageNode struct {
+// swagger:model autosupport_message_inline_node
+type AutosupportMessageInlineNode struct {
 
 	// links
-	Links *AutosupportMessageNodeLinks `json:"_links,omitempty"`
+	Links *AutosupportMessageInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this autosupport message node
-func (m *AutosupportMessageNode) Validate(formats strfmt.Registry) error {
+// Validate validates this autosupport message inline node
+func (m *AutosupportMessageInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -688,7 +688,7 @@ func (m *AutosupportMessageNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutosupportMessageNode) validateLinks(formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -705,8 +705,8 @@ func (m *AutosupportMessageNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this autosupport message node based on the context it is used
-func (m *AutosupportMessageNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this autosupport message inline node based on the context it is used
+func (m *AutosupportMessageInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -719,7 +719,7 @@ func (m *AutosupportMessageNode) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AutosupportMessageNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -734,7 +734,7 @@ func (m *AutosupportMessageNode) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *AutosupportMessageNode) MarshalBinary() ([]byte, error) {
+func (m *AutosupportMessageInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -742,8 +742,8 @@ func (m *AutosupportMessageNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutosupportMessageNode) UnmarshalBinary(b []byte) error {
-	var res AutosupportMessageNode
+func (m *AutosupportMessageInlineNode) UnmarshalBinary(b []byte) error {
+	var res AutosupportMessageInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -751,17 +751,17 @@ func (m *AutosupportMessageNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutosupportMessageNodeLinks autosupport message node links
+// AutosupportMessageInlineNodeInlineLinks autosupport message inline node inline links
 //
-// swagger:model AutosupportMessageNodeLinks
-type AutosupportMessageNodeLinks struct {
+// swagger:model autosupport_message_inline_node_inline__links
+type AutosupportMessageInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this autosupport message node links
-func (m *AutosupportMessageNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this autosupport message inline node inline links
+func (m *AutosupportMessageInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -774,7 +774,7 @@ func (m *AutosupportMessageNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutosupportMessageNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -791,8 +791,8 @@ func (m *AutosupportMessageNodeLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this autosupport message node links based on the context it is used
-func (m *AutosupportMessageNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this autosupport message inline node inline links based on the context it is used
+func (m *AutosupportMessageInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -805,7 +805,7 @@ func (m *AutosupportMessageNodeLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *AutosupportMessageNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportMessageInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -820,7 +820,7 @@ func (m *AutosupportMessageNodeLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *AutosupportMessageNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *AutosupportMessageInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -828,8 +828,8 @@ func (m *AutosupportMessageNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutosupportMessageNodeLinks) UnmarshalBinary(b []byte) error {
-	var res AutosupportMessageNodeLinks
+func (m *AutosupportMessageInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutosupportMessageInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

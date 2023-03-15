@@ -23,18 +23,18 @@ type SoftwareErrorsReference struct {
 	// Error code of message
 	// Example: 177
 	// Read Only: true
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Error message
 	// Example: Giveback of CFO aggregate is vetoed. Action: Use the \"storage failover show-giveback\" command to view detailed veto status information. Correct the vetoed update check. Use the \"storage failover giveback -ofnode \"node1\" command to complete the giveback.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Severity of error
 	// Example: warning
 	// Read Only: true
 	// Enum: [informational warning error]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 }
 
 // Validate validates this software errors reference
@@ -110,7 +110,7 @@ func (m *SoftwareErrorsReference) validateSeverity(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
@@ -141,7 +141,7 @@ func (m *SoftwareErrorsReference) ContextValidate(ctx context.Context, formats s
 
 func (m *SoftwareErrorsReference) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", int64(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -150,7 +150,7 @@ func (m *SoftwareErrorsReference) contextValidateCode(ctx context.Context, forma
 
 func (m *SoftwareErrorsReference) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -159,7 +159,7 @@ func (m *SoftwareErrorsReference) contextValidateMessage(ctx context.Context, fo
 
 func (m *SoftwareErrorsReference) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "severity", "body", string(m.Severity)); err != nil {
+	if err := validate.ReadOnly(ctx, "severity", "body", m.Severity); err != nil {
 		return err
 	}
 

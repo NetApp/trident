@@ -66,37 +66,37 @@ type EffectivePermissionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Path.
 
 	   File Path
 	*/
-	PathPathParameter string
+	Path string
 
 	/* ShareName.
 
 	   Share Name
 	*/
-	ShareNameQueryParameter *string
+	ShareName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   User Type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* User.
 
 	   User_Name
 	*/
-	UserQueryParameter string
+	User string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -151,70 +151,70 @@ func (o *EffectivePermissionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the effective permission get params
-func (o *EffectivePermissionGetParams) WithFieldsQueryParameter(fields []string) *EffectivePermissionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the effective permission get params
+func (o *EffectivePermissionGetParams) WithFields(fields []string) *EffectivePermissionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the effective permission get params
-func (o *EffectivePermissionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the effective permission get params
+func (o *EffectivePermissionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPathPathParameter adds the path to the effective permission get params
-func (o *EffectivePermissionGetParams) WithPathPathParameter(path string) *EffectivePermissionGetParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the effective permission get params
+func (o *EffectivePermissionGetParams) WithPath(path string) *EffectivePermissionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the effective permission get params
-func (o *EffectivePermissionGetParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the effective permission get params
+func (o *EffectivePermissionGetParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithShareNameQueryParameter adds the shareName to the effective permission get params
-func (o *EffectivePermissionGetParams) WithShareNameQueryParameter(shareName *string) *EffectivePermissionGetParams {
-	o.SetShareNameQueryParameter(shareName)
+// WithShareName adds the shareName to the effective permission get params
+func (o *EffectivePermissionGetParams) WithShareName(shareName *string) *EffectivePermissionGetParams {
+	o.SetShareName(shareName)
 	return o
 }
 
-// SetShareNameQueryParameter adds the shareName to the effective permission get params
-func (o *EffectivePermissionGetParams) SetShareNameQueryParameter(shareName *string) {
-	o.ShareNameQueryParameter = shareName
+// SetShareName adds the shareName to the effective permission get params
+func (o *EffectivePermissionGetParams) SetShareName(shareName *string) {
+	o.ShareName = shareName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the effective permission get params
-func (o *EffectivePermissionGetParams) WithSVMUUIDPathParameter(svmUUID string) *EffectivePermissionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the effective permission get params
+func (o *EffectivePermissionGetParams) WithSvmUUID(svmUUID string) *EffectivePermissionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the effective permission get params
-func (o *EffectivePermissionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the effective permission get params
+func (o *EffectivePermissionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the effective permission get params
-func (o *EffectivePermissionGetParams) WithTypeQueryParameter(typeVar *string) *EffectivePermissionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the effective permission get params
+func (o *EffectivePermissionGetParams) WithType(typeVar *string) *EffectivePermissionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the effective permission get params
-func (o *EffectivePermissionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the effective permission get params
+func (o *EffectivePermissionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUserQueryParameter adds the user to the effective permission get params
-func (o *EffectivePermissionGetParams) WithUserQueryParameter(user string) *EffectivePermissionGetParams {
-	o.SetUserQueryParameter(user)
+// WithUser adds the user to the effective permission get params
+func (o *EffectivePermissionGetParams) WithUser(user string) *EffectivePermissionGetParams {
+	o.SetUser(user)
 	return o
 }
 
-// SetUserQueryParameter adds the user to the effective permission get params
-func (o *EffectivePermissionGetParams) SetUserQueryParameter(user string) {
-	o.UserQueryParameter = user
+// SetUser adds the user to the effective permission get params
+func (o *EffectivePermissionGetParams) SetUser(user string) {
+	o.User = user
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -225,7 +225,7 @@ func (o *EffectivePermissionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -237,17 +237,17 @@ func (o *EffectivePermissionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
-	if o.ShareNameQueryParameter != nil {
+	if o.ShareName != nil {
 
 		// query param share.name
 		var qrShareName string
 
-		if o.ShareNameQueryParameter != nil {
-			qrShareName = *o.ShareNameQueryParameter
+		if o.ShareName != nil {
+			qrShareName = *o.ShareName
 		}
 		qShareName := qrShareName
 		if qShareName != "" {
@@ -259,17 +259,17 @@ func (o *EffectivePermissionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -281,7 +281,7 @@ func (o *EffectivePermissionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// query param user
-	qrUser := o.UserQueryParameter
+	qrUser := o.User
 	qUser := qrUser
 	if qUser != "" {
 
@@ -298,7 +298,7 @@ func (o *EffectivePermissionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamEffectivePermissionGet binds the parameter fields
 func (o *EffectivePermissionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

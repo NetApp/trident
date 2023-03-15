@@ -66,109 +66,109 @@ type MultiAdminVerifyRequestCollectionGetParams struct {
 
 	   Filter by approve_expiry_time
 	*/
-	ApproveExpiryTimeQueryParameter *string
+	ApproveExpiryTime *string
 
 	/* ApproveTime.
 
 	   Filter by approve_time
 	*/
-	ApproveTimeQueryParameter *string
+	ApproveTime *string
 
 	/* ApprovedUsers.
 
 	   Filter by approved_users
 	*/
-	ApprovedUsersQueryParameter *string
+	ApprovedUsers *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* ExecutionExpiryTime.
 
 	   Filter by execution_expiry_time
 	*/
-	ExecutionExpiryTimeQueryParameter *string
+	ExecutionExpiryTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Operation.
 
 	   Filter by operation
 	*/
-	OperationQueryParameter *string
+	Operation *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* PendingApprovers.
 
 	   Filter by pending_approvers
 	*/
-	PendingApproversQueryParameter *int64
+	PendingApprovers *int64
 
 	/* PermittedUsers.
 
 	   Filter by permitted_users
 	*/
-	PermittedUsersQueryParameter *string
+	PermittedUsers *string
 
 	/* PotentialApprovers.
 
 	   Filter by potential_approvers
 	*/
-	PotentialApproversQueryParameter *string
+	PotentialApprovers *string
 
 	/* Query.
 
 	   Filter by query
 	*/
-	QueryQueryParameter *string
+	Query *string
 
 	/* RequiredApprovers.
 
 	   Filter by required_approvers
 	*/
-	RequiredApproversQueryParameter *int64
+	RequiredApprovers *int64
 
 	/* ReturnRecords.
 
@@ -176,7 +176,7 @@ type MultiAdminVerifyRequestCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -184,25 +184,25 @@ type MultiAdminVerifyRequestCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* UserRequested.
 
 	   Filter by user_requested
 	*/
-	UserRequestedQueryParameter *string
+	UserRequested *string
 
 	/* UserVetoed.
 
 	   Filter by user_vetoed
 	*/
-	UserVetoedQueryParameter *string
+	UserVetoed *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -222,14 +222,14 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WithDefaults() *MultiAdminV
 // All values with no default are reset to their zero value.
 func (o *MultiAdminVerifyRequestCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MultiAdminVerifyRequestCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -271,257 +271,257 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) SetHTTPClient(client *http.
 	o.HTTPClient = client
 }
 
-// WithApproveExpiryTimeQueryParameter adds the approveExpiryTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithApproveExpiryTimeQueryParameter(approveExpiryTime *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetApproveExpiryTimeQueryParameter(approveExpiryTime)
+// WithApproveExpiryTime adds the approveExpiryTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithApproveExpiryTime(approveExpiryTime *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetApproveExpiryTime(approveExpiryTime)
 	return o
 }
 
-// SetApproveExpiryTimeQueryParameter adds the approveExpiryTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetApproveExpiryTimeQueryParameter(approveExpiryTime *string) {
-	o.ApproveExpiryTimeQueryParameter = approveExpiryTime
+// SetApproveExpiryTime adds the approveExpiryTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetApproveExpiryTime(approveExpiryTime *string) {
+	o.ApproveExpiryTime = approveExpiryTime
 }
 
-// WithApproveTimeQueryParameter adds the approveTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithApproveTimeQueryParameter(approveTime *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetApproveTimeQueryParameter(approveTime)
+// WithApproveTime adds the approveTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithApproveTime(approveTime *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetApproveTime(approveTime)
 	return o
 }
 
-// SetApproveTimeQueryParameter adds the approveTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetApproveTimeQueryParameter(approveTime *string) {
-	o.ApproveTimeQueryParameter = approveTime
+// SetApproveTime adds the approveTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetApproveTime(approveTime *string) {
+	o.ApproveTime = approveTime
 }
 
-// WithApprovedUsersQueryParameter adds the approvedUsers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithApprovedUsersQueryParameter(approvedUsers *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetApprovedUsersQueryParameter(approvedUsers)
+// WithApprovedUsers adds the approvedUsers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithApprovedUsers(approvedUsers *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetApprovedUsers(approvedUsers)
 	return o
 }
 
-// SetApprovedUsersQueryParameter adds the approvedUsers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetApprovedUsersQueryParameter(approvedUsers *string) {
-	o.ApprovedUsersQueryParameter = approvedUsers
+// SetApprovedUsers adds the approvedUsers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetApprovedUsers(approvedUsers *string) {
+	o.ApprovedUsers = approvedUsers
 }
 
-// WithCommentQueryParameter adds the comment to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithCommentQueryParameter(comment *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithComment(comment *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithCreateTime(createTime *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithExecutionExpiryTimeQueryParameter adds the executionExpiryTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithExecutionExpiryTimeQueryParameter(executionExpiryTime *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetExecutionExpiryTimeQueryParameter(executionExpiryTime)
+// WithExecutionExpiryTime adds the executionExpiryTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithExecutionExpiryTime(executionExpiryTime *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetExecutionExpiryTime(executionExpiryTime)
 	return o
 }
 
-// SetExecutionExpiryTimeQueryParameter adds the executionExpiryTime to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetExecutionExpiryTimeQueryParameter(executionExpiryTime *string) {
-	o.ExecutionExpiryTimeQueryParameter = executionExpiryTime
+// SetExecutionExpiryTime adds the executionExpiryTime to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetExecutionExpiryTime(executionExpiryTime *string) {
+	o.ExecutionExpiryTime = executionExpiryTime
 }
 
-// WithFieldsQueryParameter adds the fields to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithFieldsQueryParameter(fields []string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithFields(fields []string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithIndexQueryParameter(index *int64) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithIndex(index *int64) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithMaxRecords(maxRecords *int64) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOperationQueryParameter adds the operation to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithOperationQueryParameter(operation *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetOperationQueryParameter(operation)
+// WithOperation adds the operation to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithOperation(operation *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetOperation(operation)
 	return o
 }
 
-// SetOperationQueryParameter adds the operation to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetOperationQueryParameter(operation *string) {
-	o.OperationQueryParameter = operation
+// SetOperation adds the operation to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetOperation(operation *string) {
+	o.Operation = operation
 }
 
-// WithOrderByQueryParameter adds the orderBy to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithOrderBy(orderBy []string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithOwnerName(ownerName *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithOwnerUUID(ownerUUID *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithPendingApproversQueryParameter adds the pendingApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithPendingApproversQueryParameter(pendingApprovers *int64) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetPendingApproversQueryParameter(pendingApprovers)
+// WithPendingApprovers adds the pendingApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithPendingApprovers(pendingApprovers *int64) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetPendingApprovers(pendingApprovers)
 	return o
 }
 
-// SetPendingApproversQueryParameter adds the pendingApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetPendingApproversQueryParameter(pendingApprovers *int64) {
-	o.PendingApproversQueryParameter = pendingApprovers
+// SetPendingApprovers adds the pendingApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetPendingApprovers(pendingApprovers *int64) {
+	o.PendingApprovers = pendingApprovers
 }
 
-// WithPermittedUsersQueryParameter adds the permittedUsers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithPermittedUsersQueryParameter(permittedUsers *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetPermittedUsersQueryParameter(permittedUsers)
+// WithPermittedUsers adds the permittedUsers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithPermittedUsers(permittedUsers *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetPermittedUsers(permittedUsers)
 	return o
 }
 
-// SetPermittedUsersQueryParameter adds the permittedUsers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetPermittedUsersQueryParameter(permittedUsers *string) {
-	o.PermittedUsersQueryParameter = permittedUsers
+// SetPermittedUsers adds the permittedUsers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetPermittedUsers(permittedUsers *string) {
+	o.PermittedUsers = permittedUsers
 }
 
-// WithPotentialApproversQueryParameter adds the potentialApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithPotentialApproversQueryParameter(potentialApprovers *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetPotentialApproversQueryParameter(potentialApprovers)
+// WithPotentialApprovers adds the potentialApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithPotentialApprovers(potentialApprovers *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetPotentialApprovers(potentialApprovers)
 	return o
 }
 
-// SetPotentialApproversQueryParameter adds the potentialApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetPotentialApproversQueryParameter(potentialApprovers *string) {
-	o.PotentialApproversQueryParameter = potentialApprovers
+// SetPotentialApprovers adds the potentialApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetPotentialApprovers(potentialApprovers *string) {
+	o.PotentialApprovers = potentialApprovers
 }
 
-// WithQueryQueryParameter adds the query to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithQueryQueryParameter(query *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetQueryQueryParameter(query)
+// WithQuery adds the query to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithQuery(query *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetQuery(query)
 	return o
 }
 
-// SetQueryQueryParameter adds the query to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetQueryQueryParameter(query *string) {
-	o.QueryQueryParameter = query
+// SetQuery adds the query to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetQuery(query *string) {
+	o.Query = query
 }
 
-// WithRequiredApproversQueryParameter adds the requiredApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithRequiredApproversQueryParameter(requiredApprovers *int64) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetRequiredApproversQueryParameter(requiredApprovers)
+// WithRequiredApprovers adds the requiredApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithRequiredApprovers(requiredApprovers *int64) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetRequiredApprovers(requiredApprovers)
 	return o
 }
 
-// SetRequiredApproversQueryParameter adds the requiredApprovers to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetRequiredApproversQueryParameter(requiredApprovers *int64) {
-	o.RequiredApproversQueryParameter = requiredApprovers
+// SetRequiredApprovers adds the requiredApprovers to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetRequiredApprovers(requiredApprovers *int64) {
+	o.RequiredApprovers = requiredApprovers
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithReturnRecords(returnRecords *bool) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithStateQueryParameter(state *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithState(state *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithUserRequestedQueryParameter adds the userRequested to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithUserRequestedQueryParameter(userRequested *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetUserRequestedQueryParameter(userRequested)
+// WithUserRequested adds the userRequested to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithUserRequested(userRequested *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetUserRequested(userRequested)
 	return o
 }
 
-// SetUserRequestedQueryParameter adds the userRequested to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetUserRequestedQueryParameter(userRequested *string) {
-	o.UserRequestedQueryParameter = userRequested
+// SetUserRequested adds the userRequested to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetUserRequested(userRequested *string) {
+	o.UserRequested = userRequested
 }
 
-// WithUserVetoedQueryParameter adds the userVetoed to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) WithUserVetoedQueryParameter(userVetoed *string) *MultiAdminVerifyRequestCollectionGetParams {
-	o.SetUserVetoedQueryParameter(userVetoed)
+// WithUserVetoed adds the userVetoed to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) WithUserVetoed(userVetoed *string) *MultiAdminVerifyRequestCollectionGetParams {
+	o.SetUserVetoed(userVetoed)
 	return o
 }
 
-// SetUserVetoedQueryParameter adds the userVetoed to the multi admin verify request collection get params
-func (o *MultiAdminVerifyRequestCollectionGetParams) SetUserVetoedQueryParameter(userVetoed *string) {
-	o.UserVetoedQueryParameter = userVetoed
+// SetUserVetoed adds the userVetoed to the multi admin verify request collection get params
+func (o *MultiAdminVerifyRequestCollectionGetParams) SetUserVetoed(userVetoed *string) {
+	o.UserVetoed = userVetoed
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -532,13 +532,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 	}
 	var res []error
 
-	if o.ApproveExpiryTimeQueryParameter != nil {
+	if o.ApproveExpiryTime != nil {
 
 		// query param approve_expiry_time
 		var qrApproveExpiryTime string
 
-		if o.ApproveExpiryTimeQueryParameter != nil {
-			qrApproveExpiryTime = *o.ApproveExpiryTimeQueryParameter
+		if o.ApproveExpiryTime != nil {
+			qrApproveExpiryTime = *o.ApproveExpiryTime
 		}
 		qApproveExpiryTime := qrApproveExpiryTime
 		if qApproveExpiryTime != "" {
@@ -549,13 +549,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ApproveTimeQueryParameter != nil {
+	if o.ApproveTime != nil {
 
 		// query param approve_time
 		var qrApproveTime string
 
-		if o.ApproveTimeQueryParameter != nil {
-			qrApproveTime = *o.ApproveTimeQueryParameter
+		if o.ApproveTime != nil {
+			qrApproveTime = *o.ApproveTime
 		}
 		qApproveTime := qrApproveTime
 		if qApproveTime != "" {
@@ -566,13 +566,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ApprovedUsersQueryParameter != nil {
+	if o.ApprovedUsers != nil {
 
 		// query param approved_users
 		var qrApprovedUsers string
 
-		if o.ApprovedUsersQueryParameter != nil {
-			qrApprovedUsers = *o.ApprovedUsersQueryParameter
+		if o.ApprovedUsers != nil {
+			qrApprovedUsers = *o.ApprovedUsers
 		}
 		qApprovedUsers := qrApprovedUsers
 		if qApprovedUsers != "" {
@@ -583,13 +583,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -600,13 +600,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -617,13 +617,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ExecutionExpiryTimeQueryParameter != nil {
+	if o.ExecutionExpiryTime != nil {
 
 		// query param execution_expiry_time
 		var qrExecutionExpiryTime string
 
-		if o.ExecutionExpiryTimeQueryParameter != nil {
-			qrExecutionExpiryTime = *o.ExecutionExpiryTimeQueryParameter
+		if o.ExecutionExpiryTime != nil {
+			qrExecutionExpiryTime = *o.ExecutionExpiryTime
 		}
 		qExecutionExpiryTime := qrExecutionExpiryTime
 		if qExecutionExpiryTime != "" {
@@ -634,7 +634,7 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -645,13 +645,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -662,13 +662,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -679,13 +679,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OperationQueryParameter != nil {
+	if o.Operation != nil {
 
 		// query param operation
 		var qrOperation string
 
-		if o.OperationQueryParameter != nil {
-			qrOperation = *o.OperationQueryParameter
+		if o.Operation != nil {
+			qrOperation = *o.Operation
 		}
 		qOperation := qrOperation
 		if qOperation != "" {
@@ -696,7 +696,7 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -707,13 +707,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -724,13 +724,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -741,13 +741,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.PendingApproversQueryParameter != nil {
+	if o.PendingApprovers != nil {
 
 		// query param pending_approvers
 		var qrPendingApprovers int64
 
-		if o.PendingApproversQueryParameter != nil {
-			qrPendingApprovers = *o.PendingApproversQueryParameter
+		if o.PendingApprovers != nil {
+			qrPendingApprovers = *o.PendingApprovers
 		}
 		qPendingApprovers := swag.FormatInt64(qrPendingApprovers)
 		if qPendingApprovers != "" {
@@ -758,13 +758,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.PermittedUsersQueryParameter != nil {
+	if o.PermittedUsers != nil {
 
 		// query param permitted_users
 		var qrPermittedUsers string
 
-		if o.PermittedUsersQueryParameter != nil {
-			qrPermittedUsers = *o.PermittedUsersQueryParameter
+		if o.PermittedUsers != nil {
+			qrPermittedUsers = *o.PermittedUsers
 		}
 		qPermittedUsers := qrPermittedUsers
 		if qPermittedUsers != "" {
@@ -775,13 +775,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.PotentialApproversQueryParameter != nil {
+	if o.PotentialApprovers != nil {
 
 		// query param potential_approvers
 		var qrPotentialApprovers string
 
-		if o.PotentialApproversQueryParameter != nil {
-			qrPotentialApprovers = *o.PotentialApproversQueryParameter
+		if o.PotentialApprovers != nil {
+			qrPotentialApprovers = *o.PotentialApprovers
 		}
 		qPotentialApprovers := qrPotentialApprovers
 		if qPotentialApprovers != "" {
@@ -792,13 +792,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.QueryQueryParameter != nil {
+	if o.Query != nil {
 
 		// query param query
 		var qrQuery string
 
-		if o.QueryQueryParameter != nil {
-			qrQuery = *o.QueryQueryParameter
+		if o.Query != nil {
+			qrQuery = *o.Query
 		}
 		qQuery := qrQuery
 		if qQuery != "" {
@@ -809,13 +809,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.RequiredApproversQueryParameter != nil {
+	if o.RequiredApprovers != nil {
 
 		// query param required_approvers
 		var qrRequiredApprovers int64
 
-		if o.RequiredApproversQueryParameter != nil {
-			qrRequiredApprovers = *o.RequiredApproversQueryParameter
+		if o.RequiredApprovers != nil {
+			qrRequiredApprovers = *o.RequiredApprovers
 		}
 		qRequiredApprovers := swag.FormatInt64(qrRequiredApprovers)
 		if qRequiredApprovers != "" {
@@ -826,13 +826,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -843,13 +843,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -860,13 +860,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -877,13 +877,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.UserRequestedQueryParameter != nil {
+	if o.UserRequested != nil {
 
 		// query param user_requested
 		var qrUserRequested string
 
-		if o.UserRequestedQueryParameter != nil {
-			qrUserRequested = *o.UserRequestedQueryParameter
+		if o.UserRequested != nil {
+			qrUserRequested = *o.UserRequested
 		}
 		qUserRequested := qrUserRequested
 		if qUserRequested != "" {
@@ -894,13 +894,13 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.UserVetoedQueryParameter != nil {
+	if o.UserVetoed != nil {
 
 		// query param user_vetoed
 		var qrUserVetoed string
 
-		if o.UserVetoedQueryParameter != nil {
-			qrUserVetoed = *o.UserVetoedQueryParameter
+		if o.UserVetoed != nil {
+			qrUserVetoed = *o.UserVetoed
 		}
 		qUserVetoed := qrUserVetoed
 		if qUserVetoed != "" {
@@ -919,7 +919,7 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) WriteToRequest(r runtime.Cl
 
 // bindParamMultiAdminVerifyRequestCollectionGet binds the parameter fields
 func (o *MultiAdminVerifyRequestCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -936,7 +936,7 @@ func (o *MultiAdminVerifyRequestCollectionGetParams) bindParamFields(formats str
 
 // bindParamMultiAdminVerifyRequestCollectionGet binds the parameter order_by
 func (o *MultiAdminVerifyRequestCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

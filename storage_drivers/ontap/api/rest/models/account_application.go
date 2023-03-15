@@ -23,10 +23,10 @@ type AccountApplication struct {
 
 	// Applications
 	// Enum: [amqp console http ontapi service_processor ssh]
-	Application string `json:"application,omitempty"`
+	Application *string `json:"application,omitempty"`
 
 	// authentication methods
-	AuthenticationMethods []string `json:"authentication_methods,omitempty"`
+	AuthenticationMethods []*string `json:"authentication_methods,omitempty"`
 
 	// An optional additional authentication method for MFA. This only works with SSH as the application. It is ignored for all other applications.
 	// Enum: [none password publickey nsswitch]
@@ -144,7 +144,7 @@ func (m *AccountApplication) validateApplication(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateApplicationEnum("application", "body", m.Application); err != nil {
+	if err := m.validateApplicationEnum("application", "body", *m.Application); err != nil {
 		return err
 	}
 
@@ -176,9 +176,12 @@ func (m *AccountApplication) validateAuthenticationMethods(formats strfmt.Regist
 	}
 
 	for i := 0; i < len(m.AuthenticationMethods); i++ {
+		if swag.IsZero(m.AuthenticationMethods[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateAuthenticationMethodsItemsEnum("authentication_methods"+"."+strconv.Itoa(i), "body", m.AuthenticationMethods[i]); err != nil {
+		if err := m.validateAuthenticationMethodsItemsEnum("authentication_methods"+"."+strconv.Itoa(i), "body", *m.AuthenticationMethods[i]); err != nil {
 			return err
 		}
 

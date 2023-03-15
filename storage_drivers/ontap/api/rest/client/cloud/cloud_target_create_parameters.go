@@ -68,13 +68,13 @@ type CloudTargetCreateParams struct {
 
 	   Do not create the target configuration, only check that the POST request succeeds.
 	*/
-	CheckOnlyQueryParameter *bool
+	CheckOnly *bool
 
 	/* IgnoreWarnings.
 
 	   Specifies whether or not warning codes should be ignored.
 	*/
-	IgnoreWarningsQueryParameter *bool
+	IgnoreWarnings *bool
 
 	/* Info.
 
@@ -86,13 +86,13 @@ type CloudTargetCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -112,14 +112,14 @@ func (o *CloudTargetCreateParams) WithDefaults() *CloudTargetCreateParams {
 // All values with no default are reset to their zero value.
 func (o *CloudTargetCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := CloudTargetCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -161,26 +161,26 @@ func (o *CloudTargetCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCheckOnlyQueryParameter adds the checkOnly to the cloud target create params
-func (o *CloudTargetCreateParams) WithCheckOnlyQueryParameter(checkOnly *bool) *CloudTargetCreateParams {
-	o.SetCheckOnlyQueryParameter(checkOnly)
+// WithCheckOnly adds the checkOnly to the cloud target create params
+func (o *CloudTargetCreateParams) WithCheckOnly(checkOnly *bool) *CloudTargetCreateParams {
+	o.SetCheckOnly(checkOnly)
 	return o
 }
 
-// SetCheckOnlyQueryParameter adds the checkOnly to the cloud target create params
-func (o *CloudTargetCreateParams) SetCheckOnlyQueryParameter(checkOnly *bool) {
-	o.CheckOnlyQueryParameter = checkOnly
+// SetCheckOnly adds the checkOnly to the cloud target create params
+func (o *CloudTargetCreateParams) SetCheckOnly(checkOnly *bool) {
+	o.CheckOnly = checkOnly
 }
 
-// WithIgnoreWarningsQueryParameter adds the ignoreWarnings to the cloud target create params
-func (o *CloudTargetCreateParams) WithIgnoreWarningsQueryParameter(ignoreWarnings *bool) *CloudTargetCreateParams {
-	o.SetIgnoreWarningsQueryParameter(ignoreWarnings)
+// WithIgnoreWarnings adds the ignoreWarnings to the cloud target create params
+func (o *CloudTargetCreateParams) WithIgnoreWarnings(ignoreWarnings *bool) *CloudTargetCreateParams {
+	o.SetIgnoreWarnings(ignoreWarnings)
 	return o
 }
 
-// SetIgnoreWarningsQueryParameter adds the ignoreWarnings to the cloud target create params
-func (o *CloudTargetCreateParams) SetIgnoreWarningsQueryParameter(ignoreWarnings *bool) {
-	o.IgnoreWarningsQueryParameter = ignoreWarnings
+// SetIgnoreWarnings adds the ignoreWarnings to the cloud target create params
+func (o *CloudTargetCreateParams) SetIgnoreWarnings(ignoreWarnings *bool) {
+	o.IgnoreWarnings = ignoreWarnings
 }
 
 // WithInfo adds the info to the cloud target create params
@@ -194,26 +194,26 @@ func (o *CloudTargetCreateParams) SetInfo(info *models.CloudTarget) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cloud target create params
-func (o *CloudTargetCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CloudTargetCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cloud target create params
+func (o *CloudTargetCreateParams) WithReturnRecords(returnRecords *bool) *CloudTargetCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cloud target create params
-func (o *CloudTargetCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cloud target create params
+func (o *CloudTargetCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud target create params
-func (o *CloudTargetCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudTargetCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cloud target create params
+func (o *CloudTargetCreateParams) WithReturnTimeout(returnTimeout *int64) *CloudTargetCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud target create params
-func (o *CloudTargetCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cloud target create params
+func (o *CloudTargetCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -224,13 +224,13 @@ func (o *CloudTargetCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.CheckOnlyQueryParameter != nil {
+	if o.CheckOnly != nil {
 
 		// query param check_only
 		var qrCheckOnly bool
 
-		if o.CheckOnlyQueryParameter != nil {
-			qrCheckOnly = *o.CheckOnlyQueryParameter
+		if o.CheckOnly != nil {
+			qrCheckOnly = *o.CheckOnly
 		}
 		qCheckOnly := swag.FormatBool(qrCheckOnly)
 		if qCheckOnly != "" {
@@ -241,13 +241,13 @@ func (o *CloudTargetCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.IgnoreWarningsQueryParameter != nil {
+	if o.IgnoreWarnings != nil {
 
 		// query param ignore_warnings
 		var qrIgnoreWarnings bool
 
-		if o.IgnoreWarningsQueryParameter != nil {
-			qrIgnoreWarnings = *o.IgnoreWarningsQueryParameter
+		if o.IgnoreWarnings != nil {
+			qrIgnoreWarnings = *o.IgnoreWarnings
 		}
 		qIgnoreWarnings := swag.FormatBool(qrIgnoreWarnings)
 		if qIgnoreWarnings != "" {
@@ -263,13 +263,13 @@ func (o *CloudTargetCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -280,13 +280,13 @@ func (o *CloudTargetCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

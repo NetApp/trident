@@ -20,13 +20,14 @@ import (
 type CloudTargetResponse struct {
 
 	// links
-	Links *CloudTargetResponseLinks `json:"_links,omitempty"`
+	Links *CloudTargetResponseInlineLinks `json:"_links,omitempty"`
+
+	// cloud target response inline records
+	CloudTargetResponseInlineRecords []*CloudTarget `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CloudTarget `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cloud target response
@@ -37,7 +38,7 @@ func (m *CloudTargetResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCloudTargetResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CloudTargetResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CloudTargetResponse) validateCloudTargetResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CloudTargetResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CloudTargetResponseInlineRecords); i++ {
+		if swag.IsZero(m.CloudTargetResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CloudTargetResponseInlineRecords[i] != nil {
+			if err := m.CloudTargetResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CloudTargetResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCloudTargetResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CloudTargetResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CloudTargetResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetResponse) contextValidateCloudTargetResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CloudTargetResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CloudTargetResponseInlineRecords[i] != nil {
+			if err := m.CloudTargetResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CloudTargetResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetResponseLinks cloud target response links
+// CloudTargetResponseInlineLinks cloud target response inline links
 //
-// swagger:model CloudTargetResponseLinks
-type CloudTargetResponseLinks struct {
+// swagger:model cloud_target_response_inline__links
+type CloudTargetResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CloudTargetResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud target response links
-func (m *CloudTargetResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target response inline links
+func (m *CloudTargetResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CloudTargetResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CloudTargetResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CloudTargetResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudTargetResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CloudTargetResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target response links based on the context it is used
-func (m *CloudTargetResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target response inline links based on the context it is used
+func (m *CloudTargetResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CloudTargetResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CloudTargetResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CloudTargetResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *CloudTargetResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CloudTargetResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CloudTargetResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CloudTargetResponseLinks
+func (m *CloudTargetResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudTargetResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

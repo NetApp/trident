@@ -20,35 +20,35 @@ import (
 // swagger:model s3_bucket_policy_condition
 type S3BucketPolicyCondition struct {
 
-	// An array of delimiters that are compared with the delimiter value specified at the time of execution of an S3-based command, using the condition operator specified.
-	//
-	// Example: ["/"]
-	Delimiters []string `json:"delimiters,omitempty"`
-
-	// An array of maximum keys that are allowed or denied to be retrieved using an S3 list operation, based on the condition operator specified.
-	//
-	// Example: ["1000"]
-	MaxKeys []int64 `json:"max_keys,omitempty"`
-
 	// Condition operator that is applied to the specified condition key.
 	// Example: ip_address
 	// Enum: [ip_address not_ip_address string_equals string_not_equals string_equals_ignore_case string_not_equals_ignore_case string_like string_not_like numeric_equals numeric_not_equals numeric_greater_than numeric_greater_than_equals numeric_less_than numeric_less_than_equals]
-	Operator string `json:"operator,omitempty"`
+	Operator *string `json:"operator,omitempty"`
+
+	// An array of delimiters that are compared with the delimiter value specified at the time of execution of an S3-based command, using the condition operator specified.
+	//
+	// Example: ["/"]
+	S3BucketPolicyConditionInlineDelimiters []*string `json:"delimiters,omitempty"`
+
+	// An array of maximum keys that are allowed or denied to be retrieved using an S3 list operation, based on the condition operator specified.
+	//
+	// Example: [1000]
+	S3BucketPolicyConditionInlineMaxKeys []*int64 `json:"max_keys,omitempty"`
 
 	// An array of prefixes that are compared with the input prefix value specified at the time of execution of an S3-based command, using the condition operator specified.
 	//
 	// Example: ["pref"]
-	Prefixes []string `json:"prefixes,omitempty"`
+	S3BucketPolicyConditionInlinePrefixes []*string `json:"prefixes,omitempty"`
 
 	// An array of IP address ranges that are compared with the IP address of a source command at the time of execution of an S3-based command, using the condition operator specified.
 	//
 	// Example: ["1.1.1.1","1.2.2.0/24"]
-	SourceIps []string `json:"source_ips,omitempty"`
+	S3BucketPolicyConditionInlineSourceIps []*string `json:"source_ips,omitempty"`
 
 	// An array of usernames that a current user in the context is evaluated against using the condition operators.
 	//
 	// Example: ["user1"]
-	Usernames []string `json:"usernames,omitempty"`
+	S3BucketPolicyConditionInlineUsernames []*string `json:"usernames,omitempty"`
 }
 
 // Validate validates this s3 bucket policy condition
@@ -234,7 +234,7 @@ func (m *S3BucketPolicyCondition) validateOperator(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateOperatorEnum("operator", "body", m.Operator); err != nil {
+	if err := m.validateOperatorEnum("operator", "body", *m.Operator); err != nil {
 		return err
 	}
 

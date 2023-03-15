@@ -20,13 +20,14 @@ import (
 type FpolicyResponse struct {
 
 	// links
-	Links *FpolicyResponseLinks `json:"_links,omitempty"`
+	Links *FpolicyResponseInlineLinks `json:"_links,omitempty"`
+
+	// fpolicy response inline records
+	FpolicyResponseInlineRecords []*Fpolicy `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Fpolicy `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fpolicy response
@@ -37,7 +38,7 @@ func (m *FpolicyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFpolicyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *FpolicyResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FpolicyResponse) validateFpolicyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FpolicyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FpolicyResponseInlineRecords); i++ {
+		if swag.IsZero(m.FpolicyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FpolicyResponseInlineRecords[i] != nil {
+			if err := m.FpolicyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *FpolicyResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFpolicyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *FpolicyResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FpolicyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyResponse) contextValidateFpolicyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FpolicyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FpolicyResponseInlineRecords[i] != nil {
+			if err := m.FpolicyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *FpolicyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyResponseLinks fpolicy response links
+// FpolicyResponseInlineLinks fpolicy response inline links
 //
-// swagger:model FpolicyResponseLinks
-type FpolicyResponseLinks struct {
+// swagger:model fpolicy_response_inline__links
+type FpolicyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type FpolicyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy response links
-func (m *FpolicyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy response inline links
+func (m *FpolicyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *FpolicyResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FpolicyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *FpolicyResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *FpolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy response links based on the context it is used
-func (m *FpolicyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy response inline links based on the context it is used
+func (m *FpolicyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *FpolicyResponseLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FpolicyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *FpolicyResponseLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FpolicyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *FpolicyResponseLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *FpolicyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyResponseLinks
+func (m *FpolicyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

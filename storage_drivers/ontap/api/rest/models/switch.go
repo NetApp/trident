@@ -24,35 +24,35 @@ type Switch struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// IP Address.
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// Discovered By ONTAP CDP/LLDP
 	// Read Only: true
 	Discovered *bool `json:"discovered,omitempty"`
 
 	// Model Number.
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// monitoring
-	Monitoring *SwitchMonitoring `json:"monitoring,omitempty"`
+	Monitoring *SwitchInlineMonitoring `json:"monitoring,omitempty"`
 
 	// Name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Switch Network.
 	// Enum: [cluster management storage]
-	Network string `json:"network,omitempty"`
+	Network *string `json:"network,omitempty"`
 
 	// Serial Number.
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// snmp
-	Snmp *SwitchSnmp `json:"snmp,omitempty"`
+	Snmp *SwitchInlineSnmp `json:"snmp,omitempty"`
 
 	// Software Version.
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this switch
@@ -174,7 +174,7 @@ func (m *Switch) validateNetwork(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateNetworkEnum("network", "body", m.Network); err != nil {
+	if err := m.validateNetworkEnum("network", "body", *m.Network); err != nil {
 		return err
 	}
 
@@ -271,7 +271,7 @@ func (m *Switch) contextValidateMonitoring(ctx context.Context, formats strfmt.R
 
 func (m *Switch) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -294,7 +294,7 @@ func (m *Switch) contextValidateSnmp(ctx context.Context, formats strfmt.Registr
 
 func (m *Switch) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "version", "body", m.Version); err != nil {
 		return err
 	}
 
@@ -319,13 +319,13 @@ func (m *Switch) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchMonitoring switch monitoring
+// SwitchInlineMonitoring switch inline monitoring
 //
-// swagger:model SwitchMonitoring
-type SwitchMonitoring struct {
+// swagger:model switch_inline_monitoring
+type SwitchInlineMonitoring struct {
 
 	// Enable Health Monitoring.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Is Monitored.
 	// Read Only: true
@@ -334,11 +334,11 @@ type SwitchMonitoring struct {
 	// Reason For Not Monitoring.
 	// Read Only: true
 	// Enum: [none unsupported_model user_deleted bad_ip_address invalid_snmp_settings bad_model invalid_software_version user_disabled unknown]
-	Reason string `json:"reason,omitempty"`
+	Reason *string `json:"reason,omitempty"`
 }
 
-// Validate validates this switch monitoring
-func (m *SwitchMonitoring) Validate(formats strfmt.Registry) error {
+// Validate validates this switch inline monitoring
+func (m *SwitchInlineMonitoring) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReason(formats); err != nil {
@@ -351,7 +351,7 @@ func (m *SwitchMonitoring) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var switchMonitoringTypeReasonPropEnum []interface{}
+var switchInlineMonitoringTypeReasonPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -359,126 +359,126 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		switchMonitoringTypeReasonPropEnum = append(switchMonitoringTypeReasonPropEnum, v)
+		switchInlineMonitoringTypeReasonPropEnum = append(switchInlineMonitoringTypeReasonPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// none
 	// END DEBUGGING
-	// SwitchMonitoringReasonNone captures enum value "none"
-	SwitchMonitoringReasonNone string = "none"
+	// SwitchInlineMonitoringReasonNone captures enum value "none"
+	SwitchInlineMonitoringReasonNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// unsupported_model
 	// END DEBUGGING
-	// SwitchMonitoringReasonUnsupportedModel captures enum value "unsupported_model"
-	SwitchMonitoringReasonUnsupportedModel string = "unsupported_model"
+	// SwitchInlineMonitoringReasonUnsupportedModel captures enum value "unsupported_model"
+	SwitchInlineMonitoringReasonUnsupportedModel string = "unsupported_model"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// user_deleted
 	// END DEBUGGING
-	// SwitchMonitoringReasonUserDeleted captures enum value "user_deleted"
-	SwitchMonitoringReasonUserDeleted string = "user_deleted"
+	// SwitchInlineMonitoringReasonUserDeleted captures enum value "user_deleted"
+	SwitchInlineMonitoringReasonUserDeleted string = "user_deleted"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// bad_ip_address
 	// END DEBUGGING
-	// SwitchMonitoringReasonBadIPAddress captures enum value "bad_ip_address"
-	SwitchMonitoringReasonBadIPAddress string = "bad_ip_address"
+	// SwitchInlineMonitoringReasonBadIPAddress captures enum value "bad_ip_address"
+	SwitchInlineMonitoringReasonBadIPAddress string = "bad_ip_address"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// invalid_snmp_settings
 	// END DEBUGGING
-	// SwitchMonitoringReasonInvalidSnmpSettings captures enum value "invalid_snmp_settings"
-	SwitchMonitoringReasonInvalidSnmpSettings string = "invalid_snmp_settings"
+	// SwitchInlineMonitoringReasonInvalidSnmpSettings captures enum value "invalid_snmp_settings"
+	SwitchInlineMonitoringReasonInvalidSnmpSettings string = "invalid_snmp_settings"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// bad_model
 	// END DEBUGGING
-	// SwitchMonitoringReasonBadModel captures enum value "bad_model"
-	SwitchMonitoringReasonBadModel string = "bad_model"
+	// SwitchInlineMonitoringReasonBadModel captures enum value "bad_model"
+	SwitchInlineMonitoringReasonBadModel string = "bad_model"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// invalid_software_version
 	// END DEBUGGING
-	// SwitchMonitoringReasonInvalidSoftwareVersion captures enum value "invalid_software_version"
-	SwitchMonitoringReasonInvalidSoftwareVersion string = "invalid_software_version"
+	// SwitchInlineMonitoringReasonInvalidSoftwareVersion captures enum value "invalid_software_version"
+	SwitchInlineMonitoringReasonInvalidSoftwareVersion string = "invalid_software_version"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// user_disabled
 	// END DEBUGGING
-	// SwitchMonitoringReasonUserDisabled captures enum value "user_disabled"
-	SwitchMonitoringReasonUserDisabled string = "user_disabled"
+	// SwitchInlineMonitoringReasonUserDisabled captures enum value "user_disabled"
+	SwitchInlineMonitoringReasonUserDisabled string = "user_disabled"
 
 	// BEGIN DEBUGGING
-	// SwitchMonitoring
-	// SwitchMonitoring
+	// switch_inline_monitoring
+	// SwitchInlineMonitoring
 	// reason
 	// Reason
 	// unknown
 	// END DEBUGGING
-	// SwitchMonitoringReasonUnknown captures enum value "unknown"
-	SwitchMonitoringReasonUnknown string = "unknown"
+	// SwitchInlineMonitoringReasonUnknown captures enum value "unknown"
+	SwitchInlineMonitoringReasonUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *SwitchMonitoring) validateReasonEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, switchMonitoringTypeReasonPropEnum, true); err != nil {
+func (m *SwitchInlineMonitoring) validateReasonEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, switchInlineMonitoringTypeReasonPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SwitchMonitoring) validateReason(formats strfmt.Registry) error {
+func (m *SwitchInlineMonitoring) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateReasonEnum("monitoring"+"."+"reason", "body", m.Reason); err != nil {
+	if err := m.validateReasonEnum("monitoring"+"."+"reason", "body", *m.Reason); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this switch monitoring based on the context it is used
-func (m *SwitchMonitoring) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch inline monitoring based on the context it is used
+func (m *SwitchInlineMonitoring) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMonitored(ctx, formats); err != nil {
@@ -495,7 +495,7 @@ func (m *SwitchMonitoring) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SwitchMonitoring) contextValidateMonitored(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchInlineMonitoring) contextValidateMonitored(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "monitoring"+"."+"monitored", "body", m.Monitored); err != nil {
 		return err
@@ -504,9 +504,9 @@ func (m *SwitchMonitoring) contextValidateMonitored(ctx context.Context, formats
 	return nil
 }
 
-func (m *SwitchMonitoring) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchInlineMonitoring) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "monitoring"+"."+"reason", "body", string(m.Reason)); err != nil {
+	if err := validate.ReadOnly(ctx, "monitoring"+"."+"reason", "body", m.Reason); err != nil {
 		return err
 	}
 
@@ -514,7 +514,7 @@ func (m *SwitchMonitoring) contextValidateReason(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchMonitoring) MarshalBinary() ([]byte, error) {
+func (m *SwitchInlineMonitoring) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -522,8 +522,8 @@ func (m *SwitchMonitoring) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchMonitoring) UnmarshalBinary(b []byte) error {
-	var res SwitchMonitoring
+func (m *SwitchInlineMonitoring) UnmarshalBinary(b []byte) error {
+	var res SwitchInlineMonitoring
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -531,21 +531,21 @@ func (m *SwitchMonitoring) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchSnmp switch snmp
+// SwitchInlineSnmp switch inline snmp
 //
-// swagger:model SwitchSnmp
-type SwitchSnmp struct {
+// swagger:model switch_inline_snmp
+type SwitchInlineSnmp struct {
 
 	// Community String or SNMPv3 Username.
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 
 	// SNMP Version.
 	// Enum: [snmpv1 snmpv2c snmpv3]
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
-// Validate validates this switch snmp
-func (m *SwitchSnmp) Validate(formats strfmt.Registry) error {
+// Validate validates this switch inline snmp
+func (m *SwitchInlineSnmp) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateVersion(formats); err != nil {
@@ -558,7 +558,7 @@ func (m *SwitchSnmp) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var switchSnmpTypeVersionPropEnum []interface{}
+var switchInlineSnmpTypeVersionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -566,71 +566,71 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		switchSnmpTypeVersionPropEnum = append(switchSnmpTypeVersionPropEnum, v)
+		switchInlineSnmpTypeVersionPropEnum = append(switchInlineSnmpTypeVersionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SwitchSnmp
-	// SwitchSnmp
+	// switch_inline_snmp
+	// SwitchInlineSnmp
 	// version
 	// Version
 	// snmpv1
 	// END DEBUGGING
-	// SwitchSnmpVersionSnmpv1 captures enum value "snmpv1"
-	SwitchSnmpVersionSnmpv1 string = "snmpv1"
+	// SwitchInlineSnmpVersionSnmpv1 captures enum value "snmpv1"
+	SwitchInlineSnmpVersionSnmpv1 string = "snmpv1"
 
 	// BEGIN DEBUGGING
-	// SwitchSnmp
-	// SwitchSnmp
+	// switch_inline_snmp
+	// SwitchInlineSnmp
 	// version
 	// Version
 	// snmpv2c
 	// END DEBUGGING
-	// SwitchSnmpVersionSnmpv2c captures enum value "snmpv2c"
-	SwitchSnmpVersionSnmpv2c string = "snmpv2c"
+	// SwitchInlineSnmpVersionSnmpv2c captures enum value "snmpv2c"
+	SwitchInlineSnmpVersionSnmpv2c string = "snmpv2c"
 
 	// BEGIN DEBUGGING
-	// SwitchSnmp
-	// SwitchSnmp
+	// switch_inline_snmp
+	// SwitchInlineSnmp
 	// version
 	// Version
 	// snmpv3
 	// END DEBUGGING
-	// SwitchSnmpVersionSnmpv3 captures enum value "snmpv3"
-	SwitchSnmpVersionSnmpv3 string = "snmpv3"
+	// SwitchInlineSnmpVersionSnmpv3 captures enum value "snmpv3"
+	SwitchInlineSnmpVersionSnmpv3 string = "snmpv3"
 )
 
 // prop value enum
-func (m *SwitchSnmp) validateVersionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, switchSnmpTypeVersionPropEnum, true); err != nil {
+func (m *SwitchInlineSnmp) validateVersionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, switchInlineSnmpTypeVersionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SwitchSnmp) validateVersion(formats strfmt.Registry) error {
+func (m *SwitchInlineSnmp) validateVersion(formats strfmt.Registry) error {
 	if swag.IsZero(m.Version) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateVersionEnum("snmp"+"."+"version", "body", m.Version); err != nil {
+	if err := m.validateVersionEnum("snmp"+"."+"version", "body", *m.Version); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this switch snmp based on context it is used
-func (m *SwitchSnmp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this switch inline snmp based on context it is used
+func (m *SwitchInlineSnmp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchSnmp) MarshalBinary() ([]byte, error) {
+func (m *SwitchInlineSnmp) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -638,8 +638,8 @@ func (m *SwitchSnmp) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchSnmp) UnmarshalBinary(b []byte) error {
-	var res SwitchSnmp
+func (m *SwitchInlineSnmp) UnmarshalBinary(b []byte) error {
+	var res SwitchInlineSnmp
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

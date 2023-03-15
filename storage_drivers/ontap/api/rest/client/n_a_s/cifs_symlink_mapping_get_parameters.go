@@ -66,19 +66,19 @@ type CifsSymlinkMappingGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixPath.
 
 	   UNIX symbolic link path
 	*/
-	UnixPathPathParameter string
+	UnixPath string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CifsSymlinkMappingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) WithFieldsQueryParameter(fields []string) *CifsSymlinkMappingGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) WithFields(fields []string) *CifsSymlinkMappingGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSymlinkMappingGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) WithSvmUUID(svmUUID string) *CifsSymlinkMappingGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixPathPathParameter adds the unixPath to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) WithUnixPathPathParameter(unixPath string) *CifsSymlinkMappingGetParams {
-	o.SetUnixPathPathParameter(unixPath)
+// WithUnixPath adds the unixPath to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) WithUnixPath(unixPath string) *CifsSymlinkMappingGetParams {
+	o.SetUnixPath(unixPath)
 	return o
 }
 
-// SetUnixPathPathParameter adds the unixPath to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) SetUnixPathPathParameter(unixPath string) {
-	o.UnixPathPathParameter = unixPath
+// SetUnixPath adds the unixPath to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) SetUnixPath(unixPath string) {
+	o.UnixPath = unixPath
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_path
-	if err := r.SetPathParam("unix_path", o.UnixPathPathParameter); err != nil {
+	if err := r.SetPathParam("unix_path", o.UnixPath); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamCifsSymlinkMappingGet binds the parameter fields
 func (o *CifsSymlinkMappingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

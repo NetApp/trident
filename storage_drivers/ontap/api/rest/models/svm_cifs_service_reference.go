@@ -20,10 +20,10 @@ import (
 type SvmCifsServiceReference struct {
 
 	// links
-	Links *SvmCifsServiceReferenceLinks `json:"_links,omitempty"`
+	Links *SvmCifsServiceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// ad domain
-	AdDomain *SvmCifsServiceReferenceAdDomain `json:"ad_domain,omitempty"`
+	AdDomain *SvmCifsServiceReferenceInlineAdDomain `json:"ad_domain,omitempty"`
 
 	// If this is set to true, an SVM administrator can manage the CIFS service. If it is false, only the cluster administrator can manage the service.
 	Allowed *bool `json:"allowed,omitempty"`
@@ -35,7 +35,7 @@ type SvmCifsServiceReference struct {
 	// Example: CIFS1
 	// Max Length: 15
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this svm cifs service reference
@@ -99,11 +99,11 @@ func (m *SvmCifsServiceReference) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 15); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 15); err != nil {
 		return err
 	}
 
@@ -174,15 +174,15 @@ func (m *SvmCifsServiceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmCifsServiceReferenceAdDomain svm cifs service reference ad domain
+// SvmCifsServiceReferenceInlineAdDomain svm cifs service reference inline ad domain
 //
-// swagger:model SvmCifsServiceReferenceAdDomain
-type SvmCifsServiceReferenceAdDomain struct {
+// swagger:model svm_cifs_service_reference_inline_ad_domain
+type SvmCifsServiceReferenceInlineAdDomain struct {
 
 	// The fully qualified domain name of the Windows Active Directory to which this CIFS server belongs. A CIFS server appears as a member of Windows server object in the Active Directory store.
 	//
 	// Example: example.com
-	Fqdn string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn,omitempty"`
 
 	// Specifies the organizational unit within the Active Directory domain to associate with the CIFS server.
 	//
@@ -190,25 +190,25 @@ type SvmCifsServiceReferenceAdDomain struct {
 
 	// The account password used to add this CIFS server to the Active Directory. This is not audited. Valid in POST only.
 	//
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// The user account used to add this CIFS server to the Active Directory. Valid in POST only.
 	//
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
-// Validate validates this svm cifs service reference ad domain
-func (m *SvmCifsServiceReferenceAdDomain) Validate(formats strfmt.Registry) error {
+// Validate validates this svm cifs service reference inline ad domain
+func (m *SvmCifsServiceReferenceInlineAdDomain) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this svm cifs service reference ad domain based on context it is used
-func (m *SvmCifsServiceReferenceAdDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this svm cifs service reference inline ad domain based on context it is used
+func (m *SvmCifsServiceReferenceInlineAdDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SvmCifsServiceReferenceAdDomain) MarshalBinary() ([]byte, error) {
+func (m *SvmCifsServiceReferenceInlineAdDomain) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -216,8 +216,8 @@ func (m *SvmCifsServiceReferenceAdDomain) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmCifsServiceReferenceAdDomain) UnmarshalBinary(b []byte) error {
-	var res SvmCifsServiceReferenceAdDomain
+func (m *SvmCifsServiceReferenceInlineAdDomain) UnmarshalBinary(b []byte) error {
+	var res SvmCifsServiceReferenceInlineAdDomain
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -225,17 +225,17 @@ func (m *SvmCifsServiceReferenceAdDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmCifsServiceReferenceLinks svm cifs service reference links
+// SvmCifsServiceReferenceInlineLinks svm cifs service reference inline links
 //
-// swagger:model SvmCifsServiceReferenceLinks
-type SvmCifsServiceReferenceLinks struct {
+// swagger:model svm_cifs_service_reference_inline__links
+type SvmCifsServiceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm cifs service reference links
-func (m *SvmCifsServiceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm cifs service reference inline links
+func (m *SvmCifsServiceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -248,7 +248,7 @@ func (m *SvmCifsServiceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmCifsServiceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmCifsServiceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -265,8 +265,8 @@ func (m *SvmCifsServiceReferenceLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this svm cifs service reference links based on the context it is used
-func (m *SvmCifsServiceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm cifs service reference inline links based on the context it is used
+func (m *SvmCifsServiceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -279,7 +279,7 @@ func (m *SvmCifsServiceReferenceLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SvmCifsServiceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmCifsServiceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +294,7 @@ func (m *SvmCifsServiceReferenceLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SvmCifsServiceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmCifsServiceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -302,8 +302,8 @@ func (m *SvmCifsServiceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmCifsServiceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SvmCifsServiceReferenceLinks
+func (m *SvmCifsServiceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmCifsServiceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -22,13 +22,14 @@ import (
 type PerformanceLunMetricResponse struct {
 
 	// links
-	Links *PerformanceLunMetricResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceLunMetricResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceLunMetricResponseRecordsItems0 `json:"records,omitempty"`
+	// performance lun metric response inline records
+	PerformanceLunMetricResponseInlineRecords []*PerformanceLunMetricResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance lun metric response
@@ -39,7 +40,7 @@ func (m *PerformanceLunMetricResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceLunMetricResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceLunMetricResponse) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *PerformanceLunMetricResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceLunMetricResponse) validatePerformanceLunMetricResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceLunMetricResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceLunMetricResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceLunMetricResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceLunMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceLunMetricResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceLunMetricResponse) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceLunMetricResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceLunMetricResponse) contextValidateLinks(ctx context.Context,
 	return nil
 }
 
-func (m *PerformanceLunMetricResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponse) contextValidatePerformanceLunMetricResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceLunMetricResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceLunMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceLunMetricResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceLunMetricResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceLunMetricResponseLinks performance lun metric response links
+// PerformanceLunMetricResponseInlineLinks performance lun metric response inline links
 //
-// swagger:model PerformanceLunMetricResponseLinks
-type PerformanceLunMetricResponseLinks struct {
+// swagger:model performance_lun_metric_response_inline__links
+type PerformanceLunMetricResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceLunMetricResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance lun metric response links
-func (m *PerformanceLunMetricResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline links
+func (m *PerformanceLunMetricResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceLunMetricResponseLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceLunMetricResponseLinks) validateNext(formats strfmt.Registry
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceLunMetricResponseLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response links based on the context it is used
-func (m *PerformanceLunMetricResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline links based on the context it is used
+func (m *PerformanceLunMetricResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceLunMetricResponseLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceLunMetricResponseLinks) contextValidateNext(ctx context.Cont
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceLunMetricResponseLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceLunMetricResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseLinks
+func (m *PerformanceLunMetricResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *PerformanceLunMetricResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceLunMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceLunMetricResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput.
 //
-// swagger:model PerformanceLunMetricResponseRecordsItems0
-type PerformanceLunMetricResponseRecordsItems0 struct {
+// swagger:model performance_lun_metric_response_inline_records_inline_array_item
+type PerformanceLunMetricResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *PerformanceLunMetricResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceLunMetricResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceLunMetricResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceLunMetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -326,11 +327,11 @@ type PerformanceLunMetricResponseRecordsItems0 struct {
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this performance lun metric response records items0
-func (m *PerformanceLunMetricResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline records inline array item
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -367,7 +368,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -384,7 +385,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) validateLinks(formats strfmt
 	return nil
 }
 
-var performanceLunMetricResponseRecordsItems0TypeDurationPropEnum []interface{}
+var performanceLunMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -392,95 +393,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceLunMetricResponseRecordsItems0TypeDurationPropEnum = append(performanceLunMetricResponseRecordsItems0TypeDurationPropEnum, v)
+		performanceLunMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(performanceLunMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	PerformanceLunMetricResponseRecordsItems0DurationPT15S string = "PT15S"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	PerformanceLunMetricResponseRecordsItems0DurationPT4M string = "PT4M"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	PerformanceLunMetricResponseRecordsItems0DurationPT30M string = "PT30M"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	PerformanceLunMetricResponseRecordsItems0DurationPT2H string = "PT2H"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationP1D captures enum value "P1D"
-	PerformanceLunMetricResponseRecordsItems0DurationP1D string = "P1D"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	PerformanceLunMetricResponseRecordsItems0DurationPT5M string = "PT5M"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceLunMetricResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceLunMetricResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceLunMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -497,7 +498,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) validateIops(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -514,7 +515,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) validateLatency(formats strf
 	return nil
 }
 
-var performanceLunMetricResponseRecordsItems0TypeStatusPropEnum []interface{}
+var performanceLunMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -522,145 +523,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceLunMetricResponseRecordsItems0TypeStatusPropEnum = append(performanceLunMetricResponseRecordsItems0TypeStatusPropEnum, v)
+		performanceLunMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(performanceLunMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusOk captures enum value "ok"
-	PerformanceLunMetricResponseRecordsItems0StatusOk string = "ok"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusError captures enum value "error"
-	PerformanceLunMetricResponseRecordsItems0StatusError string = "error"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceLunMetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceLunMetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceLunMetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceLunMetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	PerformanceLunMetricResponseRecordsItems0StatusNotFound string = "not_found"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceLunMetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceLunMetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceLunMetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
+	// performance_lun_metric_response_inline_records_inline_array_item
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceLunMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceLunMetricResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceLunMetricResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceLunMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -677,7 +678,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) validateThroughput(formats s
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -689,8 +690,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0) validateTimestamp(formats st
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response records items0 based on the context it is used
-func (m *PerformanceLunMetricResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline records inline array item based on the context it is used
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -731,7 +732,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -745,16 +746,16 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateLinks(ctx con
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -768,7 +769,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateIops(ctx cont
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -782,16 +783,16 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateLatency(ctx c
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -805,7 +806,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateThroughput(ct
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -814,9 +815,9 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateTimestamp(ctx
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -824,7 +825,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateUUID(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -832,8 +833,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseRecordsItems0
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -841,34 +842,34 @@ func (m *PerformanceLunMetricResponseRecordsItems0) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// PerformanceLunMetricResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceLunMetricResponseRecordsItems0Iops
-type PerformanceLunMetricResponseRecordsItems0Iops struct {
+// swagger:model performance_lun_metric_response_inline_records_inline_array_item_inline_iops
+type PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance lun metric response records items0 iops
-func (m *PerformanceLunMetricResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline records inline array item inline iops
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response records items0 iops based on the context it is used
-func (m *PerformanceLunMetricResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline records inline array item inline iops based on the context it is used
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -878,7 +879,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Iops) ContextValidate(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -886,8 +887,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0Iops) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseRecordsItems0Iops
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -895,34 +896,34 @@ func (m *PerformanceLunMetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceLunMetricResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceLunMetricResponseRecordsItems0Latency
-type PerformanceLunMetricResponseRecordsItems0Latency struct {
+// swagger:model performance_lun_metric_response_inline_records_inline_array_item_inline_latency
+type PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance lun metric response records items0 latency
-func (m *PerformanceLunMetricResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline records inline array item inline latency
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response records items0 latency based on the context it is used
-func (m *PerformanceLunMetricResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline records inline array item inline latency based on the context it is used
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -932,7 +933,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Latency) ContextValidate(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -940,8 +941,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0Latency) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseRecordsItems0Latency
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -949,17 +950,17 @@ func (m *PerformanceLunMetricResponseRecordsItems0Latency) UnmarshalBinary(b []b
 	return nil
 }
 
-// PerformanceLunMetricResponseRecordsItems0Links performance lun metric response records items0 links
+// PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks performance lun metric response inline records inline array item inline links
 //
-// swagger:model PerformanceLunMetricResponseRecordsItems0Links
-type PerformanceLunMetricResponseRecordsItems0Links struct {
+// swagger:model performance_lun_metric_response_inline_records_inline_array_item_inline__links
+type PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance lun metric response records items0 links
-func (m *PerformanceLunMetricResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline records inline array item inline links
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -972,7 +973,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) Validate(formats strfmt
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -989,8 +990,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) validateSelf(formats st
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response records items0 links based on the context it is used
-func (m *PerformanceLunMetricResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline records inline array item inline links based on the context it is used
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1003,7 +1004,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) ContextValidate(ctx con
 	return nil
 }
 
-func (m *PerformanceLunMetricResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1018,7 +1019,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) contextValidateSelf(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1026,8 +1027,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseRecordsItems0Links
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1035,34 +1036,34 @@ func (m *PerformanceLunMetricResponseRecordsItems0Links) UnmarshalBinary(b []byt
 	return nil
 }
 
-// PerformanceLunMetricResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceLunMetricResponseRecordsItems0Throughput
-type PerformanceLunMetricResponseRecordsItems0Throughput struct {
+// swagger:model performance_lun_metric_response_inline_records_inline_array_item_inline_throughput
+type PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance lun metric response records items0 throughput
-func (m *PerformanceLunMetricResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance lun metric response inline records inline array item inline throughput
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance lun metric response records items0 throughput based on the context it is used
-func (m *PerformanceLunMetricResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance lun metric response inline records inline array item inline throughput based on the context it is used
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1072,7 +1073,7 @@ func (m *PerformanceLunMetricResponseRecordsItems0Throughput) ContextValidate(ct
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1080,8 +1081,8 @@ func (m *PerformanceLunMetricResponseRecordsItems0Throughput) MarshalBinary() ([
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceLunMetricResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceLunMetricResponseRecordsItems0Throughput
+func (m *PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceLunMetricResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -20,14 +20,14 @@ import (
 type IgroupInitiatorResponse struct {
 
 	// links
-	Links *IgroupInitiatorResponseLinks `json:"_links,omitempty"`
+	Links *IgroupInitiatorResponseInlineLinks `json:"_links,omitempty"`
+
+	// igroup initiator response inline records
+	IgroupInitiatorResponseInlineRecords []*IgroupInitiator `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*IgroupInitiator `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this igroup initiator response
@@ -38,7 +38,7 @@ func (m *IgroupInitiatorResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateIgroupInitiatorResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *IgroupInitiatorResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupInitiatorResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *IgroupInitiatorResponse) validateIgroupInitiatorResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.IgroupInitiatorResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.IgroupInitiatorResponseInlineRecords); i++ {
+		if swag.IsZero(m.IgroupInitiatorResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.IgroupInitiatorResponseInlineRecords[i] != nil {
+			if err := m.IgroupInitiatorResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *IgroupInitiatorResponse) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateIgroupInitiatorResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *IgroupInitiatorResponse) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *IgroupInitiatorResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupInitiatorResponse) contextValidateIgroupInitiatorResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.IgroupInitiatorResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.IgroupInitiatorResponseInlineRecords[i] != nil {
+			if err := m.IgroupInitiatorResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *IgroupInitiatorResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupInitiatorResponseLinks igroup initiator response links
+// IgroupInitiatorResponseInlineLinks igroup initiator response inline links
 //
-// swagger:model IgroupInitiatorResponseLinks
-type IgroupInitiatorResponseLinks struct {
+// swagger:model igroup_initiator_response_inline__links
+type IgroupInitiatorResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type IgroupInitiatorResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup initiator response links
-func (m *IgroupInitiatorResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup initiator response inline links
+func (m *IgroupInitiatorResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *IgroupInitiatorResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupInitiatorResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *IgroupInitiatorResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *IgroupInitiatorResponseLinks) validateNext(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IgroupInitiatorResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupInitiatorResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *IgroupInitiatorResponseLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this igroup initiator response links based on the context it is used
-func (m *IgroupInitiatorResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup initiator response inline links based on the context it is used
+func (m *IgroupInitiatorResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *IgroupInitiatorResponseLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *IgroupInitiatorResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupInitiatorResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *IgroupInitiatorResponseLinks) contextValidateNext(ctx context.Context, 
 	return nil
 }
 
-func (m *IgroupInitiatorResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupInitiatorResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *IgroupInitiatorResponseLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupInitiatorResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupInitiatorResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *IgroupInitiatorResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupInitiatorResponseLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupInitiatorResponseLinks
+func (m *IgroupInitiatorResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

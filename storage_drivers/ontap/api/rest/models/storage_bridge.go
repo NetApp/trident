@@ -24,78 +24,78 @@ type StorageBridge struct {
 	// Chassis throughput status
 	// Example: ok
 	// Enum: [ok warning]
-	ChassisThroughputState string `json:"chassis_throughput_state,omitempty"`
+	ChassisThroughputState *string `json:"chassis_throughput_state,omitempty"`
 
 	// dram single bit error count
-	DramSingleBitErrorCount int64 `json:"dram_single_bit_error_count,omitempty"`
-
-	// errors
-	Errors []*StorageBridgeErrorsItems0 `json:"errors,omitempty"`
-
-	// fc ports
-	FcPorts []*StorageBridgeFcPortsItems0 `json:"fc_ports,omitempty"`
+	DramSingleBitErrorCount *int64 `json:"dram_single_bit_error_count,omitempty"`
 
 	// Bridge firmware version
 	// Example: 4.10 007A
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// IP Address
 	// Read Only: true
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// last reboot
-	LastReboot *StorageBridgeLastReboot `json:"last_reboot,omitempty"`
+	LastReboot *StorageBridgeInlineLastReboot `json:"last_reboot,omitempty"`
 
 	// managed by
 	// Enum: [snmp in_band]
-	ManagedBy string `json:"managed_by,omitempty"`
+	ManagedBy *string `json:"managed_by,omitempty"`
 
 	// Bridge model
 	// Example: FibreBridge6500N
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// Indicates whether monitoring is enabled for the bridge.
-	MonitoringEnabled bool `json:"monitoring_enabled,omitempty"`
+	MonitoringEnabled *bool `json:"monitoring_enabled,omitempty"`
 
 	// Bridge name
 	// Example: ATTO_FibreBridge6500N_1
-	Name string `json:"name,omitempty"`
-
-	// paths
-	Paths []*StorageBridgePathsItems0 `json:"paths,omitempty"`
-
-	// power supply units
-	PowerSupplyUnits []*StorageBridgePowerSupplyUnitsItems0 `json:"power_supply_units,omitempty"`
-
-	// sas ports
-	SasPorts []*StorageBridgeSasPortsItems0 `json:"sas_ports,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Indicates whether security is enabled for the bridge.
-	SecurityEnabled bool `json:"security_enabled,omitempty"`
+	SecurityEnabled *bool `json:"security_enabled,omitempty"`
 
 	// Bridge serial number
 	// Example: FB7600N100004
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Bridge state
 	// Enum: [unknown ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
+
+	// storage bridge inline errors
+	StorageBridgeInlineErrors []*StorageBridgeInlineErrorsInlineArrayItem `json:"errors,omitempty"`
+
+	// storage bridge inline fc ports
+	StorageBridgeInlineFcPorts []*StorageBridgeInlineFcPortsInlineArrayItem `json:"fc_ports,omitempty"`
+
+	// storage bridge inline paths
+	StorageBridgeInlinePaths []*StorageBridgeInlinePathsInlineArrayItem `json:"paths,omitempty"`
+
+	// storage bridge inline power supply units
+	StorageBridgeInlinePowerSupplyUnits []*StorageBridgeInlinePowerSupplyUnitsInlineArrayItem `json:"power_supply_units,omitempty"`
+
+	// storage bridge inline sas ports
+	StorageBridgeInlineSasPorts []*StorageBridgeInlineSasPortsInlineArrayItem `json:"sas_ports,omitempty"`
 
 	// Bridge symbolic name
 	// Example: rtp-fcsas03-41kk11
-	SymbolicName string `json:"symbolic_name,omitempty"`
+	SymbolicName *string `json:"symbolic_name,omitempty"`
 
 	// temperature sensor
-	TemperatureSensor *StorageBridgeTemperatureSensor `json:"temperature_sensor,omitempty"`
+	TemperatureSensor *StorageBridgeInlineTemperatureSensor `json:"temperature_sensor,omitempty"`
 
 	// Bridge vendor
 	// Example: atto
 	// Enum: [unknown atto]
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 
 	// Bridge world wide name
 	// Example: 2000001086600476
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
 // Validate validates this storage bridge
@@ -103,14 +103,6 @@ func (m *StorageBridge) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateChassisThroughputState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateErrors(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateFcPorts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,19 +114,27 @@ func (m *StorageBridge) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePaths(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePowerSupplyUnits(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSasPorts(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageBridgeInlineErrors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageBridgeInlineFcPorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageBridgeInlinePaths(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageBridgeInlinePowerSupplyUnits(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageBridgeInlineSasPorts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -201,56 +201,8 @@ func (m *StorageBridge) validateChassisThroughputState(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateChassisThroughputStateEnum("chassis_throughput_state", "body", m.ChassisThroughputState); err != nil {
+	if err := m.validateChassisThroughputStateEnum("chassis_throughput_state", "body", *m.ChassisThroughputState); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) validateErrors(formats strfmt.Registry) error {
-	if swag.IsZero(m.Errors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Errors); i++ {
-		if swag.IsZero(m.Errors[i]) { // not required
-			continue
-		}
-
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) validateFcPorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.FcPorts) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.FcPorts); i++ {
-		if swag.IsZero(m.FcPorts[i]) { // not required
-			continue
-		}
-
-		if m.FcPorts[i] != nil {
-			if err := m.FcPorts[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("fc_ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -322,80 +274,8 @@ func (m *StorageBridge) validateManagedBy(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateManagedByEnum("managed_by", "body", m.ManagedBy); err != nil {
+	if err := m.validateManagedByEnum("managed_by", "body", *m.ManagedBy); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) validatePaths(formats strfmt.Registry) error {
-	if swag.IsZero(m.Paths) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Paths); i++ {
-		if swag.IsZero(m.Paths[i]) { // not required
-			continue
-		}
-
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) validatePowerSupplyUnits(formats strfmt.Registry) error {
-	if swag.IsZero(m.PowerSupplyUnits) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.PowerSupplyUnits); i++ {
-		if swag.IsZero(m.PowerSupplyUnits[i]) { // not required
-			continue
-		}
-
-		if m.PowerSupplyUnits[i] != nil {
-			if err := m.PowerSupplyUnits[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) validateSasPorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.SasPorts) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.SasPorts); i++ {
-		if swag.IsZero(m.SasPorts[i]) { // not required
-			continue
-		}
-
-		if m.SasPorts[i] != nil {
-			if err := m.SasPorts[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("sas_ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -460,8 +340,128 @@ func (m *StorageBridge) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) validateStorageBridgeInlineErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageBridgeInlineErrors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageBridgeInlineErrors); i++ {
+		if swag.IsZero(m.StorageBridgeInlineErrors[i]) { // not required
+			continue
+		}
+
+		if m.StorageBridgeInlineErrors[i] != nil {
+			if err := m.StorageBridgeInlineErrors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) validateStorageBridgeInlineFcPorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageBridgeInlineFcPorts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageBridgeInlineFcPorts); i++ {
+		if swag.IsZero(m.StorageBridgeInlineFcPorts[i]) { // not required
+			continue
+		}
+
+		if m.StorageBridgeInlineFcPorts[i] != nil {
+			if err := m.StorageBridgeInlineFcPorts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fc_ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) validateStorageBridgeInlinePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageBridgeInlinePaths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageBridgeInlinePaths); i++ {
+		if swag.IsZero(m.StorageBridgeInlinePaths[i]) { // not required
+			continue
+		}
+
+		if m.StorageBridgeInlinePaths[i] != nil {
+			if err := m.StorageBridgeInlinePaths[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) validateStorageBridgeInlinePowerSupplyUnits(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageBridgeInlinePowerSupplyUnits) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageBridgeInlinePowerSupplyUnits); i++ {
+		if swag.IsZero(m.StorageBridgeInlinePowerSupplyUnits[i]) { // not required
+			continue
+		}
+
+		if m.StorageBridgeInlinePowerSupplyUnits[i] != nil {
+			if err := m.StorageBridgeInlinePowerSupplyUnits[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) validateStorageBridgeInlineSasPorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageBridgeInlineSasPorts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageBridgeInlineSasPorts); i++ {
+		if swag.IsZero(m.StorageBridgeInlineSasPorts[i]) { // not required
+			continue
+		}
+
+		if m.StorageBridgeInlineSasPorts[i] != nil {
+			if err := m.StorageBridgeInlineSasPorts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("sas_ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -533,7 +533,7 @@ func (m *StorageBridge) validateVendor(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateVendorEnum("vendor", "body", m.Vendor); err != nil {
+	if err := m.validateVendorEnum("vendor", "body", *m.Vendor); err != nil {
 		return err
 	}
 
@@ -544,14 +544,6 @@ func (m *StorageBridge) validateVendor(formats strfmt.Registry) error {
 func (m *StorageBridge) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateErrors(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateFcPorts(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateIPAddress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -560,15 +552,23 @@ func (m *StorageBridge) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePaths(ctx, formats); err != nil {
+	if err := m.contextValidateStorageBridgeInlineErrors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePowerSupplyUnits(ctx, formats); err != nil {
+	if err := m.contextValidateStorageBridgeInlineFcPorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSasPorts(ctx, formats); err != nil {
+	if err := m.contextValidateStorageBridgeInlinePaths(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageBridgeInlinePowerSupplyUnits(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageBridgeInlineSasPorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -582,45 +582,9 @@ func (m *StorageBridge) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *StorageBridge) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Errors); i++ {
-
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageBridge) contextValidateFcPorts(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.FcPorts); i++ {
-
-		if m.FcPorts[i] != nil {
-			if err := m.FcPorts[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("fc_ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *StorageBridge) contextValidateIPAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ip_address", "body", string(m.IPAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "ip_address", "body", m.IPAddress); err != nil {
 		return err
 	}
 
@@ -641,12 +605,48 @@ func (m *StorageBridge) contextValidateLastReboot(ctx context.Context, formats s
 	return nil
 }
 
-func (m *StorageBridge) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridge) contextValidateStorageBridgeInlineErrors(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Paths); i++ {
+	for i := 0; i < len(m.StorageBridgeInlineErrors); i++ {
 
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageBridgeInlineErrors[i] != nil {
+			if err := m.StorageBridgeInlineErrors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) contextValidateStorageBridgeInlineFcPorts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.StorageBridgeInlineFcPorts); i++ {
+
+		if m.StorageBridgeInlineFcPorts[i] != nil {
+			if err := m.StorageBridgeInlineFcPorts[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fc_ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageBridge) contextValidateStorageBridgeInlinePaths(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.StorageBridgeInlinePaths); i++ {
+
+		if m.StorageBridgeInlinePaths[i] != nil {
+			if err := m.StorageBridgeInlinePaths[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
 				}
@@ -659,12 +659,12 @@ func (m *StorageBridge) contextValidatePaths(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *StorageBridge) contextValidatePowerSupplyUnits(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridge) contextValidateStorageBridgeInlinePowerSupplyUnits(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.PowerSupplyUnits); i++ {
+	for i := 0; i < len(m.StorageBridgeInlinePowerSupplyUnits); i++ {
 
-		if m.PowerSupplyUnits[i] != nil {
-			if err := m.PowerSupplyUnits[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageBridgeInlinePowerSupplyUnits[i] != nil {
+			if err := m.StorageBridgeInlinePowerSupplyUnits[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
 				}
@@ -677,12 +677,12 @@ func (m *StorageBridge) contextValidatePowerSupplyUnits(ctx context.Context, for
 	return nil
 }
 
-func (m *StorageBridge) contextValidateSasPorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridge) contextValidateStorageBridgeInlineSasPorts(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.SasPorts); i++ {
+	for i := 0; i < len(m.StorageBridgeInlineSasPorts); i++ {
 
-		if m.SasPorts[i] != nil {
-			if err := m.SasPorts[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageBridgeInlineSasPorts[i] != nil {
+			if err := m.StorageBridgeInlineSasPorts[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("sas_ports" + "." + strconv.Itoa(i))
 				}
@@ -727,28 +727,28 @@ func (m *StorageBridge) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeErrorsItems0 storage bridge errors items0
+// StorageBridgeInlineErrorsInlineArrayItem storage bridge inline errors inline array item
 //
-// swagger:model StorageBridgeErrorsItems0
-type StorageBridgeErrorsItems0 struct {
+// swagger:model storage_bridge_inline_errors_inline_array_item
+type StorageBridgeInlineErrorsInlineArrayItem struct {
 
 	// component
-	Component *StorageBridgeErrorsItems0Component `json:"component,omitempty"`
+	Component *StorageBridgeInlineErrorsInlineArrayItemInlineComponent `json:"component,omitempty"`
 
 	// reason
 	Reason *Error `json:"reason,omitempty"`
 
 	// Bridge error severity
 	// Enum: [unknown notice warning error]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 
 	// Bridge error type
 	// Enum: [unknown bridge_unreachable temp_above_critical_level temp_below_critical_level temp_sensor_status_critical temp_sensor_status_unavailable invalid_configuration sas_port_offline link_failure sas_port_online power_supply_offline]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this storage bridge errors items0
-func (m *StorageBridgeErrorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline errors inline array item
+func (m *StorageBridgeInlineErrorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComponent(formats); err != nil {
@@ -773,7 +773,7 @@ func (m *StorageBridgeErrorsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) validateComponent(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateComponent(formats strfmt.Registry) error {
 	if swag.IsZero(m.Component) { // not required
 		return nil
 	}
@@ -790,7 +790,7 @@ func (m *StorageBridgeErrorsItems0) validateComponent(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) validateReason(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -807,7 +807,7 @@ func (m *StorageBridgeErrorsItems0) validateReason(formats strfmt.Registry) erro
 	return nil
 }
 
-var storageBridgeErrorsItems0TypeSeverityPropEnum []interface{}
+var storageBridgeInlineErrorsInlineArrayItemTypeSeverityPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -815,75 +815,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeErrorsItems0TypeSeverityPropEnum = append(storageBridgeErrorsItems0TypeSeverityPropEnum, v)
+		storageBridgeInlineErrorsInlineArrayItemTypeSeverityPropEnum = append(storageBridgeInlineErrorsInlineArrayItemTypeSeverityPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// unknown
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0SeverityUnknown captures enum value "unknown"
-	StorageBridgeErrorsItems0SeverityUnknown string = "unknown"
+	// StorageBridgeInlineErrorsInlineArrayItemSeverityUnknown captures enum value "unknown"
+	StorageBridgeInlineErrorsInlineArrayItemSeverityUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// notice
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0SeverityNotice captures enum value "notice"
-	StorageBridgeErrorsItems0SeverityNotice string = "notice"
+	// StorageBridgeInlineErrorsInlineArrayItemSeverityNotice captures enum value "notice"
+	StorageBridgeInlineErrorsInlineArrayItemSeverityNotice string = "notice"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// warning
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0SeverityWarning captures enum value "warning"
-	StorageBridgeErrorsItems0SeverityWarning string = "warning"
+	// StorageBridgeInlineErrorsInlineArrayItemSeverityWarning captures enum value "warning"
+	StorageBridgeInlineErrorsInlineArrayItemSeverityWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// error
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0SeverityError captures enum value "error"
-	StorageBridgeErrorsItems0SeverityError string = "error"
+	// StorageBridgeInlineErrorsInlineArrayItemSeverityError captures enum value "error"
+	StorageBridgeInlineErrorsInlineArrayItemSeverityError string = "error"
 )
 
 // prop value enum
-func (m *StorageBridgeErrorsItems0) validateSeverityEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeErrorsItems0TypeSeverityPropEnum, true); err != nil {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineErrorsInlineArrayItemTypeSeverityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) validateSeverity(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateSeverity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageBridgeErrorsItems0TypeTypePropEnum []interface{}
+var storageBridgeInlineErrorsInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -891,146 +891,146 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeErrorsItems0TypeTypePropEnum = append(storageBridgeErrorsItems0TypeTypePropEnum, v)
+		storageBridgeInlineErrorsInlineArrayItemTypeTypePropEnum = append(storageBridgeInlineErrorsInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeUnknown captures enum value "unknown"
-	StorageBridgeErrorsItems0TypeUnknown string = "unknown"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeUnknown captures enum value "unknown"
+	StorageBridgeInlineErrorsInlineArrayItemTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// bridge_unreachable
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeBridgeUnreachable captures enum value "bridge_unreachable"
-	StorageBridgeErrorsItems0TypeBridgeUnreachable string = "bridge_unreachable"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeBridgeUnreachable captures enum value "bridge_unreachable"
+	StorageBridgeInlineErrorsInlineArrayItemTypeBridgeUnreachable string = "bridge_unreachable"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_above_critical_level
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeTempAboveCriticalLevel captures enum value "temp_above_critical_level"
-	StorageBridgeErrorsItems0TypeTempAboveCriticalLevel string = "temp_above_critical_level"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeTempAboveCriticalLevel captures enum value "temp_above_critical_level"
+	StorageBridgeInlineErrorsInlineArrayItemTypeTempAboveCriticalLevel string = "temp_above_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_below_critical_level
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeTempBelowCriticalLevel captures enum value "temp_below_critical_level"
-	StorageBridgeErrorsItems0TypeTempBelowCriticalLevel string = "temp_below_critical_level"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeTempBelowCriticalLevel captures enum value "temp_below_critical_level"
+	StorageBridgeInlineErrorsInlineArrayItemTypeTempBelowCriticalLevel string = "temp_below_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_sensor_status_critical
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeTempSensorStatusCritical captures enum value "temp_sensor_status_critical"
-	StorageBridgeErrorsItems0TypeTempSensorStatusCritical string = "temp_sensor_status_critical"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeTempSensorStatusCritical captures enum value "temp_sensor_status_critical"
+	StorageBridgeInlineErrorsInlineArrayItemTypeTempSensorStatusCritical string = "temp_sensor_status_critical"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_sensor_status_unavailable
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeTempSensorStatusUnavailable captures enum value "temp_sensor_status_unavailable"
-	StorageBridgeErrorsItems0TypeTempSensorStatusUnavailable string = "temp_sensor_status_unavailable"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeTempSensorStatusUnavailable captures enum value "temp_sensor_status_unavailable"
+	StorageBridgeInlineErrorsInlineArrayItemTypeTempSensorStatusUnavailable string = "temp_sensor_status_unavailable"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// invalid_configuration
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeInvalidConfiguration captures enum value "invalid_configuration"
-	StorageBridgeErrorsItems0TypeInvalidConfiguration string = "invalid_configuration"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeInvalidConfiguration captures enum value "invalid_configuration"
+	StorageBridgeInlineErrorsInlineArrayItemTypeInvalidConfiguration string = "invalid_configuration"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sas_port_offline
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeSasPortOffline captures enum value "sas_port_offline"
-	StorageBridgeErrorsItems0TypeSasPortOffline string = "sas_port_offline"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeSasPortOffline captures enum value "sas_port_offline"
+	StorageBridgeInlineErrorsInlineArrayItemTypeSasPortOffline string = "sas_port_offline"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// link_failure
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeLinkFailure captures enum value "link_failure"
-	StorageBridgeErrorsItems0TypeLinkFailure string = "link_failure"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeLinkFailure captures enum value "link_failure"
+	StorageBridgeInlineErrorsInlineArrayItemTypeLinkFailure string = "link_failure"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sas_port_online
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypeSasPortOnline captures enum value "sas_port_online"
-	StorageBridgeErrorsItems0TypeSasPortOnline string = "sas_port_online"
+	// StorageBridgeInlineErrorsInlineArrayItemTypeSasPortOnline captures enum value "sas_port_online"
+	StorageBridgeInlineErrorsInlineArrayItemTypeSasPortOnline string = "sas_port_online"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeErrorsItems0
-	// StorageBridgeErrorsItems0
+	// storage_bridge_inline_errors_inline_array_item
+	// StorageBridgeInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_offline
 	// END DEBUGGING
-	// StorageBridgeErrorsItems0TypePowerSupplyOffline captures enum value "power_supply_offline"
-	StorageBridgeErrorsItems0TypePowerSupplyOffline string = "power_supply_offline"
+	// StorageBridgeInlineErrorsInlineArrayItemTypePowerSupplyOffline captures enum value "power_supply_offline"
+	StorageBridgeInlineErrorsInlineArrayItemTypePowerSupplyOffline string = "power_supply_offline"
 )
 
 // prop value enum
-func (m *StorageBridgeErrorsItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeErrorsItems0TypeTypePropEnum, true); err != nil {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineErrorsInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) validateType(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this storage bridge errors items0 based on the context it is used
-func (m *StorageBridgeErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline errors inline array item based on the context it is used
+func (m *StorageBridgeInlineErrorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateComponent(ctx, formats); err != nil {
@@ -1047,7 +1047,7 @@ func (m *StorageBridgeErrorsItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Component != nil {
 		if err := m.Component.ContextValidate(ctx, formats); err != nil {
@@ -1061,7 +1061,7 @@ func (m *StorageBridgeErrorsItems0) contextValidateComponent(ctx context.Context
 	return nil
 }
 
-func (m *StorageBridgeErrorsItems0) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -1076,7 +1076,7 @@ func (m *StorageBridgeErrorsItems0) contextValidateReason(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineErrorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1084,8 +1084,8 @@ func (m *StorageBridgeErrorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeErrorsItems0
+func (m *StorageBridgeInlineErrorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineErrorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1093,33 +1093,33 @@ func (m *StorageBridgeErrorsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeErrorsItems0Component storage bridge errors items0 component
+// StorageBridgeInlineErrorsInlineArrayItemInlineComponent storage bridge inline errors inline array item inline component
 //
-// swagger:model StorageBridgeErrorsItems0Component
-type StorageBridgeErrorsItems0Component struct {
+// swagger:model storage_bridge_inline_errors_inline_array_item_inline_component
+type StorageBridgeInlineErrorsInlineArrayItemInlineComponent struct {
 
 	// Bridge error component ID
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Bridge error component name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Bridge error component unique ID
-	UniqueID string `json:"unique_id,omitempty"`
+	UniqueID *string `json:"unique_id,omitempty"`
 }
 
-// Validate validates this storage bridge errors items0 component
-func (m *StorageBridgeErrorsItems0Component) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline errors inline array item inline component
+func (m *StorageBridgeInlineErrorsInlineArrayItemInlineComponent) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge errors items0 component based on context it is used
-func (m *StorageBridgeErrorsItems0Component) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline errors inline array item inline component based on context it is used
+func (m *StorageBridgeInlineErrorsInlineArrayItemInlineComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0Component) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineErrorsInlineArrayItemInlineComponent) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1127,8 +1127,8 @@ func (m *StorageBridgeErrorsItems0Component) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0Component) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeErrorsItems0Component
+func (m *StorageBridgeInlineErrorsInlineArrayItemInlineComponent) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineErrorsInlineArrayItemInlineComponent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1136,51 +1136,51 @@ func (m *StorageBridgeErrorsItems0Component) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeFcPortsItems0 storage bridge fc ports items0
+// StorageBridgeInlineFcPortsInlineArrayItem storage bridge inline fc ports inline array item
 //
-// swagger:model StorageBridgeFcPortsItems0
-type StorageBridgeFcPortsItems0 struct {
+// swagger:model storage_bridge_inline_fc_ports_inline_array_item
+type StorageBridgeInlineFcPortsInlineArrayItem struct {
 
 	// Bridge FC port configured data rate, in Gbps
 	// Enum: [0 2 4 8 16 32]
-	ConfiguredDataRate float64 `json:"configured_data_rate,omitempty"`
+	ConfiguredDataRate *float64 `json:"configured_data_rate,omitempty"`
 
 	// Bridge FC port configured connection mode
 	// Enum: [loop ptp loop_preferred ptp_preferred]
-	ConnectionMode string `json:"connection_mode,omitempty"`
+	ConnectionMode *string `json:"connection_mode,omitempty"`
 
 	// Bridge FC port data rate capability, in Gbps
 	// Enum: [2 4 8 16 32]
-	DataRateCapability float64 `json:"data_rate_capability,omitempty"`
+	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// Indicates whether the bridge FC port is enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Bridge FC port index
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Bridge FC port negotiated data rate, in Gbps
 	// Enum: [0 2 4 8 16 32]
-	NegotiatedDataRate float64 `json:"negotiated_data_rate,omitempty"`
+	NegotiatedDataRate *float64 `json:"negotiated_data_rate,omitempty"`
 
 	// Bridge FC port peer port world wide name
 	// Example: 200650eb1a238892
-	PeerWwn string `json:"peer_wwn,omitempty"`
+	PeerWwn *string `json:"peer_wwn,omitempty"`
 
 	// sfp
-	Sfp *StorageBridgeFcPortsItems0Sfp `json:"sfp,omitempty"`
+	Sfp *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp `json:"sfp,omitempty"`
 
 	// Bridge FC port state
 	// Enum: [error online offline]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Bridge FC port world wide name
 	// Example: 2100001086a54100
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage bridge fc ports items0
-func (m *StorageBridgeFcPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline fc ports inline array item
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfiguredDataRate(formats); err != nil {
@@ -1213,7 +1213,7 @@ func (m *StorageBridgeFcPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageBridgeFcPortsItems0TypeConfiguredDataRatePropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemTypeConfiguredDataRatePropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -1221,32 +1221,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0TypeConfiguredDataRatePropEnum = append(storageBridgeFcPortsItems0TypeConfiguredDataRatePropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemTypeConfiguredDataRatePropEnum = append(storageBridgeInlineFcPortsInlineArrayItemTypeConfiguredDataRatePropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0) validateConfiguredDataRateEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0TypeConfiguredDataRatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateConfiguredDataRateEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemTypeConfiguredDataRatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateConfiguredDataRate(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateConfiguredDataRate(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConfiguredDataRate) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConfiguredDataRateEnum("configured_data_rate", "body", m.ConfiguredDataRate); err != nil {
+	if err := m.validateConfiguredDataRateEnum("configured_data_rate", "body", *m.ConfiguredDataRate); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageBridgeFcPortsItems0TypeConnectionModePropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemTypeConnectionModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1254,75 +1254,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0TypeConnectionModePropEnum = append(storageBridgeFcPortsItems0TypeConnectionModePropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemTypeConnectionModePropEnum = append(storageBridgeInlineFcPortsInlineArrayItemTypeConnectionModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// connection_mode
 	// ConnectionMode
 	// loop
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0ConnectionModeLoop captures enum value "loop"
-	StorageBridgeFcPortsItems0ConnectionModeLoop string = "loop"
+	// StorageBridgeInlineFcPortsInlineArrayItemConnectionModeLoop captures enum value "loop"
+	StorageBridgeInlineFcPortsInlineArrayItemConnectionModeLoop string = "loop"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// connection_mode
 	// ConnectionMode
 	// ptp
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0ConnectionModePtp captures enum value "ptp"
-	StorageBridgeFcPortsItems0ConnectionModePtp string = "ptp"
+	// StorageBridgeInlineFcPortsInlineArrayItemConnectionModePtp captures enum value "ptp"
+	StorageBridgeInlineFcPortsInlineArrayItemConnectionModePtp string = "ptp"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// connection_mode
 	// ConnectionMode
 	// loop_preferred
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0ConnectionModeLoopPreferred captures enum value "loop_preferred"
-	StorageBridgeFcPortsItems0ConnectionModeLoopPreferred string = "loop_preferred"
+	// StorageBridgeInlineFcPortsInlineArrayItemConnectionModeLoopPreferred captures enum value "loop_preferred"
+	StorageBridgeInlineFcPortsInlineArrayItemConnectionModeLoopPreferred string = "loop_preferred"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// connection_mode
 	// ConnectionMode
 	// ptp_preferred
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0ConnectionModePtpPreferred captures enum value "ptp_preferred"
-	StorageBridgeFcPortsItems0ConnectionModePtpPreferred string = "ptp_preferred"
+	// StorageBridgeInlineFcPortsInlineArrayItemConnectionModePtpPreferred captures enum value "ptp_preferred"
+	StorageBridgeInlineFcPortsInlineArrayItemConnectionModePtpPreferred string = "ptp_preferred"
 )
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0) validateConnectionModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0TypeConnectionModePropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateConnectionModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemTypeConnectionModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateConnectionMode(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateConnectionMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConnectionMode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConnectionModeEnum("connection_mode", "body", m.ConnectionMode); err != nil {
+	if err := m.validateConnectionModeEnum("connection_mode", "body", *m.ConnectionMode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageBridgeFcPortsItems0TypeDataRateCapabilityPropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemTypeDataRateCapabilityPropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -1330,32 +1330,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0TypeDataRateCapabilityPropEnum = append(storageBridgeFcPortsItems0TypeDataRateCapabilityPropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemTypeDataRateCapabilityPropEnum = append(storageBridgeInlineFcPortsInlineArrayItemTypeDataRateCapabilityPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0) validateDataRateCapabilityEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0TypeDataRateCapabilityPropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateDataRateCapabilityEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemTypeDataRateCapabilityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateDataRateCapability(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateDataRateCapability(formats strfmt.Registry) error {
 	if swag.IsZero(m.DataRateCapability) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDataRateCapabilityEnum("data_rate_capability", "body", m.DataRateCapability); err != nil {
+	if err := m.validateDataRateCapabilityEnum("data_rate_capability", "body", *m.DataRateCapability); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageBridgeFcPortsItems0TypeNegotiatedDataRatePropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemTypeNegotiatedDataRatePropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -1363,32 +1363,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0TypeNegotiatedDataRatePropEnum = append(storageBridgeFcPortsItems0TypeNegotiatedDataRatePropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemTypeNegotiatedDataRatePropEnum = append(storageBridgeInlineFcPortsInlineArrayItemTypeNegotiatedDataRatePropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0) validateNegotiatedDataRateEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0TypeNegotiatedDataRatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateNegotiatedDataRateEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemTypeNegotiatedDataRatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateNegotiatedDataRate(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateNegotiatedDataRate(formats strfmt.Registry) error {
 	if swag.IsZero(m.NegotiatedDataRate) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNegotiatedDataRateEnum("negotiated_data_rate", "body", m.NegotiatedDataRate); err != nil {
+	if err := m.validateNegotiatedDataRateEnum("negotiated_data_rate", "body", *m.NegotiatedDataRate); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateSfp(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateSfp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Sfp) { // not required
 		return nil
 	}
@@ -1405,7 +1405,7 @@ func (m *StorageBridgeFcPortsItems0) validateSfp(formats strfmt.Registry) error 
 	return nil
 }
 
-var storageBridgeFcPortsItems0TypeStatePropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1413,66 +1413,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0TypeStatePropEnum = append(storageBridgeFcPortsItems0TypeStatePropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemTypeStatePropEnum = append(storageBridgeInlineFcPortsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0StateError captures enum value "error"
-	StorageBridgeFcPortsItems0StateError string = "error"
+	// StorageBridgeInlineFcPortsInlineArrayItemStateError captures enum value "error"
+	StorageBridgeInlineFcPortsInlineArrayItemStateError string = "error"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0StateOnline captures enum value "online"
-	StorageBridgeFcPortsItems0StateOnline string = "online"
+	// StorageBridgeInlineFcPortsInlineArrayItemStateOnline captures enum value "online"
+	StorageBridgeInlineFcPortsInlineArrayItemStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeFcPortsItems0
-	// StorageBridgeFcPortsItems0
+	// storage_bridge_inline_fc_ports_inline_array_item
+	// StorageBridgeInlineFcPortsInlineArrayItem
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// StorageBridgeFcPortsItems0StateOffline captures enum value "offline"
-	StorageBridgeFcPortsItems0StateOffline string = "offline"
+	// StorageBridgeInlineFcPortsInlineArrayItemStateOffline captures enum value "offline"
+	StorageBridgeInlineFcPortsInlineArrayItemStateOffline string = "offline"
 )
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this storage bridge fc ports items0 based on the context it is used
-func (m *StorageBridgeFcPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline fc ports inline array item based on the context it is used
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSfp(ctx, formats); err != nil {
@@ -1485,7 +1485,7 @@ func (m *StorageBridgeFcPortsItems0) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0) contextValidateSfp(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) contextValidateSfp(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Sfp != nil {
 		if err := m.Sfp.ContextValidate(ctx, formats); err != nil {
@@ -1500,7 +1500,7 @@ func (m *StorageBridgeFcPortsItems0) contextValidateSfp(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeFcPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1508,8 +1508,8 @@ func (m *StorageBridgeFcPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeFcPortsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeFcPortsItems0
+func (m *StorageBridgeInlineFcPortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineFcPortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1517,27 +1517,27 @@ func (m *StorageBridgeFcPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeFcPortsItems0Sfp storage bridge fc ports items0 sfp
+// StorageBridgeInlineFcPortsInlineArrayItemInlineSfp storage bridge inline fc ports inline array item inline sfp
 //
-// swagger:model StorageBridgeFcPortsItems0Sfp
-type StorageBridgeFcPortsItems0Sfp struct {
+// swagger:model storage_bridge_inline_fc_ports_inline_array_item_inline_sfp
+type StorageBridgeInlineFcPortsInlineArrayItemInlineSfp struct {
 
 	// Bridge FC port SFP data rate capability, in Gbps
 	// Enum: [2 4 8 16 32]
-	DataRateCapability float64 `json:"data_rate_capability,omitempty"`
+	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// part number
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// Bridge FC port SFP serial number
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Bridge FC port SFP vendor
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 }
 
-// Validate validates this storage bridge fc ports items0 sfp
-func (m *StorageBridgeFcPortsItems0Sfp) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline fc ports inline array item inline sfp
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDataRateCapability(formats); err != nil {
@@ -1550,7 +1550,7 @@ func (m *StorageBridgeFcPortsItems0Sfp) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-var storageBridgeFcPortsItems0SfpTypeDataRateCapabilityPropEnum []interface{}
+var storageBridgeInlineFcPortsInlineArrayItemInlineSfpTypeDataRateCapabilityPropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -1558,38 +1558,38 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeFcPortsItems0SfpTypeDataRateCapabilityPropEnum = append(storageBridgeFcPortsItems0SfpTypeDataRateCapabilityPropEnum, v)
+		storageBridgeInlineFcPortsInlineArrayItemInlineSfpTypeDataRateCapabilityPropEnum = append(storageBridgeInlineFcPortsInlineArrayItemInlineSfpTypeDataRateCapabilityPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeFcPortsItems0Sfp) validateDataRateCapabilityEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeFcPortsItems0SfpTypeDataRateCapabilityPropEnum, true); err != nil {
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) validateDataRateCapabilityEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineFcPortsInlineArrayItemInlineSfpTypeDataRateCapabilityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeFcPortsItems0Sfp) validateDataRateCapability(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) validateDataRateCapability(formats strfmt.Registry) error {
 	if swag.IsZero(m.DataRateCapability) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDataRateCapabilityEnum("sfp"+"."+"data_rate_capability", "body", m.DataRateCapability); err != nil {
+	if err := m.validateDataRateCapabilityEnum("sfp"+"."+"data_rate_capability", "body", *m.DataRateCapability); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage bridge fc ports items0 sfp based on context it is used
-func (m *StorageBridgeFcPortsItems0Sfp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline fc ports inline array item inline sfp based on context it is used
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeFcPortsItems0Sfp) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1597,8 +1597,8 @@ func (m *StorageBridgeFcPortsItems0Sfp) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeFcPortsItems0Sfp) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeFcPortsItems0Sfp
+func (m *StorageBridgeInlineFcPortsInlineArrayItemInlineSfp) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineFcPortsInlineArrayItemInlineSfp
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1606,10 +1606,10 @@ func (m *StorageBridgeFcPortsItems0Sfp) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeLastReboot storage bridge last reboot
+// StorageBridgeInlineLastReboot storage bridge inline last reboot
 //
-// swagger:model StorageBridgeLastReboot
-type StorageBridgeLastReboot struct {
+// swagger:model storage_bridge_inline_last_reboot
+type StorageBridgeInlineLastReboot struct {
 
 	// The error message and code explaining why the bridge rebooted.
 	Reason *Error `json:"reason,omitempty"`
@@ -1620,8 +1620,8 @@ type StorageBridgeLastReboot struct {
 	Time *strfmt.DateTime `json:"time,omitempty"`
 }
 
-// Validate validates this storage bridge last reboot
-func (m *StorageBridgeLastReboot) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline last reboot
+func (m *StorageBridgeInlineLastReboot) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReason(formats); err != nil {
@@ -1638,7 +1638,7 @@ func (m *StorageBridgeLastReboot) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgeLastReboot) validateReason(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineLastReboot) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -1655,7 +1655,7 @@ func (m *StorageBridgeLastReboot) validateReason(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *StorageBridgeLastReboot) validateTime(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineLastReboot) validateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.Time) { // not required
 		return nil
 	}
@@ -1667,8 +1667,8 @@ func (m *StorageBridgeLastReboot) validateTime(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage bridge last reboot based on the context it is used
-func (m *StorageBridgeLastReboot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline last reboot based on the context it is used
+func (m *StorageBridgeInlineLastReboot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReason(ctx, formats); err != nil {
@@ -1681,7 +1681,7 @@ func (m *StorageBridgeLastReboot) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *StorageBridgeLastReboot) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineLastReboot) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -1696,7 +1696,7 @@ func (m *StorageBridgeLastReboot) contextValidateReason(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeLastReboot) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineLastReboot) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1704,8 +1704,8 @@ func (m *StorageBridgeLastReboot) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeLastReboot) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeLastReboot
+func (m *StorageBridgeInlineLastReboot) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineLastReboot
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1713,27 +1713,27 @@ func (m *StorageBridgeLastReboot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePathsItems0 storage bridge paths items0
+// StorageBridgeInlinePathsInlineArrayItem storage bridge inline paths inline array item
 //
-// swagger:model StorageBridgePathsItems0
-type StorageBridgePathsItems0 struct {
+// swagger:model storage_bridge_inline_paths_inline_array_item
+type StorageBridgeInlinePathsInlineArrayItem struct {
 
 	// name
 	// Example: 2c
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *StorageBridgePathsItems0Node `json:"node,omitempty"`
+	Node *StorageBridgeInlinePathsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// source port
-	SourcePort *StorageBridgePathsItems0SourcePort `json:"source_port,omitempty"`
+	SourcePort *StorageBridgeInlinePathsInlineArrayItemInlineSourcePort `json:"source_port,omitempty"`
 
 	// target port
-	TargetPort *StorageBridgePathsItems0TargetPort `json:"target_port,omitempty"`
+	TargetPort *StorageBridgeInlinePathsInlineArrayItemInlineTargetPort `json:"target_port,omitempty"`
 }
 
-// Validate validates this storage bridge paths items0
-func (m *StorageBridgePathsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline paths inline array item
+func (m *StorageBridgeInlinePathsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -1754,7 +1754,7 @@ func (m *StorageBridgePathsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) validateNode(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1771,7 +1771,7 @@ func (m *StorageBridgePathsItems0) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) validateSourcePort(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) validateSourcePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.SourcePort) { // not required
 		return nil
 	}
@@ -1788,7 +1788,7 @@ func (m *StorageBridgePathsItems0) validateSourcePort(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) validateTargetPort(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) validateTargetPort(formats strfmt.Registry) error {
 	if swag.IsZero(m.TargetPort) { // not required
 		return nil
 	}
@@ -1805,8 +1805,8 @@ func (m *StorageBridgePathsItems0) validateTargetPort(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this storage bridge paths items0 based on the context it is used
-func (m *StorageBridgePathsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline paths inline array item based on the context it is used
+func (m *StorageBridgeInlinePathsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -1827,7 +1827,7 @@ func (m *StorageBridgePathsItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1841,7 +1841,7 @@ func (m *StorageBridgePathsItems0) contextValidateNode(ctx context.Context, form
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) contextValidateSourcePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) contextValidateSourcePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.SourcePort != nil {
 		if err := m.SourcePort.ContextValidate(ctx, formats); err != nil {
@@ -1855,7 +1855,7 @@ func (m *StorageBridgePathsItems0) contextValidateSourcePort(ctx context.Context
 	return nil
 }
 
-func (m *StorageBridgePathsItems0) contextValidateTargetPort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItem) contextValidateTargetPort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TargetPort != nil {
 		if err := m.TargetPort.ContextValidate(ctx, formats); err != nil {
@@ -1870,7 +1870,7 @@ func (m *StorageBridgePathsItems0) contextValidateTargetPort(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePathsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePathsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1878,8 +1878,8 @@ func (m *StorageBridgePathsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePathsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePathsItems0
+func (m *StorageBridgeInlinePathsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePathsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1887,25 +1887,25 @@ func (m *StorageBridgePathsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePathsItems0Node storage bridge paths items0 node
+// StorageBridgeInlinePathsInlineArrayItemInlineNode storage bridge inline paths inline array item inline node
 //
-// swagger:model StorageBridgePathsItems0Node
-type StorageBridgePathsItems0Node struct {
+// swagger:model storage_bridge_inline_paths_inline_array_item_inline_node
+type StorageBridgeInlinePathsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *StorageBridgePathsItems0NodeLinks `json:"_links,omitempty"`
+	Links *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this storage bridge paths items0 node
-func (m *StorageBridgePathsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline paths inline array item inline node
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1918,7 +1918,7 @@ func (m *StorageBridgePathsItems0Node) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgePathsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1935,8 +1935,8 @@ func (m *StorageBridgePathsItems0Node) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this storage bridge paths items0 node based on the context it is used
-func (m *StorageBridgePathsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline paths inline array item inline node based on the context it is used
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1949,7 +1949,7 @@ func (m *StorageBridgePathsItems0Node) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *StorageBridgePathsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1964,7 +1964,7 @@ func (m *StorageBridgePathsItems0Node) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePathsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1972,8 +1972,8 @@ func (m *StorageBridgePathsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePathsItems0Node) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePathsItems0Node
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePathsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1981,17 +1981,17 @@ func (m *StorageBridgePathsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePathsItems0NodeLinks storage bridge paths items0 node links
+// StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks storage bridge inline paths inline array item inline node inline links
 //
-// swagger:model StorageBridgePathsItems0NodeLinks
-type StorageBridgePathsItems0NodeLinks struct {
+// swagger:model storage_bridge_inline_paths_inline_array_item_inline_node_inline__links
+type StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage bridge paths items0 node links
-func (m *StorageBridgePathsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline paths inline array item inline node inline links
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2004,7 +2004,7 @@ func (m *StorageBridgePathsItems0NodeLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *StorageBridgePathsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2021,8 +2021,8 @@ func (m *StorageBridgePathsItems0NodeLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this storage bridge paths items0 node links based on the context it is used
-func (m *StorageBridgePathsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline paths inline array item inline node inline links based on the context it is used
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2035,7 +2035,7 @@ func (m *StorageBridgePathsItems0NodeLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *StorageBridgePathsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2050,7 +2050,7 @@ func (m *StorageBridgePathsItems0NodeLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2058,8 +2058,8 @@ func (m *StorageBridgePathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePathsItems0NodeLinks
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePathsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2067,32 +2067,32 @@ func (m *StorageBridgePathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePathsItems0SourcePort storage bridge paths items0 source port
+// StorageBridgeInlinePathsInlineArrayItemInlineSourcePort storage bridge inline paths inline array item inline source port
 //
-// swagger:model StorageBridgePathsItems0SourcePort
-type StorageBridgePathsItems0SourcePort struct {
+// swagger:model storage_bridge_inline_paths_inline_array_item_inline_source_port
+type StorageBridgeInlinePathsInlineArrayItemInlineSourcePort struct {
 
 	// Initiator side switch port id
 	// Example: 100050eb1a238892
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Initiator side switch port name
 	// Example: rtp-fc03-41kk11:1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this storage bridge paths items0 source port
-func (m *StorageBridgePathsItems0SourcePort) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline paths inline array item inline source port
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineSourcePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge paths items0 source port based on context it is used
-func (m *StorageBridgePathsItems0SourcePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline paths inline array item inline source port based on context it is used
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineSourcePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePathsItems0SourcePort) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineSourcePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2100,8 +2100,8 @@ func (m *StorageBridgePathsItems0SourcePort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePathsItems0SourcePort) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePathsItems0SourcePort
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineSourcePort) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePathsInlineArrayItemInlineSourcePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2109,36 +2109,36 @@ func (m *StorageBridgePathsItems0SourcePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePathsItems0TargetPort storage bridge paths items0 target port
+// StorageBridgeInlinePathsInlineArrayItemInlineTargetPort storage bridge inline paths inline array item inline target port
 //
-// swagger:model StorageBridgePathsItems0TargetPort
-type StorageBridgePathsItems0TargetPort struct {
+// swagger:model storage_bridge_inline_paths_inline_array_item_inline_target_port
+type StorageBridgeInlinePathsInlineArrayItemInlineTargetPort struct {
 
 	// Target side switch port id
 	// Example: 100050eb1a238892
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Target side switch port name
 	// Example: rtp-fc03-41kk11:6
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Target side switch port world wide name
 	// Example: 2100001086a54100
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage bridge paths items0 target port
-func (m *StorageBridgePathsItems0TargetPort) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline paths inline array item inline target port
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineTargetPort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge paths items0 target port based on context it is used
-func (m *StorageBridgePathsItems0TargetPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline paths inline array item inline target port based on context it is used
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineTargetPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePathsItems0TargetPort) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineTargetPort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2146,8 +2146,8 @@ func (m *StorageBridgePathsItems0TargetPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePathsItems0TargetPort) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePathsItems0TargetPort
+func (m *StorageBridgeInlinePathsInlineArrayItemInlineTargetPort) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePathsInlineArrayItemInlineTargetPort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2155,21 +2155,21 @@ func (m *StorageBridgePathsItems0TargetPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgePowerSupplyUnitsItems0 storage bridge power supply units items0
+// StorageBridgeInlinePowerSupplyUnitsInlineArrayItem storage bridge inline power supply units inline array item
 //
-// swagger:model StorageBridgePowerSupplyUnitsItems0
-type StorageBridgePowerSupplyUnitsItems0 struct {
+// swagger:model storage_bridge_inline_power_supply_units_inline_array_item
+type StorageBridgeInlinePowerSupplyUnitsInlineArrayItem struct {
 
 	// Power supply unit name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Power supply unit state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge power supply units items0
-func (m *StorageBridgePowerSupplyUnitsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline power supply units inline array item
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2182,7 +2182,7 @@ func (m *StorageBridgePowerSupplyUnitsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var storageBridgePowerSupplyUnitsItems0TypeStatePropEnum []interface{}
+var storageBridgeInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2190,61 +2190,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgePowerSupplyUnitsItems0TypeStatePropEnum = append(storageBridgePowerSupplyUnitsItems0TypeStatePropEnum, v)
+		storageBridgeInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum = append(storageBridgeInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgePowerSupplyUnitsItems0
-	// StorageBridgePowerSupplyUnitsItems0
+	// storage_bridge_inline_power_supply_units_inline_array_item
+	// StorageBridgeInlinePowerSupplyUnitsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageBridgePowerSupplyUnitsItems0StateOk captures enum value "ok"
-	StorageBridgePowerSupplyUnitsItems0StateOk string = "ok"
+	// StorageBridgeInlinePowerSupplyUnitsInlineArrayItemStateOk captures enum value "ok"
+	StorageBridgeInlinePowerSupplyUnitsInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// StorageBridgePowerSupplyUnitsItems0
-	// StorageBridgePowerSupplyUnitsItems0
+	// storage_bridge_inline_power_supply_units_inline_array_item
+	// StorageBridgeInlinePowerSupplyUnitsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageBridgePowerSupplyUnitsItems0StateError captures enum value "error"
-	StorageBridgePowerSupplyUnitsItems0StateError string = "error"
+	// StorageBridgeInlinePowerSupplyUnitsInlineArrayItemStateError captures enum value "error"
+	StorageBridgeInlinePowerSupplyUnitsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *StorageBridgePowerSupplyUnitsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgePowerSupplyUnitsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgePowerSupplyUnitsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage bridge power supply units items0 based on context it is used
-func (m *StorageBridgePowerSupplyUnitsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline power supply units inline array item based on context it is used
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgePowerSupplyUnitsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2252,8 +2252,8 @@ func (m *StorageBridgePowerSupplyUnitsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgePowerSupplyUnitsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageBridgePowerSupplyUnitsItems0
+func (m *StorageBridgeInlinePowerSupplyUnitsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlinePowerSupplyUnitsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2261,51 +2261,51 @@ func (m *StorageBridgePowerSupplyUnitsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0 storage bridge sas ports items0
+// StorageBridgeInlineSasPortsInlineArrayItem storage bridge inline sas ports inline array item
 //
-// swagger:model StorageBridgeSasPortsItems0
-type StorageBridgeSasPortsItems0 struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item
+type StorageBridgeInlineSasPortsInlineArrayItem struct {
 
 	// cable
-	Cable *StorageBridgeSasPortsItems0Cable `json:"cable,omitempty"`
+	Cable *StorageBridgeInlineSasPortsInlineArrayItemInlineCable `json:"cable,omitempty"`
 
 	// Bridge SAS port data rate capability, in Gbps
 	// Enum: [0 1.5 3 6 12]
-	DataRateCapability float64 `json:"data_rate_capability,omitempty"`
+	DataRateCapability *float64 `json:"data_rate_capability,omitempty"`
 
 	// Indicates whether a bridge SAS port is enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Bridge SAS port index
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Bridge SAS port negotiated data rate, in Gbps
 	// Enum: [0 1.5 3 6 12]
-	NegotiatedDataRate float64 `json:"negotiated_data_rate,omitempty"`
+	NegotiatedDataRate *float64 `json:"negotiated_data_rate,omitempty"`
 
 	// phy 1
-	Phy1 *StorageBridgeSasPortsItems0Phy1 `json:"phy_1,omitempty"`
+	Phy1 *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1 `json:"phy_1,omitempty"`
 
 	// phy 2
-	Phy2 *StorageBridgeSasPortsItems0Phy2 `json:"phy_2,omitempty"`
+	Phy2 *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2 `json:"phy_2,omitempty"`
 
 	// phy 3
-	Phy3 *StorageBridgeSasPortsItems0Phy3 `json:"phy_3,omitempty"`
+	Phy3 *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3 `json:"phy_3,omitempty"`
 
 	// phy 4
-	Phy4 *StorageBridgeSasPortsItems0Phy4 `json:"phy_4,omitempty"`
+	Phy4 *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4 `json:"phy_4,omitempty"`
 
 	// Bridge SAS port state
 	// Enum: [error online offline]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Bridge SAS port world wide name
 	// Example: 2100001086a54100
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0
-func (m *StorageBridgeSasPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCable(formats); err != nil {
@@ -2346,7 +2346,7 @@ func (m *StorageBridgeSasPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validateCable(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateCable(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cable) { // not required
 		return nil
 	}
@@ -2363,7 +2363,7 @@ func (m *StorageBridgeSasPortsItems0) validateCable(formats strfmt.Registry) err
 	return nil
 }
 
-var storageBridgeSasPortsItems0TypeDataRateCapabilityPropEnum []interface{}
+var storageBridgeInlineSasPortsInlineArrayItemTypeDataRateCapabilityPropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -2371,32 +2371,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeSasPortsItems0TypeDataRateCapabilityPropEnum = append(storageBridgeSasPortsItems0TypeDataRateCapabilityPropEnum, v)
+		storageBridgeInlineSasPortsInlineArrayItemTypeDataRateCapabilityPropEnum = append(storageBridgeInlineSasPortsInlineArrayItemTypeDataRateCapabilityPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeSasPortsItems0) validateDataRateCapabilityEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeSasPortsItems0TypeDataRateCapabilityPropEnum, true); err != nil {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateDataRateCapabilityEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineSasPortsInlineArrayItemTypeDataRateCapabilityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validateDataRateCapability(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateDataRateCapability(formats strfmt.Registry) error {
 	if swag.IsZero(m.DataRateCapability) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDataRateCapabilityEnum("data_rate_capability", "body", m.DataRateCapability); err != nil {
+	if err := m.validateDataRateCapabilityEnum("data_rate_capability", "body", *m.DataRateCapability); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageBridgeSasPortsItems0TypeNegotiatedDataRatePropEnum []interface{}
+var storageBridgeInlineSasPortsInlineArrayItemTypeNegotiatedDataRatePropEnum []interface{}
 
 func init() {
 	var res []float64
@@ -2404,32 +2404,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeSasPortsItems0TypeNegotiatedDataRatePropEnum = append(storageBridgeSasPortsItems0TypeNegotiatedDataRatePropEnum, v)
+		storageBridgeInlineSasPortsInlineArrayItemTypeNegotiatedDataRatePropEnum = append(storageBridgeInlineSasPortsInlineArrayItemTypeNegotiatedDataRatePropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *StorageBridgeSasPortsItems0) validateNegotiatedDataRateEnum(path, location string, value float64) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeSasPortsItems0TypeNegotiatedDataRatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateNegotiatedDataRateEnum(path, location string, value float64) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineSasPortsInlineArrayItemTypeNegotiatedDataRatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validateNegotiatedDataRate(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateNegotiatedDataRate(formats strfmt.Registry) error {
 	if swag.IsZero(m.NegotiatedDataRate) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNegotiatedDataRateEnum("negotiated_data_rate", "body", m.NegotiatedDataRate); err != nil {
+	if err := m.validateNegotiatedDataRateEnum("negotiated_data_rate", "body", *m.NegotiatedDataRate); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validatePhy1(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validatePhy1(formats strfmt.Registry) error {
 	if swag.IsZero(m.Phy1) { // not required
 		return nil
 	}
@@ -2446,7 +2446,7 @@ func (m *StorageBridgeSasPortsItems0) validatePhy1(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validatePhy2(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validatePhy2(formats strfmt.Registry) error {
 	if swag.IsZero(m.Phy2) { // not required
 		return nil
 	}
@@ -2463,7 +2463,7 @@ func (m *StorageBridgeSasPortsItems0) validatePhy2(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validatePhy3(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validatePhy3(formats strfmt.Registry) error {
 	if swag.IsZero(m.Phy3) { // not required
 		return nil
 	}
@@ -2480,7 +2480,7 @@ func (m *StorageBridgeSasPortsItems0) validatePhy3(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validatePhy4(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validatePhy4(formats strfmt.Registry) error {
 	if swag.IsZero(m.Phy4) { // not required
 		return nil
 	}
@@ -2497,7 +2497,7 @@ func (m *StorageBridgeSasPortsItems0) validatePhy4(formats strfmt.Registry) erro
 	return nil
 }
 
-var storageBridgeSasPortsItems0TypeStatePropEnum []interface{}
+var storageBridgeInlineSasPortsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2505,66 +2505,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeSasPortsItems0TypeStatePropEnum = append(storageBridgeSasPortsItems0TypeStatePropEnum, v)
+		storageBridgeInlineSasPortsInlineArrayItemTypeStatePropEnum = append(storageBridgeInlineSasPortsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeSasPortsItems0
-	// StorageBridgeSasPortsItems0
+	// storage_bridge_inline_sas_ports_inline_array_item
+	// StorageBridgeInlineSasPortsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageBridgeSasPortsItems0StateError captures enum value "error"
-	StorageBridgeSasPortsItems0StateError string = "error"
+	// StorageBridgeInlineSasPortsInlineArrayItemStateError captures enum value "error"
+	StorageBridgeInlineSasPortsInlineArrayItemStateError string = "error"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeSasPortsItems0
-	// StorageBridgeSasPortsItems0
+	// storage_bridge_inline_sas_ports_inline_array_item
+	// StorageBridgeInlineSasPortsInlineArrayItem
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// StorageBridgeSasPortsItems0StateOnline captures enum value "online"
-	StorageBridgeSasPortsItems0StateOnline string = "online"
+	// StorageBridgeInlineSasPortsInlineArrayItemStateOnline captures enum value "online"
+	StorageBridgeInlineSasPortsInlineArrayItemStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeSasPortsItems0
-	// StorageBridgeSasPortsItems0
+	// storage_bridge_inline_sas_ports_inline_array_item
+	// StorageBridgeInlineSasPortsInlineArrayItem
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// StorageBridgeSasPortsItems0StateOffline captures enum value "offline"
-	StorageBridgeSasPortsItems0StateOffline string = "offline"
+	// StorageBridgeInlineSasPortsInlineArrayItemStateOffline captures enum value "offline"
+	StorageBridgeInlineSasPortsInlineArrayItemStateOffline string = "offline"
 )
 
 // prop value enum
-func (m *StorageBridgeSasPortsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeSasPortsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineSasPortsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this storage bridge sas ports items0 based on the context it is used
-func (m *StorageBridgeSasPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage bridge inline sas ports inline array item based on the context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCable(ctx, formats); err != nil {
@@ -2593,7 +2593,7 @@ func (m *StorageBridgeSasPortsItems0) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) contextValidateCable(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) contextValidateCable(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cable != nil {
 		if err := m.Cable.ContextValidate(ctx, formats); err != nil {
@@ -2607,7 +2607,7 @@ func (m *StorageBridgeSasPortsItems0) contextValidateCable(ctx context.Context, 
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) contextValidatePhy1(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) contextValidatePhy1(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Phy1 != nil {
 		if err := m.Phy1.ContextValidate(ctx, formats); err != nil {
@@ -2621,7 +2621,7 @@ func (m *StorageBridgeSasPortsItems0) contextValidatePhy1(ctx context.Context, f
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) contextValidatePhy2(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) contextValidatePhy2(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Phy2 != nil {
 		if err := m.Phy2.ContextValidate(ctx, formats); err != nil {
@@ -2635,7 +2635,7 @@ func (m *StorageBridgeSasPortsItems0) contextValidatePhy2(ctx context.Context, f
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) contextValidatePhy3(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) contextValidatePhy3(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Phy3 != nil {
 		if err := m.Phy3.ContextValidate(ctx, formats); err != nil {
@@ -2649,7 +2649,7 @@ func (m *StorageBridgeSasPortsItems0) contextValidatePhy3(ctx context.Context, f
 	return nil
 }
 
-func (m *StorageBridgeSasPortsItems0) contextValidatePhy4(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) contextValidatePhy4(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Phy4 != nil {
 		if err := m.Phy4.ContextValidate(ctx, formats); err != nil {
@@ -2664,7 +2664,7 @@ func (m *StorageBridgeSasPortsItems0) contextValidatePhy4(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2672,8 +2672,8 @@ func (m *StorageBridgeSasPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0
+func (m *StorageBridgeInlineSasPortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2681,36 +2681,36 @@ func (m *StorageBridgeSasPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0Cable storage bridge sas ports items0 cable
+// StorageBridgeInlineSasPortsInlineArrayItemInlineCable storage bridge inline sas ports inline array item inline cable
 //
-// swagger:model StorageBridgeSasPortsItems0Cable
-type StorageBridgeSasPortsItems0Cable struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item_inline_cable
+type StorageBridgeInlineSasPortsInlineArrayItemInlineCable struct {
 
 	// Bridge cable part number
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// Bridge cable serial number
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Bridge cable type
-	Technology string `json:"technology,omitempty"`
+	Technology *string `json:"technology,omitempty"`
 
 	// Bridge cable vendor
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0 cable
-func (m *StorageBridgeSasPortsItems0Cable) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item inline cable
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlineCable) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge sas ports items0 cable based on context it is used
-func (m *StorageBridgeSasPortsItems0Cable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline sas ports inline array item inline cable based on context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlineCable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Cable) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlineCable) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2718,8 +2718,8 @@ func (m *StorageBridgeSasPortsItems0Cable) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Cable) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0Cable
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlineCable) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItemInlineCable
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2727,27 +2727,27 @@ func (m *StorageBridgeSasPortsItems0Cable) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0Phy1 storage bridge sas ports items0 phy1
+// StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1 storage bridge inline sas ports inline array item inline phy 1
 //
-// swagger:model StorageBridgeSasPortsItems0Phy1
-type StorageBridgeSasPortsItems0Phy1 struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item_inline_phy_1
+type StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1 struct {
 
 	// Bridge SAS port PHY1 state
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0 phy1
-func (m *StorageBridgeSasPortsItems0Phy1) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item inline phy 1
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge sas ports items0 phy1 based on context it is used
-func (m *StorageBridgeSasPortsItems0Phy1) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline sas ports inline array item inline phy 1 based on context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy1) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2755,8 +2755,8 @@ func (m *StorageBridgeSasPortsItems0Phy1) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy1) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0Phy1
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItemInlinePhy1
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2764,27 +2764,27 @@ func (m *StorageBridgeSasPortsItems0Phy1) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0Phy2 storage bridge sas ports items0 phy2
+// StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2 storage bridge inline sas ports inline array item inline phy 2
 //
-// swagger:model StorageBridgeSasPortsItems0Phy2
-type StorageBridgeSasPortsItems0Phy2 struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item_inline_phy_2
+type StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2 struct {
 
 	// Bridge SAS port PHY2 state
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0 phy2
-func (m *StorageBridgeSasPortsItems0Phy2) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item inline phy 2
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge sas ports items0 phy2 based on context it is used
-func (m *StorageBridgeSasPortsItems0Phy2) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline sas ports inline array item inline phy 2 based on context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy2) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2792,8 +2792,8 @@ func (m *StorageBridgeSasPortsItems0Phy2) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy2) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0Phy2
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItemInlinePhy2
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2801,27 +2801,27 @@ func (m *StorageBridgeSasPortsItems0Phy2) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0Phy3 storage bridge sas ports items0 phy3
+// StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3 storage bridge inline sas ports inline array item inline phy 3
 //
-// swagger:model StorageBridgeSasPortsItems0Phy3
-type StorageBridgeSasPortsItems0Phy3 struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item_inline_phy_3
+type StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3 struct {
 
 	// Bridge SAS port PHY3 state
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0 phy3
-func (m *StorageBridgeSasPortsItems0Phy3) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item inline phy 3
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge sas ports items0 phy3 based on context it is used
-func (m *StorageBridgeSasPortsItems0Phy3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline sas ports inline array item inline phy 3 based on context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy3) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2829,8 +2829,8 @@ func (m *StorageBridgeSasPortsItems0Phy3) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy3) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0Phy3
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItemInlinePhy3
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2838,27 +2838,27 @@ func (m *StorageBridgeSasPortsItems0Phy3) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeSasPortsItems0Phy4 storage bridge sas ports items0 phy4
+// StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4 storage bridge inline sas ports inline array item inline phy 4
 //
-// swagger:model StorageBridgeSasPortsItems0Phy4
-type StorageBridgeSasPortsItems0Phy4 struct {
+// swagger:model storage_bridge_inline_sas_ports_inline_array_item_inline_phy_4
+type StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4 struct {
 
 	// Bridge SAS port PHY4 state
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge sas ports items0 phy4
-func (m *StorageBridgeSasPortsItems0Phy4) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline sas ports inline array item inline phy 4
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage bridge sas ports items0 phy4 based on context it is used
-func (m *StorageBridgeSasPortsItems0Phy4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline sas ports inline array item inline phy 4 based on context it is used
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy4) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2866,8 +2866,8 @@ func (m *StorageBridgeSasPortsItems0Phy4) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeSasPortsItems0Phy4) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeSasPortsItems0Phy4
+func (m *StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineSasPortsInlineArrayItemInlinePhy4
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2875,31 +2875,31 @@ func (m *StorageBridgeSasPortsItems0Phy4) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageBridgeTemperatureSensor storage bridge temperature sensor
+// StorageBridgeInlineTemperatureSensor storage bridge inline temperature sensor
 //
-// swagger:model StorageBridgeTemperatureSensor
-type StorageBridgeTemperatureSensor struct {
+// swagger:model storage_bridge_inline_temperature_sensor
+type StorageBridgeInlineTemperatureSensor struct {
 
 	// Maximum safe operating temperature, in degrees Celsius.
-	Maximum int64 `json:"maximum,omitempty"`
+	Maximum *int64 `json:"maximum,omitempty"`
 
 	// Minimum safe operating temperature, in degrees Celsius.
-	Minimum int64 `json:"minimum,omitempty"`
+	Minimum *int64 `json:"minimum,omitempty"`
 
 	// Temperature sensor name
 	// Example: Chassis temperature sensor
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Chassis temperature sensor reading, in degrees Celsius.
-	Reading int64 `json:"reading,omitempty"`
+	Reading *int64 `json:"reading,omitempty"`
 
 	// state
 	// Enum: [ok warning error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage bridge temperature sensor
-func (m *StorageBridgeTemperatureSensor) Validate(formats strfmt.Registry) error {
+// Validate validates this storage bridge inline temperature sensor
+func (m *StorageBridgeInlineTemperatureSensor) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2912,7 +2912,7 @@ func (m *StorageBridgeTemperatureSensor) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-var storageBridgeTemperatureSensorTypeStatePropEnum []interface{}
+var storageBridgeInlineTemperatureSensorTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2920,71 +2920,71 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageBridgeTemperatureSensorTypeStatePropEnum = append(storageBridgeTemperatureSensorTypeStatePropEnum, v)
+		storageBridgeInlineTemperatureSensorTypeStatePropEnum = append(storageBridgeInlineTemperatureSensorTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageBridgeTemperatureSensor
-	// StorageBridgeTemperatureSensor
+	// storage_bridge_inline_temperature_sensor
+	// StorageBridgeInlineTemperatureSensor
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageBridgeTemperatureSensorStateOk captures enum value "ok"
-	StorageBridgeTemperatureSensorStateOk string = "ok"
+	// StorageBridgeInlineTemperatureSensorStateOk captures enum value "ok"
+	StorageBridgeInlineTemperatureSensorStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeTemperatureSensor
-	// StorageBridgeTemperatureSensor
+	// storage_bridge_inline_temperature_sensor
+	// StorageBridgeInlineTemperatureSensor
 	// state
 	// State
 	// warning
 	// END DEBUGGING
-	// StorageBridgeTemperatureSensorStateWarning captures enum value "warning"
-	StorageBridgeTemperatureSensorStateWarning string = "warning"
+	// StorageBridgeInlineTemperatureSensorStateWarning captures enum value "warning"
+	StorageBridgeInlineTemperatureSensorStateWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// StorageBridgeTemperatureSensor
-	// StorageBridgeTemperatureSensor
+	// storage_bridge_inline_temperature_sensor
+	// StorageBridgeInlineTemperatureSensor
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageBridgeTemperatureSensorStateError captures enum value "error"
-	StorageBridgeTemperatureSensorStateError string = "error"
+	// StorageBridgeInlineTemperatureSensorStateError captures enum value "error"
+	StorageBridgeInlineTemperatureSensorStateError string = "error"
 )
 
 // prop value enum
-func (m *StorageBridgeTemperatureSensor) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageBridgeTemperatureSensorTypeStatePropEnum, true); err != nil {
+func (m *StorageBridgeInlineTemperatureSensor) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageBridgeInlineTemperatureSensorTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageBridgeTemperatureSensor) validateState(formats strfmt.Registry) error {
+func (m *StorageBridgeInlineTemperatureSensor) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("temperature_sensor"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("temperature_sensor"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage bridge temperature sensor based on context it is used
-func (m *StorageBridgeTemperatureSensor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage bridge inline temperature sensor based on context it is used
+func (m *StorageBridgeInlineTemperatureSensor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageBridgeTemperatureSensor) MarshalBinary() ([]byte, error) {
+func (m *StorageBridgeInlineTemperatureSensor) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2992,8 +2992,8 @@ func (m *StorageBridgeTemperatureSensor) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageBridgeTemperatureSensor) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeTemperatureSensor
+func (m *StorageBridgeInlineTemperatureSensor) UnmarshalBinary(b []byte) error {
+	var res StorageBridgeInlineTemperatureSensor
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,13 +66,13 @@ type ClusterNtpKeysGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Key identifier
 	*/
-	IDPathParameter int64
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ClusterNtpKeysGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) WithFieldsQueryParameter(fields []string) *ClusterNtpKeysGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) WithFields(fields []string) *ClusterNtpKeysGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) WithIDPathParameter(id int64) *ClusterNtpKeysGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) WithID(id int64) *ClusterNtpKeysGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ClusterNtpKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ClusterNtpKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ClusterNtpKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamClusterNtpKeysGet binds the parameter fields
 func (o *ClusterNtpKeysGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

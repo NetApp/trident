@@ -22,11 +22,12 @@ type MetroclusterNodeResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// metrocluster node response inline records
+	MetroclusterNodeResponseInlineRecords []*MetroclusterNode `json:"records,omitempty"`
 
-	// records
-	Records []*MetroclusterNode `json:"records,omitempty"`
+	// Number of Records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this metrocluster node response
@@ -37,7 +38,7 @@ func (m *MetroclusterNodeResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateMetroclusterNodeResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *MetroclusterNodeResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MetroclusterNodeResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *MetroclusterNodeResponse) validateMetroclusterNodeResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterNodeResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.MetroclusterNodeResponseInlineRecords); i++ {
+		if swag.IsZero(m.MetroclusterNodeResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.MetroclusterNodeResponseInlineRecords[i] != nil {
+			if err := m.MetroclusterNodeResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *MetroclusterNodeResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterNodeResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *MetroclusterNodeResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterNodeResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterNodeResponse) contextValidateMetroclusterNodeResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.MetroclusterNodeResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.MetroclusterNodeResponseInlineRecords[i] != nil {
+			if err := m.MetroclusterNodeResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

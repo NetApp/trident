@@ -19,7 +19,7 @@ import (
 type GlobalCacheSetting struct {
 
 	// links
-	Links *GlobalCacheSettingLinks `json:"_links,omitempty"`
+	Links *GlobalCacheSettingInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the time interval, in ISO 8601 format after which a periodic cache eviction happens. Default is 4 hours.
 	//
@@ -28,7 +28,7 @@ type GlobalCacheSetting struct {
 
 	// Indicates whether or not a node is allowed to fetch the data from a remote node.
 	//
-	RemoteFetchEnabled bool `json:"remote_fetch_enabled,omitempty"`
+	RemoteFetchEnabled *bool `json:"remote_fetch_enabled,omitempty"`
 }
 
 // Validate validates this global cache setting
@@ -108,17 +108,17 @@ func (m *GlobalCacheSetting) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GlobalCacheSettingLinks global cache setting links
+// GlobalCacheSettingInlineLinks global cache setting inline links
 //
-// swagger:model GlobalCacheSettingLinks
-type GlobalCacheSettingLinks struct {
+// swagger:model global_cache_setting_inline__links
+type GlobalCacheSettingInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this global cache setting links
-func (m *GlobalCacheSettingLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this global cache setting inline links
+func (m *GlobalCacheSettingInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -131,7 +131,7 @@ func (m *GlobalCacheSettingLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GlobalCacheSettingLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GlobalCacheSettingInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -148,8 +148,8 @@ func (m *GlobalCacheSettingLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this global cache setting links based on the context it is used
-func (m *GlobalCacheSettingLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this global cache setting inline links based on the context it is used
+func (m *GlobalCacheSettingInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -162,7 +162,7 @@ func (m *GlobalCacheSettingLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *GlobalCacheSettingLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GlobalCacheSettingInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *GlobalCacheSettingLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *GlobalCacheSettingLinks) MarshalBinary() ([]byte, error) {
+func (m *GlobalCacheSettingInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -185,8 +185,8 @@ func (m *GlobalCacheSettingLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GlobalCacheSettingLinks) UnmarshalBinary(b []byte) error {
-	var res GlobalCacheSettingLinks
+func (m *GlobalCacheSettingInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GlobalCacheSettingInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

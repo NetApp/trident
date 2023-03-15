@@ -20,12 +20,12 @@ import (
 type JobLink struct {
 
 	// links
-	Links *JobLinkLinks `json:"_links,omitempty"`
+	Links *JobLinkInlineLinks `json:"_links,omitempty"`
 
 	// The UUID of the asynchronous job that is triggered by a POST, PATCH, or DELETE operation.
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this job link
@@ -109,7 +109,7 @@ func (m *JobLink) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 
 func (m *JobLink) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -134,17 +134,17 @@ func (m *JobLink) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// JobLinkLinks job link links
+// JobLinkInlineLinks job link inline links
 //
-// swagger:model JobLinkLinks
-type JobLinkLinks struct {
+// swagger:model job_link_inline__links
+type JobLinkInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this job link links
-func (m *JobLinkLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this job link inline links
+func (m *JobLinkInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -157,7 +157,7 @@ func (m *JobLinkLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *JobLinkLinks) validateSelf(formats strfmt.Registry) error {
+func (m *JobLinkInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -174,8 +174,8 @@ func (m *JobLinkLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this job link links based on the context it is used
-func (m *JobLinkLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this job link inline links based on the context it is used
+func (m *JobLinkInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -188,7 +188,7 @@ func (m *JobLinkLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *JobLinkLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobLinkInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -203,7 +203,7 @@ func (m *JobLinkLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *JobLinkLinks) MarshalBinary() ([]byte, error) {
+func (m *JobLinkInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -211,8 +211,8 @@ func (m *JobLinkLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *JobLinkLinks) UnmarshalBinary(b []byte) error {
-	var res JobLinkLinks
+func (m *JobLinkInlineLinks) UnmarshalBinary(b []byte) error {
+	var res JobLinkInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

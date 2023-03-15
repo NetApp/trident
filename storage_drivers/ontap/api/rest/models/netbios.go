@@ -21,9 +21,6 @@ import (
 // swagger:model netbios
 type Netbios struct {
 
-	// interfaces
-	Interfaces []string `json:"interfaces,omitempty"`
-
 	// Specifies the mode in which the NetBIOS name service is configured. The supported values are:
 	//   * p - Point to Point
 	//   * h - Hybrid
@@ -31,38 +28,41 @@ type Netbios struct {
 	//   * b - Broadcast
 	//
 	// Enum: [p h m b]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Specifies the NetBIOS name.
 	// Example: CLUSTER_1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the name registration type.
 	// Enum: [registered active permanent group ]
-	NameRegistrationType string `json:"name_registration_type,omitempty"`
+	NameRegistrationType *string `json:"name_registration_type,omitempty"`
+
+	// netbios inline interfaces
+	NetbiosInlineInterfaces []*string `json:"interfaces,omitempty"`
+
+	// List of WINS
+	NetbiosInlineWinsServers []*Server `json:"wins_servers,omitempty"`
 
 	// node
-	Node *NetbiosNode `json:"node,omitempty"`
+	Node *NetbiosInlineNode `json:"node,omitempty"`
 
 	// Specifies the NetBIOS name scope. Scope is used as a name for the set of NetBIOS nodes that participate in a NetBIOS over TCP (NBT) virtual LAN.
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// Specifies the registration state of the NetBIOS Name.
 	// Enum: [must_register must_unregister wins broadcast name_released wins_conflict broadcast_conflict]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Specifies the NetBIOS suffix. A NetBIOS suffix is the 16th character of the 16-character NetBIOS name. The NetBIOS suffix is used by Microsoft Networking software to identify functionality installed on the registered device.
-	Suffix string `json:"suffix,omitempty"`
+	Suffix *string `json:"suffix,omitempty"`
 
 	// svm
-	Svm *NetbiosSvm `json:"svm,omitempty"`
+	Svm *NetbiosInlineSvm `json:"svm,omitempty"`
 
 	// Specifies the registration time left with WINS, in minutes.
 	// Read Only: true
-	TimeLeft int64 `json:"time_left,omitempty"`
-
-	// List of WINS
-	WinsServers []*Server `json:"wins_servers,omitempty"`
+	TimeLeft *int64 `json:"time_left,omitempty"`
 }
 
 // Validate validates this netbios
@@ -77,6 +77,10 @@ func (m *Netbios) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNetbiosInlineWinsServers(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
@@ -86,10 +90,6 @@ func (m *Netbios) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateWinsServers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -168,7 +168,7 @@ func (m *Netbios) validateMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
@@ -254,8 +254,32 @@ func (m *Netbios) validateNameRegistrationType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateNameRegistrationTypeEnum("name_registration_type", "body", m.NameRegistrationType); err != nil {
+	if err := m.validateNameRegistrationTypeEnum("name_registration_type", "body", *m.NameRegistrationType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Netbios) validateNetbiosInlineWinsServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetbiosInlineWinsServers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NetbiosInlineWinsServers); i++ {
+		if swag.IsZero(m.NetbiosInlineWinsServers[i]) { // not required
+			continue
+		}
+
+		if m.NetbiosInlineWinsServers[i] != nil {
+			if err := m.NetbiosInlineWinsServers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("wins_servers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -377,7 +401,7 @@ func (m *Netbios) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -401,33 +425,13 @@ func (m *Netbios) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Netbios) validateWinsServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.WinsServers) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.WinsServers); i++ {
-		if swag.IsZero(m.WinsServers[i]) { // not required
-			continue
-		}
-
-		if m.WinsServers[i] != nil {
-			if err := m.WinsServers[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("wins_servers" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this netbios based on the context it is used
 func (m *Netbios) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateNetbiosInlineWinsServers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
@@ -441,13 +445,27 @@ func (m *Netbios) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateWinsServers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Netbios) contextValidateNetbiosInlineWinsServers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.NetbiosInlineWinsServers); i++ {
+
+		if m.NetbiosInlineWinsServers[i] != nil {
+			if err := m.NetbiosInlineWinsServers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("wins_servers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -481,26 +499,8 @@ func (m *Netbios) contextValidateSvm(ctx context.Context, formats strfmt.Registr
 
 func (m *Netbios) contextValidateTimeLeft(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "time_left", "body", int64(m.TimeLeft)); err != nil {
+	if err := validate.ReadOnly(ctx, "time_left", "body", m.TimeLeft); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Netbios) contextValidateWinsServers(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.WinsServers); i++ {
-
-		if m.WinsServers[i] != nil {
-			if err := m.WinsServers[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("wins_servers" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -524,25 +524,25 @@ func (m *Netbios) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetbiosNode netbios node
+// NetbiosInlineNode netbios inline node
 //
-// swagger:model NetbiosNode
-type NetbiosNode struct {
+// swagger:model netbios_inline_node
+type NetbiosInlineNode struct {
 
 	// links
-	Links *NetbiosNodeLinks `json:"_links,omitempty"`
+	Links *NetbiosInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this netbios node
-func (m *NetbiosNode) Validate(formats strfmt.Registry) error {
+// Validate validates this netbios inline node
+func (m *NetbiosInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -555,7 +555,7 @@ func (m *NetbiosNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetbiosNode) validateLinks(formats strfmt.Registry) error {
+func (m *NetbiosInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -572,8 +572,8 @@ func (m *NetbiosNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netbios node based on the context it is used
-func (m *NetbiosNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netbios inline node based on the context it is used
+func (m *NetbiosInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -586,7 +586,7 @@ func (m *NetbiosNode) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *NetbiosNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetbiosInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -601,7 +601,7 @@ func (m *NetbiosNode) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *NetbiosNode) MarshalBinary() ([]byte, error) {
+func (m *NetbiosInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -609,8 +609,8 @@ func (m *NetbiosNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetbiosNode) UnmarshalBinary(b []byte) error {
-	var res NetbiosNode
+func (m *NetbiosInlineNode) UnmarshalBinary(b []byte) error {
+	var res NetbiosInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -618,17 +618,17 @@ func (m *NetbiosNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetbiosNodeLinks netbios node links
+// NetbiosInlineNodeInlineLinks netbios inline node inline links
 //
-// swagger:model NetbiosNodeLinks
-type NetbiosNodeLinks struct {
+// swagger:model netbios_inline_node_inline__links
+type NetbiosInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netbios node links
-func (m *NetbiosNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netbios inline node inline links
+func (m *NetbiosInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -641,7 +641,7 @@ func (m *NetbiosNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetbiosNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetbiosInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -658,8 +658,8 @@ func (m *NetbiosNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netbios node links based on the context it is used
-func (m *NetbiosNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netbios inline node inline links based on the context it is used
+func (m *NetbiosInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -672,7 +672,7 @@ func (m *NetbiosNodeLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NetbiosNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetbiosInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -687,7 +687,7 @@ func (m *NetbiosNodeLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NetbiosNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NetbiosInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -695,8 +695,8 @@ func (m *NetbiosNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetbiosNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NetbiosNodeLinks
+func (m *NetbiosInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetbiosInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -704,27 +704,27 @@ func (m *NetbiosNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetbiosSvm netbios svm
+// NetbiosInlineSvm netbios inline svm
 //
-// swagger:model NetbiosSvm
-type NetbiosSvm struct {
+// swagger:model netbios_inline_svm
+type NetbiosInlineSvm struct {
 
 	// links
-	Links *NetbiosSvmLinks `json:"_links,omitempty"`
+	Links *NetbiosInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this netbios svm
-func (m *NetbiosSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this netbios inline svm
+func (m *NetbiosInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -737,7 +737,7 @@ func (m *NetbiosSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetbiosSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NetbiosInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -754,8 +754,8 @@ func (m *NetbiosSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netbios svm based on the context it is used
-func (m *NetbiosSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netbios inline svm based on the context it is used
+func (m *NetbiosInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -768,7 +768,7 @@ func (m *NetbiosSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *NetbiosSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetbiosInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -783,7 +783,7 @@ func (m *NetbiosSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *NetbiosSvm) MarshalBinary() ([]byte, error) {
+func (m *NetbiosInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -791,8 +791,8 @@ func (m *NetbiosSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetbiosSvm) UnmarshalBinary(b []byte) error {
-	var res NetbiosSvm
+func (m *NetbiosInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NetbiosInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -800,17 +800,17 @@ func (m *NetbiosSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetbiosSvmLinks netbios svm links
+// NetbiosInlineSvmInlineLinks netbios inline svm inline links
 //
-// swagger:model NetbiosSvmLinks
-type NetbiosSvmLinks struct {
+// swagger:model netbios_inline_svm_inline__links
+type NetbiosInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netbios svm links
-func (m *NetbiosSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netbios inline svm inline links
+func (m *NetbiosInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -823,7 +823,7 @@ func (m *NetbiosSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetbiosSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetbiosInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -840,8 +840,8 @@ func (m *NetbiosSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netbios svm links based on the context it is used
-func (m *NetbiosSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netbios inline svm inline links based on the context it is used
+func (m *NetbiosInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -854,7 +854,7 @@ func (m *NetbiosSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NetbiosSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetbiosInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -869,7 +869,7 @@ func (m *NetbiosSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NetbiosSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NetbiosInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -877,8 +877,8 @@ func (m *NetbiosSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetbiosSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NetbiosSvmLinks
+func (m *NetbiosInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetbiosInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -65,7 +65,7 @@ type NetworkIPBgpPeerGroupDeleteParams struct {
 
 	   UUID of the peer group
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *NetworkIPBgpPeerGroupDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the network ip bgp peer group delete params
-func (o *NetworkIPBgpPeerGroupDeleteParams) WithUUIDPathParameter(uuid string) *NetworkIPBgpPeerGroupDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ip bgp peer group delete params
+func (o *NetworkIPBgpPeerGroupDeleteParams) WithUUID(uuid string) *NetworkIPBgpPeerGroupDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ip bgp peer group delete params
-func (o *NetworkIPBgpPeerGroupDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ip bgp peer group delete params
+func (o *NetworkIPBgpPeerGroupDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *NetworkIPBgpPeerGroupDeleteParams) WriteToRequest(r runtime.ClientReque
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

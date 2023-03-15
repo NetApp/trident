@@ -66,55 +66,61 @@ type TopMetricsDirectoryCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IopsErrorLowerBound.
 
 	   Filter by iops.error.lower_bound
 	*/
-	IopsErrorLowerBoundQueryParameter *int64
+	IopsErrorLowerBound *int64
 
 	/* IopsErrorUpperBound.
 
 	   Filter by iops.error.upper_bound
 	*/
-	IopsErrorUpperBoundQueryParameter *int64
+	IopsErrorUpperBound *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MaxRecordsPerVolume.
 
 	   Max records per volume.
 	*/
-	MaxRecordsPerVolumeQueryParameter *int64
+	MaxRecordsPerVolume *int64
+
+	/* NonRecursiveBytesUsed.
+
+	   Filter by non_recursive_bytes_used
+	*/
+	NonRecursiveBytesUsed *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Path.
 
 	   Filter by path
 	*/
-	PathQueryParameter *string
+	Path *string
 
 	/* ReturnRecords.
 
@@ -122,7 +128,7 @@ type TopMetricsDirectoryCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,43 +136,43 @@ type TopMetricsDirectoryCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* ThroughputErrorLowerBound.
 
 	   Filter by throughput.error.lower_bound
 	*/
-	ThroughputErrorLowerBoundQueryParameter *int64
+	ThroughputErrorLowerBound *int64
 
 	/* ThroughputErrorUpperBound.
 
 	   Filter by throughput.error.upper_bound
 	*/
-	ThroughputErrorUpperBoundQueryParameter *int64
+	ThroughputErrorUpperBound *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* TopMetric.
 
@@ -174,19 +180,19 @@ type TopMetricsDirectoryCollectionGetParams struct {
 
 	   Default: "iops.read"
 	*/
-	TopMetricQueryParameter *string
+	TopMetric *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -206,17 +212,17 @@ func (o *TopMetricsDirectoryCollectionGetParams) WithDefaults() *TopMetricsDirec
 // All values with no default are reset to their zero value.
 func (o *TopMetricsDirectoryCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 
-		topMetricQueryParameterDefault = string("iops.read")
+		topMetricDefault = string("iops.read")
 	)
 
 	val := TopMetricsDirectoryCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
-		TopMetricQueryParameter:     &topMetricQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
+		TopMetric:     &topMetricDefault,
 	}
 
 	val.timeout = o.timeout
@@ -258,224 +264,235 @@ func (o *TopMetricsDirectoryCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithFieldsQueryParameter(fields []string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithFields(fields []string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound)
+// WithIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithIopsErrorLowerBound(iopsErrorLowerBound *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetIopsErrorLowerBound(iopsErrorLowerBound)
 	return o
 }
 
-// SetIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) {
-	o.IopsErrorLowerBoundQueryParameter = iopsErrorLowerBound
+// SetIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetIopsErrorLowerBound(iopsErrorLowerBound *int64) {
+	o.IopsErrorLowerBound = iopsErrorLowerBound
 }
 
-// WithIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound)
+// WithIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithIopsErrorUpperBound(iopsErrorUpperBound *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetIopsErrorUpperBound(iopsErrorUpperBound)
 	return o
 }
 
-// SetIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) {
-	o.IopsErrorUpperBoundQueryParameter = iopsErrorUpperBound
+// SetIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetIopsErrorUpperBound(iopsErrorUpperBound *int64) {
+	o.IopsErrorUpperBound = iopsErrorUpperBound
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithIopsRead(iopsRead *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithIopsWrite(iopsWrite *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithMaxRecords(maxRecords *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxRecordsPerVolumeQueryParameter adds the maxRecordsPerVolume to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume)
+// WithMaxRecordsPerVolume adds the maxRecordsPerVolume to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithMaxRecordsPerVolume(maxRecordsPerVolume *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetMaxRecordsPerVolume(maxRecordsPerVolume)
 	return o
 }
 
-// SetMaxRecordsPerVolumeQueryParameter adds the maxRecordsPerVolume to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume *int64) {
-	o.MaxRecordsPerVolumeQueryParameter = maxRecordsPerVolume
+// SetMaxRecordsPerVolume adds the maxRecordsPerVolume to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetMaxRecordsPerVolume(maxRecordsPerVolume *int64) {
+	o.MaxRecordsPerVolume = maxRecordsPerVolume
 }
 
-// WithOrderByQueryParameter adds the orderBy to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithNonRecursiveBytesUsed adds the nonRecursiveBytesUsed to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithNonRecursiveBytesUsed(nonRecursiveBytesUsed *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetNonRecursiveBytesUsed(nonRecursiveBytesUsed)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetNonRecursiveBytesUsed adds the nonRecursiveBytesUsed to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetNonRecursiveBytesUsed(nonRecursiveBytesUsed *int64) {
+	o.NonRecursiveBytesUsed = nonRecursiveBytesUsed
 }
 
-// WithPathQueryParameter adds the path to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithPathQueryParameter(path *string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetPathQueryParameter(path)
+// WithOrderBy adds the orderBy to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithOrderBy(orderBy []string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetPathQueryParameter adds the path to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
+// SetOrderBy adds the orderBy to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *TopMetricsDirectoryCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithPath adds the path to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithPath(path *string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetPath adds the path to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetPath(path *string) {
+	o.Path = path
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnRecords adds the returnRecords to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithReturnRecords(returnRecords *bool) *TopMetricsDirectoryCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnRecords adds the returnRecords to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMNameQueryParameter adds the svmName to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithReturnTimeout adds the returnTimeout to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetReturnTimeout adds the returnTimeout to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmName adds the svmName to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithSvmName(svmName *string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmName adds the svmName to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound)
+// WithSvmUUID adds the svmUUID to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithSvmUUID(svmUUID *string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) {
-	o.ThroughputErrorLowerBoundQueryParameter = throughputErrorLowerBound
+// SetSvmUUID adds the svmUuid to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound)
+// WithThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputErrorLowerBound(throughputErrorLowerBound *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetThroughputErrorLowerBound(throughputErrorLowerBound)
 	return o
 }
 
-// SetThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) {
-	o.ThroughputErrorUpperBoundQueryParameter = throughputErrorUpperBound
+// SetThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputErrorLowerBound(throughputErrorLowerBound *int64) {
+	o.ThroughputErrorLowerBound = throughputErrorLowerBound
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputErrorUpperBound(throughputErrorUpperBound *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetThroughputErrorUpperBound(throughputErrorUpperBound)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputErrorUpperBound(throughputErrorUpperBound *int64) {
+	o.ThroughputErrorUpperBound = throughputErrorUpperBound
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *TopMetricsDirectoryCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputRead adds the throughputRead to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputRead(throughputRead *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputRead adds the throughputRead to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithTopMetricQueryParameter adds the topMetric to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithTopMetricQueryParameter(topMetric *string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetTopMetricQueryParameter(topMetric)
+// WithThroughputWrite adds the throughputWrite to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *TopMetricsDirectoryCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetTopMetricQueryParameter adds the topMetric to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetTopMetricQueryParameter(topMetric *string) {
-	o.TopMetricQueryParameter = topMetric
+// SetThroughputWrite adds the throughputWrite to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithTopMetric adds the topMetric to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithTopMetric(topMetric *string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetTopMetric(topMetric)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetTopMetric adds the topMetric to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetTopMetric(topMetric *string) {
+	o.TopMetric = topMetric
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *TopMetricsDirectoryCollectionGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeName adds the volumeName to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithVolumeName(volumeName *string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the top metrics directory collection get params
-func (o *TopMetricsDirectoryCollectionGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeName adds the volumeName to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
+}
+
+// WithVolumeUUID adds the volumeUUID to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) WithVolumeUUID(volumeUUID string) *TopMetricsDirectoryCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
+	return o
+}
+
+// SetVolumeUUID adds the volumeUuid to the top metrics directory collection get params
+func (o *TopMetricsDirectoryCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -486,7 +503,7 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -497,13 +514,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsErrorLowerBoundQueryParameter != nil {
+	if o.IopsErrorLowerBound != nil {
 
 		// query param iops.error.lower_bound
 		var qrIopsErrorLowerBound int64
 
-		if o.IopsErrorLowerBoundQueryParameter != nil {
-			qrIopsErrorLowerBound = *o.IopsErrorLowerBoundQueryParameter
+		if o.IopsErrorLowerBound != nil {
+			qrIopsErrorLowerBound = *o.IopsErrorLowerBound
 		}
 		qIopsErrorLowerBound := swag.FormatInt64(qrIopsErrorLowerBound)
 		if qIopsErrorLowerBound != "" {
@@ -514,13 +531,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsErrorUpperBoundQueryParameter != nil {
+	if o.IopsErrorUpperBound != nil {
 
 		// query param iops.error.upper_bound
 		var qrIopsErrorUpperBound int64
 
-		if o.IopsErrorUpperBoundQueryParameter != nil {
-			qrIopsErrorUpperBound = *o.IopsErrorUpperBoundQueryParameter
+		if o.IopsErrorUpperBound != nil {
+			qrIopsErrorUpperBound = *o.IopsErrorUpperBound
 		}
 		qIopsErrorUpperBound := swag.FormatInt64(qrIopsErrorUpperBound)
 		if qIopsErrorUpperBound != "" {
@@ -531,13 +548,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -548,13 +565,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -565,13 +582,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -582,13 +599,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsPerVolumeQueryParameter != nil {
+	if o.MaxRecordsPerVolume != nil {
 
 		// query param max_records_per_volume
 		var qrMaxRecordsPerVolume int64
 
-		if o.MaxRecordsPerVolumeQueryParameter != nil {
-			qrMaxRecordsPerVolume = *o.MaxRecordsPerVolumeQueryParameter
+		if o.MaxRecordsPerVolume != nil {
+			qrMaxRecordsPerVolume = *o.MaxRecordsPerVolume
 		}
 		qMaxRecordsPerVolume := swag.FormatInt64(qrMaxRecordsPerVolume)
 		if qMaxRecordsPerVolume != "" {
@@ -599,7 +616,24 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.NonRecursiveBytesUsed != nil {
+
+		// query param non_recursive_bytes_used
+		var qrNonRecursiveBytesUsed int64
+
+		if o.NonRecursiveBytesUsed != nil {
+			qrNonRecursiveBytesUsed = *o.NonRecursiveBytesUsed
+		}
+		qNonRecursiveBytesUsed := swag.FormatInt64(qrNonRecursiveBytesUsed)
+		if qNonRecursiveBytesUsed != "" {
+
+			if err := r.SetQueryParam("non_recursive_bytes_used", qNonRecursiveBytesUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -610,13 +644,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.PathQueryParameter != nil {
+	if o.Path != nil {
 
 		// query param path
 		var qrPath string
 
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
+		if o.Path != nil {
+			qrPath = *o.Path
 		}
 		qPath := qrPath
 		if qPath != "" {
@@ -627,13 +661,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -644,13 +678,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -661,13 +695,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -678,13 +712,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -695,13 +729,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputErrorLowerBoundQueryParameter != nil {
+	if o.ThroughputErrorLowerBound != nil {
 
 		// query param throughput.error.lower_bound
 		var qrThroughputErrorLowerBound int64
 
-		if o.ThroughputErrorLowerBoundQueryParameter != nil {
-			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBoundQueryParameter
+		if o.ThroughputErrorLowerBound != nil {
+			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBound
 		}
 		qThroughputErrorLowerBound := swag.FormatInt64(qrThroughputErrorLowerBound)
 		if qThroughputErrorLowerBound != "" {
@@ -712,13 +746,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputErrorUpperBoundQueryParameter != nil {
+	if o.ThroughputErrorUpperBound != nil {
 
 		// query param throughput.error.upper_bound
 		var qrThroughputErrorUpperBound int64
 
-		if o.ThroughputErrorUpperBoundQueryParameter != nil {
-			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBoundQueryParameter
+		if o.ThroughputErrorUpperBound != nil {
+			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBound
 		}
 		qThroughputErrorUpperBound := swag.FormatInt64(qrThroughputErrorUpperBound)
 		if qThroughputErrorUpperBound != "" {
@@ -729,13 +763,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -746,13 +780,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -763,13 +797,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.TopMetricQueryParameter != nil {
+	if o.TopMetric != nil {
 
 		// query param top_metric
 		var qrTopMetric string
 
-		if o.TopMetricQueryParameter != nil {
-			qrTopMetric = *o.TopMetricQueryParameter
+		if o.TopMetric != nil {
+			qrTopMetric = *o.TopMetric
 		}
 		qTopMetric := qrTopMetric
 		if qTopMetric != "" {
@@ -780,13 +814,13 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -798,7 +832,7 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -810,7 +844,7 @@ func (o *TopMetricsDirectoryCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamTopMetricsDirectoryCollectionGet binds the parameter fields
 func (o *TopMetricsDirectoryCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -827,7 +861,7 @@ func (o *TopMetricsDirectoryCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamTopMetricsDirectoryCollectionGet binds the parameter order_by
 func (o *TopMetricsDirectoryCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -27,11 +27,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
-// ToStringPointer takes a string and returns a string pointer
-func ToStringPointer(s string) *string {
-	return &s
-}
-
 func NewTestLUNHelper(storagePrefix string, driverContext tridentconfig.DriverContext) *LUNHelper {
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -735,7 +730,7 @@ func TestDriverIgnoresDataLIF(t *testing.T) {
 func TestDriverValidateInvalidPrefix(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 
-	d.Config.StoragePrefix = ToStringPointer("B@D")
+	d.Config.StoragePrefix = utils.Ptr("B@D")
 
 	assert.EqualError(t, d.validate(ctx), "storage prefix may only contain letters/digits/underscore/dash")
 }
@@ -2498,7 +2493,7 @@ func TestOntapSanEconomyGetStorageBackendPhysicalPoolNames(t *testing.T) {
 
 func TestOntapSanEconomyGetInternalVolumeName(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
-	d.Config.StoragePrefix = ToStringPointer("storagePrefix_")
+	d.Config.StoragePrefix = utils.Ptr("storagePrefix_")
 
 	internalVolName := d.GetInternalVolumeName(ctx, "my-Lun")
 

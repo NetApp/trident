@@ -76,13 +76,13 @@ type PortsetInterfaceCreateParams struct {
 	   The unique identifier of the portset.
 
 	*/
-	PortsetUUIDPathParameter string
+	PortsetUUID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -102,11 +102,11 @@ func (o *PortsetInterfaceCreateParams) WithDefaults() *PortsetInterfaceCreatePar
 // All values with no default are reset to their zero value.
 func (o *PortsetInterfaceCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := PortsetInterfaceCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -159,26 +159,26 @@ func (o *PortsetInterfaceCreateParams) SetInfo(info *models.PortsetInterface) {
 	o.Info = info
 }
 
-// WithPortsetUUIDPathParameter adds the portsetUUID to the portset interface create params
-func (o *PortsetInterfaceCreateParams) WithPortsetUUIDPathParameter(portsetUUID string) *PortsetInterfaceCreateParams {
-	o.SetPortsetUUIDPathParameter(portsetUUID)
+// WithPortsetUUID adds the portsetUUID to the portset interface create params
+func (o *PortsetInterfaceCreateParams) WithPortsetUUID(portsetUUID string) *PortsetInterfaceCreateParams {
+	o.SetPortsetUUID(portsetUUID)
 	return o
 }
 
-// SetPortsetUUIDPathParameter adds the portsetUuid to the portset interface create params
-func (o *PortsetInterfaceCreateParams) SetPortsetUUIDPathParameter(portsetUUID string) {
-	o.PortsetUUIDPathParameter = portsetUUID
+// SetPortsetUUID adds the portsetUuid to the portset interface create params
+func (o *PortsetInterfaceCreateParams) SetPortsetUUID(portsetUUID string) {
+	o.PortsetUUID = portsetUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the portset interface create params
-func (o *PortsetInterfaceCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PortsetInterfaceCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the portset interface create params
+func (o *PortsetInterfaceCreateParams) WithReturnRecords(returnRecords *bool) *PortsetInterfaceCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the portset interface create params
-func (o *PortsetInterfaceCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the portset interface create params
+func (o *PortsetInterfaceCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -195,17 +195,17 @@ func (o *PortsetInterfaceCreateParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param portset.uuid
-	if err := r.SetPathParam("portset.uuid", o.PortsetUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("portset.uuid", o.PortsetUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

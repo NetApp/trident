@@ -21,23 +21,23 @@ import (
 type FcInterfaceSvm struct {
 
 	// links
-	Links *FcInterfaceSvmLinks `json:"_links,omitempty"`
+	Links *FcInterfaceSvmInlineLinks `json:"_links,omitempty"`
 
 	// The data protocol for which the Fibre Channel interface is configured.
 	// Enum: [fcp fc_nvme]
-	DataProtocol string `json:"data_protocol,omitempty"`
+	DataProtocol *string `json:"data_protocol,omitempty"`
 
 	// location
-	Location *FcInterfaceSvmLocation `json:"location,omitempty"`
+	Location *FcInterfaceSvmInlineLocation `json:"location,omitempty"`
 
 	// The name of the Fibre Channel interface.
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the Fibre Channel interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this fc interface svm
@@ -128,7 +128,7 @@ func (m *FcInterfaceSvm) validateDataProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDataProtocolEnum("data_protocol", "body", m.DataProtocol); err != nil {
+	if err := m.validateDataProtocolEnum("data_protocol", "body", *m.DataProtocol); err != nil {
 		return err
 	}
 
@@ -204,7 +204,7 @@ func (m *FcInterfaceSvm) contextValidateLocation(ctx context.Context, formats st
 
 func (m *FcInterfaceSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -229,17 +229,17 @@ func (m *FcInterfaceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceSvmLinks fc interface svm links
+// FcInterfaceSvmInlineLinks fc interface svm inline links
 //
-// swagger:model FcInterfaceSvmLinks
-type FcInterfaceSvmLinks struct {
+// swagger:model fc_interface_svm_inline__links
+type FcInterfaceSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc interface svm links
-func (m *FcInterfaceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc interface svm inline links
+func (m *FcInterfaceSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -252,7 +252,7 @@ func (m *FcInterfaceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcInterfaceSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -269,8 +269,8 @@ func (m *FcInterfaceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc interface svm links based on the context it is used
-func (m *FcInterfaceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc interface svm inline links based on the context it is used
+func (m *FcInterfaceSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -283,7 +283,7 @@ func (m *FcInterfaceSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcInterfaceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -298,7 +298,7 @@ func (m *FcInterfaceSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcInterfaceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FcInterfaceSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -306,8 +306,8 @@ func (m *FcInterfaceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcInterfaceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FcInterfaceSvmLinks
+func (m *FcInterfaceSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -315,17 +315,17 @@ func (m *FcInterfaceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceSvmLocation The location of the Fibre Channel interface is defined by the location of its port.
+// FcInterfaceSvmInlineLocation The location of the Fibre Channel interface is defined by the location of its port.
 //
-// swagger:model FcInterfaceSvmLocation
-type FcInterfaceSvmLocation struct {
+// swagger:model fc_interface_svm_inline_location
+type FcInterfaceSvmInlineLocation struct {
 
 	// port
 	Port *FcPortReference `json:"port,omitempty"`
 }
 
-// Validate validates this fc interface svm location
-func (m *FcInterfaceSvmLocation) Validate(formats strfmt.Registry) error {
+// Validate validates this fc interface svm inline location
+func (m *FcInterfaceSvmInlineLocation) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePort(formats); err != nil {
@@ -338,7 +338,7 @@ func (m *FcInterfaceSvmLocation) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceSvmLocation) validatePort(formats strfmt.Registry) error {
+func (m *FcInterfaceSvmInlineLocation) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -355,8 +355,8 @@ func (m *FcInterfaceSvmLocation) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc interface svm location based on the context it is used
-func (m *FcInterfaceSvmLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc interface svm inline location based on the context it is used
+func (m *FcInterfaceSvmInlineLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePort(ctx, formats); err != nil {
@@ -369,7 +369,7 @@ func (m *FcInterfaceSvmLocation) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FcInterfaceSvmLocation) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceSvmInlineLocation) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -384,7 +384,7 @@ func (m *FcInterfaceSvmLocation) contextValidatePort(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FcInterfaceSvmLocation) MarshalBinary() ([]byte, error) {
+func (m *FcInterfaceSvmInlineLocation) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -392,8 +392,8 @@ func (m *FcInterfaceSvmLocation) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcInterfaceSvmLocation) UnmarshalBinary(b []byte) error {
-	var res FcInterfaceSvmLocation
+func (m *FcInterfaceSvmInlineLocation) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceSvmInlineLocation
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -75,7 +75,7 @@ type NvmeSubsystemModifyParams struct {
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *NvmeSubsystemModifyParams) SetInfo(info *models.NvmeSubsystem) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the nvme subsystem modify params
-func (o *NvmeSubsystemModifyParams) WithUUIDPathParameter(uuid string) *NvmeSubsystemModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the nvme subsystem modify params
+func (o *NvmeSubsystemModifyParams) WithUUID(uuid string) *NvmeSubsystemModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the nvme subsystem modify params
-func (o *NvmeSubsystemModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the nvme subsystem modify params
+func (o *NvmeSubsystemModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *NvmeSubsystemModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

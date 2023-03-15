@@ -66,97 +66,97 @@ type FlexcacheOriginCollectionGetParams struct {
 
 	   Filter by block_level_invalidation
 	*/
-	BlockLevelInvalidationQueryParameter *bool
+	BlockLevelInvalidation *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FlexcachesClusterName.
 
 	   Filter by flexcaches.cluster.name
 	*/
-	FlexcachesClusterNameQueryParameter *string
+	FlexcachesClusterName *string
 
 	/* FlexcachesClusterUUID.
 
 	   Filter by flexcaches.cluster.uuid
 	*/
-	FlexcachesClusterUUIDQueryParameter *string
+	FlexcachesClusterUUID *string
 
 	/* FlexcachesCreateTime.
 
 	   Filter by flexcaches.create_time
 	*/
-	FlexcachesCreateTimeQueryParameter *string
+	FlexcachesCreateTime *string
 
 	/* FlexcachesIPAddress.
 
 	   Filter by flexcaches.ip_address
 	*/
-	FlexcachesIPAddressQueryParameter *string
+	FlexcachesIPAddress *string
 
 	/* FlexcachesSize.
 
 	   Filter by flexcaches.size
 	*/
-	FlexcachesSizeQueryParameter *int64
+	FlexcachesSize *int64
 
 	/* FlexcachesState.
 
 	   Filter by flexcaches.state
 	*/
-	FlexcachesStateQueryParameter *string
+	FlexcachesState *string
 
 	/* FlexcachesSvmName.
 
 	   Filter by flexcaches.svm.name
 	*/
-	FlexcachesSVMNameQueryParameter *string
+	FlexcachesSvmName *string
 
 	/* FlexcachesSvmUUID.
 
 	   Filter by flexcaches.svm.uuid
 	*/
-	FlexcachesSVMUUIDQueryParameter *string
+	FlexcachesSvmUUID *string
 
 	/* FlexcachesVolumeName.
 
 	   Filter by flexcaches.volume.name
 	*/
-	FlexcachesVolumeNameQueryParameter *string
+	FlexcachesVolumeName *string
 
 	/* FlexcachesVolumeUUID.
 
 	   Filter by flexcaches.volume.uuid
 	*/
-	FlexcachesVolumeUUIDQueryParameter *string
+	FlexcachesVolumeUUID *string
 
 	/* GlobalFileLockingEnabled.
 
 	   Filter by global_file_locking_enabled
 	*/
-	GlobalFileLockingEnabledQueryParameter *bool
+	GlobalFileLockingEnabled *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -164,7 +164,7 @@ type FlexcacheOriginCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -172,25 +172,25 @@ type FlexcacheOriginCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -210,14 +210,14 @@ func (o *FlexcacheOriginCollectionGetParams) WithDefaults() *FlexcacheOriginColl
 // All values with no default are reset to their zero value.
 func (o *FlexcacheOriginCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FlexcacheOriginCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -259,235 +259,235 @@ func (o *FlexcacheOriginCollectionGetParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithBlockLevelInvalidationQueryParameter adds the blockLevelInvalidation to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithBlockLevelInvalidationQueryParameter(blockLevelInvalidation *bool) *FlexcacheOriginCollectionGetParams {
-	o.SetBlockLevelInvalidationQueryParameter(blockLevelInvalidation)
+// WithBlockLevelInvalidation adds the blockLevelInvalidation to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithBlockLevelInvalidation(blockLevelInvalidation *bool) *FlexcacheOriginCollectionGetParams {
+	o.SetBlockLevelInvalidation(blockLevelInvalidation)
 	return o
 }
 
-// SetBlockLevelInvalidationQueryParameter adds the blockLevelInvalidation to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetBlockLevelInvalidationQueryParameter(blockLevelInvalidation *bool) {
-	o.BlockLevelInvalidationQueryParameter = blockLevelInvalidation
+// SetBlockLevelInvalidation adds the blockLevelInvalidation to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetBlockLevelInvalidation(blockLevelInvalidation *bool) {
+	o.BlockLevelInvalidation = blockLevelInvalidation
 }
 
-// WithFieldsQueryParameter adds the fields to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFieldsQueryParameter(fields []string) *FlexcacheOriginCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFields(fields []string) *FlexcacheOriginCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFlexcachesClusterNameQueryParameter adds the flexcachesClusterName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesClusterNameQueryParameter(flexcachesClusterName *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesClusterNameQueryParameter(flexcachesClusterName)
+// WithFlexcachesClusterName adds the flexcachesClusterName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesClusterName(flexcachesClusterName *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesClusterName(flexcachesClusterName)
 	return o
 }
 
-// SetFlexcachesClusterNameQueryParameter adds the flexcachesClusterName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesClusterNameQueryParameter(flexcachesClusterName *string) {
-	o.FlexcachesClusterNameQueryParameter = flexcachesClusterName
+// SetFlexcachesClusterName adds the flexcachesClusterName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesClusterName(flexcachesClusterName *string) {
+	o.FlexcachesClusterName = flexcachesClusterName
 }
 
-// WithFlexcachesClusterUUIDQueryParameter adds the flexcachesClusterUUID to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesClusterUUIDQueryParameter(flexcachesClusterUUID *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesClusterUUIDQueryParameter(flexcachesClusterUUID)
+// WithFlexcachesClusterUUID adds the flexcachesClusterUUID to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesClusterUUID(flexcachesClusterUUID *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesClusterUUID(flexcachesClusterUUID)
 	return o
 }
 
-// SetFlexcachesClusterUUIDQueryParameter adds the flexcachesClusterUuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesClusterUUIDQueryParameter(flexcachesClusterUUID *string) {
-	o.FlexcachesClusterUUIDQueryParameter = flexcachesClusterUUID
+// SetFlexcachesClusterUUID adds the flexcachesClusterUuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesClusterUUID(flexcachesClusterUUID *string) {
+	o.FlexcachesClusterUUID = flexcachesClusterUUID
 }
 
-// WithFlexcachesCreateTimeQueryParameter adds the flexcachesCreateTime to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesCreateTimeQueryParameter(flexcachesCreateTime *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesCreateTimeQueryParameter(flexcachesCreateTime)
+// WithFlexcachesCreateTime adds the flexcachesCreateTime to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesCreateTime(flexcachesCreateTime *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesCreateTime(flexcachesCreateTime)
 	return o
 }
 
-// SetFlexcachesCreateTimeQueryParameter adds the flexcachesCreateTime to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesCreateTimeQueryParameter(flexcachesCreateTime *string) {
-	o.FlexcachesCreateTimeQueryParameter = flexcachesCreateTime
+// SetFlexcachesCreateTime adds the flexcachesCreateTime to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesCreateTime(flexcachesCreateTime *string) {
+	o.FlexcachesCreateTime = flexcachesCreateTime
 }
 
-// WithFlexcachesIPAddressQueryParameter adds the flexcachesIPAddress to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesIPAddressQueryParameter(flexcachesIPAddress *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesIPAddressQueryParameter(flexcachesIPAddress)
+// WithFlexcachesIPAddress adds the flexcachesIPAddress to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesIPAddress(flexcachesIPAddress *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesIPAddress(flexcachesIPAddress)
 	return o
 }
 
-// SetFlexcachesIPAddressQueryParameter adds the flexcachesIpAddress to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesIPAddressQueryParameter(flexcachesIPAddress *string) {
-	o.FlexcachesIPAddressQueryParameter = flexcachesIPAddress
+// SetFlexcachesIPAddress adds the flexcachesIpAddress to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesIPAddress(flexcachesIPAddress *string) {
+	o.FlexcachesIPAddress = flexcachesIPAddress
 }
 
-// WithFlexcachesSizeQueryParameter adds the flexcachesSize to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSizeQueryParameter(flexcachesSize *int64) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesSizeQueryParameter(flexcachesSize)
+// WithFlexcachesSize adds the flexcachesSize to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSize(flexcachesSize *int64) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesSize(flexcachesSize)
 	return o
 }
 
-// SetFlexcachesSizeQueryParameter adds the flexcachesSize to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSizeQueryParameter(flexcachesSize *int64) {
-	o.FlexcachesSizeQueryParameter = flexcachesSize
+// SetFlexcachesSize adds the flexcachesSize to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSize(flexcachesSize *int64) {
+	o.FlexcachesSize = flexcachesSize
 }
 
-// WithFlexcachesStateQueryParameter adds the flexcachesState to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesStateQueryParameter(flexcachesState *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesStateQueryParameter(flexcachesState)
+// WithFlexcachesState adds the flexcachesState to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesState(flexcachesState *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesState(flexcachesState)
 	return o
 }
 
-// SetFlexcachesStateQueryParameter adds the flexcachesState to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesStateQueryParameter(flexcachesState *string) {
-	o.FlexcachesStateQueryParameter = flexcachesState
+// SetFlexcachesState adds the flexcachesState to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesState(flexcachesState *string) {
+	o.FlexcachesState = flexcachesState
 }
 
-// WithFlexcachesSVMNameQueryParameter adds the flexcachesSvmName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSVMNameQueryParameter(flexcachesSvmName *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesSVMNameQueryParameter(flexcachesSvmName)
+// WithFlexcachesSvmName adds the flexcachesSvmName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSvmName(flexcachesSvmName *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesSvmName(flexcachesSvmName)
 	return o
 }
 
-// SetFlexcachesSVMNameQueryParameter adds the flexcachesSvmName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSVMNameQueryParameter(flexcachesSvmName *string) {
-	o.FlexcachesSVMNameQueryParameter = flexcachesSvmName
+// SetFlexcachesSvmName adds the flexcachesSvmName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSvmName(flexcachesSvmName *string) {
+	o.FlexcachesSvmName = flexcachesSvmName
 }
 
-// WithFlexcachesSVMUUIDQueryParameter adds the flexcachesSvmUUID to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSVMUUIDQueryParameter(flexcachesSvmUUID *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesSVMUUIDQueryParameter(flexcachesSvmUUID)
+// WithFlexcachesSvmUUID adds the flexcachesSvmUUID to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesSvmUUID(flexcachesSvmUUID *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesSvmUUID(flexcachesSvmUUID)
 	return o
 }
 
-// SetFlexcachesSVMUUIDQueryParameter adds the flexcachesSvmUuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSVMUUIDQueryParameter(flexcachesSvmUUID *string) {
-	o.FlexcachesSVMUUIDQueryParameter = flexcachesSvmUUID
+// SetFlexcachesSvmUUID adds the flexcachesSvmUuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesSvmUUID(flexcachesSvmUUID *string) {
+	o.FlexcachesSvmUUID = flexcachesSvmUUID
 }
 
-// WithFlexcachesVolumeNameQueryParameter adds the flexcachesVolumeName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesVolumeNameQueryParameter(flexcachesVolumeName *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesVolumeNameQueryParameter(flexcachesVolumeName)
+// WithFlexcachesVolumeName adds the flexcachesVolumeName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesVolumeName(flexcachesVolumeName *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesVolumeName(flexcachesVolumeName)
 	return o
 }
 
-// SetFlexcachesVolumeNameQueryParameter adds the flexcachesVolumeName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesVolumeNameQueryParameter(flexcachesVolumeName *string) {
-	o.FlexcachesVolumeNameQueryParameter = flexcachesVolumeName
+// SetFlexcachesVolumeName adds the flexcachesVolumeName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesVolumeName(flexcachesVolumeName *string) {
+	o.FlexcachesVolumeName = flexcachesVolumeName
 }
 
-// WithFlexcachesVolumeUUIDQueryParameter adds the flexcachesVolumeUUID to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesVolumeUUIDQueryParameter(flexcachesVolumeUUID *string) *FlexcacheOriginCollectionGetParams {
-	o.SetFlexcachesVolumeUUIDQueryParameter(flexcachesVolumeUUID)
+// WithFlexcachesVolumeUUID adds the flexcachesVolumeUUID to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithFlexcachesVolumeUUID(flexcachesVolumeUUID *string) *FlexcacheOriginCollectionGetParams {
+	o.SetFlexcachesVolumeUUID(flexcachesVolumeUUID)
 	return o
 }
 
-// SetFlexcachesVolumeUUIDQueryParameter adds the flexcachesVolumeUuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesVolumeUUIDQueryParameter(flexcachesVolumeUUID *string) {
-	o.FlexcachesVolumeUUIDQueryParameter = flexcachesVolumeUUID
+// SetFlexcachesVolumeUUID adds the flexcachesVolumeUuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetFlexcachesVolumeUUID(flexcachesVolumeUUID *string) {
+	o.FlexcachesVolumeUUID = flexcachesVolumeUUID
 }
 
-// WithGlobalFileLockingEnabledQueryParameter adds the globalFileLockingEnabled to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled *bool) *FlexcacheOriginCollectionGetParams {
-	o.SetGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled)
+// WithGlobalFileLockingEnabled adds the globalFileLockingEnabled to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithGlobalFileLockingEnabled(globalFileLockingEnabled *bool) *FlexcacheOriginCollectionGetParams {
+	o.SetGlobalFileLockingEnabled(globalFileLockingEnabled)
 	return o
 }
 
-// SetGlobalFileLockingEnabledQueryParameter adds the globalFileLockingEnabled to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled *bool) {
-	o.GlobalFileLockingEnabledQueryParameter = globalFileLockingEnabled
+// SetGlobalFileLockingEnabled adds the globalFileLockingEnabled to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetGlobalFileLockingEnabled(globalFileLockingEnabled *bool) {
+	o.GlobalFileLockingEnabled = globalFileLockingEnabled
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FlexcacheOriginCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithMaxRecords(maxRecords *int64) *FlexcacheOriginCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithNameQueryParameter(name *string) *FlexcacheOriginCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithName(name *string) *FlexcacheOriginCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FlexcacheOriginCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithOrderBy(orderBy []string) *FlexcacheOriginCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FlexcacheOriginCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithReturnRecords(returnRecords *bool) *FlexcacheOriginCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FlexcacheOriginCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FlexcacheOriginCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *FlexcacheOriginCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithSvmName(svmName *string) *FlexcacheOriginCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *FlexcacheOriginCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithSvmUUID(svmUUID *string) *FlexcacheOriginCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) WithUUIDQueryParameter(uuid *string) *FlexcacheOriginCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) WithUUID(uuid *string) *FlexcacheOriginCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the flexcache origin collection get params
-func (o *FlexcacheOriginCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the flexcache origin collection get params
+func (o *FlexcacheOriginCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -498,13 +498,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.BlockLevelInvalidationQueryParameter != nil {
+	if o.BlockLevelInvalidation != nil {
 
 		// query param block_level_invalidation
 		var qrBlockLevelInvalidation bool
 
-		if o.BlockLevelInvalidationQueryParameter != nil {
-			qrBlockLevelInvalidation = *o.BlockLevelInvalidationQueryParameter
+		if o.BlockLevelInvalidation != nil {
+			qrBlockLevelInvalidation = *o.BlockLevelInvalidation
 		}
 		qBlockLevelInvalidation := swag.FormatBool(qrBlockLevelInvalidation)
 		if qBlockLevelInvalidation != "" {
@@ -515,7 +515,7 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -526,13 +526,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesClusterNameQueryParameter != nil {
+	if o.FlexcachesClusterName != nil {
 
 		// query param flexcaches.cluster.name
 		var qrFlexcachesClusterName string
 
-		if o.FlexcachesClusterNameQueryParameter != nil {
-			qrFlexcachesClusterName = *o.FlexcachesClusterNameQueryParameter
+		if o.FlexcachesClusterName != nil {
+			qrFlexcachesClusterName = *o.FlexcachesClusterName
 		}
 		qFlexcachesClusterName := qrFlexcachesClusterName
 		if qFlexcachesClusterName != "" {
@@ -543,13 +543,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesClusterUUIDQueryParameter != nil {
+	if o.FlexcachesClusterUUID != nil {
 
 		// query param flexcaches.cluster.uuid
 		var qrFlexcachesClusterUUID string
 
-		if o.FlexcachesClusterUUIDQueryParameter != nil {
-			qrFlexcachesClusterUUID = *o.FlexcachesClusterUUIDQueryParameter
+		if o.FlexcachesClusterUUID != nil {
+			qrFlexcachesClusterUUID = *o.FlexcachesClusterUUID
 		}
 		qFlexcachesClusterUUID := qrFlexcachesClusterUUID
 		if qFlexcachesClusterUUID != "" {
@@ -560,13 +560,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesCreateTimeQueryParameter != nil {
+	if o.FlexcachesCreateTime != nil {
 
 		// query param flexcaches.create_time
 		var qrFlexcachesCreateTime string
 
-		if o.FlexcachesCreateTimeQueryParameter != nil {
-			qrFlexcachesCreateTime = *o.FlexcachesCreateTimeQueryParameter
+		if o.FlexcachesCreateTime != nil {
+			qrFlexcachesCreateTime = *o.FlexcachesCreateTime
 		}
 		qFlexcachesCreateTime := qrFlexcachesCreateTime
 		if qFlexcachesCreateTime != "" {
@@ -577,13 +577,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesIPAddressQueryParameter != nil {
+	if o.FlexcachesIPAddress != nil {
 
 		// query param flexcaches.ip_address
 		var qrFlexcachesIPAddress string
 
-		if o.FlexcachesIPAddressQueryParameter != nil {
-			qrFlexcachesIPAddress = *o.FlexcachesIPAddressQueryParameter
+		if o.FlexcachesIPAddress != nil {
+			qrFlexcachesIPAddress = *o.FlexcachesIPAddress
 		}
 		qFlexcachesIPAddress := qrFlexcachesIPAddress
 		if qFlexcachesIPAddress != "" {
@@ -594,13 +594,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesSizeQueryParameter != nil {
+	if o.FlexcachesSize != nil {
 
 		// query param flexcaches.size
 		var qrFlexcachesSize int64
 
-		if o.FlexcachesSizeQueryParameter != nil {
-			qrFlexcachesSize = *o.FlexcachesSizeQueryParameter
+		if o.FlexcachesSize != nil {
+			qrFlexcachesSize = *o.FlexcachesSize
 		}
 		qFlexcachesSize := swag.FormatInt64(qrFlexcachesSize)
 		if qFlexcachesSize != "" {
@@ -611,13 +611,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesStateQueryParameter != nil {
+	if o.FlexcachesState != nil {
 
 		// query param flexcaches.state
 		var qrFlexcachesState string
 
-		if o.FlexcachesStateQueryParameter != nil {
-			qrFlexcachesState = *o.FlexcachesStateQueryParameter
+		if o.FlexcachesState != nil {
+			qrFlexcachesState = *o.FlexcachesState
 		}
 		qFlexcachesState := qrFlexcachesState
 		if qFlexcachesState != "" {
@@ -628,13 +628,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesSVMNameQueryParameter != nil {
+	if o.FlexcachesSvmName != nil {
 
 		// query param flexcaches.svm.name
 		var qrFlexcachesSvmName string
 
-		if o.FlexcachesSVMNameQueryParameter != nil {
-			qrFlexcachesSvmName = *o.FlexcachesSVMNameQueryParameter
+		if o.FlexcachesSvmName != nil {
+			qrFlexcachesSvmName = *o.FlexcachesSvmName
 		}
 		qFlexcachesSvmName := qrFlexcachesSvmName
 		if qFlexcachesSvmName != "" {
@@ -645,13 +645,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesSVMUUIDQueryParameter != nil {
+	if o.FlexcachesSvmUUID != nil {
 
 		// query param flexcaches.svm.uuid
 		var qrFlexcachesSvmUUID string
 
-		if o.FlexcachesSVMUUIDQueryParameter != nil {
-			qrFlexcachesSvmUUID = *o.FlexcachesSVMUUIDQueryParameter
+		if o.FlexcachesSvmUUID != nil {
+			qrFlexcachesSvmUUID = *o.FlexcachesSvmUUID
 		}
 		qFlexcachesSvmUUID := qrFlexcachesSvmUUID
 		if qFlexcachesSvmUUID != "" {
@@ -662,13 +662,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesVolumeNameQueryParameter != nil {
+	if o.FlexcachesVolumeName != nil {
 
 		// query param flexcaches.volume.name
 		var qrFlexcachesVolumeName string
 
-		if o.FlexcachesVolumeNameQueryParameter != nil {
-			qrFlexcachesVolumeName = *o.FlexcachesVolumeNameQueryParameter
+		if o.FlexcachesVolumeName != nil {
+			qrFlexcachesVolumeName = *o.FlexcachesVolumeName
 		}
 		qFlexcachesVolumeName := qrFlexcachesVolumeName
 		if qFlexcachesVolumeName != "" {
@@ -679,13 +679,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FlexcachesVolumeUUIDQueryParameter != nil {
+	if o.FlexcachesVolumeUUID != nil {
 
 		// query param flexcaches.volume.uuid
 		var qrFlexcachesVolumeUUID string
 
-		if o.FlexcachesVolumeUUIDQueryParameter != nil {
-			qrFlexcachesVolumeUUID = *o.FlexcachesVolumeUUIDQueryParameter
+		if o.FlexcachesVolumeUUID != nil {
+			qrFlexcachesVolumeUUID = *o.FlexcachesVolumeUUID
 		}
 		qFlexcachesVolumeUUID := qrFlexcachesVolumeUUID
 		if qFlexcachesVolumeUUID != "" {
@@ -696,13 +696,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.GlobalFileLockingEnabledQueryParameter != nil {
+	if o.GlobalFileLockingEnabled != nil {
 
 		// query param global_file_locking_enabled
 		var qrGlobalFileLockingEnabled bool
 
-		if o.GlobalFileLockingEnabledQueryParameter != nil {
-			qrGlobalFileLockingEnabled = *o.GlobalFileLockingEnabledQueryParameter
+		if o.GlobalFileLockingEnabled != nil {
+			qrGlobalFileLockingEnabled = *o.GlobalFileLockingEnabled
 		}
 		qGlobalFileLockingEnabled := swag.FormatBool(qrGlobalFileLockingEnabled)
 		if qGlobalFileLockingEnabled != "" {
@@ -713,13 +713,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -730,13 +730,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -747,7 +747,7 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -758,13 +758,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -775,13 +775,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -792,13 +792,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -809,13 +809,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -826,13 +826,13 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -851,7 +851,7 @@ func (o *FlexcacheOriginCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamFlexcacheOriginCollectionGet binds the parameter fields
 func (o *FlexcacheOriginCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -868,7 +868,7 @@ func (o *FlexcacheOriginCollectionGetParams) bindParamFields(formats strfmt.Regi
 
 // bindParamFlexcacheOriginCollectionGet binds the parameter order_by
 func (o *FlexcacheOriginCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

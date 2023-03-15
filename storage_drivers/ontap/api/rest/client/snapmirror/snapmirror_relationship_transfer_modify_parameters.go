@@ -73,13 +73,13 @@ type SnapmirrorRelationshipTransferModifyParams struct {
 
 	   Relationship UUID
 	*/
-	RelationshIPUUIDPathParameter string
+	RelationshipUUID string
 
 	/* UUID.
 
 	   Transfer UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *SnapmirrorRelationshipTransferModifyParams) SetInfo(info *models.Snapmi
 	o.Info = info
 }
 
-// WithRelationshIPUUIDPathParameter adds the relationshipUUID to the snapmirror relationship transfer modify params
-func (o *SnapmirrorRelationshipTransferModifyParams) WithRelationshIPUUIDPathParameter(relationshipUUID string) *SnapmirrorRelationshipTransferModifyParams {
-	o.SetRelationshIPUUIDPathParameter(relationshipUUID)
+// WithRelationshipUUID adds the relationshipUUID to the snapmirror relationship transfer modify params
+func (o *SnapmirrorRelationshipTransferModifyParams) WithRelationshipUUID(relationshipUUID string) *SnapmirrorRelationshipTransferModifyParams {
+	o.SetRelationshipUUID(relationshipUUID)
 	return o
 }
 
-// SetRelationshIPUUIDPathParameter adds the relationshipUuid to the snapmirror relationship transfer modify params
-func (o *SnapmirrorRelationshipTransferModifyParams) SetRelationshIPUUIDPathParameter(relationshipUUID string) {
-	o.RelationshIPUUIDPathParameter = relationshipUUID
+// SetRelationshipUUID adds the relationshipUuid to the snapmirror relationship transfer modify params
+func (o *SnapmirrorRelationshipTransferModifyParams) SetRelationshipUUID(relationshipUUID string) {
+	o.RelationshipUUID = relationshipUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the snapmirror relationship transfer modify params
-func (o *SnapmirrorRelationshipTransferModifyParams) WithUUIDPathParameter(uuid string) *SnapmirrorRelationshipTransferModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapmirror relationship transfer modify params
+func (o *SnapmirrorRelationshipTransferModifyParams) WithUUID(uuid string) *SnapmirrorRelationshipTransferModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapmirror relationship transfer modify params
-func (o *SnapmirrorRelationshipTransferModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationship transfer modify params
+func (o *SnapmirrorRelationshipTransferModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *SnapmirrorRelationshipTransferModifyParams) WriteToRequest(r runtime.Cl
 	}
 
 	// path param relationship.uuid
-	if err := r.SetPathParam("relationship.uuid", o.RelationshIPUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("relationship.uuid", o.RelationshipUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

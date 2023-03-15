@@ -73,7 +73,7 @@ type HTTPProxyModifyParams struct {
 
 	   HTTP proxy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *HTTPProxyModifyParams) SetInfo(info *models.NetworkHTTPProxy) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the http proxy modify params
-func (o *HTTPProxyModifyParams) WithUUIDPathParameter(uuid string) *HTTPProxyModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the http proxy modify params
+func (o *HTTPProxyModifyParams) WithUUID(uuid string) *HTTPProxyModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the http proxy modify params
-func (o *HTTPProxyModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the http proxy modify params
+func (o *HTTPProxyModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *HTTPProxyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

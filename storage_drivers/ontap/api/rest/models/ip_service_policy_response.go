@@ -20,13 +20,14 @@ import (
 type IPServicePolicyResponse struct {
 
 	// links
-	Links *IPServicePolicyResponseLinks `json:"_links,omitempty"`
+	Links *IPServicePolicyResponseInlineLinks `json:"_links,omitempty"`
 
-	// num records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// ip service policy response inline records
+	IPServicePolicyResponseInlineRecords []*IPServicePolicy `json:"records,omitempty"`
 
-	// records
-	Records []*IPServicePolicy `json:"records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ip service policy response
@@ -37,7 +38,7 @@ func (m *IPServicePolicyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateIPServicePolicyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *IPServicePolicyResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPServicePolicyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *IPServicePolicyResponse) validateIPServicePolicyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPServicePolicyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.IPServicePolicyResponseInlineRecords); i++ {
+		if swag.IsZero(m.IPServicePolicyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.IPServicePolicyResponseInlineRecords[i] != nil {
+			if err := m.IPServicePolicyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *IPServicePolicyResponse) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateIPServicePolicyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *IPServicePolicyResponse) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *IPServicePolicyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPServicePolicyResponse) contextValidateIPServicePolicyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.IPServicePolicyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.IPServicePolicyResponseInlineRecords[i] != nil {
+			if err := m.IPServicePolicyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *IPServicePolicyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPServicePolicyResponseLinks IP service policy response links
+// IPServicePolicyResponseInlineLinks ip service policy response inline links
 //
-// swagger:model IPServicePolicyResponseLinks
-type IPServicePolicyResponseLinks struct {
+// swagger:model ip_service_policy_response_inline__links
+type IPServicePolicyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type IPServicePolicyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP service policy response links
-func (m *IPServicePolicyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip service policy response inline links
+func (m *IPServicePolicyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *IPServicePolicyResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPServicePolicyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *IPServicePolicyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *IPServicePolicyResponseLinks) validateNext(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IPServicePolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPServicePolicyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *IPServicePolicyResponseLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this IP service policy response links based on the context it is used
-func (m *IPServicePolicyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip service policy response inline links based on the context it is used
+func (m *IPServicePolicyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *IPServicePolicyResponseLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *IPServicePolicyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPServicePolicyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *IPServicePolicyResponseLinks) contextValidateNext(ctx context.Context, 
 	return nil
 }
 
-func (m *IPServicePolicyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPServicePolicyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *IPServicePolicyResponseLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IPServicePolicyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *IPServicePolicyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *IPServicePolicyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPServicePolicyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res IPServicePolicyResponseLinks
+func (m *IPServicePolicyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPServicePolicyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

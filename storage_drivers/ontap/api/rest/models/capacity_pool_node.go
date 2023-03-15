@@ -24,7 +24,7 @@ type CapacityPoolNode struct {
 
 	// Capacity, in bytes, that is currently used by the node.
 	// Read Only: true
-	UsedSize int64 `json:"used_size,omitempty"`
+	UsedSize *int64 `json:"used_size,omitempty"`
 }
 
 // Validate validates this capacity pool node
@@ -92,7 +92,7 @@ func (m *CapacityPoolNode) contextValidateNode(ctx context.Context, formats strf
 
 func (m *CapacityPoolNode) contextValidateUsedSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "used_size", "body", int64(m.UsedSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "used_size", "body", m.UsedSize); err != nil {
 		return err
 	}
 

@@ -20,13 +20,14 @@ import (
 type QtreeResponse struct {
 
 	// links
-	Links *QtreeResponseLinks `json:"_links,omitempty"`
+	Links *QtreeResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Qtree `json:"records,omitempty"`
+	// qtree response inline records
+	QtreeResponseInlineRecords []*Qtree `json:"records,omitempty"`
 }
 
 // Validate validates this qtree response
@@ -37,7 +38,7 @@ func (m *QtreeResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateQtreeResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *QtreeResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QtreeResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *QtreeResponse) validateQtreeResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.QtreeResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.QtreeResponseInlineRecords); i++ {
+		if swag.IsZero(m.QtreeResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.QtreeResponseInlineRecords[i] != nil {
+			if err := m.QtreeResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *QtreeResponse) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateQtreeResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *QtreeResponse) contextValidateLinks(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *QtreeResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *QtreeResponse) contextValidateQtreeResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.QtreeResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.QtreeResponseInlineRecords[i] != nil {
+			if err := m.QtreeResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *QtreeResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QtreeResponseLinks qtree response links
+// QtreeResponseInlineLinks qtree response inline links
 //
-// swagger:model QtreeResponseLinks
-type QtreeResponseLinks struct {
+// swagger:model qtree_response_inline__links
+type QtreeResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type QtreeResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qtree response links
-func (m *QtreeResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qtree response inline links
+func (m *QtreeResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *QtreeResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QtreeResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *QtreeResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *QtreeResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QtreeResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QtreeResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *QtreeResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qtree response links based on the context it is used
-func (m *QtreeResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qtree response inline links based on the context it is used
+func (m *QtreeResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *QtreeResponseLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *QtreeResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *QtreeResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *QtreeResponseLinks) contextValidateNext(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QtreeResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QtreeResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *QtreeResponseLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *QtreeResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *QtreeResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *QtreeResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QtreeResponseLinks) UnmarshalBinary(b []byte) error {
-	var res QtreeResponseLinks
+func (m *QtreeResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QtreeResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

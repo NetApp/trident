@@ -20,13 +20,14 @@ import (
 type CounterRowResponse struct {
 
 	// links
-	Links *CounterRowResponseLinks `json:"_links,omitempty"`
+	Links *CounterRowResponseInlineLinks `json:"_links,omitempty"`
 
-	// num records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// counter row response inline records
+	CounterRowResponseInlineRecords []*CounterRow `json:"records,omitempty"`
 
-	// records
-	Records []*CounterRow `json:"records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this counter row response
@@ -37,7 +38,7 @@ func (m *CounterRowResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCounterRowResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CounterRowResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterRowResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CounterRowResponse) validateCounterRowResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CounterRowResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CounterRowResponseInlineRecords); i++ {
+		if swag.IsZero(m.CounterRowResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CounterRowResponseInlineRecords[i] != nil {
+			if err := m.CounterRowResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CounterRowResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCounterRowResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CounterRowResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CounterRowResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRowResponse) contextValidateCounterRowResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CounterRowResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CounterRowResponseInlineRecords[i] != nil {
+			if err := m.CounterRowResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CounterRowResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CounterRowResponseLinks counter row response links
+// CounterRowResponseInlineLinks counter row response inline links
 //
-// swagger:model CounterRowResponseLinks
-type CounterRowResponseLinks struct {
+// swagger:model counter_row_response_inline__links
+type CounterRowResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CounterRowResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this counter row response links
-func (m *CounterRowResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this counter row response inline links
+func (m *CounterRowResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CounterRowResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterRowResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CounterRowResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CounterRowResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterRowResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CounterRowResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CounterRowResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this counter row response links based on the context it is used
-func (m *CounterRowResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this counter row response inline links based on the context it is used
+func (m *CounterRowResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CounterRowResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CounterRowResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRowResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CounterRowResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *CounterRowResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRowResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CounterRowResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CounterRowResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CounterRowResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CounterRowResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CounterRowResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CounterRowResponseLinks
+func (m *CounterRowResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CounterRowResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

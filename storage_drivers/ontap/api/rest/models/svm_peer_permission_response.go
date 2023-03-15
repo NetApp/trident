@@ -20,13 +20,14 @@ import (
 type SvmPeerPermissionResponse struct {
 
 	// links
-	Links *SvmPeerPermissionResponseLinks `json:"_links,omitempty"`
+	Links *SvmPeerPermissionResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SvmPeerPermission `json:"records,omitempty"`
+	// svm peer permission response inline records
+	SvmPeerPermissionResponseInlineRecords []*SvmPeerPermission `json:"records,omitempty"`
 }
 
 // Validate validates this svm peer permission response
@@ -37,7 +38,7 @@ func (m *SvmPeerPermissionResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSvmPeerPermissionResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SvmPeerPermissionResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmPeerPermissionResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SvmPeerPermissionResponse) validateSvmPeerPermissionResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmPeerPermissionResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SvmPeerPermissionResponseInlineRecords); i++ {
+		if swag.IsZero(m.SvmPeerPermissionResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SvmPeerPermissionResponseInlineRecords[i] != nil {
+			if err := m.SvmPeerPermissionResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SvmPeerPermissionResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSvmPeerPermissionResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SvmPeerPermissionResponse) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmPeerPermissionResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerPermissionResponse) contextValidateSvmPeerPermissionResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SvmPeerPermissionResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SvmPeerPermissionResponseInlineRecords[i] != nil {
+			if err := m.SvmPeerPermissionResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SvmPeerPermissionResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPermissionResponseLinks svm peer permission response links
+// SvmPeerPermissionResponseInlineLinks svm peer permission response inline links
 //
-// swagger:model SvmPeerPermissionResponseLinks
-type SvmPeerPermissionResponseLinks struct {
+// swagger:model svm_peer_permission_response_inline__links
+type SvmPeerPermissionResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SvmPeerPermissionResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm peer permission response links
-func (m *SvmPeerPermissionResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm peer permission response inline links
+func (m *SvmPeerPermissionResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SvmPeerPermissionResponseLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SvmPeerPermissionResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SvmPeerPermissionResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SvmPeerPermissionResponseLinks) validateNext(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *SvmPeerPermissionResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmPeerPermissionResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SvmPeerPermissionResponseLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this svm peer permission response links based on the context it is used
-func (m *SvmPeerPermissionResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm peer permission response inline links based on the context it is used
+func (m *SvmPeerPermissionResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SvmPeerPermissionResponseLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SvmPeerPermissionResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerPermissionResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SvmPeerPermissionResponseLinks) contextValidateNext(ctx context.Context
 	return nil
 }
 
-func (m *SvmPeerPermissionResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmPeerPermissionResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SvmPeerPermissionResponseLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SvmPeerPermissionResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmPeerPermissionResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SvmPeerPermissionResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmPeerPermissionResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SvmPeerPermissionResponseLinks
+func (m *SvmPeerPermissionResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmPeerPermissionResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

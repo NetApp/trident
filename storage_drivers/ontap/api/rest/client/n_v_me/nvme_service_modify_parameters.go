@@ -75,7 +75,7 @@ type NvmeServiceModifyParams struct {
 	   The unique identifier of the SVM whose NVMe service is to be updated.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *NvmeServiceModifyParams) SetInfo(info *models.NvmeService) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nvme service modify params
-func (o *NvmeServiceModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NvmeServiceModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme service modify params
+func (o *NvmeServiceModifyParams) WithSvmUUID(svmUUID string) *NvmeServiceModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nvme service modify params
-func (o *NvmeServiceModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme service modify params
+func (o *NvmeServiceModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *NvmeServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

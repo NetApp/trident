@@ -66,247 +66,253 @@ type CifsServiceCollectionGetParams struct {
 
 	   Filter by ad_domain.fqdn
 	*/
-	AdDomainFqdnQueryParameter *string
+	AdDomainFqdn *string
 
 	/* AdDomainOrganizationalUnit.
 
 	   Filter by ad_domain.organizational_unit
 	*/
-	AdDomainOrganizationalUnitQueryParameter *string
+	AdDomainOrganizationalUnit *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* DefaultUnixUser.
 
 	   Filter by default_unix_user
 	*/
-	DefaultUnixUserQueryParameter *string
+	DefaultUnixUser *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* GroupPolicyObjectEnabled.
+
+	   Filter by group_policy_object_enabled
+	*/
+	GroupPolicyObjectEnabled *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NetbiosAliases.
 
 	   Filter by netbios.aliases
 	*/
-	NetbiosAliasesQueryParameter *string
+	NetbiosAliases *string
 
 	/* NetbiosEnabled.
 
 	   Filter by netbios.enabled
 	*/
-	NetbiosEnabledQueryParameter *bool
+	NetbiosEnabled *bool
 
 	/* NetbiosWinsServers.
 
 	   Filter by netbios.wins_servers
 	*/
-	NetbiosWinsServersQueryParameter *string
+	NetbiosWinsServers *string
 
 	/* OptionsAdminToRootMapping.
 
 	   Filter by options.admin_to_root_mapping
 	*/
-	OptionsAdminToRootMappingQueryParameter *bool
+	OptionsAdminToRootMapping *bool
 
 	/* OptionsAdvancedSparseFile.
 
 	   Filter by options.advanced_sparse_file
 	*/
-	OptionsAdvancedSparseFileQueryParameter *bool
+	OptionsAdvancedSparseFile *bool
 
 	/* OptionsCopyOffload.
 
 	   Filter by options.copy_offload
 	*/
-	OptionsCopyOffloadQueryParameter *bool
+	OptionsCopyOffload *bool
 
 	/* OptionsFakeOpen.
 
 	   Filter by options.fake_open
 	*/
-	OptionsFakeOpenQueryParameter *bool
+	OptionsFakeOpen *bool
 
 	/* OptionsFsctlTrim.
 
 	   Filter by options.fsctl_trim
 	*/
-	OptionsFsctlTrimQueryParameter *bool
+	OptionsFsctlTrim *bool
 
 	/* OptionsJunctionReparse.
 
 	   Filter by options.junction_reparse
 	*/
-	OptionsJunctionReparseQueryParameter *bool
+	OptionsJunctionReparse *bool
 
 	/* OptionsLargeMtu.
 
 	   Filter by options.large_mtu
 	*/
-	OptionsLargeMtuQueryParameter *bool
+	OptionsLargeMtu *bool
 
 	/* OptionsMultichannel.
 
 	   Filter by options.multichannel
 	*/
-	OptionsMultichannelQueryParameter *bool
+	OptionsMultichannel *bool
 
 	/* OptionsNullUserWindowsName.
 
 	   Filter by options.null_user_windows_name
 	*/
-	OptionsNullUserWindowsNameQueryParameter *string
+	OptionsNullUserWindowsName *string
 
 	/* OptionsPathComponentCache.
 
 	   Filter by options.path_component_cache
 	*/
-	OptionsPathComponentCacheQueryParameter *bool
+	OptionsPathComponentCache *bool
 
 	/* OptionsReferral.
 
 	   Filter by options.referral
 	*/
-	OptionsReferralQueryParameter *bool
+	OptionsReferral *bool
 
 	/* OptionsShadowcopy.
 
 	   Filter by options.shadowcopy
 	*/
-	OptionsShadowcopyQueryParameter *bool
+	OptionsShadowcopy *bool
 
 	/* OptionsShadowcopyDirDepth.
 
 	   Filter by options.shadowcopy_dir_depth
 	*/
-	OptionsShadowcopyDirDepthQueryParameter *int64
+	OptionsShadowcopyDirDepth *int64
 
 	/* OptionsSmbCredits.
 
 	   Filter by options.smb_credits
 	*/
-	OptionsSmbCreditsQueryParameter *int64
+	OptionsSmbCredits *int64
 
 	/* OptionsWidelinkReparseVersions.
 
 	   Filter by options.widelink_reparse_versions
 	*/
-	OptionsWidelinkReparseVersionsQueryParameter *string
+	OptionsWidelinkReparseVersions *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -314,7 +320,7 @@ type CifsServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -322,169 +328,175 @@ type CifsServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
+
+	/* SecurityAdvertisedKdcEncryptions.
+
+	   Filter by security.advertised_kdc_encryptions
+	*/
+	SecurityAdvertisedKdcEncryptions *string
 
 	/* SecurityAesNetlogonEnabled.
 
 	   Filter by security.aes_netlogon_enabled
 	*/
-	SecurityAesNetlogonEnabledQueryParameter *bool
+	SecurityAesNetlogonEnabled *bool
 
 	/* SecurityEncryptDcConnection.
 
 	   Filter by security.encrypt_dc_connection
 	*/
-	SecurityEncryptDcConnectionQueryParameter *bool
+	SecurityEncryptDcConnection *bool
 
 	/* SecurityKdcEncryption.
 
 	   Filter by security.kdc_encryption
 	*/
-	SecurityKdcEncryptionQueryParameter *bool
+	SecurityKdcEncryption *bool
 
 	/* SecurityLdapReferralEnabled.
 
 	   Filter by security.ldap_referral_enabled
 	*/
-	SecurityLdapReferralEnabledQueryParameter *bool
+	SecurityLdapReferralEnabled *bool
 
 	/* SecurityLmCompatibilityLevel.
 
 	   Filter by security.lm_compatibility_level
 	*/
-	SecurityLmCompatibilityLevelQueryParameter *string
+	SecurityLmCompatibilityLevel *string
 
 	/* SecurityRestrictAnonymous.
 
 	   Filter by security.restrict_anonymous
 	*/
-	SecurityRestrictAnonymousQueryParameter *string
+	SecurityRestrictAnonymous *string
 
 	/* SecuritySessionSecurity.
 
 	   Filter by security.session_security
 	*/
-	SecuritySessionSecurityQueryParameter *string
+	SecuritySessionSecurity *string
 
 	/* SecuritySmbEncryption.
 
 	   Filter by security.smb_encryption
 	*/
-	SecuritySmbEncryptionQueryParameter *bool
+	SecuritySmbEncryption *bool
 
 	/* SecuritySmbSigning.
 
 	   Filter by security.smb_signing
 	*/
-	SecuritySmbSigningQueryParameter *bool
+	SecuritySmbSigning *bool
 
 	/* SecurityTryLdapChannelBinding.
 
 	   Filter by security.try_ldap_channel_binding
 	*/
-	SecurityTryLdapChannelBindingQueryParameter *bool
+	SecurityTryLdapChannelBinding *bool
 
 	/* SecurityUseLdaps.
 
 	   Filter by security.use_ldaps
 	*/
-	SecurityUseLdapsQueryParameter *bool
+	SecurityUseLdaps *bool
 
 	/* SecurityUseStartTLS.
 
 	   Filter by security.use_start_tls
 	*/
-	SecurityUseStartTLSQueryParameter *bool
+	SecurityUseStartTLS *bool
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -504,14 +516,14 @@ func (o *CifsServiceCollectionGetParams) WithDefaults() *CifsServiceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *CifsServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsServiceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -553,774 +565,796 @@ func (o *CifsServiceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAdDomainFqdnQueryParameter adds the adDomainFqdn to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithAdDomainFqdnQueryParameter(adDomainFqdn *string) *CifsServiceCollectionGetParams {
-	o.SetAdDomainFqdnQueryParameter(adDomainFqdn)
+// WithAdDomainFqdn adds the adDomainFqdn to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAdDomainFqdn(adDomainFqdn *string) *CifsServiceCollectionGetParams {
+	o.SetAdDomainFqdn(adDomainFqdn)
 	return o
 }
 
-// SetAdDomainFqdnQueryParameter adds the adDomainFqdn to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetAdDomainFqdnQueryParameter(adDomainFqdn *string) {
-	o.AdDomainFqdnQueryParameter = adDomainFqdn
+// SetAdDomainFqdn adds the adDomainFqdn to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAdDomainFqdn(adDomainFqdn *string) {
+	o.AdDomainFqdn = adDomainFqdn
 }
 
-// WithAdDomainOrganizationalUnitQueryParameter adds the adDomainOrganizationalUnit to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithAdDomainOrganizationalUnitQueryParameter(adDomainOrganizationalUnit *string) *CifsServiceCollectionGetParams {
-	o.SetAdDomainOrganizationalUnitQueryParameter(adDomainOrganizationalUnit)
+// WithAdDomainOrganizationalUnit adds the adDomainOrganizationalUnit to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithAdDomainOrganizationalUnit(adDomainOrganizationalUnit *string) *CifsServiceCollectionGetParams {
+	o.SetAdDomainOrganizationalUnit(adDomainOrganizationalUnit)
 	return o
 }
 
-// SetAdDomainOrganizationalUnitQueryParameter adds the adDomainOrganizationalUnit to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetAdDomainOrganizationalUnitQueryParameter(adDomainOrganizationalUnit *string) {
-	o.AdDomainOrganizationalUnitQueryParameter = adDomainOrganizationalUnit
+// SetAdDomainOrganizationalUnit adds the adDomainOrganizationalUnit to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetAdDomainOrganizationalUnit(adDomainOrganizationalUnit *string) {
+	o.AdDomainOrganizationalUnit = adDomainOrganizationalUnit
 }
 
-// WithCommentQueryParameter adds the comment to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithCommentQueryParameter(comment *string) *CifsServiceCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithComment(comment *string) *CifsServiceCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithDefaultUnixUserQueryParameter adds the defaultUnixUser to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithDefaultUnixUserQueryParameter(defaultUnixUser *string) *CifsServiceCollectionGetParams {
-	o.SetDefaultUnixUserQueryParameter(defaultUnixUser)
+// WithDefaultUnixUser adds the defaultUnixUser to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithDefaultUnixUser(defaultUnixUser *string) *CifsServiceCollectionGetParams {
+	o.SetDefaultUnixUser(defaultUnixUser)
 	return o
 }
 
-// SetDefaultUnixUserQueryParameter adds the defaultUnixUser to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetDefaultUnixUserQueryParameter(defaultUnixUser *string) {
-	o.DefaultUnixUserQueryParameter = defaultUnixUser
+// SetDefaultUnixUser adds the defaultUnixUser to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetDefaultUnixUser(defaultUnixUser *string) {
+	o.DefaultUnixUser = defaultUnixUser
 }
 
-// WithEnabledQueryParameter adds the enabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *CifsServiceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithEnabled(enabled *bool) *CifsServiceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsServiceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithFields(fields []string) *CifsServiceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsServiceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithGroupPolicyObjectEnabled adds the groupPolicyObjectEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithGroupPolicyObjectEnabled(groupPolicyObjectEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetGroupPolicyObjectEnabled(groupPolicyObjectEnabled)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetGroupPolicyObjectEnabled adds the groupPolicyObjectEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetGroupPolicyObjectEnabled(groupPolicyObjectEnabled *bool) {
+	o.GroupPolicyObjectEnabled = groupPolicyObjectEnabled
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *CifsServiceCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMaxRecords adds the maxRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsServiceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMaxRecords adds the maxRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithMetricDuration adds the metricDuration to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricDuration(metricDuration *string) *CifsServiceCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetMetricDuration adds the metricDuration to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithMetricIopsOther adds the metricIopsOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetMetricIopsOther adds the metricIopsOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithMetricIopsRead adds the metricIopsRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetMetricIopsRead adds the metricIopsRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithMetricIopsTotal adds the metricIopsTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetMetricIopsTotal adds the metricIopsTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithMetricIopsWrite adds the metricIopsWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetMetricIopsWrite adds the metricIopsWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithMetricLatencyOther adds the metricLatencyOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetMetricLatencyOther adds the metricLatencyOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithMetricLatencyRead adds the metricLatencyRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetMetricLatencyRead adds the metricLatencyRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetMetricLatencyTotal adds the metricLatencyTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *CifsServiceCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricLatencyWrite adds the metricLatencyWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricStatus adds the metricStatus to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricStatus(metricStatus *string) *CifsServiceCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricStatus adds the metricStatus to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputRead adds the metricThroughputRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputRead adds the metricThroughputRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputTotal adds the metricThroughputTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *CifsServiceCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricThroughputWrite adds the metricThroughputWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithNameQueryParameter adds the name to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithNameQueryParameter(name *string) *CifsServiceCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithMetricTimestamp adds the metricTimestamp to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *CifsServiceCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetMetricTimestamp adds the metricTimestamp to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithNetbiosAliasesQueryParameter adds the netbiosAliases to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithNetbiosAliasesQueryParameter(netbiosAliases *string) *CifsServiceCollectionGetParams {
-	o.SetNetbiosAliasesQueryParameter(netbiosAliases)
+// WithName adds the name to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithName(name *string) *CifsServiceCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNetbiosAliasesQueryParameter adds the netbiosAliases to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetNetbiosAliasesQueryParameter(netbiosAliases *string) {
-	o.NetbiosAliasesQueryParameter = netbiosAliases
+// SetName adds the name to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNetbiosEnabledQueryParameter adds the netbiosEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithNetbiosEnabledQueryParameter(netbiosEnabled *bool) *CifsServiceCollectionGetParams {
-	o.SetNetbiosEnabledQueryParameter(netbiosEnabled)
+// WithNetbiosAliases adds the netbiosAliases to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithNetbiosAliases(netbiosAliases *string) *CifsServiceCollectionGetParams {
+	o.SetNetbiosAliases(netbiosAliases)
 	return o
 }
 
-// SetNetbiosEnabledQueryParameter adds the netbiosEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetNetbiosEnabledQueryParameter(netbiosEnabled *bool) {
-	o.NetbiosEnabledQueryParameter = netbiosEnabled
+// SetNetbiosAliases adds the netbiosAliases to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetNetbiosAliases(netbiosAliases *string) {
+	o.NetbiosAliases = netbiosAliases
 }
 
-// WithNetbiosWinsServersQueryParameter adds the netbiosWinsServers to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithNetbiosWinsServersQueryParameter(netbiosWinsServers *string) *CifsServiceCollectionGetParams {
-	o.SetNetbiosWinsServersQueryParameter(netbiosWinsServers)
+// WithNetbiosEnabled adds the netbiosEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithNetbiosEnabled(netbiosEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetNetbiosEnabled(netbiosEnabled)
 	return o
 }
 
-// SetNetbiosWinsServersQueryParameter adds the netbiosWinsServers to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetNetbiosWinsServersQueryParameter(netbiosWinsServers *string) {
-	o.NetbiosWinsServersQueryParameter = netbiosWinsServers
+// SetNetbiosEnabled adds the netbiosEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetNetbiosEnabled(netbiosEnabled *bool) {
+	o.NetbiosEnabled = netbiosEnabled
 }
 
-// WithOptionsAdminToRootMappingQueryParameter adds the optionsAdminToRootMapping to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping)
+// WithNetbiosWinsServers adds the netbiosWinsServers to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithNetbiosWinsServers(netbiosWinsServers *string) *CifsServiceCollectionGetParams {
+	o.SetNetbiosWinsServers(netbiosWinsServers)
 	return o
 }
 
-// SetOptionsAdminToRootMappingQueryParameter adds the optionsAdminToRootMapping to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping *bool) {
-	o.OptionsAdminToRootMappingQueryParameter = optionsAdminToRootMapping
+// SetNetbiosWinsServers adds the netbiosWinsServers to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetNetbiosWinsServers(netbiosWinsServers *string) {
+	o.NetbiosWinsServers = netbiosWinsServers
 }
 
-// WithOptionsAdvancedSparseFileQueryParameter adds the optionsAdvancedSparseFile to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile)
+// WithOptionsAdminToRootMapping adds the optionsAdminToRootMapping to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsAdminToRootMapping(optionsAdminToRootMapping *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsAdminToRootMapping(optionsAdminToRootMapping)
 	return o
 }
 
-// SetOptionsAdvancedSparseFileQueryParameter adds the optionsAdvancedSparseFile to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile *bool) {
-	o.OptionsAdvancedSparseFileQueryParameter = optionsAdvancedSparseFile
+// SetOptionsAdminToRootMapping adds the optionsAdminToRootMapping to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsAdminToRootMapping(optionsAdminToRootMapping *bool) {
+	o.OptionsAdminToRootMapping = optionsAdminToRootMapping
 }
 
-// WithOptionsCopyOffloadQueryParameter adds the optionsCopyOffload to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsCopyOffloadQueryParameter(optionsCopyOffload *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsCopyOffloadQueryParameter(optionsCopyOffload)
+// WithOptionsAdvancedSparseFile adds the optionsAdvancedSparseFile to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsAdvancedSparseFile(optionsAdvancedSparseFile *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsAdvancedSparseFile(optionsAdvancedSparseFile)
 	return o
 }
 
-// SetOptionsCopyOffloadQueryParameter adds the optionsCopyOffload to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsCopyOffloadQueryParameter(optionsCopyOffload *bool) {
-	o.OptionsCopyOffloadQueryParameter = optionsCopyOffload
+// SetOptionsAdvancedSparseFile adds the optionsAdvancedSparseFile to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsAdvancedSparseFile(optionsAdvancedSparseFile *bool) {
+	o.OptionsAdvancedSparseFile = optionsAdvancedSparseFile
 }
 
-// WithOptionsFakeOpenQueryParameter adds the optionsFakeOpen to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsFakeOpenQueryParameter(optionsFakeOpen *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsFakeOpenQueryParameter(optionsFakeOpen)
+// WithOptionsCopyOffload adds the optionsCopyOffload to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsCopyOffload(optionsCopyOffload *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsCopyOffload(optionsCopyOffload)
 	return o
 }
 
-// SetOptionsFakeOpenQueryParameter adds the optionsFakeOpen to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsFakeOpenQueryParameter(optionsFakeOpen *bool) {
-	o.OptionsFakeOpenQueryParameter = optionsFakeOpen
+// SetOptionsCopyOffload adds the optionsCopyOffload to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsCopyOffload(optionsCopyOffload *bool) {
+	o.OptionsCopyOffload = optionsCopyOffload
 }
 
-// WithOptionsFsctlTrimQueryParameter adds the optionsFsctlTrim to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsFsctlTrimQueryParameter(optionsFsctlTrim *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsFsctlTrimQueryParameter(optionsFsctlTrim)
+// WithOptionsFakeOpen adds the optionsFakeOpen to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsFakeOpen(optionsFakeOpen *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsFakeOpen(optionsFakeOpen)
 	return o
 }
 
-// SetOptionsFsctlTrimQueryParameter adds the optionsFsctlTrim to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsFsctlTrimQueryParameter(optionsFsctlTrim *bool) {
-	o.OptionsFsctlTrimQueryParameter = optionsFsctlTrim
+// SetOptionsFakeOpen adds the optionsFakeOpen to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsFakeOpen(optionsFakeOpen *bool) {
+	o.OptionsFakeOpen = optionsFakeOpen
 }
 
-// WithOptionsJunctionReparseQueryParameter adds the optionsJunctionReparse to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsJunctionReparseQueryParameter(optionsJunctionReparse *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsJunctionReparseQueryParameter(optionsJunctionReparse)
+// WithOptionsFsctlTrim adds the optionsFsctlTrim to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsFsctlTrim(optionsFsctlTrim *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsFsctlTrim(optionsFsctlTrim)
 	return o
 }
 
-// SetOptionsJunctionReparseQueryParameter adds the optionsJunctionReparse to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsJunctionReparseQueryParameter(optionsJunctionReparse *bool) {
-	o.OptionsJunctionReparseQueryParameter = optionsJunctionReparse
+// SetOptionsFsctlTrim adds the optionsFsctlTrim to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsFsctlTrim(optionsFsctlTrim *bool) {
+	o.OptionsFsctlTrim = optionsFsctlTrim
 }
 
-// WithOptionsLargeMtuQueryParameter adds the optionsLargeMtu to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsLargeMtuQueryParameter(optionsLargeMtu *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsLargeMtuQueryParameter(optionsLargeMtu)
+// WithOptionsJunctionReparse adds the optionsJunctionReparse to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsJunctionReparse(optionsJunctionReparse *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsJunctionReparse(optionsJunctionReparse)
 	return o
 }
 
-// SetOptionsLargeMtuQueryParameter adds the optionsLargeMtu to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsLargeMtuQueryParameter(optionsLargeMtu *bool) {
-	o.OptionsLargeMtuQueryParameter = optionsLargeMtu
+// SetOptionsJunctionReparse adds the optionsJunctionReparse to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsJunctionReparse(optionsJunctionReparse *bool) {
+	o.OptionsJunctionReparse = optionsJunctionReparse
 }
 
-// WithOptionsMultichannelQueryParameter adds the optionsMultichannel to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsMultichannelQueryParameter(optionsMultichannel *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsMultichannelQueryParameter(optionsMultichannel)
+// WithOptionsLargeMtu adds the optionsLargeMtu to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsLargeMtu(optionsLargeMtu *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsLargeMtu(optionsLargeMtu)
 	return o
 }
 
-// SetOptionsMultichannelQueryParameter adds the optionsMultichannel to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsMultichannelQueryParameter(optionsMultichannel *bool) {
-	o.OptionsMultichannelQueryParameter = optionsMultichannel
+// SetOptionsLargeMtu adds the optionsLargeMtu to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsLargeMtu(optionsLargeMtu *bool) {
+	o.OptionsLargeMtu = optionsLargeMtu
 }
 
-// WithOptionsNullUserWindowsNameQueryParameter adds the optionsNullUserWindowsName to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName *string) *CifsServiceCollectionGetParams {
-	o.SetOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName)
+// WithOptionsMultichannel adds the optionsMultichannel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMultichannel(optionsMultichannel *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsMultichannel(optionsMultichannel)
 	return o
 }
 
-// SetOptionsNullUserWindowsNameQueryParameter adds the optionsNullUserWindowsName to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName *string) {
-	o.OptionsNullUserWindowsNameQueryParameter = optionsNullUserWindowsName
+// SetOptionsMultichannel adds the optionsMultichannel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMultichannel(optionsMultichannel *bool) {
+	o.OptionsMultichannel = optionsMultichannel
 }
 
-// WithOptionsPathComponentCacheQueryParameter adds the optionsPathComponentCache to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsPathComponentCacheQueryParameter(optionsPathComponentCache *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsPathComponentCacheQueryParameter(optionsPathComponentCache)
+// WithOptionsNullUserWindowsName adds the optionsNullUserWindowsName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsNullUserWindowsName(optionsNullUserWindowsName *string) *CifsServiceCollectionGetParams {
+	o.SetOptionsNullUserWindowsName(optionsNullUserWindowsName)
 	return o
 }
 
-// SetOptionsPathComponentCacheQueryParameter adds the optionsPathComponentCache to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsPathComponentCacheQueryParameter(optionsPathComponentCache *bool) {
-	o.OptionsPathComponentCacheQueryParameter = optionsPathComponentCache
+// SetOptionsNullUserWindowsName adds the optionsNullUserWindowsName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsNullUserWindowsName(optionsNullUserWindowsName *string) {
+	o.OptionsNullUserWindowsName = optionsNullUserWindowsName
 }
 
-// WithOptionsReferralQueryParameter adds the optionsReferral to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsReferralQueryParameter(optionsReferral *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsReferralQueryParameter(optionsReferral)
+// WithOptionsPathComponentCache adds the optionsPathComponentCache to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsPathComponentCache(optionsPathComponentCache *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsPathComponentCache(optionsPathComponentCache)
 	return o
 }
 
-// SetOptionsReferralQueryParameter adds the optionsReferral to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsReferralQueryParameter(optionsReferral *bool) {
-	o.OptionsReferralQueryParameter = optionsReferral
+// SetOptionsPathComponentCache adds the optionsPathComponentCache to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsPathComponentCache(optionsPathComponentCache *bool) {
+	o.OptionsPathComponentCache = optionsPathComponentCache
 }
 
-// WithOptionsShadowcopyQueryParameter adds the optionsShadowcopy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopyQueryParameter(optionsShadowcopy *bool) *CifsServiceCollectionGetParams {
-	o.SetOptionsShadowcopyQueryParameter(optionsShadowcopy)
+// WithOptionsReferral adds the optionsReferral to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsReferral(optionsReferral *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsReferral(optionsReferral)
 	return o
 }
 
-// SetOptionsShadowcopyQueryParameter adds the optionsShadowcopy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopyQueryParameter(optionsShadowcopy *bool) {
-	o.OptionsShadowcopyQueryParameter = optionsShadowcopy
+// SetOptionsReferral adds the optionsReferral to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsReferral(optionsReferral *bool) {
+	o.OptionsReferral = optionsReferral
 }
 
-// WithOptionsShadowcopyDirDepthQueryParameter adds the optionsShadowcopyDirDepth to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth *int64) *CifsServiceCollectionGetParams {
-	o.SetOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth)
+// WithOptionsShadowcopy adds the optionsShadowcopy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopy(optionsShadowcopy *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsShadowcopy(optionsShadowcopy)
 	return o
 }
 
-// SetOptionsShadowcopyDirDepthQueryParameter adds the optionsShadowcopyDirDepth to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth *int64) {
-	o.OptionsShadowcopyDirDepthQueryParameter = optionsShadowcopyDirDepth
+// SetOptionsShadowcopy adds the optionsShadowcopy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopy(optionsShadowcopy *bool) {
+	o.OptionsShadowcopy = optionsShadowcopy
 }
 
-// WithOptionsSmbCreditsQueryParameter adds the optionsSmbCredits to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsSmbCreditsQueryParameter(optionsSmbCredits *int64) *CifsServiceCollectionGetParams {
-	o.SetOptionsSmbCreditsQueryParameter(optionsSmbCredits)
+// WithOptionsShadowcopyDirDepth adds the optionsShadowcopyDirDepth to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopyDirDepth(optionsShadowcopyDirDepth *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsShadowcopyDirDepth(optionsShadowcopyDirDepth)
 	return o
 }
 
-// SetOptionsSmbCreditsQueryParameter adds the optionsSmbCredits to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsSmbCreditsQueryParameter(optionsSmbCredits *int64) {
-	o.OptionsSmbCreditsQueryParameter = optionsSmbCredits
+// SetOptionsShadowcopyDirDepth adds the optionsShadowcopyDirDepth to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopyDirDepth(optionsShadowcopyDirDepth *int64) {
+	o.OptionsShadowcopyDirDepth = optionsShadowcopyDirDepth
 }
 
-// WithOptionsWidelinkReparseVersionsQueryParameter adds the optionsWidelinkReparseVersions to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions *string) *CifsServiceCollectionGetParams {
-	o.SetOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions)
+// WithOptionsSmbCredits adds the optionsSmbCredits to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsSmbCredits(optionsSmbCredits *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsSmbCredits(optionsSmbCredits)
 	return o
 }
 
-// SetOptionsWidelinkReparseVersionsQueryParameter adds the optionsWidelinkReparseVersions to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions *string) {
-	o.OptionsWidelinkReparseVersionsQueryParameter = optionsWidelinkReparseVersions
+// SetOptionsSmbCredits adds the optionsSmbCredits to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsSmbCredits(optionsSmbCredits *int64) {
+	o.OptionsSmbCredits = optionsSmbCredits
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsServiceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOptionsWidelinkReparseVersions adds the optionsWidelinkReparseVersions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsWidelinkReparseVersions(optionsWidelinkReparseVersions *string) *CifsServiceCollectionGetParams {
+	o.SetOptionsWidelinkReparseVersions(optionsWidelinkReparseVersions)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOptionsWidelinkReparseVersions adds the optionsWidelinkReparseVersions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsWidelinkReparseVersions(optionsWidelinkReparseVersions *string) {
+	o.OptionsWidelinkReparseVersions = optionsWidelinkReparseVersions
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsServiceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithOrderBy adds the orderBy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOrderBy(orderBy []string) *CifsServiceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetOrderBy adds the orderBy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsServiceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnRecords adds the returnRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsServiceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnRecords adds the returnRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSecurityAesNetlogonEnabledQueryParameter adds the securityAesNetlogonEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled)
+// WithReturnTimeout adds the returnTimeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsServiceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSecurityAesNetlogonEnabledQueryParameter adds the securityAesNetlogonEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled *bool) {
-	o.SecurityAesNetlogonEnabledQueryParameter = securityAesNetlogonEnabled
+// SetReturnTimeout adds the returnTimeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSecurityEncryptDcConnectionQueryParameter adds the securityEncryptDcConnection to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection)
+// WithSecurityAdvertisedKdcEncryptions adds the securityAdvertisedKdcEncryptions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions *string) *CifsServiceCollectionGetParams {
+	o.SetSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions)
 	return o
 }
 
-// SetSecurityEncryptDcConnectionQueryParameter adds the securityEncryptDcConnection to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection *bool) {
-	o.SecurityEncryptDcConnectionQueryParameter = securityEncryptDcConnection
+// SetSecurityAdvertisedKdcEncryptions adds the securityAdvertisedKdcEncryptions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions *string) {
+	o.SecurityAdvertisedKdcEncryptions = securityAdvertisedKdcEncryptions
 }
 
-// WithSecurityKdcEncryptionQueryParameter adds the securityKdcEncryption to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityKdcEncryptionQueryParameter(securityKdcEncryption *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityKdcEncryptionQueryParameter(securityKdcEncryption)
+// WithSecurityAesNetlogonEnabled adds the securityAesNetlogonEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityAesNetlogonEnabled(securityAesNetlogonEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityAesNetlogonEnabled(securityAesNetlogonEnabled)
 	return o
 }
 
-// SetSecurityKdcEncryptionQueryParameter adds the securityKdcEncryption to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityKdcEncryptionQueryParameter(securityKdcEncryption *bool) {
-	o.SecurityKdcEncryptionQueryParameter = securityKdcEncryption
+// SetSecurityAesNetlogonEnabled adds the securityAesNetlogonEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityAesNetlogonEnabled(securityAesNetlogonEnabled *bool) {
+	o.SecurityAesNetlogonEnabled = securityAesNetlogonEnabled
 }
 
-// WithSecurityLdapReferralEnabledQueryParameter adds the securityLdapReferralEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled)
+// WithSecurityEncryptDcConnection adds the securityEncryptDcConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityEncryptDcConnection(securityEncryptDcConnection *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityEncryptDcConnection(securityEncryptDcConnection)
 	return o
 }
 
-// SetSecurityLdapReferralEnabledQueryParameter adds the securityLdapReferralEnabled to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled *bool) {
-	o.SecurityLdapReferralEnabledQueryParameter = securityLdapReferralEnabled
+// SetSecurityEncryptDcConnection adds the securityEncryptDcConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityEncryptDcConnection(securityEncryptDcConnection *bool) {
+	o.SecurityEncryptDcConnection = securityEncryptDcConnection
 }
 
-// WithSecurityLmCompatibilityLevelQueryParameter adds the securityLmCompatibilityLevel to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel *string) *CifsServiceCollectionGetParams {
-	o.SetSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel)
+// WithSecurityKdcEncryption adds the securityKdcEncryption to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityKdcEncryption(securityKdcEncryption *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityKdcEncryption(securityKdcEncryption)
 	return o
 }
 
-// SetSecurityLmCompatibilityLevelQueryParameter adds the securityLmCompatibilityLevel to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel *string) {
-	o.SecurityLmCompatibilityLevelQueryParameter = securityLmCompatibilityLevel
+// SetSecurityKdcEncryption adds the securityKdcEncryption to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityKdcEncryption(securityKdcEncryption *bool) {
+	o.SecurityKdcEncryption = securityKdcEncryption
 }
 
-// WithSecurityRestrictAnonymousQueryParameter adds the securityRestrictAnonymous to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityRestrictAnonymousQueryParameter(securityRestrictAnonymous *string) *CifsServiceCollectionGetParams {
-	o.SetSecurityRestrictAnonymousQueryParameter(securityRestrictAnonymous)
+// WithSecurityLdapReferralEnabled adds the securityLdapReferralEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityLdapReferralEnabled(securityLdapReferralEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityLdapReferralEnabled(securityLdapReferralEnabled)
 	return o
 }
 
-// SetSecurityRestrictAnonymousQueryParameter adds the securityRestrictAnonymous to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityRestrictAnonymousQueryParameter(securityRestrictAnonymous *string) {
-	o.SecurityRestrictAnonymousQueryParameter = securityRestrictAnonymous
+// SetSecurityLdapReferralEnabled adds the securityLdapReferralEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityLdapReferralEnabled(securityLdapReferralEnabled *bool) {
+	o.SecurityLdapReferralEnabled = securityLdapReferralEnabled
 }
 
-// WithSecuritySessionSecurityQueryParameter adds the securitySessionSecurity to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecuritySessionSecurityQueryParameter(securitySessionSecurity *string) *CifsServiceCollectionGetParams {
-	o.SetSecuritySessionSecurityQueryParameter(securitySessionSecurity)
+// WithSecurityLmCompatibilityLevel adds the securityLmCompatibilityLevel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityLmCompatibilityLevel(securityLmCompatibilityLevel *string) *CifsServiceCollectionGetParams {
+	o.SetSecurityLmCompatibilityLevel(securityLmCompatibilityLevel)
 	return o
 }
 
-// SetSecuritySessionSecurityQueryParameter adds the securitySessionSecurity to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecuritySessionSecurityQueryParameter(securitySessionSecurity *string) {
-	o.SecuritySessionSecurityQueryParameter = securitySessionSecurity
+// SetSecurityLmCompatibilityLevel adds the securityLmCompatibilityLevel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityLmCompatibilityLevel(securityLmCompatibilityLevel *string) {
+	o.SecurityLmCompatibilityLevel = securityLmCompatibilityLevel
 }
 
-// WithSecuritySmbEncryptionQueryParameter adds the securitySmbEncryption to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecuritySmbEncryptionQueryParameter(securitySmbEncryption *bool) *CifsServiceCollectionGetParams {
-	o.SetSecuritySmbEncryptionQueryParameter(securitySmbEncryption)
+// WithSecurityRestrictAnonymous adds the securityRestrictAnonymous to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityRestrictAnonymous(securityRestrictAnonymous *string) *CifsServiceCollectionGetParams {
+	o.SetSecurityRestrictAnonymous(securityRestrictAnonymous)
 	return o
 }
 
-// SetSecuritySmbEncryptionQueryParameter adds the securitySmbEncryption to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecuritySmbEncryptionQueryParameter(securitySmbEncryption *bool) {
-	o.SecuritySmbEncryptionQueryParameter = securitySmbEncryption
+// SetSecurityRestrictAnonymous adds the securityRestrictAnonymous to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityRestrictAnonymous(securityRestrictAnonymous *string) {
+	o.SecurityRestrictAnonymous = securityRestrictAnonymous
 }
 
-// WithSecuritySmbSigningQueryParameter adds the securitySmbSigning to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecuritySmbSigningQueryParameter(securitySmbSigning *bool) *CifsServiceCollectionGetParams {
-	o.SetSecuritySmbSigningQueryParameter(securitySmbSigning)
+// WithSecuritySessionSecurity adds the securitySessionSecurity to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecuritySessionSecurity(securitySessionSecurity *string) *CifsServiceCollectionGetParams {
+	o.SetSecuritySessionSecurity(securitySessionSecurity)
 	return o
 }
 
-// SetSecuritySmbSigningQueryParameter adds the securitySmbSigning to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecuritySmbSigningQueryParameter(securitySmbSigning *bool) {
-	o.SecuritySmbSigningQueryParameter = securitySmbSigning
+// SetSecuritySessionSecurity adds the securitySessionSecurity to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecuritySessionSecurity(securitySessionSecurity *string) {
+	o.SecuritySessionSecurity = securitySessionSecurity
 }
 
-// WithSecurityTryLdapChannelBindingQueryParameter adds the securityTryLdapChannelBinding to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding)
+// WithSecuritySmbEncryption adds the securitySmbEncryption to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecuritySmbEncryption(securitySmbEncryption *bool) *CifsServiceCollectionGetParams {
+	o.SetSecuritySmbEncryption(securitySmbEncryption)
 	return o
 }
 
-// SetSecurityTryLdapChannelBindingQueryParameter adds the securityTryLdapChannelBinding to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding *bool) {
-	o.SecurityTryLdapChannelBindingQueryParameter = securityTryLdapChannelBinding
+// SetSecuritySmbEncryption adds the securitySmbEncryption to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecuritySmbEncryption(securitySmbEncryption *bool) {
+	o.SecuritySmbEncryption = securitySmbEncryption
 }
 
-// WithSecurityUseLdapsQueryParameter adds the securityUseLdaps to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityUseLdapsQueryParameter(securityUseLdaps *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityUseLdapsQueryParameter(securityUseLdaps)
+// WithSecuritySmbSigning adds the securitySmbSigning to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecuritySmbSigning(securitySmbSigning *bool) *CifsServiceCollectionGetParams {
+	o.SetSecuritySmbSigning(securitySmbSigning)
 	return o
 }
 
-// SetSecurityUseLdapsQueryParameter adds the securityUseLdaps to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityUseLdapsQueryParameter(securityUseLdaps *bool) {
-	o.SecurityUseLdapsQueryParameter = securityUseLdaps
+// SetSecuritySmbSigning adds the securitySmbSigning to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecuritySmbSigning(securitySmbSigning *bool) {
+	o.SecuritySmbSigning = securitySmbSigning
 }
 
-// WithSecurityUseStartTLSQueryParameter adds the securityUseStartTLS to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSecurityUseStartTLSQueryParameter(securityUseStartTLS *bool) *CifsServiceCollectionGetParams {
-	o.SetSecurityUseStartTLSQueryParameter(securityUseStartTLS)
+// WithSecurityTryLdapChannelBinding adds the securityTryLdapChannelBinding to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityTryLdapChannelBinding(securityTryLdapChannelBinding *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityTryLdapChannelBinding(securityTryLdapChannelBinding)
 	return o
 }
 
-// SetSecurityUseStartTLSQueryParameter adds the securityUseStartTls to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSecurityUseStartTLSQueryParameter(securityUseStartTLS *bool) {
-	o.SecurityUseStartTLSQueryParameter = securityUseStartTLS
+// SetSecurityTryLdapChannelBinding adds the securityTryLdapChannelBinding to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityTryLdapChannelBinding(securityTryLdapChannelBinding *bool) {
+	o.SecurityTryLdapChannelBinding = securityTryLdapChannelBinding
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithSecurityUseLdaps adds the securityUseLdaps to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityUseLdaps(securityUseLdaps *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityUseLdaps(securityUseLdaps)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetSecurityUseLdaps adds the securityUseLdaps to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityUseLdaps(securityUseLdaps *bool) {
+	o.SecurityUseLdaps = securityUseLdaps
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithSecurityUseStartTLS adds the securityUseStartTLS to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityUseStartTLS(securityUseStartTLS *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityUseStartTLS(securityUseStartTLS)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetSecurityUseStartTLS adds the securityUseStartTls to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityUseStartTLS(securityUseStartTLS *bool) {
+	o.SecurityUseStartTLS = securityUseStartTLS
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *CifsServiceCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsStatus adds the statisticsStatus to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *CifsServiceCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsStatus adds the statisticsStatus to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *CifsServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *CifsServiceCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsServiceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *CifsServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsServiceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *CifsServiceCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetStatisticsTimestamp adds the statisticsTimestamp to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
+}
+
+// WithSvmName adds the svmName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSvmName(svmName *string) *CifsServiceCollectionGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsServiceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1331,13 +1365,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.AdDomainFqdnQueryParameter != nil {
+	if o.AdDomainFqdn != nil {
 
 		// query param ad_domain.fqdn
 		var qrAdDomainFqdn string
 
-		if o.AdDomainFqdnQueryParameter != nil {
-			qrAdDomainFqdn = *o.AdDomainFqdnQueryParameter
+		if o.AdDomainFqdn != nil {
+			qrAdDomainFqdn = *o.AdDomainFqdn
 		}
 		qAdDomainFqdn := qrAdDomainFqdn
 		if qAdDomainFqdn != "" {
@@ -1348,13 +1382,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.AdDomainOrganizationalUnitQueryParameter != nil {
+	if o.AdDomainOrganizationalUnit != nil {
 
 		// query param ad_domain.organizational_unit
 		var qrAdDomainOrganizationalUnit string
 
-		if o.AdDomainOrganizationalUnitQueryParameter != nil {
-			qrAdDomainOrganizationalUnit = *o.AdDomainOrganizationalUnitQueryParameter
+		if o.AdDomainOrganizationalUnit != nil {
+			qrAdDomainOrganizationalUnit = *o.AdDomainOrganizationalUnit
 		}
 		qAdDomainOrganizationalUnit := qrAdDomainOrganizationalUnit
 		if qAdDomainOrganizationalUnit != "" {
@@ -1365,13 +1399,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -1382,13 +1416,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.DefaultUnixUserQueryParameter != nil {
+	if o.DefaultUnixUser != nil {
 
 		// query param default_unix_user
 		var qrDefaultUnixUser string
 
-		if o.DefaultUnixUserQueryParameter != nil {
-			qrDefaultUnixUser = *o.DefaultUnixUserQueryParameter
+		if o.DefaultUnixUser != nil {
+			qrDefaultUnixUser = *o.DefaultUnixUser
 		}
 		qDefaultUnixUser := qrDefaultUnixUser
 		if qDefaultUnixUser != "" {
@@ -1399,13 +1433,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -1416,7 +1450,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1427,13 +1461,30 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.GroupPolicyObjectEnabled != nil {
+
+		// query param group_policy_object_enabled
+		var qrGroupPolicyObjectEnabled bool
+
+		if o.GroupPolicyObjectEnabled != nil {
+			qrGroupPolicyObjectEnabled = *o.GroupPolicyObjectEnabled
+		}
+		qGroupPolicyObjectEnabled := swag.FormatBool(qrGroupPolicyObjectEnabled)
+		if qGroupPolicyObjectEnabled != "" {
+
+			if err := r.SetQueryParam("group_policy_object_enabled", qGroupPolicyObjectEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1444,13 +1495,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -1461,13 +1512,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -1478,13 +1529,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -1495,13 +1546,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -1512,13 +1563,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -1529,13 +1580,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -1546,13 +1597,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -1563,13 +1614,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -1580,13 +1631,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -1597,13 +1648,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -1614,13 +1665,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -1631,13 +1682,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -1648,13 +1699,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -1665,13 +1716,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -1682,13 +1733,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1699,13 +1750,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NetbiosAliasesQueryParameter != nil {
+	if o.NetbiosAliases != nil {
 
 		// query param netbios.aliases
 		var qrNetbiosAliases string
 
-		if o.NetbiosAliasesQueryParameter != nil {
-			qrNetbiosAliases = *o.NetbiosAliasesQueryParameter
+		if o.NetbiosAliases != nil {
+			qrNetbiosAliases = *o.NetbiosAliases
 		}
 		qNetbiosAliases := qrNetbiosAliases
 		if qNetbiosAliases != "" {
@@ -1716,13 +1767,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NetbiosEnabledQueryParameter != nil {
+	if o.NetbiosEnabled != nil {
 
 		// query param netbios.enabled
 		var qrNetbiosEnabled bool
 
-		if o.NetbiosEnabledQueryParameter != nil {
-			qrNetbiosEnabled = *o.NetbiosEnabledQueryParameter
+		if o.NetbiosEnabled != nil {
+			qrNetbiosEnabled = *o.NetbiosEnabled
 		}
 		qNetbiosEnabled := swag.FormatBool(qrNetbiosEnabled)
 		if qNetbiosEnabled != "" {
@@ -1733,13 +1784,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NetbiosWinsServersQueryParameter != nil {
+	if o.NetbiosWinsServers != nil {
 
 		// query param netbios.wins_servers
 		var qrNetbiosWinsServers string
 
-		if o.NetbiosWinsServersQueryParameter != nil {
-			qrNetbiosWinsServers = *o.NetbiosWinsServersQueryParameter
+		if o.NetbiosWinsServers != nil {
+			qrNetbiosWinsServers = *o.NetbiosWinsServers
 		}
 		qNetbiosWinsServers := qrNetbiosWinsServers
 		if qNetbiosWinsServers != "" {
@@ -1750,13 +1801,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsAdminToRootMappingQueryParameter != nil {
+	if o.OptionsAdminToRootMapping != nil {
 
 		// query param options.admin_to_root_mapping
 		var qrOptionsAdminToRootMapping bool
 
-		if o.OptionsAdminToRootMappingQueryParameter != nil {
-			qrOptionsAdminToRootMapping = *o.OptionsAdminToRootMappingQueryParameter
+		if o.OptionsAdminToRootMapping != nil {
+			qrOptionsAdminToRootMapping = *o.OptionsAdminToRootMapping
 		}
 		qOptionsAdminToRootMapping := swag.FormatBool(qrOptionsAdminToRootMapping)
 		if qOptionsAdminToRootMapping != "" {
@@ -1767,13 +1818,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsAdvancedSparseFileQueryParameter != nil {
+	if o.OptionsAdvancedSparseFile != nil {
 
 		// query param options.advanced_sparse_file
 		var qrOptionsAdvancedSparseFile bool
 
-		if o.OptionsAdvancedSparseFileQueryParameter != nil {
-			qrOptionsAdvancedSparseFile = *o.OptionsAdvancedSparseFileQueryParameter
+		if o.OptionsAdvancedSparseFile != nil {
+			qrOptionsAdvancedSparseFile = *o.OptionsAdvancedSparseFile
 		}
 		qOptionsAdvancedSparseFile := swag.FormatBool(qrOptionsAdvancedSparseFile)
 		if qOptionsAdvancedSparseFile != "" {
@@ -1784,13 +1835,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsCopyOffloadQueryParameter != nil {
+	if o.OptionsCopyOffload != nil {
 
 		// query param options.copy_offload
 		var qrOptionsCopyOffload bool
 
-		if o.OptionsCopyOffloadQueryParameter != nil {
-			qrOptionsCopyOffload = *o.OptionsCopyOffloadQueryParameter
+		if o.OptionsCopyOffload != nil {
+			qrOptionsCopyOffload = *o.OptionsCopyOffload
 		}
 		qOptionsCopyOffload := swag.FormatBool(qrOptionsCopyOffload)
 		if qOptionsCopyOffload != "" {
@@ -1801,13 +1852,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsFakeOpenQueryParameter != nil {
+	if o.OptionsFakeOpen != nil {
 
 		// query param options.fake_open
 		var qrOptionsFakeOpen bool
 
-		if o.OptionsFakeOpenQueryParameter != nil {
-			qrOptionsFakeOpen = *o.OptionsFakeOpenQueryParameter
+		if o.OptionsFakeOpen != nil {
+			qrOptionsFakeOpen = *o.OptionsFakeOpen
 		}
 		qOptionsFakeOpen := swag.FormatBool(qrOptionsFakeOpen)
 		if qOptionsFakeOpen != "" {
@@ -1818,13 +1869,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsFsctlTrimQueryParameter != nil {
+	if o.OptionsFsctlTrim != nil {
 
 		// query param options.fsctl_trim
 		var qrOptionsFsctlTrim bool
 
-		if o.OptionsFsctlTrimQueryParameter != nil {
-			qrOptionsFsctlTrim = *o.OptionsFsctlTrimQueryParameter
+		if o.OptionsFsctlTrim != nil {
+			qrOptionsFsctlTrim = *o.OptionsFsctlTrim
 		}
 		qOptionsFsctlTrim := swag.FormatBool(qrOptionsFsctlTrim)
 		if qOptionsFsctlTrim != "" {
@@ -1835,13 +1886,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsJunctionReparseQueryParameter != nil {
+	if o.OptionsJunctionReparse != nil {
 
 		// query param options.junction_reparse
 		var qrOptionsJunctionReparse bool
 
-		if o.OptionsJunctionReparseQueryParameter != nil {
-			qrOptionsJunctionReparse = *o.OptionsJunctionReparseQueryParameter
+		if o.OptionsJunctionReparse != nil {
+			qrOptionsJunctionReparse = *o.OptionsJunctionReparse
 		}
 		qOptionsJunctionReparse := swag.FormatBool(qrOptionsJunctionReparse)
 		if qOptionsJunctionReparse != "" {
@@ -1852,13 +1903,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsLargeMtuQueryParameter != nil {
+	if o.OptionsLargeMtu != nil {
 
 		// query param options.large_mtu
 		var qrOptionsLargeMtu bool
 
-		if o.OptionsLargeMtuQueryParameter != nil {
-			qrOptionsLargeMtu = *o.OptionsLargeMtuQueryParameter
+		if o.OptionsLargeMtu != nil {
+			qrOptionsLargeMtu = *o.OptionsLargeMtu
 		}
 		qOptionsLargeMtu := swag.FormatBool(qrOptionsLargeMtu)
 		if qOptionsLargeMtu != "" {
@@ -1869,13 +1920,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsMultichannelQueryParameter != nil {
+	if o.OptionsMultichannel != nil {
 
 		// query param options.multichannel
 		var qrOptionsMultichannel bool
 
-		if o.OptionsMultichannelQueryParameter != nil {
-			qrOptionsMultichannel = *o.OptionsMultichannelQueryParameter
+		if o.OptionsMultichannel != nil {
+			qrOptionsMultichannel = *o.OptionsMultichannel
 		}
 		qOptionsMultichannel := swag.FormatBool(qrOptionsMultichannel)
 		if qOptionsMultichannel != "" {
@@ -1886,13 +1937,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsNullUserWindowsNameQueryParameter != nil {
+	if o.OptionsNullUserWindowsName != nil {
 
 		// query param options.null_user_windows_name
 		var qrOptionsNullUserWindowsName string
 
-		if o.OptionsNullUserWindowsNameQueryParameter != nil {
-			qrOptionsNullUserWindowsName = *o.OptionsNullUserWindowsNameQueryParameter
+		if o.OptionsNullUserWindowsName != nil {
+			qrOptionsNullUserWindowsName = *o.OptionsNullUserWindowsName
 		}
 		qOptionsNullUserWindowsName := qrOptionsNullUserWindowsName
 		if qOptionsNullUserWindowsName != "" {
@@ -1903,13 +1954,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsPathComponentCacheQueryParameter != nil {
+	if o.OptionsPathComponentCache != nil {
 
 		// query param options.path_component_cache
 		var qrOptionsPathComponentCache bool
 
-		if o.OptionsPathComponentCacheQueryParameter != nil {
-			qrOptionsPathComponentCache = *o.OptionsPathComponentCacheQueryParameter
+		if o.OptionsPathComponentCache != nil {
+			qrOptionsPathComponentCache = *o.OptionsPathComponentCache
 		}
 		qOptionsPathComponentCache := swag.FormatBool(qrOptionsPathComponentCache)
 		if qOptionsPathComponentCache != "" {
@@ -1920,13 +1971,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsReferralQueryParameter != nil {
+	if o.OptionsReferral != nil {
 
 		// query param options.referral
 		var qrOptionsReferral bool
 
-		if o.OptionsReferralQueryParameter != nil {
-			qrOptionsReferral = *o.OptionsReferralQueryParameter
+		if o.OptionsReferral != nil {
+			qrOptionsReferral = *o.OptionsReferral
 		}
 		qOptionsReferral := swag.FormatBool(qrOptionsReferral)
 		if qOptionsReferral != "" {
@@ -1937,13 +1988,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsShadowcopyQueryParameter != nil {
+	if o.OptionsShadowcopy != nil {
 
 		// query param options.shadowcopy
 		var qrOptionsShadowcopy bool
 
-		if o.OptionsShadowcopyQueryParameter != nil {
-			qrOptionsShadowcopy = *o.OptionsShadowcopyQueryParameter
+		if o.OptionsShadowcopy != nil {
+			qrOptionsShadowcopy = *o.OptionsShadowcopy
 		}
 		qOptionsShadowcopy := swag.FormatBool(qrOptionsShadowcopy)
 		if qOptionsShadowcopy != "" {
@@ -1954,13 +2005,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsShadowcopyDirDepthQueryParameter != nil {
+	if o.OptionsShadowcopyDirDepth != nil {
 
 		// query param options.shadowcopy_dir_depth
 		var qrOptionsShadowcopyDirDepth int64
 
-		if o.OptionsShadowcopyDirDepthQueryParameter != nil {
-			qrOptionsShadowcopyDirDepth = *o.OptionsShadowcopyDirDepthQueryParameter
+		if o.OptionsShadowcopyDirDepth != nil {
+			qrOptionsShadowcopyDirDepth = *o.OptionsShadowcopyDirDepth
 		}
 		qOptionsShadowcopyDirDepth := swag.FormatInt64(qrOptionsShadowcopyDirDepth)
 		if qOptionsShadowcopyDirDepth != "" {
@@ -1971,13 +2022,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsSmbCreditsQueryParameter != nil {
+	if o.OptionsSmbCredits != nil {
 
 		// query param options.smb_credits
 		var qrOptionsSmbCredits int64
 
-		if o.OptionsSmbCreditsQueryParameter != nil {
-			qrOptionsSmbCredits = *o.OptionsSmbCreditsQueryParameter
+		if o.OptionsSmbCredits != nil {
+			qrOptionsSmbCredits = *o.OptionsSmbCredits
 		}
 		qOptionsSmbCredits := swag.FormatInt64(qrOptionsSmbCredits)
 		if qOptionsSmbCredits != "" {
@@ -1988,13 +2039,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OptionsWidelinkReparseVersionsQueryParameter != nil {
+	if o.OptionsWidelinkReparseVersions != nil {
 
 		// query param options.widelink_reparse_versions
 		var qrOptionsWidelinkReparseVersions string
 
-		if o.OptionsWidelinkReparseVersionsQueryParameter != nil {
-			qrOptionsWidelinkReparseVersions = *o.OptionsWidelinkReparseVersionsQueryParameter
+		if o.OptionsWidelinkReparseVersions != nil {
+			qrOptionsWidelinkReparseVersions = *o.OptionsWidelinkReparseVersions
 		}
 		qOptionsWidelinkReparseVersions := qrOptionsWidelinkReparseVersions
 		if qOptionsWidelinkReparseVersions != "" {
@@ -2005,7 +2056,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -2016,13 +2067,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2033,13 +2084,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2050,13 +2101,30 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityAesNetlogonEnabledQueryParameter != nil {
+	if o.SecurityAdvertisedKdcEncryptions != nil {
+
+		// query param security.advertised_kdc_encryptions
+		var qrSecurityAdvertisedKdcEncryptions string
+
+		if o.SecurityAdvertisedKdcEncryptions != nil {
+			qrSecurityAdvertisedKdcEncryptions = *o.SecurityAdvertisedKdcEncryptions
+		}
+		qSecurityAdvertisedKdcEncryptions := qrSecurityAdvertisedKdcEncryptions
+		if qSecurityAdvertisedKdcEncryptions != "" {
+
+			if err := r.SetQueryParam("security.advertised_kdc_encryptions", qSecurityAdvertisedKdcEncryptions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityAesNetlogonEnabled != nil {
 
 		// query param security.aes_netlogon_enabled
 		var qrSecurityAesNetlogonEnabled bool
 
-		if o.SecurityAesNetlogonEnabledQueryParameter != nil {
-			qrSecurityAesNetlogonEnabled = *o.SecurityAesNetlogonEnabledQueryParameter
+		if o.SecurityAesNetlogonEnabled != nil {
+			qrSecurityAesNetlogonEnabled = *o.SecurityAesNetlogonEnabled
 		}
 		qSecurityAesNetlogonEnabled := swag.FormatBool(qrSecurityAesNetlogonEnabled)
 		if qSecurityAesNetlogonEnabled != "" {
@@ -2067,13 +2135,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityEncryptDcConnectionQueryParameter != nil {
+	if o.SecurityEncryptDcConnection != nil {
 
 		// query param security.encrypt_dc_connection
 		var qrSecurityEncryptDcConnection bool
 
-		if o.SecurityEncryptDcConnectionQueryParameter != nil {
-			qrSecurityEncryptDcConnection = *o.SecurityEncryptDcConnectionQueryParameter
+		if o.SecurityEncryptDcConnection != nil {
+			qrSecurityEncryptDcConnection = *o.SecurityEncryptDcConnection
 		}
 		qSecurityEncryptDcConnection := swag.FormatBool(qrSecurityEncryptDcConnection)
 		if qSecurityEncryptDcConnection != "" {
@@ -2084,13 +2152,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityKdcEncryptionQueryParameter != nil {
+	if o.SecurityKdcEncryption != nil {
 
 		// query param security.kdc_encryption
 		var qrSecurityKdcEncryption bool
 
-		if o.SecurityKdcEncryptionQueryParameter != nil {
-			qrSecurityKdcEncryption = *o.SecurityKdcEncryptionQueryParameter
+		if o.SecurityKdcEncryption != nil {
+			qrSecurityKdcEncryption = *o.SecurityKdcEncryption
 		}
 		qSecurityKdcEncryption := swag.FormatBool(qrSecurityKdcEncryption)
 		if qSecurityKdcEncryption != "" {
@@ -2101,13 +2169,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityLdapReferralEnabledQueryParameter != nil {
+	if o.SecurityLdapReferralEnabled != nil {
 
 		// query param security.ldap_referral_enabled
 		var qrSecurityLdapReferralEnabled bool
 
-		if o.SecurityLdapReferralEnabledQueryParameter != nil {
-			qrSecurityLdapReferralEnabled = *o.SecurityLdapReferralEnabledQueryParameter
+		if o.SecurityLdapReferralEnabled != nil {
+			qrSecurityLdapReferralEnabled = *o.SecurityLdapReferralEnabled
 		}
 		qSecurityLdapReferralEnabled := swag.FormatBool(qrSecurityLdapReferralEnabled)
 		if qSecurityLdapReferralEnabled != "" {
@@ -2118,13 +2186,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityLmCompatibilityLevelQueryParameter != nil {
+	if o.SecurityLmCompatibilityLevel != nil {
 
 		// query param security.lm_compatibility_level
 		var qrSecurityLmCompatibilityLevel string
 
-		if o.SecurityLmCompatibilityLevelQueryParameter != nil {
-			qrSecurityLmCompatibilityLevel = *o.SecurityLmCompatibilityLevelQueryParameter
+		if o.SecurityLmCompatibilityLevel != nil {
+			qrSecurityLmCompatibilityLevel = *o.SecurityLmCompatibilityLevel
 		}
 		qSecurityLmCompatibilityLevel := qrSecurityLmCompatibilityLevel
 		if qSecurityLmCompatibilityLevel != "" {
@@ -2135,13 +2203,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityRestrictAnonymousQueryParameter != nil {
+	if o.SecurityRestrictAnonymous != nil {
 
 		// query param security.restrict_anonymous
 		var qrSecurityRestrictAnonymous string
 
-		if o.SecurityRestrictAnonymousQueryParameter != nil {
-			qrSecurityRestrictAnonymous = *o.SecurityRestrictAnonymousQueryParameter
+		if o.SecurityRestrictAnonymous != nil {
+			qrSecurityRestrictAnonymous = *o.SecurityRestrictAnonymous
 		}
 		qSecurityRestrictAnonymous := qrSecurityRestrictAnonymous
 		if qSecurityRestrictAnonymous != "" {
@@ -2152,13 +2220,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecuritySessionSecurityQueryParameter != nil {
+	if o.SecuritySessionSecurity != nil {
 
 		// query param security.session_security
 		var qrSecuritySessionSecurity string
 
-		if o.SecuritySessionSecurityQueryParameter != nil {
-			qrSecuritySessionSecurity = *o.SecuritySessionSecurityQueryParameter
+		if o.SecuritySessionSecurity != nil {
+			qrSecuritySessionSecurity = *o.SecuritySessionSecurity
 		}
 		qSecuritySessionSecurity := qrSecuritySessionSecurity
 		if qSecuritySessionSecurity != "" {
@@ -2169,13 +2237,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecuritySmbEncryptionQueryParameter != nil {
+	if o.SecuritySmbEncryption != nil {
 
 		// query param security.smb_encryption
 		var qrSecuritySmbEncryption bool
 
-		if o.SecuritySmbEncryptionQueryParameter != nil {
-			qrSecuritySmbEncryption = *o.SecuritySmbEncryptionQueryParameter
+		if o.SecuritySmbEncryption != nil {
+			qrSecuritySmbEncryption = *o.SecuritySmbEncryption
 		}
 		qSecuritySmbEncryption := swag.FormatBool(qrSecuritySmbEncryption)
 		if qSecuritySmbEncryption != "" {
@@ -2186,13 +2254,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecuritySmbSigningQueryParameter != nil {
+	if o.SecuritySmbSigning != nil {
 
 		// query param security.smb_signing
 		var qrSecuritySmbSigning bool
 
-		if o.SecuritySmbSigningQueryParameter != nil {
-			qrSecuritySmbSigning = *o.SecuritySmbSigningQueryParameter
+		if o.SecuritySmbSigning != nil {
+			qrSecuritySmbSigning = *o.SecuritySmbSigning
 		}
 		qSecuritySmbSigning := swag.FormatBool(qrSecuritySmbSigning)
 		if qSecuritySmbSigning != "" {
@@ -2203,13 +2271,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityTryLdapChannelBindingQueryParameter != nil {
+	if o.SecurityTryLdapChannelBinding != nil {
 
 		// query param security.try_ldap_channel_binding
 		var qrSecurityTryLdapChannelBinding bool
 
-		if o.SecurityTryLdapChannelBindingQueryParameter != nil {
-			qrSecurityTryLdapChannelBinding = *o.SecurityTryLdapChannelBindingQueryParameter
+		if o.SecurityTryLdapChannelBinding != nil {
+			qrSecurityTryLdapChannelBinding = *o.SecurityTryLdapChannelBinding
 		}
 		qSecurityTryLdapChannelBinding := swag.FormatBool(qrSecurityTryLdapChannelBinding)
 		if qSecurityTryLdapChannelBinding != "" {
@@ -2220,13 +2288,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityUseLdapsQueryParameter != nil {
+	if o.SecurityUseLdaps != nil {
 
 		// query param security.use_ldaps
 		var qrSecurityUseLdaps bool
 
-		if o.SecurityUseLdapsQueryParameter != nil {
-			qrSecurityUseLdaps = *o.SecurityUseLdapsQueryParameter
+		if o.SecurityUseLdaps != nil {
+			qrSecurityUseLdaps = *o.SecurityUseLdaps
 		}
 		qSecurityUseLdaps := swag.FormatBool(qrSecurityUseLdaps)
 		if qSecurityUseLdaps != "" {
@@ -2237,13 +2305,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SecurityUseStartTLSQueryParameter != nil {
+	if o.SecurityUseStartTLS != nil {
 
 		// query param security.use_start_tls
 		var qrSecurityUseStartTLS bool
 
-		if o.SecurityUseStartTLSQueryParameter != nil {
-			qrSecurityUseStartTLS = *o.SecurityUseStartTLSQueryParameter
+		if o.SecurityUseStartTLS != nil {
+			qrSecurityUseStartTLS = *o.SecurityUseStartTLS
 		}
 		qSecurityUseStartTLS := swag.FormatBool(qrSecurityUseStartTLS)
 		if qSecurityUseStartTLS != "" {
@@ -2254,13 +2322,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -2271,13 +2339,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -2288,13 +2356,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -2305,13 +2373,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -2322,13 +2390,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -2339,13 +2407,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -2356,13 +2424,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -2373,13 +2441,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -2390,13 +2458,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -2407,13 +2475,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -2424,13 +2492,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -2441,13 +2509,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -2458,13 +2526,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -2475,13 +2543,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -2492,13 +2560,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -2517,7 +2585,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCifsServiceCollectionGet binds the parameter fields
 func (o *CifsServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2534,7 +2602,7 @@ func (o *CifsServiceCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamCifsServiceCollectionGet binds the parameter order_by
 func (o *CifsServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

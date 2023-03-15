@@ -22,7 +22,7 @@ type Href struct {
 	// href
 	// Example: /api/resourcelink
 	// Read Only: true
-	Href string `json:"href,omitempty"`
+	Href *string `json:"href,omitempty"`
 }
 
 // Validate validates this href
@@ -46,7 +46,7 @@ func (m *Href) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 
 func (m *Href) contextValidateHref(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "href", "body", string(m.Href)); err != nil {
+	if err := validate.ReadOnly(ctx, "href", "body", m.Href); err != nil {
 		return err
 	}
 

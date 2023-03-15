@@ -396,8 +396,8 @@ func (d *SANStorageDriver) Create(
 					Qos:            qosPolicyGroup,
 					Size:           lunSize,
 					OsType:         osType,
-					SpaceReserved:  api.ToBoolPointer(false),
-					SpaceAllocated: api.ToBoolPointer(spaceAllocation),
+					SpaceReserved:  utils.Ptr(false),
+					SpaceAllocated: utils.Ptr(spaceAllocation),
 				})
 
 			if err != nil {

@@ -66,43 +66,43 @@ type NetworkIPServicePoliciesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* IsBuiltIn.
 
 	   Filter by is_built_in
 	*/
-	IsBuiltInQueryParameter *bool
+	IsBuiltIn *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type NetworkIPServicePoliciesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,37 +118,37 @@ type NetworkIPServicePoliciesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* Services.
 
 	   Filter by services
 	*/
-	ServicesQueryParameter *string
+	Services *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *NetworkIPServicePoliciesGetParams) WithDefaults() *NetworkIPServicePoli
 // All values with no default are reset to their zero value.
 func (o *NetworkIPServicePoliciesGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPServicePoliciesGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *NetworkIPServicePoliciesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPServicePoliciesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithFields(fields []string) *NetworkIPServicePoliciesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *NetworkIPServicePoliciesGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithIpspaceName(ipspaceName *string) *NetworkIPServicePoliciesGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *NetworkIPServicePoliciesGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithIpspaceUUID(ipspaceUUID *string) *NetworkIPServicePoliciesGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithIsBuiltInQueryParameter adds the isBuiltIn to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithIsBuiltInQueryParameter(isBuiltIn *bool) *NetworkIPServicePoliciesGetParams {
-	o.SetIsBuiltInQueryParameter(isBuiltIn)
+// WithIsBuiltIn adds the isBuiltIn to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithIsBuiltIn(isBuiltIn *bool) *NetworkIPServicePoliciesGetParams {
+	o.SetIsBuiltIn(isBuiltIn)
 	return o
 }
 
-// SetIsBuiltInQueryParameter adds the isBuiltIn to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetIsBuiltInQueryParameter(isBuiltIn *bool) {
-	o.IsBuiltInQueryParameter = isBuiltIn
+// SetIsBuiltIn adds the isBuiltIn to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetIsBuiltIn(isBuiltIn *bool) {
+	o.IsBuiltIn = isBuiltIn
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPServicePoliciesGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPServicePoliciesGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithNameQueryParameter(name *string) *NetworkIPServicePoliciesGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithName(name *string) *NetworkIPServicePoliciesGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPServicePoliciesGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithOrderBy(orderBy []string) *NetworkIPServicePoliciesGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPServicePoliciesGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPServicePoliciesGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPServicePoliciesGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPServicePoliciesGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithScopeQueryParameter(scope *string) *NetworkIPServicePoliciesGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithScope(scope *string) *NetworkIPServicePoliciesGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithServicesQueryParameter adds the services to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithServicesQueryParameter(services *string) *NetworkIPServicePoliciesGetParams {
-	o.SetServicesQueryParameter(services)
+// WithServices adds the services to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithServices(services *string) *NetworkIPServicePoliciesGetParams {
+	o.SetServices(services)
 	return o
 }
 
-// SetServicesQueryParameter adds the services to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetServicesQueryParameter(services *string) {
-	o.ServicesQueryParameter = services
+// SetServices adds the services to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetServices(services *string) {
+	o.Services = services
 }
 
-// WithSVMNameQueryParameter adds the svmName to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithSVMNameQueryParameter(svmName *string) *NetworkIPServicePoliciesGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithSvmName(svmName *string) *NetworkIPServicePoliciesGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NetworkIPServicePoliciesGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithSvmUUID(svmUUID *string) *NetworkIPServicePoliciesGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) WithUUIDQueryParameter(uuid *string) *NetworkIPServicePoliciesGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithUUID(uuid *string) *NetworkIPServicePoliciesGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the network ip service policies get params
-func (o *NetworkIPServicePoliciesGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,7 +379,7 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -390,13 +390,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -407,13 +407,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -424,13 +424,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IsBuiltInQueryParameter != nil {
+	if o.IsBuiltIn != nil {
 
 		// query param is_built_in
 		var qrIsBuiltIn bool
 
-		if o.IsBuiltInQueryParameter != nil {
-			qrIsBuiltIn = *o.IsBuiltInQueryParameter
+		if o.IsBuiltIn != nil {
+			qrIsBuiltIn = *o.IsBuiltIn
 		}
 		qIsBuiltIn := swag.FormatBool(qrIsBuiltIn)
 		if qIsBuiltIn != "" {
@@ -441,13 +441,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -458,13 +458,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -475,7 +475,7 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -486,13 +486,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +503,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +520,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -537,13 +537,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ServicesQueryParameter != nil {
+	if o.Services != nil {
 
 		// query param services
 		var qrServices string
 
-		if o.ServicesQueryParameter != nil {
-			qrServices = *o.ServicesQueryParameter
+		if o.Services != nil {
+			qrServices = *o.Services
 		}
 		qServices := qrServices
 		if qServices != "" {
@@ -554,13 +554,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -571,13 +571,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -588,13 +588,13 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -613,7 +613,7 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamNetworkIPServicePoliciesGet binds the parameter fields
 func (o *NetworkIPServicePoliciesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *NetworkIPServicePoliciesGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamNetworkIPServicePoliciesGet binds the parameter order_by
 func (o *NetworkIPServicePoliciesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

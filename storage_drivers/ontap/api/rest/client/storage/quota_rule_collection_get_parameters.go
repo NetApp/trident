@@ -66,55 +66,55 @@ type QuotaRuleCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FilesHardLimit.
 
 	   Filter by files.hard_limit
 	*/
-	FilesHardLimitQueryParameter *int64
+	FilesHardLimit *int64
 
 	/* FilesSoftLimit.
 
 	   Filter by files.soft_limit
 	*/
-	FilesSoftLimitQueryParameter *int64
+	FilesSoftLimit *int64
 
 	/* GroupID.
 
 	   Filter by group.id
 	*/
-	GroupIDQueryParameter *string
+	GroupID *string
 
 	/* GroupName.
 
 	   Filter by group.name
 	*/
-	GroupNameQueryParameter *string
+	GroupName *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* QtreeID.
 
 	   Filter by qtree.id
 	*/
-	QtreeIDQueryParameter *int64
+	QtreeID *int64
 
 	/* QtreeName.
 
 	   Filter by qtree.name
 	*/
-	QtreeNameQueryParameter *string
+	QtreeName *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type QuotaRuleCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,73 +130,73 @@ type QuotaRuleCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SpaceHardLimit.
 
 	   Filter by space.hard_limit
 	*/
-	SpaceHardLimitQueryParameter *int64
+	SpaceHardLimit *int64
 
 	/* SpaceSoftLimit.
 
 	   Filter by space.soft_limit
 	*/
-	SpaceSoftLimitQueryParameter *int64
+	SpaceSoftLimit *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UserMapping.
 
 	   Filter by user_mapping
 	*/
-	UserMappingQueryParameter *bool
+	UserMapping *bool
 
 	/* UsersID.
 
 	   Filter by users.id
 	*/
-	UsersIDQueryParameter *string
+	UsersID *string
 
 	/* UsersName.
 
 	   Filter by users.name
 	*/
-	UsersNameQueryParameter *string
+	UsersName *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -216,14 +216,14 @@ func (o *QuotaRuleCollectionGetParams) WithDefaults() *QuotaRuleCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *QuotaRuleCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := QuotaRuleCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -265,246 +265,246 @@ func (o *QuotaRuleCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithFieldsQueryParameter(fields []string) *QuotaRuleCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithFields(fields []string) *QuotaRuleCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFilesHardLimitQueryParameter adds the filesHardLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithFilesHardLimitQueryParameter(filesHardLimit *int64) *QuotaRuleCollectionGetParams {
-	o.SetFilesHardLimitQueryParameter(filesHardLimit)
+// WithFilesHardLimit adds the filesHardLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithFilesHardLimit(filesHardLimit *int64) *QuotaRuleCollectionGetParams {
+	o.SetFilesHardLimit(filesHardLimit)
 	return o
 }
 
-// SetFilesHardLimitQueryParameter adds the filesHardLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetFilesHardLimitQueryParameter(filesHardLimit *int64) {
-	o.FilesHardLimitQueryParameter = filesHardLimit
+// SetFilesHardLimit adds the filesHardLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetFilesHardLimit(filesHardLimit *int64) {
+	o.FilesHardLimit = filesHardLimit
 }
 
-// WithFilesSoftLimitQueryParameter adds the filesSoftLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithFilesSoftLimitQueryParameter(filesSoftLimit *int64) *QuotaRuleCollectionGetParams {
-	o.SetFilesSoftLimitQueryParameter(filesSoftLimit)
+// WithFilesSoftLimit adds the filesSoftLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithFilesSoftLimit(filesSoftLimit *int64) *QuotaRuleCollectionGetParams {
+	o.SetFilesSoftLimit(filesSoftLimit)
 	return o
 }
 
-// SetFilesSoftLimitQueryParameter adds the filesSoftLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetFilesSoftLimitQueryParameter(filesSoftLimit *int64) {
-	o.FilesSoftLimitQueryParameter = filesSoftLimit
+// SetFilesSoftLimit adds the filesSoftLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetFilesSoftLimit(filesSoftLimit *int64) {
+	o.FilesSoftLimit = filesSoftLimit
 }
 
-// WithGroupIDQueryParameter adds the groupID to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithGroupIDQueryParameter(groupID *string) *QuotaRuleCollectionGetParams {
-	o.SetGroupIDQueryParameter(groupID)
+// WithGroupID adds the groupID to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithGroupID(groupID *string) *QuotaRuleCollectionGetParams {
+	o.SetGroupID(groupID)
 	return o
 }
 
-// SetGroupIDQueryParameter adds the groupId to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetGroupIDQueryParameter(groupID *string) {
-	o.GroupIDQueryParameter = groupID
+// SetGroupID adds the groupId to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetGroupID(groupID *string) {
+	o.GroupID = groupID
 }
 
-// WithGroupNameQueryParameter adds the groupName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithGroupNameQueryParameter(groupName *string) *QuotaRuleCollectionGetParams {
-	o.SetGroupNameQueryParameter(groupName)
+// WithGroupName adds the groupName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithGroupName(groupName *string) *QuotaRuleCollectionGetParams {
+	o.SetGroupName(groupName)
 	return o
 }
 
-// SetGroupNameQueryParameter adds the groupName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetGroupNameQueryParameter(groupName *string) {
-	o.GroupNameQueryParameter = groupName
+// SetGroupName adds the groupName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetGroupName(groupName *string) {
+	o.GroupName = groupName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QuotaRuleCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithMaxRecords(maxRecords *int64) *QuotaRuleCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QuotaRuleCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithOrderBy(orderBy []string) *QuotaRuleCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithQtreeIDQueryParameter adds the qtreeID to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithQtreeIDQueryParameter(qtreeID *int64) *QuotaRuleCollectionGetParams {
-	o.SetQtreeIDQueryParameter(qtreeID)
+// WithQtreeID adds the qtreeID to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithQtreeID(qtreeID *int64) *QuotaRuleCollectionGetParams {
+	o.SetQtreeID(qtreeID)
 	return o
 }
 
-// SetQtreeIDQueryParameter adds the qtreeId to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetQtreeIDQueryParameter(qtreeID *int64) {
-	o.QtreeIDQueryParameter = qtreeID
+// SetQtreeID adds the qtreeId to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetQtreeID(qtreeID *int64) {
+	o.QtreeID = qtreeID
 }
 
-// WithQtreeNameQueryParameter adds the qtreeName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithQtreeNameQueryParameter(qtreeName *string) *QuotaRuleCollectionGetParams {
-	o.SetQtreeNameQueryParameter(qtreeName)
+// WithQtreeName adds the qtreeName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithQtreeName(qtreeName *string) *QuotaRuleCollectionGetParams {
+	o.SetQtreeName(qtreeName)
 	return o
 }
 
-// SetQtreeNameQueryParameter adds the qtreeName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetQtreeNameQueryParameter(qtreeName *string) {
-	o.QtreeNameQueryParameter = qtreeName
+// SetQtreeName adds the qtreeName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetQtreeName(qtreeName *string) {
+	o.QtreeName = qtreeName
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QuotaRuleCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithReturnRecords(returnRecords *bool) *QuotaRuleCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QuotaRuleCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QuotaRuleCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSpaceHardLimitQueryParameter adds the spaceHardLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithSpaceHardLimitQueryParameter(spaceHardLimit *int64) *QuotaRuleCollectionGetParams {
-	o.SetSpaceHardLimitQueryParameter(spaceHardLimit)
+// WithSpaceHardLimit adds the spaceHardLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithSpaceHardLimit(spaceHardLimit *int64) *QuotaRuleCollectionGetParams {
+	o.SetSpaceHardLimit(spaceHardLimit)
 	return o
 }
 
-// SetSpaceHardLimitQueryParameter adds the spaceHardLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetSpaceHardLimitQueryParameter(spaceHardLimit *int64) {
-	o.SpaceHardLimitQueryParameter = spaceHardLimit
+// SetSpaceHardLimit adds the spaceHardLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetSpaceHardLimit(spaceHardLimit *int64) {
+	o.SpaceHardLimit = spaceHardLimit
 }
 
-// WithSpaceSoftLimitQueryParameter adds the spaceSoftLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithSpaceSoftLimitQueryParameter(spaceSoftLimit *int64) *QuotaRuleCollectionGetParams {
-	o.SetSpaceSoftLimitQueryParameter(spaceSoftLimit)
+// WithSpaceSoftLimit adds the spaceSoftLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithSpaceSoftLimit(spaceSoftLimit *int64) *QuotaRuleCollectionGetParams {
+	o.SetSpaceSoftLimit(spaceSoftLimit)
 	return o
 }
 
-// SetSpaceSoftLimitQueryParameter adds the spaceSoftLimit to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetSpaceSoftLimitQueryParameter(spaceSoftLimit *int64) {
-	o.SpaceSoftLimitQueryParameter = spaceSoftLimit
+// SetSpaceSoftLimit adds the spaceSoftLimit to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetSpaceSoftLimit(spaceSoftLimit *int64) {
+	o.SpaceSoftLimit = spaceSoftLimit
 }
 
-// WithSVMNameQueryParameter adds the svmName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *QuotaRuleCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithSvmName(svmName *string) *QuotaRuleCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *QuotaRuleCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithSvmUUID(svmUUID *string) *QuotaRuleCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithTypeQueryParameter(typeVar *string) *QuotaRuleCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithType(typeVar *string) *QuotaRuleCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUserMappingQueryParameter adds the userMapping to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithUserMappingQueryParameter(userMapping *bool) *QuotaRuleCollectionGetParams {
-	o.SetUserMappingQueryParameter(userMapping)
+// WithUserMapping adds the userMapping to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithUserMapping(userMapping *bool) *QuotaRuleCollectionGetParams {
+	o.SetUserMapping(userMapping)
 	return o
 }
 
-// SetUserMappingQueryParameter adds the userMapping to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetUserMappingQueryParameter(userMapping *bool) {
-	o.UserMappingQueryParameter = userMapping
+// SetUserMapping adds the userMapping to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetUserMapping(userMapping *bool) {
+	o.UserMapping = userMapping
 }
 
-// WithUsersIDQueryParameter adds the usersID to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithUsersIDQueryParameter(usersID *string) *QuotaRuleCollectionGetParams {
-	o.SetUsersIDQueryParameter(usersID)
+// WithUsersID adds the usersID to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithUsersID(usersID *string) *QuotaRuleCollectionGetParams {
+	o.SetUsersID(usersID)
 	return o
 }
 
-// SetUsersIDQueryParameter adds the usersId to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetUsersIDQueryParameter(usersID *string) {
-	o.UsersIDQueryParameter = usersID
+// SetUsersID adds the usersId to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetUsersID(usersID *string) {
+	o.UsersID = usersID
 }
 
-// WithUsersNameQueryParameter adds the usersName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithUsersNameQueryParameter(usersName *string) *QuotaRuleCollectionGetParams {
-	o.SetUsersNameQueryParameter(usersName)
+// WithUsersName adds the usersName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithUsersName(usersName *string) *QuotaRuleCollectionGetParams {
+	o.SetUsersName(usersName)
 	return o
 }
 
-// SetUsersNameQueryParameter adds the usersName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetUsersNameQueryParameter(usersName *string) {
-	o.UsersNameQueryParameter = usersName
+// SetUsersName adds the usersName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetUsersName(usersName *string) {
+	o.UsersName = usersName
 }
 
-// WithUUIDQueryParameter adds the uuid to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithUUIDQueryParameter(uuid *string) *QuotaRuleCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithUUID(uuid *string) *QuotaRuleCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *QuotaRuleCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithVolumeName(volumeName *string) *QuotaRuleCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *QuotaRuleCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) WithVolumeUUID(volumeUUID *string) *QuotaRuleCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the quota rule collection get params
-func (o *QuotaRuleCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the quota rule collection get params
+func (o *QuotaRuleCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -515,7 +515,7 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -526,13 +526,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FilesHardLimitQueryParameter != nil {
+	if o.FilesHardLimit != nil {
 
 		// query param files.hard_limit
 		var qrFilesHardLimit int64
 
-		if o.FilesHardLimitQueryParameter != nil {
-			qrFilesHardLimit = *o.FilesHardLimitQueryParameter
+		if o.FilesHardLimit != nil {
+			qrFilesHardLimit = *o.FilesHardLimit
 		}
 		qFilesHardLimit := swag.FormatInt64(qrFilesHardLimit)
 		if qFilesHardLimit != "" {
@@ -543,13 +543,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FilesSoftLimitQueryParameter != nil {
+	if o.FilesSoftLimit != nil {
 
 		// query param files.soft_limit
 		var qrFilesSoftLimit int64
 
-		if o.FilesSoftLimitQueryParameter != nil {
-			qrFilesSoftLimit = *o.FilesSoftLimitQueryParameter
+		if o.FilesSoftLimit != nil {
+			qrFilesSoftLimit = *o.FilesSoftLimit
 		}
 		qFilesSoftLimit := swag.FormatInt64(qrFilesSoftLimit)
 		if qFilesSoftLimit != "" {
@@ -560,13 +560,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.GroupIDQueryParameter != nil {
+	if o.GroupID != nil {
 
 		// query param group.id
 		var qrGroupID string
 
-		if o.GroupIDQueryParameter != nil {
-			qrGroupID = *o.GroupIDQueryParameter
+		if o.GroupID != nil {
+			qrGroupID = *o.GroupID
 		}
 		qGroupID := qrGroupID
 		if qGroupID != "" {
@@ -577,13 +577,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.GroupNameQueryParameter != nil {
+	if o.GroupName != nil {
 
 		// query param group.name
 		var qrGroupName string
 
-		if o.GroupNameQueryParameter != nil {
-			qrGroupName = *o.GroupNameQueryParameter
+		if o.GroupName != nil {
+			qrGroupName = *o.GroupName
 		}
 		qGroupName := qrGroupName
 		if qGroupName != "" {
@@ -594,13 +594,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -611,7 +611,7 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -622,13 +622,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.QtreeIDQueryParameter != nil {
+	if o.QtreeID != nil {
 
 		// query param qtree.id
 		var qrQtreeID int64
 
-		if o.QtreeIDQueryParameter != nil {
-			qrQtreeID = *o.QtreeIDQueryParameter
+		if o.QtreeID != nil {
+			qrQtreeID = *o.QtreeID
 		}
 		qQtreeID := swag.FormatInt64(qrQtreeID)
 		if qQtreeID != "" {
@@ -639,13 +639,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.QtreeNameQueryParameter != nil {
+	if o.QtreeName != nil {
 
 		// query param qtree.name
 		var qrQtreeName string
 
-		if o.QtreeNameQueryParameter != nil {
-			qrQtreeName = *o.QtreeNameQueryParameter
+		if o.QtreeName != nil {
+			qrQtreeName = *o.QtreeName
 		}
 		qQtreeName := qrQtreeName
 		if qQtreeName != "" {
@@ -656,13 +656,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -673,13 +673,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -690,13 +690,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceHardLimitQueryParameter != nil {
+	if o.SpaceHardLimit != nil {
 
 		// query param space.hard_limit
 		var qrSpaceHardLimit int64
 
-		if o.SpaceHardLimitQueryParameter != nil {
-			qrSpaceHardLimit = *o.SpaceHardLimitQueryParameter
+		if o.SpaceHardLimit != nil {
+			qrSpaceHardLimit = *o.SpaceHardLimit
 		}
 		qSpaceHardLimit := swag.FormatInt64(qrSpaceHardLimit)
 		if qSpaceHardLimit != "" {
@@ -707,13 +707,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SpaceSoftLimitQueryParameter != nil {
+	if o.SpaceSoftLimit != nil {
 
 		// query param space.soft_limit
 		var qrSpaceSoftLimit int64
 
-		if o.SpaceSoftLimitQueryParameter != nil {
-			qrSpaceSoftLimit = *o.SpaceSoftLimitQueryParameter
+		if o.SpaceSoftLimit != nil {
+			qrSpaceSoftLimit = *o.SpaceSoftLimit
 		}
 		qSpaceSoftLimit := swag.FormatInt64(qrSpaceSoftLimit)
 		if qSpaceSoftLimit != "" {
@@ -724,13 +724,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -741,13 +741,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -758,13 +758,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -775,13 +775,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UserMappingQueryParameter != nil {
+	if o.UserMapping != nil {
 
 		// query param user_mapping
 		var qrUserMapping bool
 
-		if o.UserMappingQueryParameter != nil {
-			qrUserMapping = *o.UserMappingQueryParameter
+		if o.UserMapping != nil {
+			qrUserMapping = *o.UserMapping
 		}
 		qUserMapping := swag.FormatBool(qrUserMapping)
 		if qUserMapping != "" {
@@ -792,13 +792,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersIDQueryParameter != nil {
+	if o.UsersID != nil {
 
 		// query param users.id
 		var qrUsersID string
 
-		if o.UsersIDQueryParameter != nil {
-			qrUsersID = *o.UsersIDQueryParameter
+		if o.UsersID != nil {
+			qrUsersID = *o.UsersID
 		}
 		qUsersID := qrUsersID
 		if qUsersID != "" {
@@ -809,13 +809,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersNameQueryParameter != nil {
+	if o.UsersName != nil {
 
 		// query param users.name
 		var qrUsersName string
 
-		if o.UsersNameQueryParameter != nil {
-			qrUsersName = *o.UsersNameQueryParameter
+		if o.UsersName != nil {
+			qrUsersName = *o.UsersName
 		}
 		qUsersName := qrUsersName
 		if qUsersName != "" {
@@ -826,13 +826,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -843,13 +843,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -860,13 +860,13 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -885,7 +885,7 @@ func (o *QuotaRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamQuotaRuleCollectionGet binds the parameter fields
 func (o *QuotaRuleCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -902,7 +902,7 @@ func (o *QuotaRuleCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamQuotaRuleCollectionGet binds the parameter order_by
 func (o *QuotaRuleCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

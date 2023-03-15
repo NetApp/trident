@@ -52,6 +52,10 @@ VolumeEfficiencyPolicyCreateCreated describes a response with status code 201, w
 Created
 */
 type VolumeEfficiencyPolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this volume efficiency policy create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *VolumeEfficiencyPolicyCreateCreated) String() string {
 }
 
 func (o *VolumeEfficiencyPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

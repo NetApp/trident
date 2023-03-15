@@ -66,21 +66,21 @@ type IscsiCredentialsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Initiator.
 
 	   The iSCSI initiator of the credentials object.
 
 	*/
-	InitiatorPathParameter string
+	Initiator string
 
 	/* SvmUUID.
 
 	   The unique identifier of an SVM.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *IscsiCredentialsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) WithFieldsQueryParameter(fields []string) *IscsiCredentialsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) WithFields(fields []string) *IscsiCredentialsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInitiatorPathParameter adds the initiator to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) WithInitiatorPathParameter(initiator string) *IscsiCredentialsGetParams {
-	o.SetInitiatorPathParameter(initiator)
+// WithInitiator adds the initiator to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) WithInitiator(initiator string) *IscsiCredentialsGetParams {
+	o.SetInitiator(initiator)
 	return o
 }
 
-// SetInitiatorPathParameter adds the initiator to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) SetInitiatorPathParameter(initiator string) {
-	o.InitiatorPathParameter = initiator
+// SetInitiator adds the initiator to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) SetInitiator(initiator string) {
+	o.Initiator = initiator
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiCredentialsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) WithSvmUUID(svmUUID string) *IscsiCredentialsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi credentials get params
-func (o *IscsiCredentialsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi credentials get params
+func (o *IscsiCredentialsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *IscsiCredentialsGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *IscsiCredentialsGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param initiator
-	if err := r.SetPathParam("initiator", o.InitiatorPathParameter); err != nil {
+	if err := r.SetPathParam("initiator", o.Initiator); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *IscsiCredentialsGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamIscsiCredentialsGet binds the parameter fields
 func (o *IscsiCredentialsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

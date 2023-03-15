@@ -19,15 +19,15 @@ import (
 type BroadcastDomainSvmReference struct {
 
 	// links
-	Links *BroadcastDomainSvmReferenceLinks `json:"_links,omitempty"`
+	Links *BroadcastDomainSvmReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Name of the broadcast domain, scoped to its IPspace
 	// Example: bd1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Broadcast domain UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this broadcast domain svm reference
@@ -107,17 +107,17 @@ func (m *BroadcastDomainSvmReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainSvmReferenceLinks broadcast domain svm reference links
+// BroadcastDomainSvmReferenceInlineLinks broadcast domain svm reference inline links
 //
-// swagger:model BroadcastDomainSvmReferenceLinks
-type BroadcastDomainSvmReferenceLinks struct {
+// swagger:model broadcast_domain_svm_reference_inline__links
+type BroadcastDomainSvmReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this broadcast domain svm reference links
-func (m *BroadcastDomainSvmReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain svm reference inline links
+func (m *BroadcastDomainSvmReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *BroadcastDomainSvmReferenceLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *BroadcastDomainSvmReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BroadcastDomainSvmReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *BroadcastDomainSvmReferenceLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this broadcast domain svm reference links based on the context it is used
-func (m *BroadcastDomainSvmReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain svm reference inline links based on the context it is used
+func (m *BroadcastDomainSvmReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *BroadcastDomainSvmReferenceLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *BroadcastDomainSvmReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainSvmReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *BroadcastDomainSvmReferenceLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainSvmReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainSvmReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *BroadcastDomainSvmReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainSvmReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainSvmReferenceLinks
+func (m *BroadcastDomainSvmReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainSvmReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

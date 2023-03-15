@@ -66,43 +66,43 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Filter by authentication_enabled
 	*/
-	AuthenticationEnabledQueryParameter *bool
+	AuthenticationEnabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,37 +118,37 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* Server.
 
 	   Filter by server
 	*/
-	ServerQueryParameter *string
+	Server *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *HTTPProxyCollectionGetParams) WithDefaults() *HTTPProxyCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *HTTPProxyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := HTTPProxyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *HTTPProxyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationEnabledQueryParameter adds the authenticationEnabled to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithAuthenticationEnabledQueryParameter(authenticationEnabled *bool) *HTTPProxyCollectionGetParams {
-	o.SetAuthenticationEnabledQueryParameter(authenticationEnabled)
+// WithAuthenticationEnabled adds the authenticationEnabled to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithAuthenticationEnabled(authenticationEnabled *bool) *HTTPProxyCollectionGetParams {
+	o.SetAuthenticationEnabled(authenticationEnabled)
 	return o
 }
 
-// SetAuthenticationEnabledQueryParameter adds the authenticationEnabled to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetAuthenticationEnabledQueryParameter(authenticationEnabled *bool) {
-	o.AuthenticationEnabledQueryParameter = authenticationEnabled
+// SetAuthenticationEnabled adds the authenticationEnabled to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetAuthenticationEnabled(authenticationEnabled *bool) {
+	o.AuthenticationEnabled = authenticationEnabled
 }
 
-// WithFieldsQueryParameter adds the fields to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithFieldsQueryParameter(fields []string) *HTTPProxyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithFields(fields []string) *HTTPProxyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *HTTPProxyCollectionGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithIpspaceName(ipspaceName *string) *HTTPProxyCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *HTTPProxyCollectionGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *HTTPProxyCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *HTTPProxyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithMaxRecords(maxRecords *int64) *HTTPProxyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *HTTPProxyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithOrderBy(orderBy []string) *HTTPProxyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPortQueryParameter adds the port to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithPortQueryParameter(port *int64) *HTTPProxyCollectionGetParams {
-	o.SetPortQueryParameter(port)
+// WithPort adds the port to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithPort(port *int64) *HTTPProxyCollectionGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetPort adds the port to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *HTTPProxyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithReturnRecords(returnRecords *bool) *HTTPProxyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *HTTPProxyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *HTTPProxyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithScopeQueryParameter(scope *string) *HTTPProxyCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithScope(scope *string) *HTTPProxyCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithServerQueryParameter adds the server to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithServerQueryParameter(server *string) *HTTPProxyCollectionGetParams {
-	o.SetServerQueryParameter(server)
+// WithServer adds the server to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithServer(server *string) *HTTPProxyCollectionGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerQueryParameter adds the server to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetServerQueryParameter(server *string) {
-	o.ServerQueryParameter = server
+// SetServer adds the server to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetServer(server *string) {
+	o.Server = server
 }
 
-// WithSVMNameQueryParameter adds the svmName to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *HTTPProxyCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithSvmName(svmName *string) *HTTPProxyCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *HTTPProxyCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithSvmUUID(svmUUID *string) *HTTPProxyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithUUIDQueryParameter(uuid *string) *HTTPProxyCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithUUID(uuid *string) *HTTPProxyCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +379,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AuthenticationEnabledQueryParameter != nil {
+	if o.AuthenticationEnabled != nil {
 
 		// query param authentication_enabled
 		var qrAuthenticationEnabled bool
 
-		if o.AuthenticationEnabledQueryParameter != nil {
-			qrAuthenticationEnabled = *o.AuthenticationEnabledQueryParameter
+		if o.AuthenticationEnabled != nil {
+			qrAuthenticationEnabled = *o.AuthenticationEnabled
 		}
 		qAuthenticationEnabled := swag.FormatBool(qrAuthenticationEnabled)
 		if qAuthenticationEnabled != "" {
@@ -396,7 +396,7 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -407,13 +407,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -424,13 +424,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -441,13 +441,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -458,7 +458,7 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +469,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -486,13 +486,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +503,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +520,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -537,13 +537,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ServerQueryParameter != nil {
+	if o.Server != nil {
 
 		// query param server
 		var qrServer string
 
-		if o.ServerQueryParameter != nil {
-			qrServer = *o.ServerQueryParameter
+		if o.Server != nil {
+			qrServer = *o.Server
 		}
 		qServer := qrServer
 		if qServer != "" {
@@ -554,13 +554,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -571,13 +571,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -588,13 +588,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -613,7 +613,7 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamHTTPProxyCollectionGet binds the parameter fields
 func (o *HTTPProxyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *HTTPProxyCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamHTTPProxyCollectionGet binds the parameter order_by
 func (o *HTTPProxyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

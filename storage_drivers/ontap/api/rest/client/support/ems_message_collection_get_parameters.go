@@ -66,43 +66,43 @@ type EmsMessageCollectionGetParams struct {
 
 	   Filter by corrective_action
 	*/
-	CorrectiveActionQueryParameter *string
+	CorrectiveAction *string
 
 	/* Deprecated.
 
 	   Filter by deprecated
 	*/
-	DeprecatedQueryParameter *bool
+	Deprecated *bool
 
 	/* Description.
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type EmsMessageCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,25 +118,19 @@ type EmsMessageCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Severity.
 
 	   Filter by severity
 	*/
-	SeverityQueryParameter *string
+	Severity *string
 
 	/* SnmpTrapType.
 
 	   Filter by snmp_trap_type
 	*/
-	SnmpTrapTypeQueryParameter *string
-
-	/* Stateful.
-
-	   Filter by stateful
-	*/
-	StatefulQueryParameter *bool
+	SnmpTrapType *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +150,14 @@ func (o *EmsMessageCollectionGetParams) WithDefaults() *EmsMessageCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *EmsMessageCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := EmsMessageCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +199,125 @@ func (o *EmsMessageCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCorrectiveActionQueryParameter adds the correctiveAction to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithCorrectiveActionQueryParameter(correctiveAction *string) *EmsMessageCollectionGetParams {
-	o.SetCorrectiveActionQueryParameter(correctiveAction)
+// WithCorrectiveAction adds the correctiveAction to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithCorrectiveAction(correctiveAction *string) *EmsMessageCollectionGetParams {
+	o.SetCorrectiveAction(correctiveAction)
 	return o
 }
 
-// SetCorrectiveActionQueryParameter adds the correctiveAction to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetCorrectiveActionQueryParameter(correctiveAction *string) {
-	o.CorrectiveActionQueryParameter = correctiveAction
+// SetCorrectiveAction adds the correctiveAction to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetCorrectiveAction(correctiveAction *string) {
+	o.CorrectiveAction = correctiveAction
 }
 
-// WithDeprecatedQueryParameter adds the deprecated to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithDeprecatedQueryParameter(deprecated *bool) *EmsMessageCollectionGetParams {
-	o.SetDeprecatedQueryParameter(deprecated)
+// WithDeprecated adds the deprecated to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithDeprecated(deprecated *bool) *EmsMessageCollectionGetParams {
+	o.SetDeprecated(deprecated)
 	return o
 }
 
-// SetDeprecatedQueryParameter adds the deprecated to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetDeprecatedQueryParameter(deprecated *bool) {
-	o.DeprecatedQueryParameter = deprecated
+// SetDeprecated adds the deprecated to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetDeprecated(deprecated *bool) {
+	o.Deprecated = deprecated
 }
 
-// WithDescriptionQueryParameter adds the description to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithDescriptionQueryParameter(description *string) *EmsMessageCollectionGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithDescription(description *string) *EmsMessageCollectionGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithFieldsQueryParameter adds the fields to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithFieldsQueryParameter(fields []string) *EmsMessageCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithFields(fields []string) *EmsMessageCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *EmsMessageCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithMaxRecords(maxRecords *int64) *EmsMessageCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithNameQueryParameter(name *string) *EmsMessageCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithName(name *string) *EmsMessageCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *EmsMessageCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithOrderBy(orderBy []string) *EmsMessageCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *EmsMessageCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithReturnRecords(returnRecords *bool) *EmsMessageCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *EmsMessageCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *EmsMessageCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSeverityQueryParameter adds the severity to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithSeverityQueryParameter(severity *string) *EmsMessageCollectionGetParams {
-	o.SetSeverityQueryParameter(severity)
+// WithSeverity adds the severity to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithSeverity(severity *string) *EmsMessageCollectionGetParams {
+	o.SetSeverity(severity)
 	return o
 }
 
-// SetSeverityQueryParameter adds the severity to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetSeverityQueryParameter(severity *string) {
-	o.SeverityQueryParameter = severity
+// SetSeverity adds the severity to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetSeverity(severity *string) {
+	o.Severity = severity
 }
 
-// WithSnmpTrapTypeQueryParameter adds the snmpTrapType to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithSnmpTrapTypeQueryParameter(snmpTrapType *string) *EmsMessageCollectionGetParams {
-	o.SetSnmpTrapTypeQueryParameter(snmpTrapType)
+// WithSnmpTrapType adds the snmpTrapType to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithSnmpTrapType(snmpTrapType *string) *EmsMessageCollectionGetParams {
+	o.SetSnmpTrapType(snmpTrapType)
 	return o
 }
 
-// SetSnmpTrapTypeQueryParameter adds the snmpTrapType to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetSnmpTrapTypeQueryParameter(snmpTrapType *string) {
-	o.SnmpTrapTypeQueryParameter = snmpTrapType
-}
-
-// WithStatefulQueryParameter adds the stateful to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) WithStatefulQueryParameter(stateful *bool) *EmsMessageCollectionGetParams {
-	o.SetStatefulQueryParameter(stateful)
-	return o
-}
-
-// SetStatefulQueryParameter adds the stateful to the ems message collection get params
-func (o *EmsMessageCollectionGetParams) SetStatefulQueryParameter(stateful *bool) {
-	o.StatefulQueryParameter = stateful
+// SetSnmpTrapType adds the snmpTrapType to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetSnmpTrapType(snmpTrapType *string) {
+	o.SnmpTrapType = snmpTrapType
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +328,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.CorrectiveActionQueryParameter != nil {
+	if o.CorrectiveAction != nil {
 
 		// query param corrective_action
 		var qrCorrectiveAction string
 
-		if o.CorrectiveActionQueryParameter != nil {
-			qrCorrectiveAction = *o.CorrectiveActionQueryParameter
+		if o.CorrectiveAction != nil {
+			qrCorrectiveAction = *o.CorrectiveAction
 		}
 		qCorrectiveAction := qrCorrectiveAction
 		if qCorrectiveAction != "" {
@@ -362,13 +345,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeprecatedQueryParameter != nil {
+	if o.Deprecated != nil {
 
 		// query param deprecated
 		var qrDeprecated bool
 
-		if o.DeprecatedQueryParameter != nil {
-			qrDeprecated = *o.DeprecatedQueryParameter
+		if o.Deprecated != nil {
+			qrDeprecated = *o.Deprecated
 		}
 		qDeprecated := swag.FormatBool(qrDeprecated)
 		if qDeprecated != "" {
@@ -379,13 +362,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -396,7 +379,7 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -407,13 +390,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -424,13 +407,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -441,7 +424,7 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -452,13 +435,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +452,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +469,13 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SeverityQueryParameter != nil {
+	if o.Severity != nil {
 
 		// query param severity
 		var qrSeverity string
 
-		if o.SeverityQueryParameter != nil {
-			qrSeverity = *o.SeverityQueryParameter
+		if o.Severity != nil {
+			qrSeverity = *o.Severity
 		}
 		qSeverity := qrSeverity
 		if qSeverity != "" {
@@ -503,35 +486,18 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SnmpTrapTypeQueryParameter != nil {
+	if o.SnmpTrapType != nil {
 
 		// query param snmp_trap_type
 		var qrSnmpTrapType string
 
-		if o.SnmpTrapTypeQueryParameter != nil {
-			qrSnmpTrapType = *o.SnmpTrapTypeQueryParameter
+		if o.SnmpTrapType != nil {
+			qrSnmpTrapType = *o.SnmpTrapType
 		}
 		qSnmpTrapType := qrSnmpTrapType
 		if qSnmpTrapType != "" {
 
 			if err := r.SetQueryParam("snmp_trap_type", qSnmpTrapType); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.StatefulQueryParameter != nil {
-
-		// query param stateful
-		var qrStateful bool
-
-		if o.StatefulQueryParameter != nil {
-			qrStateful = *o.StatefulQueryParameter
-		}
-		qStateful := swag.FormatBool(qrStateful)
-		if qStateful != "" {
-
-			if err := r.SetQueryParam("stateful", qStateful); err != nil {
 				return err
 			}
 		}
@@ -545,7 +511,7 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamEmsMessageCollectionGet binds the parameter fields
 func (o *EmsMessageCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +528,7 @@ func (o *EmsMessageCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamEmsMessageCollectionGet binds the parameter order_by
 func (o *EmsMessageCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

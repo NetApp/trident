@@ -20,10 +20,10 @@ import (
 type SnaplockComplianceClock struct {
 
 	// links
-	Links *SnaplockComplianceClockLinks `json:"_links,omitempty"`
+	Links *SnaplockComplianceClockInlineLinks `json:"_links,omitempty"`
 
 	// node
-	Node *SnaplockComplianceClockNode `json:"node,omitempty"`
+	Node *SnaplockComplianceClockInlineNode `json:"node,omitempty"`
 
 	// Compliance clock time
 	// Example: 2018-06-04T19:00:00Z
@@ -177,17 +177,17 @@ func (m *SnaplockComplianceClock) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockComplianceClockLinks snaplock compliance clock links
+// SnaplockComplianceClockInlineLinks snaplock compliance clock inline links
 //
-// swagger:model SnaplockComplianceClockLinks
-type SnaplockComplianceClockLinks struct {
+// swagger:model snaplock_compliance_clock_inline__links
+type SnaplockComplianceClockInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock compliance clock links
-func (m *SnaplockComplianceClockLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock compliance clock inline links
+func (m *SnaplockComplianceClockInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -200,7 +200,7 @@ func (m *SnaplockComplianceClockLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockComplianceClockLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -217,8 +217,8 @@ func (m *SnaplockComplianceClockLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock compliance clock links based on the context it is used
-func (m *SnaplockComplianceClockLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock compliance clock inline links based on the context it is used
+func (m *SnaplockComplianceClockInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -231,7 +231,7 @@ func (m *SnaplockComplianceClockLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SnaplockComplianceClockLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -246,7 +246,7 @@ func (m *SnaplockComplianceClockLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockComplianceClockLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockComplianceClockInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -254,8 +254,8 @@ func (m *SnaplockComplianceClockLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockComplianceClockLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockComplianceClockLinks
+func (m *SnaplockComplianceClockInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockComplianceClockInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -263,25 +263,25 @@ func (m *SnaplockComplianceClockLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockComplianceClockNode snaplock compliance clock node
+// SnaplockComplianceClockInlineNode snaplock compliance clock inline node
 //
-// swagger:model SnaplockComplianceClockNode
-type SnaplockComplianceClockNode struct {
+// swagger:model snaplock_compliance_clock_inline_node
+type SnaplockComplianceClockInlineNode struct {
 
 	// links
-	Links *SnaplockComplianceClockNodeLinks `json:"_links,omitempty"`
+	Links *SnaplockComplianceClockInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock compliance clock node
-func (m *SnaplockComplianceClockNode) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock compliance clock inline node
+func (m *SnaplockComplianceClockInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -294,7 +294,7 @@ func (m *SnaplockComplianceClockNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockComplianceClockNode) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -311,8 +311,8 @@ func (m *SnaplockComplianceClockNode) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock compliance clock node based on the context it is used
-func (m *SnaplockComplianceClockNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock compliance clock inline node based on the context it is used
+func (m *SnaplockComplianceClockInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -325,7 +325,7 @@ func (m *SnaplockComplianceClockNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *SnaplockComplianceClockNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -340,7 +340,7 @@ func (m *SnaplockComplianceClockNode) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockComplianceClockNode) MarshalBinary() ([]byte, error) {
+func (m *SnaplockComplianceClockInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -348,8 +348,8 @@ func (m *SnaplockComplianceClockNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockComplianceClockNode) UnmarshalBinary(b []byte) error {
-	var res SnaplockComplianceClockNode
+func (m *SnaplockComplianceClockInlineNode) UnmarshalBinary(b []byte) error {
+	var res SnaplockComplianceClockInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -357,17 +357,17 @@ func (m *SnaplockComplianceClockNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockComplianceClockNodeLinks snaplock compliance clock node links
+// SnaplockComplianceClockInlineNodeInlineLinks snaplock compliance clock inline node inline links
 //
-// swagger:model SnaplockComplianceClockNodeLinks
-type SnaplockComplianceClockNodeLinks struct {
+// swagger:model snaplock_compliance_clock_inline_node_inline__links
+type SnaplockComplianceClockInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock compliance clock node links
-func (m *SnaplockComplianceClockNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock compliance clock inline node inline links
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -380,7 +380,7 @@ func (m *SnaplockComplianceClockNodeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SnaplockComplianceClockNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -397,8 +397,8 @@ func (m *SnaplockComplianceClockNodeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this snaplock compliance clock node links based on the context it is used
-func (m *SnaplockComplianceClockNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock compliance clock inline node inline links based on the context it is used
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -411,7 +411,7 @@ func (m *SnaplockComplianceClockNodeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SnaplockComplianceClockNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -426,7 +426,7 @@ func (m *SnaplockComplianceClockNodeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockComplianceClockNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -434,8 +434,8 @@ func (m *SnaplockComplianceClockNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockComplianceClockNodeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockComplianceClockNodeLinks
+func (m *SnaplockComplianceClockInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockComplianceClockInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

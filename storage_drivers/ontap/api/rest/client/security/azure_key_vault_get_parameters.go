@@ -66,13 +66,13 @@ type AzureKeyVaultGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   AKV UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *AzureKeyVaultGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the azure key vault get params
-func (o *AzureKeyVaultGetParams) WithFieldsQueryParameter(fields []string) *AzureKeyVaultGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the azure key vault get params
+func (o *AzureKeyVaultGetParams) WithFields(fields []string) *AzureKeyVaultGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the azure key vault get params
-func (o *AzureKeyVaultGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the azure key vault get params
+func (o *AzureKeyVaultGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the azure key vault get params
-func (o *AzureKeyVaultGetParams) WithUUIDPathParameter(uuid string) *AzureKeyVaultGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the azure key vault get params
+func (o *AzureKeyVaultGetParams) WithUUID(uuid string) *AzureKeyVaultGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the azure key vault get params
-func (o *AzureKeyVaultGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the azure key vault get params
+func (o *AzureKeyVaultGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *AzureKeyVaultGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *AzureKeyVaultGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *AzureKeyVaultGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamAzureKeyVaultGet binds the parameter fields
 func (o *AzureKeyVaultGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

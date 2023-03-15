@@ -23,7 +23,7 @@ type ShadowcopySetReference struct {
 
 	// uuid
 	// Example: 5f4e19f3-5e2d-11ec-8766-005056a7c134
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this shadowcopy set reference

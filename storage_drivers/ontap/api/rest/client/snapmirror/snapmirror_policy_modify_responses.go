@@ -124,6 +124,7 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
 | 13303850    | Invalid input parameter |
 | 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
 | 13304050    | Retention cannot be empty for a SnapMirror policy with 'create_snapshot_on_source' set to false. |
+| 13304092    | Input value of the retention period property is invalid. For relationships with FlexVol volume or FlexGroup volume destinations, the duration must be in ISO 6801 format or can be infinite. For relationships with object store destinations, only duration values with Y, M or D and supported and must be in the specified range. |
 */
 type SnapmirrorPolicyModifyDefault struct {
 	_statusCode int

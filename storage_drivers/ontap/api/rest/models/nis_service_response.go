@@ -20,13 +20,14 @@ import (
 type NisServiceResponse struct {
 
 	// links
-	Links *NisServiceResponseLinks `json:"_links,omitempty"`
+	Links *NisServiceResponseInlineLinks `json:"_links,omitempty"`
+
+	// nis service response inline records
+	NisServiceResponseInlineRecords []*NisService `json:"records,omitempty"`
 
 	// Number of NIS domain records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NisService `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this nis service response
@@ -37,7 +38,7 @@ func (m *NisServiceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNisServiceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NisServiceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NisServiceResponse) validateNisServiceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NisServiceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NisServiceResponseInlineRecords); i++ {
+		if swag.IsZero(m.NisServiceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NisServiceResponseInlineRecords[i] != nil {
+			if err := m.NisServiceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NisServiceResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNisServiceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NisServiceResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NisServiceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceResponse) contextValidateNisServiceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NisServiceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NisServiceResponseInlineRecords[i] != nil {
+			if err := m.NisServiceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NisServiceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceResponseLinks nis service response links
+// NisServiceResponseInlineLinks nis service response inline links
 //
-// swagger:model NisServiceResponseLinks
-type NisServiceResponseLinks struct {
+// swagger:model nis_service_response_inline__links
+type NisServiceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NisServiceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nis service response links
-func (m *NisServiceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nis service response inline links
+func (m *NisServiceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NisServiceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NisServiceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NisServiceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NisServiceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NisServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nis service response links based on the context it is used
-func (m *NisServiceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nis service response inline links based on the context it is used
+func (m *NisServiceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NisServiceResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NisServiceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NisServiceResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *NisServiceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NisServiceResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *NisServiceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NisServiceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NisServiceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NisServiceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NisServiceResponseLinks
+func (m *NisServiceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NisServiceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

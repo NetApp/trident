@@ -21,7 +21,7 @@ import (
 type ShareACL struct {
 
 	// links
-	Links *ShareACLLinks `json:"_links,omitempty"`
+	Links *ShareACLInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the access rights that a user or group has on the defined CIFS Share.
 	// The following values are allowed:
@@ -31,7 +31,7 @@ type ShareACL struct {
 	// * full_control - User has full_control access
 	//
 	// Enum: [no_access read change full_control]
-	Permission string `json:"permission,omitempty"`
+	Permission *string `json:"permission,omitempty"`
 
 	// Specifies the type of the user or group to add to the access control
 	// list of a CIFS share. The following values are allowed:
@@ -40,11 +40,11 @@ type ShareACL struct {
 	// * unix_group - UNIX group
 	//
 	// Enum: [windows unix_user unix_group]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
-	UserOrGroup string `json:"user_or_group,omitempty"`
+	UserOrGroup *string `json:"user_or_group,omitempty"`
 }
 
 // Validate validates this share acl
@@ -155,7 +155,7 @@ func (m *ShareACL) validatePermission(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePermissionEnum("permission", "body", m.Permission); err != nil {
+	if err := m.validatePermissionEnum("permission", "body", *m.Permission); err != nil {
 		return err
 	}
 
@@ -221,7 +221,7 @@ func (m *ShareACL) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -274,17 +274,17 @@ func (m *ShareACL) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShareACLLinks share ACL links
+// ShareACLInlineLinks share acl inline links
 //
-// swagger:model ShareACLLinks
-type ShareACLLinks struct {
+// swagger:model share_acl_inline__links
+type ShareACLInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this share ACL links
-func (m *ShareACLLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this share acl inline links
+func (m *ShareACLInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -297,7 +297,7 @@ func (m *ShareACLLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShareACLLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShareACLInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -314,8 +314,8 @@ func (m *ShareACLLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this share ACL links based on the context it is used
-func (m *ShareACLLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this share acl inline links based on the context it is used
+func (m *ShareACLInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -328,7 +328,7 @@ func (m *ShareACLLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *ShareACLLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShareACLInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -343,7 +343,7 @@ func (m *ShareACLLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *ShareACLLinks) MarshalBinary() ([]byte, error) {
+func (m *ShareACLInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -351,8 +351,8 @@ func (m *ShareACLLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShareACLLinks) UnmarshalBinary(b []byte) error {
-	var res ShareACLLinks
+func (m *ShareACLInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShareACLInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

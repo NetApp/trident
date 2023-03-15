@@ -66,79 +66,79 @@ type NetworkIPRoutesGetParams struct {
 
 	   Filter by destination.address
 	*/
-	DestinationAddressQueryParameter *string
+	DestinationAddress *string
 
 	/* DestinationFamily.
 
 	   Filter by destination.family
 	*/
-	DestinationFamilyQueryParameter *string
+	DestinationFamily *string
 
 	/* DestinationNetmask.
 
 	   Filter by destination.netmask
 	*/
-	DestinationNetmaskQueryParameter *string
+	DestinationNetmask *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Gateway.
 
 	   Filter by gateway
 	*/
-	GatewayQueryParameter *string
+	Gateway *string
 
 	/* InterfacesIPAddress.
 
 	   Filter by interfaces.ip.address
 	*/
-	InterfacesIPAddressQueryParameter *string
+	InterfacesIPAddress *string
 
 	/* InterfacesName.
 
 	   Filter by interfaces.name
 	*/
-	InterfacesNameQueryParameter *string
+	InterfacesName *string
 
 	/* InterfacesUUID.
 
 	   Filter by interfaces.uuid
 	*/
-	InterfacesUUIDQueryParameter *string
+	InterfacesUUID *string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Metric.
 
 	   Filter by metric
 	*/
-	MetricQueryParameter *int64
+	Metric *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type NetworkIPRoutesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,31 +154,31 @@ type NetworkIPRoutesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *NetworkIPRoutesGetParams) WithDefaults() *NetworkIPRoutesGetParams {
 // All values with no default are reset to their zero value.
 func (o *NetworkIPRoutesGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPRoutesGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *NetworkIPRoutesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDestinationAddressQueryParameter adds the destinationAddress to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithDestinationAddressQueryParameter(destinationAddress *string) *NetworkIPRoutesGetParams {
-	o.SetDestinationAddressQueryParameter(destinationAddress)
+// WithDestinationAddress adds the destinationAddress to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithDestinationAddress(destinationAddress *string) *NetworkIPRoutesGetParams {
+	o.SetDestinationAddress(destinationAddress)
 	return o
 }
 
-// SetDestinationAddressQueryParameter adds the destinationAddress to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetDestinationAddressQueryParameter(destinationAddress *string) {
-	o.DestinationAddressQueryParameter = destinationAddress
+// SetDestinationAddress adds the destinationAddress to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetDestinationAddress(destinationAddress *string) {
+	o.DestinationAddress = destinationAddress
 }
 
-// WithDestinationFamilyQueryParameter adds the destinationFamily to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithDestinationFamilyQueryParameter(destinationFamily *string) *NetworkIPRoutesGetParams {
-	o.SetDestinationFamilyQueryParameter(destinationFamily)
+// WithDestinationFamily adds the destinationFamily to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithDestinationFamily(destinationFamily *string) *NetworkIPRoutesGetParams {
+	o.SetDestinationFamily(destinationFamily)
 	return o
 }
 
-// SetDestinationFamilyQueryParameter adds the destinationFamily to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetDestinationFamilyQueryParameter(destinationFamily *string) {
-	o.DestinationFamilyQueryParameter = destinationFamily
+// SetDestinationFamily adds the destinationFamily to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetDestinationFamily(destinationFamily *string) {
+	o.DestinationFamily = destinationFamily
 }
 
-// WithDestinationNetmaskQueryParameter adds the destinationNetmask to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithDestinationNetmaskQueryParameter(destinationNetmask *string) *NetworkIPRoutesGetParams {
-	o.SetDestinationNetmaskQueryParameter(destinationNetmask)
+// WithDestinationNetmask adds the destinationNetmask to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithDestinationNetmask(destinationNetmask *string) *NetworkIPRoutesGetParams {
+	o.SetDestinationNetmask(destinationNetmask)
 	return o
 }
 
-// SetDestinationNetmaskQueryParameter adds the destinationNetmask to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetDestinationNetmaskQueryParameter(destinationNetmask *string) {
-	o.DestinationNetmaskQueryParameter = destinationNetmask
+// SetDestinationNetmask adds the destinationNetmask to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetDestinationNetmask(destinationNetmask *string) {
+	o.DestinationNetmask = destinationNetmask
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPRoutesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithFields(fields []string) *NetworkIPRoutesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGatewayQueryParameter adds the gateway to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithGatewayQueryParameter(gateway *string) *NetworkIPRoutesGetParams {
-	o.SetGatewayQueryParameter(gateway)
+// WithGateway adds the gateway to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithGateway(gateway *string) *NetworkIPRoutesGetParams {
+	o.SetGateway(gateway)
 	return o
 }
 
-// SetGatewayQueryParameter adds the gateway to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetGatewayQueryParameter(gateway *string) {
-	o.GatewayQueryParameter = gateway
+// SetGateway adds the gateway to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetGateway(gateway *string) {
+	o.Gateway = gateway
 }
 
-// WithInterfacesIPAddressQueryParameter adds the interfacesIPAddress to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithInterfacesIPAddressQueryParameter(interfacesIPAddress *string) *NetworkIPRoutesGetParams {
-	o.SetInterfacesIPAddressQueryParameter(interfacesIPAddress)
+// WithInterfacesIPAddress adds the interfacesIPAddress to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithInterfacesIPAddress(interfacesIPAddress *string) *NetworkIPRoutesGetParams {
+	o.SetInterfacesIPAddress(interfacesIPAddress)
 	return o
 }
 
-// SetInterfacesIPAddressQueryParameter adds the interfacesIpAddress to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetInterfacesIPAddressQueryParameter(interfacesIPAddress *string) {
-	o.InterfacesIPAddressQueryParameter = interfacesIPAddress
+// SetInterfacesIPAddress adds the interfacesIpAddress to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetInterfacesIPAddress(interfacesIPAddress *string) {
+	o.InterfacesIPAddress = interfacesIPAddress
 }
 
-// WithInterfacesNameQueryParameter adds the interfacesName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithInterfacesNameQueryParameter(interfacesName *string) *NetworkIPRoutesGetParams {
-	o.SetInterfacesNameQueryParameter(interfacesName)
+// WithInterfacesName adds the interfacesName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithInterfacesName(interfacesName *string) *NetworkIPRoutesGetParams {
+	o.SetInterfacesName(interfacesName)
 	return o
 }
 
-// SetInterfacesNameQueryParameter adds the interfacesName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetInterfacesNameQueryParameter(interfacesName *string) {
-	o.InterfacesNameQueryParameter = interfacesName
+// SetInterfacesName adds the interfacesName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetInterfacesName(interfacesName *string) {
+	o.InterfacesName = interfacesName
 }
 
-// WithInterfacesUUIDQueryParameter adds the interfacesUUID to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithInterfacesUUIDQueryParameter(interfacesUUID *string) *NetworkIPRoutesGetParams {
-	o.SetInterfacesUUIDQueryParameter(interfacesUUID)
+// WithInterfacesUUID adds the interfacesUUID to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithInterfacesUUID(interfacesUUID *string) *NetworkIPRoutesGetParams {
+	o.SetInterfacesUUID(interfacesUUID)
 	return o
 }
 
-// SetInterfacesUUIDQueryParameter adds the interfacesUuid to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetInterfacesUUIDQueryParameter(interfacesUUID *string) {
-	o.InterfacesUUIDQueryParameter = interfacesUUID
+// SetInterfacesUUID adds the interfacesUuid to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetInterfacesUUID(interfacesUUID *string) {
+	o.InterfacesUUID = interfacesUUID
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *NetworkIPRoutesGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithIpspaceName(ipspaceName *string) *NetworkIPRoutesGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *NetworkIPRoutesGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithIpspaceUUID(ipspaceUUID *string) *NetworkIPRoutesGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPRoutesGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPRoutesGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricQueryParameter adds the metric to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithMetricQueryParameter(metric *int64) *NetworkIPRoutesGetParams {
-	o.SetMetricQueryParameter(metric)
+// WithMetric adds the metric to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithMetric(metric *int64) *NetworkIPRoutesGetParams {
+	o.SetMetric(metric)
 	return o
 }
 
-// SetMetricQueryParameter adds the metric to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetMetricQueryParameter(metric *int64) {
-	o.MetricQueryParameter = metric
+// SetMetric adds the metric to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetMetric(metric *int64) {
+	o.Metric = metric
 }
 
-// WithOrderByQueryParameter adds the orderBy to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPRoutesGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithOrderBy(orderBy []string) *NetworkIPRoutesGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPRoutesGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPRoutesGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPRoutesGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPRoutesGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithScopeQueryParameter(scope *string) *NetworkIPRoutesGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithScope(scope *string) *NetworkIPRoutesGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSVMNameQueryParameter adds the svmName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithSVMNameQueryParameter(svmName *string) *NetworkIPRoutesGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithSvmName(svmName *string) *NetworkIPRoutesGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NetworkIPRoutesGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithSvmUUID(svmUUID *string) *NetworkIPRoutesGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) WithUUIDQueryParameter(uuid *string) *NetworkIPRoutesGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithUUID(uuid *string) *NetworkIPRoutesGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the network ip routes get params
-func (o *NetworkIPRoutesGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.DestinationAddressQueryParameter != nil {
+	if o.DestinationAddress != nil {
 
 		// query param destination.address
 		var qrDestinationAddress string
 
-		if o.DestinationAddressQueryParameter != nil {
-			qrDestinationAddress = *o.DestinationAddressQueryParameter
+		if o.DestinationAddress != nil {
+			qrDestinationAddress = *o.DestinationAddress
 		}
 		qDestinationAddress := qrDestinationAddress
 		if qDestinationAddress != "" {
@@ -481,13 +481,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DestinationFamilyQueryParameter != nil {
+	if o.DestinationFamily != nil {
 
 		// query param destination.family
 		var qrDestinationFamily string
 
-		if o.DestinationFamilyQueryParameter != nil {
-			qrDestinationFamily = *o.DestinationFamilyQueryParameter
+		if o.DestinationFamily != nil {
+			qrDestinationFamily = *o.DestinationFamily
 		}
 		qDestinationFamily := qrDestinationFamily
 		if qDestinationFamily != "" {
@@ -498,13 +498,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DestinationNetmaskQueryParameter != nil {
+	if o.DestinationNetmask != nil {
 
 		// query param destination.netmask
 		var qrDestinationNetmask string
 
-		if o.DestinationNetmaskQueryParameter != nil {
-			qrDestinationNetmask = *o.DestinationNetmaskQueryParameter
+		if o.DestinationNetmask != nil {
+			qrDestinationNetmask = *o.DestinationNetmask
 		}
 		qDestinationNetmask := qrDestinationNetmask
 		if qDestinationNetmask != "" {
@@ -515,7 +515,7 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -526,13 +526,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.GatewayQueryParameter != nil {
+	if o.Gateway != nil {
 
 		// query param gateway
 		var qrGateway string
 
-		if o.GatewayQueryParameter != nil {
-			qrGateway = *o.GatewayQueryParameter
+		if o.Gateway != nil {
+			qrGateway = *o.Gateway
 		}
 		qGateway := qrGateway
 		if qGateway != "" {
@@ -543,13 +543,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.InterfacesIPAddressQueryParameter != nil {
+	if o.InterfacesIPAddress != nil {
 
 		// query param interfaces.ip.address
 		var qrInterfacesIPAddress string
 
-		if o.InterfacesIPAddressQueryParameter != nil {
-			qrInterfacesIPAddress = *o.InterfacesIPAddressQueryParameter
+		if o.InterfacesIPAddress != nil {
+			qrInterfacesIPAddress = *o.InterfacesIPAddress
 		}
 		qInterfacesIPAddress := qrInterfacesIPAddress
 		if qInterfacesIPAddress != "" {
@@ -560,13 +560,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.InterfacesNameQueryParameter != nil {
+	if o.InterfacesName != nil {
 
 		// query param interfaces.name
 		var qrInterfacesName string
 
-		if o.InterfacesNameQueryParameter != nil {
-			qrInterfacesName = *o.InterfacesNameQueryParameter
+		if o.InterfacesName != nil {
+			qrInterfacesName = *o.InterfacesName
 		}
 		qInterfacesName := qrInterfacesName
 		if qInterfacesName != "" {
@@ -577,13 +577,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.InterfacesUUIDQueryParameter != nil {
+	if o.InterfacesUUID != nil {
 
 		// query param interfaces.uuid
 		var qrInterfacesUUID string
 
-		if o.InterfacesUUIDQueryParameter != nil {
-			qrInterfacesUUID = *o.InterfacesUUIDQueryParameter
+		if o.InterfacesUUID != nil {
+			qrInterfacesUUID = *o.InterfacesUUID
 		}
 		qInterfacesUUID := qrInterfacesUUID
 		if qInterfacesUUID != "" {
@@ -594,13 +594,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -611,13 +611,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -628,13 +628,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -645,13 +645,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MetricQueryParameter != nil {
+	if o.Metric != nil {
 
 		// query param metric
 		var qrMetric int64
 
-		if o.MetricQueryParameter != nil {
-			qrMetric = *o.MetricQueryParameter
+		if o.Metric != nil {
+			qrMetric = *o.Metric
 		}
 		qMetric := swag.FormatInt64(qrMetric)
 		if qMetric != "" {
@@ -662,7 +662,7 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -673,13 +673,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -690,13 +690,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -707,13 +707,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -724,13 +724,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -741,13 +741,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -758,13 +758,13 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -783,7 +783,7 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamNetworkIPRoutesGet binds the parameter fields
 func (o *NetworkIPRoutesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *NetworkIPRoutesGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamNetworkIPRoutesGet binds the parameter order_by
 func (o *NetworkIPRoutesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

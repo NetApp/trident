@@ -19,15 +19,15 @@ import (
 type SecurityCertificateReference struct {
 
 	// links
-	Links *SecurityCertificateReferenceLinks `json:"_links,omitempty"`
+	Links *SecurityCertificateReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
 	// Example: cert1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this security certificate reference
@@ -107,17 +107,17 @@ func (m *SecurityCertificateReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityCertificateReferenceLinks security certificate reference links
+// SecurityCertificateReferenceInlineLinks security certificate reference inline links
 //
-// swagger:model SecurityCertificateReferenceLinks
-type SecurityCertificateReferenceLinks struct {
+// swagger:model security_certificate_reference_inline__links
+type SecurityCertificateReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security certificate reference links
-func (m *SecurityCertificateReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security certificate reference inline links
+func (m *SecurityCertificateReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *SecurityCertificateReferenceLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *SecurityCertificateReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityCertificateReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *SecurityCertificateReferenceLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this security certificate reference links based on the context it is used
-func (m *SecurityCertificateReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security certificate reference inline links based on the context it is used
+func (m *SecurityCertificateReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *SecurityCertificateReferenceLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *SecurityCertificateReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityCertificateReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *SecurityCertificateReferenceLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityCertificateReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityCertificateReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *SecurityCertificateReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityCertificateReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityCertificateReferenceLinks
+func (m *SecurityCertificateReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

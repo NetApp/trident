@@ -22,14 +22,14 @@ import (
 type ApplicationNvmeAccess struct {
 
 	// backing storage
-	BackingStorage *ApplicationNvmeAccessBackingStorage `json:"backing_storage,omitempty"`
+	BackingStorage *ApplicationNvmeAccessInlineBackingStorage `json:"backing_storage,omitempty"`
 
 	// Clone
 	// Read Only: true
 	IsClone *bool `json:"is_clone,omitempty"`
 
 	// subsystem map
-	SubsystemMap *ApplicationNvmeAccessSubsystemMap `json:"subsystem_map,omitempty"`
+	SubsystemMap *ApplicationNvmeAccessInlineSubsystemMap `json:"subsystem_map,omitempty"`
 }
 
 // Validate validates this application nvme access
@@ -161,23 +161,23 @@ func (m *ApplicationNvmeAccess) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNvmeAccessBackingStorage application nvme access backing storage
+// ApplicationNvmeAccessInlineBackingStorage application nvme access inline backing storage
 //
-// swagger:model ApplicationNvmeAccessBackingStorage
-type ApplicationNvmeAccessBackingStorage struct {
+// swagger:model application_nvme_access_inline_backing_storage
+type ApplicationNvmeAccessInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
 	// Enum: [namespace]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application nvme access backing storage
-func (m *ApplicationNvmeAccessBackingStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this application nvme access inline backing storage
+func (m *ApplicationNvmeAccessInlineBackingStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -190,7 +190,7 @@ func (m *ApplicationNvmeAccessBackingStorage) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var applicationNvmeAccessBackingStorageTypeTypePropEnum []interface{}
+var applicationNvmeAccessInlineBackingStorageTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -198,46 +198,46 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationNvmeAccessBackingStorageTypeTypePropEnum = append(applicationNvmeAccessBackingStorageTypeTypePropEnum, v)
+		applicationNvmeAccessInlineBackingStorageTypeTypePropEnum = append(applicationNvmeAccessInlineBackingStorageTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationNvmeAccessBackingStorage
-	// ApplicationNvmeAccessBackingStorage
+	// application_nvme_access_inline_backing_storage
+	// ApplicationNvmeAccessInlineBackingStorage
 	// type
 	// Type
 	// namespace
 	// END DEBUGGING
-	// ApplicationNvmeAccessBackingStorageTypeNamespace captures enum value "namespace"
-	ApplicationNvmeAccessBackingStorageTypeNamespace string = "namespace"
+	// ApplicationNvmeAccessInlineBackingStorageTypeNamespace captures enum value "namespace"
+	ApplicationNvmeAccessInlineBackingStorageTypeNamespace string = "namespace"
 )
 
 // prop value enum
-func (m *ApplicationNvmeAccessBackingStorage) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationNvmeAccessBackingStorageTypeTypePropEnum, true); err != nil {
+func (m *ApplicationNvmeAccessInlineBackingStorage) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationNvmeAccessInlineBackingStorageTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationNvmeAccessBackingStorage) validateType(formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineBackingStorage) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application nvme access backing storage based on the context it is used
-func (m *ApplicationNvmeAccessBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nvme access inline backing storage based on the context it is used
+func (m *ApplicationNvmeAccessInlineBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
@@ -254,18 +254,18 @@ func (m *ApplicationNvmeAccessBackingStorage) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ApplicationNvmeAccessBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNvmeAccessBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -273,7 +273,7 @@ func (m *ApplicationNvmeAccessBackingStorage) contextValidateUUID(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNvmeAccessBackingStorage) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNvmeAccessInlineBackingStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -281,8 +281,8 @@ func (m *ApplicationNvmeAccessBackingStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNvmeAccessBackingStorage) UnmarshalBinary(b []byte) error {
-	var res ApplicationNvmeAccessBackingStorage
+func (m *ApplicationNvmeAccessInlineBackingStorage) UnmarshalBinary(b []byte) error {
+	var res ApplicationNvmeAccessInlineBackingStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -290,25 +290,25 @@ func (m *ApplicationNvmeAccessBackingStorage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNvmeAccessSubsystemMap Subsystem map object
+// ApplicationNvmeAccessInlineSubsystemMap Subsystem map object
 //
-// swagger:model ApplicationNvmeAccessSubsystemMap
-type ApplicationNvmeAccessSubsystemMap struct {
+// swagger:model application_nvme_access_inline_subsystem_map
+type ApplicationNvmeAccessInlineSubsystemMap struct {
 
 	// Subsystem ANA group ID
 	// Read Only: true
-	Anagrpid string `json:"anagrpid,omitempty"`
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// Subsystem namespace ID
 	// Read Only: true
-	Nsid string `json:"nsid,omitempty"`
+	Nsid *string `json:"nsid,omitempty"`
 
 	// subsystem
-	Subsystem *ApplicationNvmeAccessSubsystemMapSubsystem `json:"subsystem,omitempty"`
+	Subsystem *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem `json:"subsystem,omitempty"`
 }
 
-// Validate validates this application nvme access subsystem map
-func (m *ApplicationNvmeAccessSubsystemMap) Validate(formats strfmt.Registry) error {
+// Validate validates this application nvme access inline subsystem map
+func (m *ApplicationNvmeAccessInlineSubsystemMap) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSubsystem(formats); err != nil {
@@ -321,7 +321,7 @@ func (m *ApplicationNvmeAccessSubsystemMap) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMap) validateSubsystem(formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMap) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
 	}
@@ -338,8 +338,8 @@ func (m *ApplicationNvmeAccessSubsystemMap) validateSubsystem(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this application nvme access subsystem map based on the context it is used
-func (m *ApplicationNvmeAccessSubsystemMap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nvme access inline subsystem map based on the context it is used
+func (m *ApplicationNvmeAccessInlineSubsystemMap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAnagrpid(ctx, formats); err != nil {
@@ -360,25 +360,25 @@ func (m *ApplicationNvmeAccessSubsystemMap) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"anagrpid", "body", string(m.Anagrpid)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"anagrpid", "body", m.Anagrpid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"nsid", "body", string(m.Nsid)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"nsid", "body", m.Nsid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMap) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMap) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Subsystem != nil {
 		if err := m.Subsystem.ContextValidate(ctx, formats); err != nil {
@@ -393,7 +393,7 @@ func (m *ApplicationNvmeAccessSubsystemMap) contextValidateSubsystem(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMap) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNvmeAccessInlineSubsystemMap) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -401,8 +401,8 @@ func (m *ApplicationNvmeAccessSubsystemMap) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMap) UnmarshalBinary(b []byte) error {
-	var res ApplicationNvmeAccessSubsystemMap
+func (m *ApplicationNvmeAccessInlineSubsystemMap) UnmarshalBinary(b []byte) error {
+	var res ApplicationNvmeAccessInlineSubsystemMap
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -410,13 +410,13 @@ func (m *ApplicationNvmeAccessSubsystemMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNvmeAccessSubsystemMapSubsystem application nvme access subsystem map subsystem
+// ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem application nvme access inline subsystem map inline subsystem
 //
-// swagger:model ApplicationNvmeAccessSubsystemMapSubsystem
-type ApplicationNvmeAccessSubsystemMapSubsystem struct {
+// swagger:model application_nvme_access_inline_subsystem_map_inline_subsystem
+type ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem struct {
 
 	// links
-	Links *ApplicationNvmeAccessSubsystemMapSubsystemLinks `json:"_links,omitempty"`
+	Links *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks `json:"_links,omitempty"`
 
 	// hosts
 	// Read Only: true
@@ -424,15 +424,15 @@ type ApplicationNvmeAccessSubsystemMapSubsystem struct {
 
 	// Subsystem name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Subsystem UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application nvme access subsystem map subsystem
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) Validate(formats strfmt.Registry) error {
+// Validate validates this application nvme access inline subsystem map inline subsystem
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -449,7 +449,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -466,7 +466,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) validateLinks(formats strfm
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) validateHosts(formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) validateHosts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Hosts) { // not required
 		return nil
 	}
@@ -490,8 +490,8 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) validateHosts(formats strfm
 	return nil
 }
 
-// ContextValidate validate this application nvme access subsystem map subsystem based on the context it is used
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nvme access inline subsystem map inline subsystem based on the context it is used
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -516,7 +516,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) ContextValidate(ctx context
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -530,7 +530,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateLinks(ctx co
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateHosts(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) contextValidateHosts(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"subsystem"+"."+"hosts", "body", []*ApplicationNvmeAccessSubsystemMapSubsystemHostsItems0(m.Hosts)); err != nil {
 		return err
@@ -552,18 +552,18 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateHosts(ctx co
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"subsystem"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"subsystem"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"subsystem"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"subsystem"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -571,7 +571,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) contextValidateUUID(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -579,8 +579,8 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystem) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMapSubsystem) UnmarshalBinary(b []byte) error {
-	var res ApplicationNvmeAccessSubsystemMapSubsystem
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem) UnmarshalBinary(b []byte) error {
+	var res ApplicationNvmeAccessInlineSubsystemMapInlineSubsystem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -598,7 +598,7 @@ type ApplicationNvmeAccessSubsystemMapSubsystemHostsItems0 struct {
 
 	// Host
 	// Read Only: true
-	Nqn string `json:"nqn,omitempty"`
+	Nqn *string `json:"nqn,omitempty"`
 }
 
 // Validate validates this application nvme access subsystem map subsystem hosts items0
@@ -666,7 +666,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemHostsItems0) contextValidateL
 
 func (m *ApplicationNvmeAccessSubsystemMapSubsystemHostsItems0) contextValidateNqn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nqn", "body", string(m.Nqn)); err != nil {
+	if err := validate.ReadOnly(ctx, "nqn", "body", m.Nqn); err != nil {
 		return err
 	}
 
@@ -863,17 +863,17 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemHostsItems0LinksSelf) Unmarsh
 	return nil
 }
 
-// ApplicationNvmeAccessSubsystemMapSubsystemLinks application nvme access subsystem map subsystem links
+// ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks application nvme access inline subsystem map inline subsystem inline links
 //
-// swagger:model ApplicationNvmeAccessSubsystemMapSubsystemLinks
-type ApplicationNvmeAccessSubsystemMapSubsystemLinks struct {
+// swagger:model application_nvme_access_inline_subsystem_map_inline_subsystem_inline__links
+type ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application nvme access subsystem map subsystem links
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application nvme access inline subsystem map inline subsystem inline links
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -886,7 +886,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) Validate(formats strfm
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -903,8 +903,8 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) validateSelf(formats s
 	return nil
 }
 
-// ContextValidate validate this application nvme access subsystem map subsystem links based on the context it is used
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nvme access inline subsystem map inline subsystem inline links based on the context it is used
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -917,7 +917,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) ContextValidate(ctx co
 	return nil
 }
 
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -932,7 +932,7 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) contextValidateSelf(ct
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -940,8 +940,8 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationNvmeAccessSubsystemMapSubsystemLinks
+func (m *ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationNvmeAccessInlineSubsystemMapInlineSubsystemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

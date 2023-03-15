@@ -21,7 +21,7 @@ import (
 type SnaplockFileFingerprint struct {
 
 	// links
-	Links *SnaplockFileFingerprintLinks `json:"_links,omitempty"`
+	Links *SnaplockFileFingerprintInlineLinks `json:"_links,omitempty"`
 
 	// The digest algorithm which is used for the fingerprint computation
 	// Example: sha256
@@ -31,50 +31,50 @@ type SnaplockFileFingerprint struct {
 	// The digest value of data of the file. The fingerprint is base64 encoded. This field is not included if the scope is metadata-only.
 	// Example: MOFJVevxNSJm3C/4Bn5oEEYH51CrudOzZYK4r5Cfy1g=
 	// Read Only: true
-	DataFingerprint string `json:"data_fingerprint,omitempty"`
+	DataFingerprint *string `json:"data_fingerprint,omitempty"`
 
 	// The size of the file in bytes.
 	// Example: 1048576
 	// Read Only: true
-	FileSize int64 `json:"file_size,omitempty"`
+	FileSize *int64 `json:"file_size,omitempty"`
 
 	// The type of the file.
 	// Example: worm
 	// Read Only: true
 	// Enum: [worm worm_appendable worm_active_log worm_log regular]
-	FileType string `json:"file_type,omitempty"`
+	FileType *string `json:"file_type,omitempty"`
 
 	// A unique identifier for the fingerprint operation
 	// Example: 17039367
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// The digest value of metadata of the file. The metadata fingerprint is calculated for file size, file ctime, file mtime, file crtime, file retention time, file uid, file gid, and file type. The fingerprint is base64 encoded. This field is not included if the scope is data-only.
 	// Example: 8iMjqJXiNcqgXT5XuRhLiEwIrJEihDmwS0hrexnjgmc=
 	// Read Only: true
-	MetadataFingerprint string `json:"metadata_fingerprint,omitempty"`
+	MetadataFingerprint *string `json:"metadata_fingerprint,omitempty"`
 
 	// Specifies the path on which file fingerprint operation is running or has completed. Specifies the path relative to the output volume root, of the form "/path". The path can be path to a file or a directory.
 	// Example: /homedir/dir1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// The scope of the file which is used for the fingerprint computation
 	// Example: data_only
 	// Read Only: true
 	// Enum: [data_and_metadata data_only metadata_only]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// Specifies the status of fingerprint operation.
 	// Example: completed
 	// Read Only: true
 	// Enum: [in_progress failed aborting completed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *SnaplockFileFingerprintSvm `json:"svm,omitempty"`
+	Svm *SnaplockFileFingerprintInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *SnaplockFileFingerprintVolume `json:"volume,omitempty"`
+	Volume *SnaplockFileFingerprintInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this snaplock file fingerprint
@@ -267,7 +267,7 @@ func (m *SnaplockFileFingerprint) validateFileType(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateFileTypeEnum("file_type", "body", m.FileType); err != nil {
+	if err := m.validateFileTypeEnum("file_type", "body", *m.FileType); err != nil {
 		return err
 	}
 
@@ -333,7 +333,7 @@ func (m *SnaplockFileFingerprint) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -409,7 +409,7 @@ func (m *SnaplockFileFingerprint) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -516,7 +516,7 @@ func (m *SnaplockFileFingerprint) contextValidateLinks(ctx context.Context, form
 
 func (m *SnaplockFileFingerprint) contextValidateDataFingerprint(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "data_fingerprint", "body", string(m.DataFingerprint)); err != nil {
+	if err := validate.ReadOnly(ctx, "data_fingerprint", "body", m.DataFingerprint); err != nil {
 		return err
 	}
 
@@ -525,7 +525,7 @@ func (m *SnaplockFileFingerprint) contextValidateDataFingerprint(ctx context.Con
 
 func (m *SnaplockFileFingerprint) contextValidateFileSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "file_size", "body", int64(m.FileSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "file_size", "body", m.FileSize); err != nil {
 		return err
 	}
 
@@ -534,7 +534,7 @@ func (m *SnaplockFileFingerprint) contextValidateFileSize(ctx context.Context, f
 
 func (m *SnaplockFileFingerprint) contextValidateFileType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "file_type", "body", string(m.FileType)); err != nil {
+	if err := validate.ReadOnly(ctx, "file_type", "body", m.FileType); err != nil {
 		return err
 	}
 
@@ -543,7 +543,7 @@ func (m *SnaplockFileFingerprint) contextValidateFileType(ctx context.Context, f
 
 func (m *SnaplockFileFingerprint) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -552,7 +552,7 @@ func (m *SnaplockFileFingerprint) contextValidateID(ctx context.Context, formats
 
 func (m *SnaplockFileFingerprint) contextValidateMetadataFingerprint(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metadata_fingerprint", "body", string(m.MetadataFingerprint)); err != nil {
+	if err := validate.ReadOnly(ctx, "metadata_fingerprint", "body", m.MetadataFingerprint); err != nil {
 		return err
 	}
 
@@ -561,7 +561,7 @@ func (m *SnaplockFileFingerprint) contextValidateMetadataFingerprint(ctx context
 
 func (m *SnaplockFileFingerprint) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -570,7 +570,7 @@ func (m *SnaplockFileFingerprint) contextValidateScope(ctx context.Context, form
 
 func (m *SnaplockFileFingerprint) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -623,17 +623,17 @@ func (m *SnaplockFileFingerprint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintLinks snaplock file fingerprint links
+// SnaplockFileFingerprintInlineLinks snaplock file fingerprint inline links
 //
-// swagger:model SnaplockFileFingerprintLinks
-type SnaplockFileFingerprintLinks struct {
+// swagger:model snaplock_file_fingerprint_inline__links
+type SnaplockFileFingerprintInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint links
-func (m *SnaplockFileFingerprintLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint inline links
+func (m *SnaplockFileFingerprintInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -646,7 +646,7 @@ func (m *SnaplockFileFingerprintLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockFileFingerprintLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -663,8 +663,8 @@ func (m *SnaplockFileFingerprintLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint links based on the context it is used
-func (m *SnaplockFileFingerprintLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint inline links based on the context it is used
+func (m *SnaplockFileFingerprintInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -677,7 +677,7 @@ func (m *SnaplockFileFingerprintLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SnaplockFileFingerprintLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -692,7 +692,7 @@ func (m *SnaplockFileFingerprintLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -700,8 +700,8 @@ func (m *SnaplockFileFingerprintLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintLinks
+func (m *SnaplockFileFingerprintInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -709,27 +709,27 @@ func (m *SnaplockFileFingerprintLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintSvm snaplock file fingerprint svm
+// SnaplockFileFingerprintInlineSvm snaplock file fingerprint inline svm
 //
-// swagger:model SnaplockFileFingerprintSvm
-type SnaplockFileFingerprintSvm struct {
+// swagger:model snaplock_file_fingerprint_inline_svm
+type SnaplockFileFingerprintInlineSvm struct {
 
 	// links
-	Links *SnaplockFileFingerprintSvmLinks `json:"_links,omitempty"`
+	Links *SnaplockFileFingerprintInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint svm
-func (m *SnaplockFileFingerprintSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint inline svm
+func (m *SnaplockFileFingerprintInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -742,7 +742,7 @@ func (m *SnaplockFileFingerprintSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockFileFingerprintSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -759,8 +759,8 @@ func (m *SnaplockFileFingerprintSvm) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint svm based on the context it is used
-func (m *SnaplockFileFingerprintSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint inline svm based on the context it is used
+func (m *SnaplockFileFingerprintInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -773,7 +773,7 @@ func (m *SnaplockFileFingerprintSvm) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockFileFingerprintSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -788,7 +788,7 @@ func (m *SnaplockFileFingerprintSvm) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintSvm) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -796,8 +796,8 @@ func (m *SnaplockFileFingerprintSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintSvm) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintSvm
+func (m *SnaplockFileFingerprintInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -805,17 +805,17 @@ func (m *SnaplockFileFingerprintSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintSvmLinks snaplock file fingerprint svm links
+// SnaplockFileFingerprintInlineSvmInlineLinks snaplock file fingerprint inline svm inline links
 //
-// swagger:model SnaplockFileFingerprintSvmLinks
-type SnaplockFileFingerprintSvmLinks struct {
+// swagger:model snaplock_file_fingerprint_inline_svm_inline__links
+type SnaplockFileFingerprintInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint svm links
-func (m *SnaplockFileFingerprintSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint inline svm inline links
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -828,7 +828,7 @@ func (m *SnaplockFileFingerprintSvmLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SnaplockFileFingerprintSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -845,8 +845,8 @@ func (m *SnaplockFileFingerprintSvmLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint svm links based on the context it is used
-func (m *SnaplockFileFingerprintSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint inline svm inline links based on the context it is used
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -859,7 +859,7 @@ func (m *SnaplockFileFingerprintSvmLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SnaplockFileFingerprintSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -874,7 +874,7 @@ func (m *SnaplockFileFingerprintSvmLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -882,8 +882,8 @@ func (m *SnaplockFileFingerprintSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintSvmLinks
+func (m *SnaplockFileFingerprintInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -891,25 +891,25 @@ func (m *SnaplockFileFingerprintSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintVolume snaplock file fingerprint volume
+// SnaplockFileFingerprintInlineVolume snaplock file fingerprint inline volume
 //
-// swagger:model SnaplockFileFingerprintVolume
-type SnaplockFileFingerprintVolume struct {
+// swagger:model snaplock_file_fingerprint_inline_volume
+type SnaplockFileFingerprintInlineVolume struct {
 
 	// links
-	Links *SnaplockFileFingerprintVolumeLinks `json:"_links,omitempty"`
+	Links *SnaplockFileFingerprintInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint volume
-func (m *SnaplockFileFingerprintVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint inline volume
+func (m *SnaplockFileFingerprintInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -922,7 +922,7 @@ func (m *SnaplockFileFingerprintVolume) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SnaplockFileFingerprintVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -939,8 +939,8 @@ func (m *SnaplockFileFingerprintVolume) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint volume based on the context it is used
-func (m *SnaplockFileFingerprintVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint inline volume based on the context it is used
+func (m *SnaplockFileFingerprintInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -953,7 +953,7 @@ func (m *SnaplockFileFingerprintVolume) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *SnaplockFileFingerprintVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -968,7 +968,7 @@ func (m *SnaplockFileFingerprintVolume) contextValidateLinks(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintVolume) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -976,8 +976,8 @@ func (m *SnaplockFileFingerprintVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintVolume) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintVolume
+func (m *SnaplockFileFingerprintInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -985,17 +985,17 @@ func (m *SnaplockFileFingerprintVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintVolumeLinks snaplock file fingerprint volume links
+// SnaplockFileFingerprintInlineVolumeInlineLinks snaplock file fingerprint inline volume inline links
 //
-// swagger:model SnaplockFileFingerprintVolumeLinks
-type SnaplockFileFingerprintVolumeLinks struct {
+// swagger:model snaplock_file_fingerprint_inline_volume_inline__links
+type SnaplockFileFingerprintInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint volume links
-func (m *SnaplockFileFingerprintVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint inline volume inline links
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1008,7 +1008,7 @@ func (m *SnaplockFileFingerprintVolumeLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *SnaplockFileFingerprintVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1025,8 +1025,8 @@ func (m *SnaplockFileFingerprintVolumeLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint volume links based on the context it is used
-func (m *SnaplockFileFingerprintVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint inline volume inline links based on the context it is used
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1039,7 +1039,7 @@ func (m *SnaplockFileFingerprintVolumeLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *SnaplockFileFingerprintVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1054,7 +1054,7 @@ func (m *SnaplockFileFingerprintVolumeLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1062,8 +1062,8 @@ func (m *SnaplockFileFingerprintVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintVolumeLinks
+func (m *SnaplockFileFingerprintInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

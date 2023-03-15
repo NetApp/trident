@@ -52,6 +52,11 @@ SnapmirrorPolicyCreateAccepted describes a response with status code 202, with d
 Accepted
 */
 type SnapmirrorPolicyCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -94,6 +99,13 @@ func (o *SnapmirrorPolicyCreateAccepted) GetPayload() *models.JobLinkResponse {
 
 func (o *SnapmirrorPolicyCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.JobLinkResponse)
 
 	// response payload
@@ -124,6 +136,7 @@ func NewSnapmirrorPolicyCreateDefault(code int) *SnapmirrorPolicyCreateDefault {
 | 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting this property. |
 | 13304084    | Properties specified are mutually exclusive. Provide only one property. |
 | 13304085    | The specified property does not support the specified value. |
+| 13304092    | Input value of the retention period property is invalid. For relationships with FlexVol volume or FlexGroup volume destinations, the duration must be in ISO 6801 format or can be infinite. For relationships with object store destinations, only duration values with Y, M or D and supported and must be in the specified range. |
 */
 type SnapmirrorPolicyCreateDefault struct {
 	_statusCode int

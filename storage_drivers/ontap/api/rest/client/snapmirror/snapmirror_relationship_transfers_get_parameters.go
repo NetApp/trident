@@ -62,113 +62,107 @@ SnapmirrorRelationshipTransfersGetParams contains all the parameters to send to 
 */
 type SnapmirrorRelationshipTransfersGetParams struct {
 
-	/* ArchiveRetrievalPriority.
-
-	   Filter by archive_retrieval_priority
-	*/
-	ArchiveRetrievalPriorityQueryParameter *string
-
 	/* BytesTransferred.
 
 	   Filter by bytes_transferred
 	*/
-	BytesTransferredQueryParameter *int64
+	BytesTransferred *int64
 
 	/* CheckpointSize.
 
 	   Filter by checkpoint_size
 	*/
-	CheckpointSizeQueryParameter *int64
+	CheckpointSize *int64
 
 	/* EndTime.
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* ErrorInfoCode.
 
 	   Filter by error_info.code
 	*/
-	ErrorInfoCodeQueryParameter *int64
+	ErrorInfoCode *int64
 
 	/* ErrorInfoMessage.
 
 	   Filter by error_info.message
 	*/
-	ErrorInfoMessageQueryParameter *string
+	ErrorInfoMessage *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* RelationshipDestinationClusterName.
 
 	   Filter by relationship.destination.cluster.name
 	*/
-	RelationshIPDestinationClusterNameQueryParameter *string
+	RelationshipDestinationClusterName *string
 
 	/* RelationshipDestinationClusterUUID.
 
 	   Filter by relationship.destination.cluster.uuid
 	*/
-	RelationshIPDestinationClusterUUIDQueryParameter *string
+	RelationshipDestinationClusterUUID *string
 
 	/* RelationshipDestinationConsistencyGroupVolumesName.
 
 	   Filter by relationship.destination.consistency_group_volumes.name
 	*/
-	RelationshIPDestinationConsistencyGroupVolumesNameQueryParameter *string
+	RelationshipDestinationConsistencyGroupVolumesName *string
 
 	/* RelationshipDestinationPath.
 
 	   Filter by relationship.destination.path
 	*/
-	RelationshIPDestinationPathQueryParameter *string
+	RelationshipDestinationPath *string
 
 	/* RelationshipDestinationSvmName.
 
 	   Filter by relationship.destination.svm.name
 	*/
-	RelationshIPDestinationSVMNameQueryParameter *string
+	RelationshipDestinationSvmName *string
 
 	/* RelationshipDestinationSvmUUID.
 
 	   Filter by relationship.destination.svm.uuid
 	*/
-	RelationshIPDestinationSVMUUIDQueryParameter *string
+	RelationshipDestinationSvmUUID *string
 
 	/* RelationshipDestinationUUID.
 
 	   Filter by relationship.destination.uuid
 	*/
-	RelationshIPDestinationUUIDQueryParameter *string
+	RelationshipDestinationUUID *string
 
 	/* RelationshipRestore.
 
 	   Filter by relationship.restore
 	*/
-	RelationshIPRestoreQueryParameter *bool
+	RelationshipRestore *bool
 
 	/* RelationshipUUID.
 
 	   Relationship UUID
 	*/
-	RelationshIPUUIDPathParameter string
+	RelationshipUUID string
 
 	/* ReturnRecords.
 
@@ -176,7 +170,7 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -184,37 +178,37 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Snapshot.
 
 	   Filter by snapshot
 	*/
-	SnapshotQueryParameter *string
+	Snapshot *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Throttle.
 
 	   Filter by throttle
 	*/
-	ThrottleQueryParameter *int64
+	Throttle *int64
 
 	/* TotalDuration.
 
 	   Filter by total_duration
 	*/
-	TotalDurationQueryParameter *string
+	TotalDuration *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -234,14 +228,14 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WithDefaults() *SnapmirrorRel
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipTransfersGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnapmirrorRelationshipTransfersGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -283,279 +277,268 @@ func (o *SnapmirrorRelationshipTransfersGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithArchiveRetrievalPriorityQueryParameter adds the archiveRetrievalPriority to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithArchiveRetrievalPriorityQueryParameter(archiveRetrievalPriority *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetArchiveRetrievalPriorityQueryParameter(archiveRetrievalPriority)
+// WithBytesTransferred adds the bytesTransferred to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithBytesTransferred(bytesTransferred *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetBytesTransferred(bytesTransferred)
 	return o
 }
 
-// SetArchiveRetrievalPriorityQueryParameter adds the archiveRetrievalPriority to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetArchiveRetrievalPriorityQueryParameter(archiveRetrievalPriority *string) {
-	o.ArchiveRetrievalPriorityQueryParameter = archiveRetrievalPriority
+// SetBytesTransferred adds the bytesTransferred to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetBytesTransferred(bytesTransferred *int64) {
+	o.BytesTransferred = bytesTransferred
 }
 
-// WithBytesTransferredQueryParameter adds the bytesTransferred to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithBytesTransferredQueryParameter(bytesTransferred *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetBytesTransferredQueryParameter(bytesTransferred)
+// WithCheckpointSize adds the checkpointSize to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithCheckpointSize(checkpointSize *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetCheckpointSize(checkpointSize)
 	return o
 }
 
-// SetBytesTransferredQueryParameter adds the bytesTransferred to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetBytesTransferredQueryParameter(bytesTransferred *int64) {
-	o.BytesTransferredQueryParameter = bytesTransferred
+// SetCheckpointSize adds the checkpointSize to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetCheckpointSize(checkpointSize *int64) {
+	o.CheckpointSize = checkpointSize
 }
 
-// WithCheckpointSizeQueryParameter adds the checkpointSize to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithCheckpointSizeQueryParameter(checkpointSize *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetCheckpointSizeQueryParameter(checkpointSize)
+// WithEndTime adds the endTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithEndTime(endTime *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetCheckpointSizeQueryParameter adds the checkpointSize to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetCheckpointSizeQueryParameter(checkpointSize *int64) {
-	o.CheckpointSizeQueryParameter = checkpointSize
+// SetEndTime adds the endTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithEndTimeQueryParameter adds the endTime to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithEndTimeQueryParameter(endTime *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithErrorInfoCode adds the errorInfoCode to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoCode(errorInfoCode *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetErrorInfoCode(errorInfoCode)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetErrorInfoCode adds the errorInfoCode to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoCode(errorInfoCode *int64) {
+	o.ErrorInfoCode = errorInfoCode
 }
 
-// WithErrorInfoCodeQueryParameter adds the errorInfoCode to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoCodeQueryParameter(errorInfoCode *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetErrorInfoCodeQueryParameter(errorInfoCode)
+// WithErrorInfoMessage adds the errorInfoMessage to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoMessage(errorInfoMessage *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetErrorInfoMessage(errorInfoMessage)
 	return o
 }
 
-// SetErrorInfoCodeQueryParameter adds the errorInfoCode to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoCodeQueryParameter(errorInfoCode *int64) {
-	o.ErrorInfoCodeQueryParameter = errorInfoCode
+// SetErrorInfoMessage adds the errorInfoMessage to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoMessage(errorInfoMessage *string) {
+	o.ErrorInfoMessage = errorInfoMessage
 }
 
-// WithErrorInfoMessageQueryParameter adds the errorInfoMessage to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoMessageQueryParameter(errorInfoMessage *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetErrorInfoMessageQueryParameter(errorInfoMessage)
+// WithFields adds the fields to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithFields(fields []string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetErrorInfoMessageQueryParameter adds the errorInfoMessage to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoMessageQueryParameter(errorInfoMessage *string) {
-	o.ErrorInfoMessageQueryParameter = errorInfoMessage
+// SetFields adds the fields to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithMaxRecords adds the maxRecords to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetMaxRecords adds the maxRecords to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithOrderBy adds the orderBy to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithOrderBy(orderBy []string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetOrderBy adds the orderBy to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithOrderByQueryParameter(orderBy []string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithRelationshipDestinationClusterName adds the relationshipDestinationClusterName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationClusterName(relationshipDestinationClusterName *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationClusterName(relationshipDestinationClusterName)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetRelationshipDestinationClusterName adds the relationshipDestinationClusterName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationClusterName(relationshipDestinationClusterName *string) {
+	o.RelationshipDestinationClusterName = relationshipDestinationClusterName
 }
 
-// WithRelationshIPDestinationClusterNameQueryParameter adds the relationshipDestinationClusterName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationClusterNameQueryParameter(relationshipDestinationClusterName *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationClusterNameQueryParameter(relationshipDestinationClusterName)
+// WithRelationshipDestinationClusterUUID adds the relationshipDestinationClusterUUID to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationClusterUUID(relationshipDestinationClusterUUID *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationClusterUUID(relationshipDestinationClusterUUID)
 	return o
 }
 
-// SetRelationshIPDestinationClusterNameQueryParameter adds the relationshipDestinationClusterName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationClusterNameQueryParameter(relationshipDestinationClusterName *string) {
-	o.RelationshIPDestinationClusterNameQueryParameter = relationshipDestinationClusterName
+// SetRelationshipDestinationClusterUUID adds the relationshipDestinationClusterUuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationClusterUUID(relationshipDestinationClusterUUID *string) {
+	o.RelationshipDestinationClusterUUID = relationshipDestinationClusterUUID
 }
 
-// WithRelationshIPDestinationClusterUUIDQueryParameter adds the relationshipDestinationClusterUUID to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationClusterUUIDQueryParameter(relationshipDestinationClusterUUID *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationClusterUUIDQueryParameter(relationshipDestinationClusterUUID)
+// WithRelationshipDestinationConsistencyGroupVolumesName adds the relationshipDestinationConsistencyGroupVolumesName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationConsistencyGroupVolumesName(relationshipDestinationConsistencyGroupVolumesName *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationConsistencyGroupVolumesName(relationshipDestinationConsistencyGroupVolumesName)
 	return o
 }
 
-// SetRelationshIPDestinationClusterUUIDQueryParameter adds the relationshipDestinationClusterUuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationClusterUUIDQueryParameter(relationshipDestinationClusterUUID *string) {
-	o.RelationshIPDestinationClusterUUIDQueryParameter = relationshipDestinationClusterUUID
+// SetRelationshipDestinationConsistencyGroupVolumesName adds the relationshipDestinationConsistencyGroupVolumesName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationConsistencyGroupVolumesName(relationshipDestinationConsistencyGroupVolumesName *string) {
+	o.RelationshipDestinationConsistencyGroupVolumesName = relationshipDestinationConsistencyGroupVolumesName
 }
 
-// WithRelationshIPDestinationConsistencyGroupVolumesNameQueryParameter adds the relationshipDestinationConsistencyGroupVolumesName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationConsistencyGroupVolumesNameQueryParameter(relationshipDestinationConsistencyGroupVolumesName *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationConsistencyGroupVolumesNameQueryParameter(relationshipDestinationConsistencyGroupVolumesName)
+// WithRelationshipDestinationPath adds the relationshipDestinationPath to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationPath(relationshipDestinationPath *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationPath(relationshipDestinationPath)
 	return o
 }
 
-// SetRelationshIPDestinationConsistencyGroupVolumesNameQueryParameter adds the relationshipDestinationConsistencyGroupVolumesName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationConsistencyGroupVolumesNameQueryParameter(relationshipDestinationConsistencyGroupVolumesName *string) {
-	o.RelationshIPDestinationConsistencyGroupVolumesNameQueryParameter = relationshipDestinationConsistencyGroupVolumesName
+// SetRelationshipDestinationPath adds the relationshipDestinationPath to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationPath(relationshipDestinationPath *string) {
+	o.RelationshipDestinationPath = relationshipDestinationPath
 }
 
-// WithRelationshIPDestinationPathQueryParameter adds the relationshipDestinationPath to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationPathQueryParameter(relationshipDestinationPath *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationPathQueryParameter(relationshipDestinationPath)
+// WithRelationshipDestinationSvmName adds the relationshipDestinationSvmName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationSvmName(relationshipDestinationSvmName *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationSvmName(relationshipDestinationSvmName)
 	return o
 }
 
-// SetRelationshIPDestinationPathQueryParameter adds the relationshipDestinationPath to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationPathQueryParameter(relationshipDestinationPath *string) {
-	o.RelationshIPDestinationPathQueryParameter = relationshipDestinationPath
+// SetRelationshipDestinationSvmName adds the relationshipDestinationSvmName to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationSvmName(relationshipDestinationSvmName *string) {
+	o.RelationshipDestinationSvmName = relationshipDestinationSvmName
 }
 
-// WithRelationshIPDestinationSVMNameQueryParameter adds the relationshipDestinationSvmName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationSVMNameQueryParameter(relationshipDestinationSvmName *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationSVMNameQueryParameter(relationshipDestinationSvmName)
+// WithRelationshipDestinationSvmUUID adds the relationshipDestinationSvmUUID to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationSvmUUID(relationshipDestinationSvmUUID *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationSvmUUID(relationshipDestinationSvmUUID)
 	return o
 }
 
-// SetRelationshIPDestinationSVMNameQueryParameter adds the relationshipDestinationSvmName to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationSVMNameQueryParameter(relationshipDestinationSvmName *string) {
-	o.RelationshIPDestinationSVMNameQueryParameter = relationshipDestinationSvmName
+// SetRelationshipDestinationSvmUUID adds the relationshipDestinationSvmUuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationSvmUUID(relationshipDestinationSvmUUID *string) {
+	o.RelationshipDestinationSvmUUID = relationshipDestinationSvmUUID
 }
 
-// WithRelationshIPDestinationSVMUUIDQueryParameter adds the relationshipDestinationSvmUUID to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationSVMUUIDQueryParameter(relationshipDestinationSvmUUID *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationSVMUUIDQueryParameter(relationshipDestinationSvmUUID)
+// WithRelationshipDestinationUUID adds the relationshipDestinationUUID to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipDestinationUUID(relationshipDestinationUUID *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipDestinationUUID(relationshipDestinationUUID)
 	return o
 }
 
-// SetRelationshIPDestinationSVMUUIDQueryParameter adds the relationshipDestinationSvmUuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationSVMUUIDQueryParameter(relationshipDestinationSvmUUID *string) {
-	o.RelationshIPDestinationSVMUUIDQueryParameter = relationshipDestinationSvmUUID
+// SetRelationshipDestinationUUID adds the relationshipDestinationUuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipDestinationUUID(relationshipDestinationUUID *string) {
+	o.RelationshipDestinationUUID = relationshipDestinationUUID
 }
 
-// WithRelationshIPDestinationUUIDQueryParameter adds the relationshipDestinationUUID to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPDestinationUUIDQueryParameter(relationshipDestinationUUID *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPDestinationUUIDQueryParameter(relationshipDestinationUUID)
+// WithRelationshipRestore adds the relationshipRestore to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipRestore(relationshipRestore *bool) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipRestore(relationshipRestore)
 	return o
 }
 
-// SetRelationshIPDestinationUUIDQueryParameter adds the relationshipDestinationUuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPDestinationUUIDQueryParameter(relationshipDestinationUUID *string) {
-	o.RelationshIPDestinationUUIDQueryParameter = relationshipDestinationUUID
+// SetRelationshipRestore adds the relationshipRestore to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipRestore(relationshipRestore *bool) {
+	o.RelationshipRestore = relationshipRestore
 }
 
-// WithRelationshIPRestoreQueryParameter adds the relationshipRestore to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPRestoreQueryParameter(relationshipRestore *bool) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPRestoreQueryParameter(relationshipRestore)
+// WithRelationshipUUID adds the relationshipUUID to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshipUUID(relationshipUUID string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetRelationshipUUID(relationshipUUID)
 	return o
 }
 
-// SetRelationshIPRestoreQueryParameter adds the relationshipRestore to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPRestoreQueryParameter(relationshipRestore *bool) {
-	o.RelationshIPRestoreQueryParameter = relationshipRestore
+// SetRelationshipUUID adds the relationshipUuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshipUUID(relationshipUUID string) {
+	o.RelationshipUUID = relationshipUUID
 }
 
-// WithRelationshIPUUIDPathParameter adds the relationshipUUID to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithRelationshIPUUIDPathParameter(relationshipUUID string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetRelationshIPUUIDPathParameter(relationshipUUID)
+// WithReturnRecords adds the returnRecords to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithReturnRecords(returnRecords *bool) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetRelationshIPUUIDPathParameter adds the relationshipUuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetRelationshIPUUIDPathParameter(relationshipUUID string) {
-	o.RelationshIPUUIDPathParameter = relationshipUUID
+// SetReturnRecords adds the returnRecords to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnTimeout adds the returnTimeout to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnTimeout adds the returnTimeout to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithSnapshot adds the snapshot to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithSnapshot(snapshot *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetSnapshot(snapshot)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetSnapshot adds the snapshot to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetSnapshot(snapshot *string) {
+	o.Snapshot = snapshot
 }
 
-// WithSnapshotQueryParameter adds the snapshot to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithSnapshotQueryParameter(snapshot *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetSnapshotQueryParameter(snapshot)
+// WithState adds the state to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithState(state *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetSnapshotQueryParameter adds the snapshot to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetSnapshotQueryParameter(snapshot *string) {
-	o.SnapshotQueryParameter = snapshot
+// SetState adds the state to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStateQueryParameter adds the state to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithStateQueryParameter(state *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetStateQueryParameter(state)
+// WithThrottle adds the throttle to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithThrottle(throttle *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetThrottle(throttle)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetThrottle adds the throttle to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetThrottle(throttle *int64) {
+	o.Throttle = throttle
 }
 
-// WithThrottleQueryParameter adds the throttle to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithThrottleQueryParameter(throttle *int64) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetThrottleQueryParameter(throttle)
+// WithTotalDuration adds the totalDuration to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithTotalDuration(totalDuration *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetTotalDuration(totalDuration)
 	return o
 }
 
-// SetThrottleQueryParameter adds the throttle to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetThrottleQueryParameter(throttle *int64) {
-	o.ThrottleQueryParameter = throttle
+// SetTotalDuration adds the totalDuration to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetTotalDuration(totalDuration *string) {
+	o.TotalDuration = totalDuration
 }
 
-// WithTotalDurationQueryParameter adds the totalDuration to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithTotalDurationQueryParameter(totalDuration *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetTotalDurationQueryParameter(totalDuration)
+// WithUUID adds the uuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithUUID(uuid *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetTotalDurationQueryParameter adds the totalDuration to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetTotalDurationQueryParameter(totalDuration *string) {
-	o.TotalDurationQueryParameter = totalDuration
-}
-
-// WithUUIDQueryParameter adds the uuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) WithUUIDQueryParameter(uuid *string) *SnapmirrorRelationshipTransfersGetParams {
-	o.SetUUIDQueryParameter(uuid)
-	return o
-}
-
-// SetUUIDQueryParameter adds the uuid to the snapmirror relationship transfers get params
-func (o *SnapmirrorRelationshipTransfersGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -566,30 +549,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.ArchiveRetrievalPriorityQueryParameter != nil {
-
-		// query param archive_retrieval_priority
-		var qrArchiveRetrievalPriority string
-
-		if o.ArchiveRetrievalPriorityQueryParameter != nil {
-			qrArchiveRetrievalPriority = *o.ArchiveRetrievalPriorityQueryParameter
-		}
-		qArchiveRetrievalPriority := qrArchiveRetrievalPriority
-		if qArchiveRetrievalPriority != "" {
-
-			if err := r.SetQueryParam("archive_retrieval_priority", qArchiveRetrievalPriority); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.BytesTransferredQueryParameter != nil {
+	if o.BytesTransferred != nil {
 
 		// query param bytes_transferred
 		var qrBytesTransferred int64
 
-		if o.BytesTransferredQueryParameter != nil {
-			qrBytesTransferred = *o.BytesTransferredQueryParameter
+		if o.BytesTransferred != nil {
+			qrBytesTransferred = *o.BytesTransferred
 		}
 		qBytesTransferred := swag.FormatInt64(qrBytesTransferred)
 		if qBytesTransferred != "" {
@@ -600,13 +566,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.CheckpointSizeQueryParameter != nil {
+	if o.CheckpointSize != nil {
 
 		// query param checkpoint_size
 		var qrCheckpointSize int64
 
-		if o.CheckpointSizeQueryParameter != nil {
-			qrCheckpointSize = *o.CheckpointSizeQueryParameter
+		if o.CheckpointSize != nil {
+			qrCheckpointSize = *o.CheckpointSize
 		}
 		qCheckpointSize := swag.FormatInt64(qrCheckpointSize)
 		if qCheckpointSize != "" {
@@ -617,13 +583,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -634,13 +600,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ErrorInfoCodeQueryParameter != nil {
+	if o.ErrorInfoCode != nil {
 
 		// query param error_info.code
 		var qrErrorInfoCode int64
 
-		if o.ErrorInfoCodeQueryParameter != nil {
-			qrErrorInfoCode = *o.ErrorInfoCodeQueryParameter
+		if o.ErrorInfoCode != nil {
+			qrErrorInfoCode = *o.ErrorInfoCode
 		}
 		qErrorInfoCode := swag.FormatInt64(qrErrorInfoCode)
 		if qErrorInfoCode != "" {
@@ -651,13 +617,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ErrorInfoMessageQueryParameter != nil {
+	if o.ErrorInfoMessage != nil {
 
 		// query param error_info.message
 		var qrErrorInfoMessage string
 
-		if o.ErrorInfoMessageQueryParameter != nil {
-			qrErrorInfoMessage = *o.ErrorInfoMessageQueryParameter
+		if o.ErrorInfoMessage != nil {
+			qrErrorInfoMessage = *o.ErrorInfoMessage
 		}
 		qErrorInfoMessage := qrErrorInfoMessage
 		if qErrorInfoMessage != "" {
@@ -668,7 +634,7 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -679,13 +645,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -696,7 +662,7 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -707,13 +673,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationClusterNameQueryParameter != nil {
+	if o.RelationshipDestinationClusterName != nil {
 
 		// query param relationship.destination.cluster.name
 		var qrRelationshipDestinationClusterName string
 
-		if o.RelationshIPDestinationClusterNameQueryParameter != nil {
-			qrRelationshipDestinationClusterName = *o.RelationshIPDestinationClusterNameQueryParameter
+		if o.RelationshipDestinationClusterName != nil {
+			qrRelationshipDestinationClusterName = *o.RelationshipDestinationClusterName
 		}
 		qRelationshipDestinationClusterName := qrRelationshipDestinationClusterName
 		if qRelationshipDestinationClusterName != "" {
@@ -724,13 +690,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationClusterUUIDQueryParameter != nil {
+	if o.RelationshipDestinationClusterUUID != nil {
 
 		// query param relationship.destination.cluster.uuid
 		var qrRelationshipDestinationClusterUUID string
 
-		if o.RelationshIPDestinationClusterUUIDQueryParameter != nil {
-			qrRelationshipDestinationClusterUUID = *o.RelationshIPDestinationClusterUUIDQueryParameter
+		if o.RelationshipDestinationClusterUUID != nil {
+			qrRelationshipDestinationClusterUUID = *o.RelationshipDestinationClusterUUID
 		}
 		qRelationshipDestinationClusterUUID := qrRelationshipDestinationClusterUUID
 		if qRelationshipDestinationClusterUUID != "" {
@@ -741,13 +707,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationConsistencyGroupVolumesNameQueryParameter != nil {
+	if o.RelationshipDestinationConsistencyGroupVolumesName != nil {
 
 		// query param relationship.destination.consistency_group_volumes.name
 		var qrRelationshipDestinationConsistencyGroupVolumesName string
 
-		if o.RelationshIPDestinationConsistencyGroupVolumesNameQueryParameter != nil {
-			qrRelationshipDestinationConsistencyGroupVolumesName = *o.RelationshIPDestinationConsistencyGroupVolumesNameQueryParameter
+		if o.RelationshipDestinationConsistencyGroupVolumesName != nil {
+			qrRelationshipDestinationConsistencyGroupVolumesName = *o.RelationshipDestinationConsistencyGroupVolumesName
 		}
 		qRelationshipDestinationConsistencyGroupVolumesName := qrRelationshipDestinationConsistencyGroupVolumesName
 		if qRelationshipDestinationConsistencyGroupVolumesName != "" {
@@ -758,13 +724,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationPathQueryParameter != nil {
+	if o.RelationshipDestinationPath != nil {
 
 		// query param relationship.destination.path
 		var qrRelationshipDestinationPath string
 
-		if o.RelationshIPDestinationPathQueryParameter != nil {
-			qrRelationshipDestinationPath = *o.RelationshIPDestinationPathQueryParameter
+		if o.RelationshipDestinationPath != nil {
+			qrRelationshipDestinationPath = *o.RelationshipDestinationPath
 		}
 		qRelationshipDestinationPath := qrRelationshipDestinationPath
 		if qRelationshipDestinationPath != "" {
@@ -775,13 +741,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationSVMNameQueryParameter != nil {
+	if o.RelationshipDestinationSvmName != nil {
 
 		// query param relationship.destination.svm.name
 		var qrRelationshipDestinationSvmName string
 
-		if o.RelationshIPDestinationSVMNameQueryParameter != nil {
-			qrRelationshipDestinationSvmName = *o.RelationshIPDestinationSVMNameQueryParameter
+		if o.RelationshipDestinationSvmName != nil {
+			qrRelationshipDestinationSvmName = *o.RelationshipDestinationSvmName
 		}
 		qRelationshipDestinationSvmName := qrRelationshipDestinationSvmName
 		if qRelationshipDestinationSvmName != "" {
@@ -792,13 +758,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationSVMUUIDQueryParameter != nil {
+	if o.RelationshipDestinationSvmUUID != nil {
 
 		// query param relationship.destination.svm.uuid
 		var qrRelationshipDestinationSvmUUID string
 
-		if o.RelationshIPDestinationSVMUUIDQueryParameter != nil {
-			qrRelationshipDestinationSvmUUID = *o.RelationshIPDestinationSVMUUIDQueryParameter
+		if o.RelationshipDestinationSvmUUID != nil {
+			qrRelationshipDestinationSvmUUID = *o.RelationshipDestinationSvmUUID
 		}
 		qRelationshipDestinationSvmUUID := qrRelationshipDestinationSvmUUID
 		if qRelationshipDestinationSvmUUID != "" {
@@ -809,13 +775,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPDestinationUUIDQueryParameter != nil {
+	if o.RelationshipDestinationUUID != nil {
 
 		// query param relationship.destination.uuid
 		var qrRelationshipDestinationUUID string
 
-		if o.RelationshIPDestinationUUIDQueryParameter != nil {
-			qrRelationshipDestinationUUID = *o.RelationshIPDestinationUUIDQueryParameter
+		if o.RelationshipDestinationUUID != nil {
+			qrRelationshipDestinationUUID = *o.RelationshipDestinationUUID
 		}
 		qRelationshipDestinationUUID := qrRelationshipDestinationUUID
 		if qRelationshipDestinationUUID != "" {
@@ -826,13 +792,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.RelationshIPRestoreQueryParameter != nil {
+	if o.RelationshipRestore != nil {
 
 		// query param relationship.restore
 		var qrRelationshipRestore bool
 
-		if o.RelationshIPRestoreQueryParameter != nil {
-			qrRelationshipRestore = *o.RelationshIPRestoreQueryParameter
+		if o.RelationshipRestore != nil {
+			qrRelationshipRestore = *o.RelationshipRestore
 		}
 		qRelationshipRestore := swag.FormatBool(qrRelationshipRestore)
 		if qRelationshipRestore != "" {
@@ -844,17 +810,17 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param relationship.uuid
-	if err := r.SetPathParam("relationship.uuid", o.RelationshIPUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("relationship.uuid", o.RelationshipUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -865,13 +831,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -882,13 +848,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.SnapshotQueryParameter != nil {
+	if o.Snapshot != nil {
 
 		// query param snapshot
 		var qrSnapshot string
 
-		if o.SnapshotQueryParameter != nil {
-			qrSnapshot = *o.SnapshotQueryParameter
+		if o.Snapshot != nil {
+			qrSnapshot = *o.Snapshot
 		}
 		qSnapshot := qrSnapshot
 		if qSnapshot != "" {
@@ -899,13 +865,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -916,13 +882,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ThrottleQueryParameter != nil {
+	if o.Throttle != nil {
 
 		// query param throttle
 		var qrThrottle int64
 
-		if o.ThrottleQueryParameter != nil {
-			qrThrottle = *o.ThrottleQueryParameter
+		if o.Throttle != nil {
+			qrThrottle = *o.Throttle
 		}
 		qThrottle := swag.FormatInt64(qrThrottle)
 		if qThrottle != "" {
@@ -933,13 +899,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.TotalDurationQueryParameter != nil {
+	if o.TotalDuration != nil {
 
 		// query param total_duration
 		var qrTotalDuration string
 
-		if o.TotalDurationQueryParameter != nil {
-			qrTotalDuration = *o.TotalDurationQueryParameter
+		if o.TotalDuration != nil {
+			qrTotalDuration = *o.TotalDuration
 		}
 		qTotalDuration := qrTotalDuration
 		if qTotalDuration != "" {
@@ -950,13 +916,13 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -975,7 +941,7 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamSnapmirrorRelationshipTransfersGet binds the parameter fields
 func (o *SnapmirrorRelationshipTransfersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -992,7 +958,7 @@ func (o *SnapmirrorRelationshipTransfersGetParams) bindParamFields(formats strfm
 
 // bindParamSnapmirrorRelationshipTransfersGet binds the parameter order_by
 func (o *SnapmirrorRelationshipTransfersGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

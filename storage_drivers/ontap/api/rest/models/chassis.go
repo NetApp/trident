@@ -22,36 +22,36 @@ import (
 type Chassis struct {
 
 	// List of FRUs in the chassis.
-	Frus []*ChassisFrusItems0 `json:"frus,omitempty"`
+	ChassisInlineFrus []*ChassisInlineFrusInlineArrayItem `json:"frus,omitempty"`
+
+	// List of nodes in the chassis.
+	ChassisInlineNodes []*ChassisInlineNodesInlineArrayItem `json:"nodes,omitempty"`
+
+	// List of shelves in chassis.
+	ChassisInlineShelves []*ShelfReference `json:"shelves,omitempty"`
 
 	// id
 	// Example: 21352005981
-	ID string `json:"id,omitempty"`
-
-	// List of nodes in the chassis.
-	Nodes []*ChassisNodesItems0 `json:"nodes,omitempty"`
-
-	// List of shelves in chassis.
-	Shelves []*ShelfReference `json:"shelves,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this chassis
 func (m *Chassis) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateFrus(formats); err != nil {
+	if err := m.validateChassisInlineFrus(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateNodes(formats); err != nil {
+	if err := m.validateChassisInlineNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateShelves(formats); err != nil {
+	if err := m.validateChassisInlineShelves(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *Chassis) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Chassis) validateFrus(formats strfmt.Registry) error {
-	if swag.IsZero(m.Frus) { // not required
+func (m *Chassis) validateChassisInlineFrus(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChassisInlineFrus) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Frus); i++ {
-		if swag.IsZero(m.Frus[i]) { // not required
+	for i := 0; i < len(m.ChassisInlineFrus); i++ {
+		if swag.IsZero(m.ChassisInlineFrus[i]) { // not required
 			continue
 		}
 
-		if m.Frus[i] != nil {
-			if err := m.Frus[i].Validate(formats); err != nil {
+		if m.ChassisInlineFrus[i] != nil {
+			if err := m.ChassisInlineFrus[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
 				}
@@ -89,18 +89,18 @@ func (m *Chassis) validateFrus(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Chassis) validateNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Nodes) { // not required
+func (m *Chassis) validateChassisInlineNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChassisInlineNodes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Nodes); i++ {
-		if swag.IsZero(m.Nodes[i]) { // not required
+	for i := 0; i < len(m.ChassisInlineNodes); i++ {
+		if swag.IsZero(m.ChassisInlineNodes[i]) { // not required
 			continue
 		}
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].Validate(formats); err != nil {
+		if m.ChassisInlineNodes[i] != nil {
+			if err := m.ChassisInlineNodes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -113,18 +113,18 @@ func (m *Chassis) validateNodes(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Chassis) validateShelves(formats strfmt.Registry) error {
-	if swag.IsZero(m.Shelves) { // not required
+func (m *Chassis) validateChassisInlineShelves(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChassisInlineShelves) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Shelves); i++ {
-		if swag.IsZero(m.Shelves[i]) { // not required
+	for i := 0; i < len(m.ChassisInlineShelves); i++ {
+		if swag.IsZero(m.ChassisInlineShelves[i]) { // not required
 			continue
 		}
 
-		if m.Shelves[i] != nil {
-			if err := m.Shelves[i].Validate(formats); err != nil {
+		if m.ChassisInlineShelves[i] != nil {
+			if err := m.ChassisInlineShelves[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("shelves" + "." + strconv.Itoa(i))
 				}
@@ -186,7 +186,7 @@ func (m *Chassis) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -197,15 +197,15 @@ func (m *Chassis) validateState(formats strfmt.Registry) error {
 func (m *Chassis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateFrus(ctx, formats); err != nil {
+	if err := m.contextValidateChassisInlineFrus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNodes(ctx, formats); err != nil {
+	if err := m.contextValidateChassisInlineNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateShelves(ctx, formats); err != nil {
+	if err := m.contextValidateChassisInlineShelves(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -215,12 +215,12 @@ func (m *Chassis) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
-func (m *Chassis) contextValidateFrus(ctx context.Context, formats strfmt.Registry) error {
+func (m *Chassis) contextValidateChassisInlineFrus(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Frus); i++ {
+	for i := 0; i < len(m.ChassisInlineFrus); i++ {
 
-		if m.Frus[i] != nil {
-			if err := m.Frus[i].ContextValidate(ctx, formats); err != nil {
+		if m.ChassisInlineFrus[i] != nil {
+			if err := m.ChassisInlineFrus[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
 				}
@@ -233,12 +233,12 @@ func (m *Chassis) contextValidateFrus(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *Chassis) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *Chassis) contextValidateChassisInlineNodes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Nodes); i++ {
+	for i := 0; i < len(m.ChassisInlineNodes); i++ {
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].ContextValidate(ctx, formats); err != nil {
+		if m.ChassisInlineNodes[i] != nil {
+			if err := m.ChassisInlineNodes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -251,12 +251,12 @@ func (m *Chassis) contextValidateNodes(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *Chassis) contextValidateShelves(ctx context.Context, formats strfmt.Registry) error {
+func (m *Chassis) contextValidateChassisInlineShelves(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Shelves); i++ {
+	for i := 0; i < len(m.ChassisInlineShelves); i++ {
 
-		if m.Shelves[i] != nil {
-			if err := m.Shelves[i].ContextValidate(ctx, formats); err != nil {
+		if m.ChassisInlineShelves[i] != nil {
+			if err := m.ChassisInlineShelves[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("shelves" + "." + strconv.Itoa(i))
 				}
@@ -287,25 +287,25 @@ func (m *Chassis) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisFrusItems0 chassis frus items0
+// ChassisInlineFrusInlineArrayItem chassis inline frus inline array item
 //
-// swagger:model ChassisFrusItems0
-type ChassisFrusItems0 struct {
+// swagger:model chassis_inline_frus_inline_array_item
+type ChassisInlineFrusInlineArrayItem struct {
 
 	// id
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Enum: [fan psu]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this chassis frus items0
-func (m *ChassisFrusItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis inline frus inline array item
+func (m *ChassisInlineFrusInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -322,7 +322,7 @@ func (m *ChassisFrusItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var chassisFrusItems0TypeStatePropEnum []interface{}
+var chassisInlineFrusInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -330,55 +330,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		chassisFrusItems0TypeStatePropEnum = append(chassisFrusItems0TypeStatePropEnum, v)
+		chassisInlineFrusInlineArrayItemTypeStatePropEnum = append(chassisInlineFrusInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ChassisFrusItems0
-	// ChassisFrusItems0
+	// chassis_inline_frus_inline_array_item
+	// ChassisInlineFrusInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ChassisFrusItems0StateOk captures enum value "ok"
-	ChassisFrusItems0StateOk string = "ok"
+	// ChassisInlineFrusInlineArrayItemStateOk captures enum value "ok"
+	ChassisInlineFrusInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ChassisFrusItems0
-	// ChassisFrusItems0
+	// chassis_inline_frus_inline_array_item
+	// ChassisInlineFrusInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ChassisFrusItems0StateError captures enum value "error"
-	ChassisFrusItems0StateError string = "error"
+	// ChassisInlineFrusInlineArrayItemStateError captures enum value "error"
+	ChassisInlineFrusInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ChassisFrusItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, chassisFrusItems0TypeStatePropEnum, true); err != nil {
+func (m *ChassisInlineFrusInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, chassisInlineFrusInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ChassisFrusItems0) validateState(formats strfmt.Registry) error {
+func (m *ChassisInlineFrusInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var chassisFrusItems0TypeTypePropEnum []interface{}
+var chassisInlineFrusInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -386,61 +386,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		chassisFrusItems0TypeTypePropEnum = append(chassisFrusItems0TypeTypePropEnum, v)
+		chassisInlineFrusInlineArrayItemTypeTypePropEnum = append(chassisInlineFrusInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ChassisFrusItems0
-	// ChassisFrusItems0
+	// chassis_inline_frus_inline_array_item
+	// ChassisInlineFrusInlineArrayItem
 	// type
 	// Type
 	// fan
 	// END DEBUGGING
-	// ChassisFrusItems0TypeFan captures enum value "fan"
-	ChassisFrusItems0TypeFan string = "fan"
+	// ChassisInlineFrusInlineArrayItemTypeFan captures enum value "fan"
+	ChassisInlineFrusInlineArrayItemTypeFan string = "fan"
 
 	// BEGIN DEBUGGING
-	// ChassisFrusItems0
-	// ChassisFrusItems0
+	// chassis_inline_frus_inline_array_item
+	// ChassisInlineFrusInlineArrayItem
 	// type
 	// Type
 	// psu
 	// END DEBUGGING
-	// ChassisFrusItems0TypePsu captures enum value "psu"
-	ChassisFrusItems0TypePsu string = "psu"
+	// ChassisInlineFrusInlineArrayItemTypePsu captures enum value "psu"
+	ChassisInlineFrusInlineArrayItemTypePsu string = "psu"
 )
 
 // prop value enum
-func (m *ChassisFrusItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, chassisFrusItems0TypeTypePropEnum, true); err != nil {
+func (m *ChassisInlineFrusInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, chassisInlineFrusInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ChassisFrusItems0) validateType(formats strfmt.Registry) error {
+func (m *ChassisInlineFrusInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this chassis frus items0 based on context it is used
-func (m *ChassisFrusItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this chassis inline frus inline array item based on context it is used
+func (m *ChassisInlineFrusInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisFrusItems0) MarshalBinary() ([]byte, error) {
+func (m *ChassisInlineFrusInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -448,8 +448,8 @@ func (m *ChassisFrusItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisFrusItems0) UnmarshalBinary(b []byte) error {
-	var res ChassisFrusItems0
+func (m *ChassisInlineFrusInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ChassisInlineFrusInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -457,36 +457,36 @@ func (m *ChassisFrusItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodesItems0 List of nodes in chassis.
+// ChassisInlineNodesInlineArrayItem List of nodes in chassis.
 //
-// swagger:model ChassisNodesItems0
-type ChassisNodesItems0 struct {
+// swagger:model chassis_inline_nodes_inline_array_item
+type ChassisInlineNodesInlineArrayItem struct {
 
 	// links
-	Links *ChassisNodesItems0Links `json:"_links,omitempty"`
+	Links *ChassisInlineNodesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// pcis
-	Pcis *ChassisNodesItems0Pcis `json:"pcis,omitempty"`
+	Pcis *ChassisInlineNodesInlineArrayItemInlinePcis `json:"pcis,omitempty"`
 
 	// The position of the node in the chassis, when viewed from the rear of the system.
 	// Example: top
 	// Enum: [top bottom left right unknown]
-	Position string `json:"position,omitempty"`
+	Position *string `json:"position,omitempty"`
 
 	// usbs
-	Usbs *ChassisNodesItems0Usbs `json:"usbs,omitempty"`
+	Usbs *ChassisInlineNodesInlineArrayItemInlineUsbs `json:"usbs,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this chassis nodes items0
-func (m *ChassisNodesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis inline nodes inline array item
+func (m *ChassisInlineNodesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -511,7 +511,7 @@ func (m *ChassisNodesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -528,7 +528,7 @@ func (m *ChassisNodesItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodesItems0) validatePcis(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) validatePcis(formats strfmt.Registry) error {
 	if swag.IsZero(m.Pcis) { // not required
 		return nil
 	}
@@ -545,7 +545,7 @@ func (m *ChassisNodesItems0) validatePcis(formats strfmt.Registry) error {
 	return nil
 }
 
-var chassisNodesItems0TypePositionPropEnum []interface{}
+var chassisInlineNodesInlineArrayItemTypePositionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -553,85 +553,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		chassisNodesItems0TypePositionPropEnum = append(chassisNodesItems0TypePositionPropEnum, v)
+		chassisInlineNodesInlineArrayItemTypePositionPropEnum = append(chassisInlineNodesInlineArrayItemTypePositionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ChassisNodesItems0
-	// ChassisNodesItems0
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
 	// position
 	// Position
 	// top
 	// END DEBUGGING
-	// ChassisNodesItems0PositionTop captures enum value "top"
-	ChassisNodesItems0PositionTop string = "top"
+	// ChassisInlineNodesInlineArrayItemPositionTop captures enum value "top"
+	ChassisInlineNodesInlineArrayItemPositionTop string = "top"
 
 	// BEGIN DEBUGGING
-	// ChassisNodesItems0
-	// ChassisNodesItems0
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
 	// position
 	// Position
 	// bottom
 	// END DEBUGGING
-	// ChassisNodesItems0PositionBottom captures enum value "bottom"
-	ChassisNodesItems0PositionBottom string = "bottom"
+	// ChassisInlineNodesInlineArrayItemPositionBottom captures enum value "bottom"
+	ChassisInlineNodesInlineArrayItemPositionBottom string = "bottom"
 
 	// BEGIN DEBUGGING
-	// ChassisNodesItems0
-	// ChassisNodesItems0
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
 	// position
 	// Position
 	// left
 	// END DEBUGGING
-	// ChassisNodesItems0PositionLeft captures enum value "left"
-	ChassisNodesItems0PositionLeft string = "left"
+	// ChassisInlineNodesInlineArrayItemPositionLeft captures enum value "left"
+	ChassisInlineNodesInlineArrayItemPositionLeft string = "left"
 
 	// BEGIN DEBUGGING
-	// ChassisNodesItems0
-	// ChassisNodesItems0
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
 	// position
 	// Position
 	// right
 	// END DEBUGGING
-	// ChassisNodesItems0PositionRight captures enum value "right"
-	ChassisNodesItems0PositionRight string = "right"
+	// ChassisInlineNodesInlineArrayItemPositionRight captures enum value "right"
+	ChassisInlineNodesInlineArrayItemPositionRight string = "right"
 
 	// BEGIN DEBUGGING
-	// ChassisNodesItems0
-	// ChassisNodesItems0
+	// chassis_inline_nodes_inline_array_item
+	// ChassisInlineNodesInlineArrayItem
 	// position
 	// Position
 	// unknown
 	// END DEBUGGING
-	// ChassisNodesItems0PositionUnknown captures enum value "unknown"
-	ChassisNodesItems0PositionUnknown string = "unknown"
+	// ChassisInlineNodesInlineArrayItemPositionUnknown captures enum value "unknown"
+	ChassisInlineNodesInlineArrayItemPositionUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *ChassisNodesItems0) validatePositionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, chassisNodesItems0TypePositionPropEnum, true); err != nil {
+func (m *ChassisInlineNodesInlineArrayItem) validatePositionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, chassisInlineNodesInlineArrayItemTypePositionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ChassisNodesItems0) validatePosition(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) validatePosition(formats strfmt.Registry) error {
 	if swag.IsZero(m.Position) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validatePositionEnum("position", "body", m.Position); err != nil {
+	if err := m.validatePositionEnum("position", "body", *m.Position); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ChassisNodesItems0) validateUsbs(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) validateUsbs(formats strfmt.Registry) error {
 	if swag.IsZero(m.Usbs) { // not required
 		return nil
 	}
@@ -648,8 +648,8 @@ func (m *ChassisNodesItems0) validateUsbs(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis nodes items0 based on the context it is used
-func (m *ChassisNodesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis inline nodes inline array item based on the context it is used
+func (m *ChassisInlineNodesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -670,7 +670,7 @@ func (m *ChassisNodesItems0) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *ChassisNodesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -684,7 +684,7 @@ func (m *ChassisNodesItems0) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ChassisNodesItems0) contextValidatePcis(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) contextValidatePcis(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Pcis != nil {
 		if err := m.Pcis.ContextValidate(ctx, formats); err != nil {
@@ -698,7 +698,7 @@ func (m *ChassisNodesItems0) contextValidatePcis(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ChassisNodesItems0) contextValidateUsbs(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItem) contextValidateUsbs(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Usbs != nil {
 		if err := m.Usbs.ContextValidate(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *ChassisNodesItems0) contextValidateUsbs(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodesItems0) MarshalBinary() ([]byte, error) {
+func (m *ChassisInlineNodesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -721,8 +721,8 @@ func (m *ChassisNodesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodesItems0) UnmarshalBinary(b []byte) error {
-	var res ChassisNodesItems0
+func (m *ChassisInlineNodesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ChassisInlineNodesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -730,17 +730,17 @@ func (m *ChassisNodesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodesItems0Links chassis nodes items0 links
+// ChassisInlineNodesInlineArrayItemInlineLinks chassis inline nodes inline array item inline links
 //
-// swagger:model ChassisNodesItems0Links
-type ChassisNodesItems0Links struct {
+// swagger:model chassis_inline_nodes_inline_array_item_inline__links
+type ChassisInlineNodesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this chassis nodes items0 links
-func (m *ChassisNodesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis inline nodes inline array item inline links
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -753,7 +753,7 @@ func (m *ChassisNodesItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -770,8 +770,8 @@ func (m *ChassisNodesItems0Links) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis nodes items0 links based on the context it is used
-func (m *ChassisNodesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis inline nodes inline array item inline links based on the context it is used
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -784,7 +784,7 @@ func (m *ChassisNodesItems0Links) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ChassisNodesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -799,7 +799,7 @@ func (m *ChassisNodesItems0Links) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -807,8 +807,8 @@ func (m *ChassisNodesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodesItems0Links) UnmarshalBinary(b []byte) error {
-	var res ChassisNodesItems0Links
+func (m *ChassisInlineNodesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ChassisInlineNodesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -816,17 +816,17 @@ func (m *ChassisNodesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodesItems0Pcis chassis nodes items0 pcis
+// ChassisInlineNodesInlineArrayItemInlinePcis chassis inline nodes inline array item inline pcis
 //
-// swagger:model ChassisNodesItems0Pcis
-type ChassisNodesItems0Pcis struct {
+// swagger:model chassis_inline_nodes_inline_array_item_inline_pcis
+type ChassisInlineNodesInlineArrayItemInlinePcis struct {
 
 	// cards
-	Cards []*ChassisNodesItems0PcisCardsItems0 `json:"cards,omitempty"`
+	Cards []*ChassisNodesItems0PcisCardsItems0 `json:"cards"`
 }
 
-// Validate validates this chassis nodes items0 pcis
-func (m *ChassisNodesItems0Pcis) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis inline nodes inline array item inline pcis
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCards(formats); err != nil {
@@ -839,7 +839,7 @@ func (m *ChassisNodesItems0Pcis) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodesItems0Pcis) validateCards(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) validateCards(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cards) { // not required
 		return nil
 	}
@@ -863,8 +863,8 @@ func (m *ChassisNodesItems0Pcis) validateCards(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis nodes items0 pcis based on the context it is used
-func (m *ChassisNodesItems0Pcis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis inline nodes inline array item inline pcis based on the context it is used
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCards(ctx, formats); err != nil {
@@ -877,7 +877,7 @@ func (m *ChassisNodesItems0Pcis) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ChassisNodesItems0Pcis) contextValidateCards(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) contextValidateCards(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Cards); i++ {
 
@@ -896,7 +896,7 @@ func (m *ChassisNodesItems0Pcis) contextValidateCards(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodesItems0Pcis) MarshalBinary() ([]byte, error) {
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -904,8 +904,8 @@ func (m *ChassisNodesItems0Pcis) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodesItems0Pcis) UnmarshalBinary(b []byte) error {
-	var res ChassisNodesItems0Pcis
+func (m *ChassisInlineNodesInlineArrayItemInlinePcis) UnmarshalBinary(b []byte) error {
+	var res ChassisInlineNodesInlineArrayItemInlinePcis
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -920,15 +920,15 @@ type ChassisNodesItems0PcisCardsItems0 struct {
 
 	// The description of the PCI card.
 	// Example: Intel Lewisburg series chipset SATA Controller
-	Device string `json:"device,omitempty"`
+	Device *string `json:"device,omitempty"`
 
 	// The info string from the device driver of the PCI card.
 	// Example: Additional Info: 0 (0xaaf00000)   SHM2S86Q120GLM22NP FW1146 114473MB 512B/sect (SPG190108GW)
-	Info string `json:"info,omitempty"`
+	Info *string `json:"info,omitempty"`
 
 	// The slot where the PCI card is placed. This can sometimes take the form of "6-1" to indicate slot and subslot.
 	// Example: 0
-	Slot string `json:"slot,omitempty"`
+	Slot *string `json:"slot,omitempty"`
 }
 
 // Validate validates this chassis nodes items0 pcis cards items0
@@ -959,23 +959,23 @@ func (m *ChassisNodesItems0PcisCardsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodesItems0Usbs The status of the USB ports on the controller.
+// ChassisInlineNodesInlineArrayItemInlineUsbs The status of the USB ports on the controller.
 //
-// swagger:model ChassisNodesItems0Usbs
-type ChassisNodesItems0Usbs struct {
+// swagger:model chassis_inline_nodes_inline_array_item_inline_usbs
+type ChassisInlineNodesInlineArrayItemInlineUsbs struct {
 
 	// Indicates whether or not the USB ports are enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// ports
-	Ports []*ChassisNodesItems0UsbsPortsItems0 `json:"ports,omitempty"`
+	Ports []*ChassisNodesItems0UsbsPortsItems0 `json:"ports"`
 
 	// Indicates whether or not USB ports are supported on the current platform.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
-// Validate validates this chassis nodes items0 usbs
-func (m *ChassisNodesItems0Usbs) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis inline nodes inline array item inline usbs
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePorts(formats); err != nil {
@@ -988,7 +988,7 @@ func (m *ChassisNodesItems0Usbs) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodesItems0Usbs) validatePorts(formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) validatePorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ports) { // not required
 		return nil
 	}
@@ -1012,8 +1012,8 @@ func (m *ChassisNodesItems0Usbs) validatePorts(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis nodes items0 usbs based on the context it is used
-func (m *ChassisNodesItems0Usbs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis inline nodes inline array item inline usbs based on the context it is used
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePorts(ctx, formats); err != nil {
@@ -1026,7 +1026,7 @@ func (m *ChassisNodesItems0Usbs) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ChassisNodesItems0Usbs) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Ports); i++ {
 
@@ -1045,7 +1045,7 @@ func (m *ChassisNodesItems0Usbs) contextValidatePorts(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodesItems0Usbs) MarshalBinary() ([]byte, error) {
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1053,8 +1053,8 @@ func (m *ChassisNodesItems0Usbs) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodesItems0Usbs) UnmarshalBinary(b []byte) error {
-	var res ChassisNodesItems0Usbs
+func (m *ChassisInlineNodesInlineArrayItemInlineUsbs) UnmarshalBinary(b []byte) error {
+	var res ChassisInlineNodesInlineArrayItemInlineUsbs
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1068,7 +1068,7 @@ func (m *ChassisNodesItems0Usbs) UnmarshalBinary(b []byte) error {
 type ChassisNodesItems0UsbsPortsItems0 struct {
 
 	// Indicates whether or not the USB port has a device connected to it.
-	Connected bool `json:"connected,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
 }
 
 // Validate validates this chassis nodes items0 usbs ports items0

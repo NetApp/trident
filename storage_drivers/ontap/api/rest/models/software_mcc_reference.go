@@ -22,17 +22,17 @@ type SoftwareMccReference struct {
 	// Elapsed duration of update time (in seconds) of MetroCluster.
 	// Example: 2140
 	// Read Only: true
-	ElapsedDuration int64 `json:"elapsed_duration,omitempty"`
+	ElapsedDuration *int64 `json:"elapsed_duration,omitempty"`
 
 	// Estimated duration of update time (in seconds) of MetroCluster.
 	// Example: 3480
 	// Read Only: true
-	EstimatedDuration int64 `json:"estimated_duration,omitempty"`
+	EstimatedDuration *int64 `json:"estimated_duration,omitempty"`
 
 	// Name of the site in MetroCluster.
 	// Example: cluster_A
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Upgrade state of MetroCluster.
 	// Example: in_progress
@@ -70,7 +70,7 @@ func (m *SoftwareMccReference) ContextValidate(ctx context.Context, formats strf
 
 func (m *SoftwareMccReference) contextValidateElapsedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", int64(m.ElapsedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", m.ElapsedDuration); err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func (m *SoftwareMccReference) contextValidateElapsedDuration(ctx context.Contex
 
 func (m *SoftwareMccReference) contextValidateEstimatedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "estimated_duration", "body", int64(m.EstimatedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "estimated_duration", "body", m.EstimatedDuration); err != nil {
 		return err
 	}
 
@@ -88,7 +88,7 @@ func (m *SoftwareMccReference) contextValidateEstimatedDuration(ctx context.Cont
 
 func (m *SoftwareMccReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 

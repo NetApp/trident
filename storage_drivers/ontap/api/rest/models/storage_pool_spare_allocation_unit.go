@@ -22,22 +22,22 @@ type StoragePoolSpareAllocationUnit struct {
 
 	// The usable capacity of this set of allocation units.
 	// Read Only: true
-	AvailableSize int64 `json:"available_size,omitempty"`
+	AvailableSize *int64 `json:"available_size,omitempty"`
 
 	// The number of spare allocation units on this node.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// node
-	Node *StoragePoolSpareAllocationUnitNode `json:"node,omitempty"`
+	Node *StoragePoolSpareAllocationUnitInlineNode `json:"node,omitempty"`
 
 	// Size of each allocation unit.
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The RAID SyncMirror Pool to which this allocation unit is assigned.
 	// Read Only: true
 	// Enum: [pool0 pool1]
-	SyncmirrorPool string `json:"syncmirror_pool,omitempty"`
+	SyncmirrorPool *string `json:"syncmirror_pool,omitempty"`
 }
 
 // Validate validates this storage pool spare allocation unit
@@ -124,7 +124,7 @@ func (m *StoragePoolSpareAllocationUnit) validateSyncmirrorPool(formats strfmt.R
 	}
 
 	// value enum
-	if err := m.validateSyncmirrorPoolEnum("syncmirror_pool", "body", m.SyncmirrorPool); err != nil {
+	if err := m.validateSyncmirrorPoolEnum("syncmirror_pool", "body", *m.SyncmirrorPool); err != nil {
 		return err
 	}
 
@@ -159,7 +159,7 @@ func (m *StoragePoolSpareAllocationUnit) ContextValidate(ctx context.Context, fo
 
 func (m *StoragePoolSpareAllocationUnit) contextValidateAvailableSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "available_size", "body", int64(m.AvailableSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "available_size", "body", m.AvailableSize); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (m *StoragePoolSpareAllocationUnit) contextValidateNode(ctx context.Context
 
 func (m *StoragePoolSpareAllocationUnit) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -191,7 +191,7 @@ func (m *StoragePoolSpareAllocationUnit) contextValidateSize(ctx context.Context
 
 func (m *StoragePoolSpareAllocationUnit) contextValidateSyncmirrorPool(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "syncmirror_pool", "body", string(m.SyncmirrorPool)); err != nil {
+	if err := validate.ReadOnly(ctx, "syncmirror_pool", "body", m.SyncmirrorPool); err != nil {
 		return err
 	}
 
@@ -216,25 +216,25 @@ func (m *StoragePoolSpareAllocationUnit) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolSpareAllocationUnitNode Specifies what node can use this set of allocation units.
+// StoragePoolSpareAllocationUnitInlineNode Specifies what node can use this set of allocation units.
 //
-// swagger:model StoragePoolSpareAllocationUnitNode
-type StoragePoolSpareAllocationUnitNode struct {
+// swagger:model storage_pool_spare_allocation_unit_inline_node
+type StoragePoolSpareAllocationUnitInlineNode struct {
 
 	// links
-	Links *StoragePoolSpareAllocationUnitNodeLinks `json:"_links,omitempty"`
+	Links *StoragePoolSpareAllocationUnitInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this storage pool spare allocation unit node
-func (m *StoragePoolSpareAllocationUnitNode) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool spare allocation unit inline node
+func (m *StoragePoolSpareAllocationUnitInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -247,7 +247,7 @@ func (m *StoragePoolSpareAllocationUnitNode) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *StoragePoolSpareAllocationUnitNode) validateLinks(formats strfmt.Registry) error {
+func (m *StoragePoolSpareAllocationUnitInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -264,8 +264,8 @@ func (m *StoragePoolSpareAllocationUnitNode) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this storage pool spare allocation unit node based on the context it is used
-func (m *StoragePoolSpareAllocationUnitNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool spare allocation unit inline node based on the context it is used
+func (m *StoragePoolSpareAllocationUnitInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -278,7 +278,7 @@ func (m *StoragePoolSpareAllocationUnitNode) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *StoragePoolSpareAllocationUnitNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolSpareAllocationUnitInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -293,7 +293,7 @@ func (m *StoragePoolSpareAllocationUnitNode) contextValidateLinks(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolSpareAllocationUnitNode) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolSpareAllocationUnitInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -301,8 +301,8 @@ func (m *StoragePoolSpareAllocationUnitNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolSpareAllocationUnitNode) UnmarshalBinary(b []byte) error {
-	var res StoragePoolSpareAllocationUnitNode
+func (m *StoragePoolSpareAllocationUnitInlineNode) UnmarshalBinary(b []byte) error {
+	var res StoragePoolSpareAllocationUnitInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -310,17 +310,17 @@ func (m *StoragePoolSpareAllocationUnitNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolSpareAllocationUnitNodeLinks storage pool spare allocation unit node links
+// StoragePoolSpareAllocationUnitInlineNodeInlineLinks storage pool spare allocation unit inline node inline links
 //
-// swagger:model StoragePoolSpareAllocationUnitNodeLinks
-type StoragePoolSpareAllocationUnitNodeLinks struct {
+// swagger:model storage_pool_spare_allocation_unit_inline_node_inline__links
+type StoragePoolSpareAllocationUnitInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage pool spare allocation unit node links
-func (m *StoragePoolSpareAllocationUnitNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool spare allocation unit inline node inline links
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -333,7 +333,7 @@ func (m *StoragePoolSpareAllocationUnitNodeLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *StoragePoolSpareAllocationUnitNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -350,8 +350,8 @@ func (m *StoragePoolSpareAllocationUnitNodeLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this storage pool spare allocation unit node links based on the context it is used
-func (m *StoragePoolSpareAllocationUnitNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool spare allocation unit inline node inline links based on the context it is used
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -364,7 +364,7 @@ func (m *StoragePoolSpareAllocationUnitNodeLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *StoragePoolSpareAllocationUnitNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -379,7 +379,7 @@ func (m *StoragePoolSpareAllocationUnitNodeLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolSpareAllocationUnitNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -387,8 +387,8 @@ func (m *StoragePoolSpareAllocationUnitNodeLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolSpareAllocationUnitNodeLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePoolSpareAllocationUnitNodeLinks
+func (m *StoragePoolSpareAllocationUnitInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePoolSpareAllocationUnitInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

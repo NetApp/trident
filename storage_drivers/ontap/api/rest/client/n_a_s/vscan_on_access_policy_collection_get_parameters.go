@@ -66,37 +66,37 @@ type VscanOnAccessPolicyCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Mandatory.
 
 	   Filter by mandatory
 	*/
-	MandatoryQueryParameter *bool
+	Mandatory *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type VscanOnAccessPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,55 +112,55 @@ type VscanOnAccessPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScopeExcludeExtensions.
 
 	   Filter by scope.exclude_extensions
 	*/
-	ScopeExcludeExtensionsQueryParameter *string
+	ScopeExcludeExtensions *string
 
 	/* ScopeExcludePaths.
 
 	   Filter by scope.exclude_paths
 	*/
-	ScopeExcludePathsQueryParameter *string
+	ScopeExcludePaths *string
 
 	/* ScopeIncludeExtensions.
 
 	   Filter by scope.include_extensions
 	*/
-	ScopeIncludeExtensionsQueryParameter *string
+	ScopeIncludeExtensions *string
 
 	/* ScopeMaxFileSize.
 
 	   Filter by scope.max_file_size
 	*/
-	ScopeMaxFileSizeQueryParameter *int64
+	ScopeMaxFileSize *int64
 
 	/* ScopeOnlyExecuteAccess.
 
 	   Filter by scope.only_execute_access
 	*/
-	ScopeOnlyExecuteAccessQueryParameter *bool
+	ScopeOnlyExecuteAccess *bool
 
 	/* ScopeScanReadonlyVolumes.
 
 	   Filter by scope.scan_readonly_volumes
 	*/
-	ScopeScanReadonlyVolumesQueryParameter *bool
+	ScopeScanReadonlyVolumes *bool
 
 	/* ScopeScanWithoutExtension.
 
 	   Filter by scope.scan_without_extension
 	*/
-	ScopeScanWithoutExtensionQueryParameter *bool
+	ScopeScanWithoutExtension *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -180,14 +180,14 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WithDefaults() *VscanOnAccessPo
 // All values with no default are reset to their zero value.
 func (o *VscanOnAccessPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VscanOnAccessPolicyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -229,180 +229,180 @@ func (o *VscanOnAccessPolicyCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithEnabled(enabled *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithFields(fields []string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMandatoryQueryParameter adds the mandatory to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithMandatoryQueryParameter(mandatory *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetMandatoryQueryParameter(mandatory)
+// WithMandatory adds the mandatory to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithMandatory(mandatory *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetMandatory(mandatory)
 	return o
 }
 
-// SetMandatoryQueryParameter adds the mandatory to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetMandatoryQueryParameter(mandatory *bool) {
-	o.MandatoryQueryParameter = mandatory
+// SetMandatory adds the mandatory to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetMandatory(mandatory *bool) {
+	o.Mandatory = mandatory
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithNameQueryParameter(name *string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithName(name *string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithOrderBy(orderBy []string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeExcludeExtensionsQueryParameter adds the scopeExcludeExtensions to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeExcludeExtensionsQueryParameter(scopeExcludeExtensions *string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeExcludeExtensionsQueryParameter(scopeExcludeExtensions)
+// WithScopeExcludeExtensions adds the scopeExcludeExtensions to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeExcludeExtensions(scopeExcludeExtensions *string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeExcludeExtensions(scopeExcludeExtensions)
 	return o
 }
 
-// SetScopeExcludeExtensionsQueryParameter adds the scopeExcludeExtensions to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeExcludeExtensionsQueryParameter(scopeExcludeExtensions *string) {
-	o.ScopeExcludeExtensionsQueryParameter = scopeExcludeExtensions
+// SetScopeExcludeExtensions adds the scopeExcludeExtensions to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeExcludeExtensions(scopeExcludeExtensions *string) {
+	o.ScopeExcludeExtensions = scopeExcludeExtensions
 }
 
-// WithScopeExcludePathsQueryParameter adds the scopeExcludePaths to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeExcludePathsQueryParameter(scopeExcludePaths *string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeExcludePathsQueryParameter(scopeExcludePaths)
+// WithScopeExcludePaths adds the scopeExcludePaths to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeExcludePaths(scopeExcludePaths *string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeExcludePaths(scopeExcludePaths)
 	return o
 }
 
-// SetScopeExcludePathsQueryParameter adds the scopeExcludePaths to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeExcludePathsQueryParameter(scopeExcludePaths *string) {
-	o.ScopeExcludePathsQueryParameter = scopeExcludePaths
+// SetScopeExcludePaths adds the scopeExcludePaths to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeExcludePaths(scopeExcludePaths *string) {
+	o.ScopeExcludePaths = scopeExcludePaths
 }
 
-// WithScopeIncludeExtensionsQueryParameter adds the scopeIncludeExtensions to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeIncludeExtensionsQueryParameter(scopeIncludeExtensions *string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeIncludeExtensionsQueryParameter(scopeIncludeExtensions)
+// WithScopeIncludeExtensions adds the scopeIncludeExtensions to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeIncludeExtensions(scopeIncludeExtensions *string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeIncludeExtensions(scopeIncludeExtensions)
 	return o
 }
 
-// SetScopeIncludeExtensionsQueryParameter adds the scopeIncludeExtensions to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeIncludeExtensionsQueryParameter(scopeIncludeExtensions *string) {
-	o.ScopeIncludeExtensionsQueryParameter = scopeIncludeExtensions
+// SetScopeIncludeExtensions adds the scopeIncludeExtensions to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeIncludeExtensions(scopeIncludeExtensions *string) {
+	o.ScopeIncludeExtensions = scopeIncludeExtensions
 }
 
-// WithScopeMaxFileSizeQueryParameter adds the scopeMaxFileSize to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeMaxFileSizeQueryParameter(scopeMaxFileSize *int64) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeMaxFileSizeQueryParameter(scopeMaxFileSize)
+// WithScopeMaxFileSize adds the scopeMaxFileSize to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeMaxFileSize(scopeMaxFileSize *int64) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeMaxFileSize(scopeMaxFileSize)
 	return o
 }
 
-// SetScopeMaxFileSizeQueryParameter adds the scopeMaxFileSize to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeMaxFileSizeQueryParameter(scopeMaxFileSize *int64) {
-	o.ScopeMaxFileSizeQueryParameter = scopeMaxFileSize
+// SetScopeMaxFileSize adds the scopeMaxFileSize to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeMaxFileSize(scopeMaxFileSize *int64) {
+	o.ScopeMaxFileSize = scopeMaxFileSize
 }
 
-// WithScopeOnlyExecuteAccessQueryParameter adds the scopeOnlyExecuteAccess to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeOnlyExecuteAccessQueryParameter(scopeOnlyExecuteAccess *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeOnlyExecuteAccessQueryParameter(scopeOnlyExecuteAccess)
+// WithScopeOnlyExecuteAccess adds the scopeOnlyExecuteAccess to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeOnlyExecuteAccess(scopeOnlyExecuteAccess *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeOnlyExecuteAccess(scopeOnlyExecuteAccess)
 	return o
 }
 
-// SetScopeOnlyExecuteAccessQueryParameter adds the scopeOnlyExecuteAccess to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeOnlyExecuteAccessQueryParameter(scopeOnlyExecuteAccess *bool) {
-	o.ScopeOnlyExecuteAccessQueryParameter = scopeOnlyExecuteAccess
+// SetScopeOnlyExecuteAccess adds the scopeOnlyExecuteAccess to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeOnlyExecuteAccess(scopeOnlyExecuteAccess *bool) {
+	o.ScopeOnlyExecuteAccess = scopeOnlyExecuteAccess
 }
 
-// WithScopeScanReadonlyVolumesQueryParameter adds the scopeScanReadonlyVolumes to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeScanReadonlyVolumesQueryParameter(scopeScanReadonlyVolumes *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeScanReadonlyVolumesQueryParameter(scopeScanReadonlyVolumes)
+// WithScopeScanReadonlyVolumes adds the scopeScanReadonlyVolumes to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeScanReadonlyVolumes(scopeScanReadonlyVolumes *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeScanReadonlyVolumes(scopeScanReadonlyVolumes)
 	return o
 }
 
-// SetScopeScanReadonlyVolumesQueryParameter adds the scopeScanReadonlyVolumes to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeScanReadonlyVolumesQueryParameter(scopeScanReadonlyVolumes *bool) {
-	o.ScopeScanReadonlyVolumesQueryParameter = scopeScanReadonlyVolumes
+// SetScopeScanReadonlyVolumes adds the scopeScanReadonlyVolumes to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeScanReadonlyVolumes(scopeScanReadonlyVolumes *bool) {
+	o.ScopeScanReadonlyVolumes = scopeScanReadonlyVolumes
 }
 
-// WithScopeScanWithoutExtensionQueryParameter adds the scopeScanWithoutExtension to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeScanWithoutExtensionQueryParameter(scopeScanWithoutExtension *bool) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetScopeScanWithoutExtensionQueryParameter(scopeScanWithoutExtension)
+// WithScopeScanWithoutExtension adds the scopeScanWithoutExtension to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithScopeScanWithoutExtension(scopeScanWithoutExtension *bool) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetScopeScanWithoutExtension(scopeScanWithoutExtension)
 	return o
 }
 
-// SetScopeScanWithoutExtensionQueryParameter adds the scopeScanWithoutExtension to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeScanWithoutExtensionQueryParameter(scopeScanWithoutExtension *bool) {
-	o.ScopeScanWithoutExtensionQueryParameter = scopeScanWithoutExtension
+// SetScopeScanWithoutExtension adds the scopeScanWithoutExtension to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetScopeScanWithoutExtension(scopeScanWithoutExtension *bool) {
+	o.ScopeScanWithoutExtension = scopeScanWithoutExtension
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnAccessPolicyCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) WithSvmUUID(svmUUID string) *VscanOnAccessPolicyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan on access policy collection get params
-func (o *VscanOnAccessPolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan on access policy collection get params
+func (o *VscanOnAccessPolicyCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -413,13 +413,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -430,7 +430,7 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -441,13 +441,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MandatoryQueryParameter != nil {
+	if o.Mandatory != nil {
 
 		// query param mandatory
 		var qrMandatory bool
 
-		if o.MandatoryQueryParameter != nil {
-			qrMandatory = *o.MandatoryQueryParameter
+		if o.Mandatory != nil {
+			qrMandatory = *o.Mandatory
 		}
 		qMandatory := swag.FormatBool(qrMandatory)
 		if qMandatory != "" {
@@ -458,13 +458,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,13 +475,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -492,7 +492,7 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -503,13 +503,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -520,13 +520,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -537,13 +537,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeExcludeExtensionsQueryParameter != nil {
+	if o.ScopeExcludeExtensions != nil {
 
 		// query param scope.exclude_extensions
 		var qrScopeExcludeExtensions string
 
-		if o.ScopeExcludeExtensionsQueryParameter != nil {
-			qrScopeExcludeExtensions = *o.ScopeExcludeExtensionsQueryParameter
+		if o.ScopeExcludeExtensions != nil {
+			qrScopeExcludeExtensions = *o.ScopeExcludeExtensions
 		}
 		qScopeExcludeExtensions := qrScopeExcludeExtensions
 		if qScopeExcludeExtensions != "" {
@@ -554,13 +554,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeExcludePathsQueryParameter != nil {
+	if o.ScopeExcludePaths != nil {
 
 		// query param scope.exclude_paths
 		var qrScopeExcludePaths string
 
-		if o.ScopeExcludePathsQueryParameter != nil {
-			qrScopeExcludePaths = *o.ScopeExcludePathsQueryParameter
+		if o.ScopeExcludePaths != nil {
+			qrScopeExcludePaths = *o.ScopeExcludePaths
 		}
 		qScopeExcludePaths := qrScopeExcludePaths
 		if qScopeExcludePaths != "" {
@@ -571,13 +571,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeIncludeExtensionsQueryParameter != nil {
+	if o.ScopeIncludeExtensions != nil {
 
 		// query param scope.include_extensions
 		var qrScopeIncludeExtensions string
 
-		if o.ScopeIncludeExtensionsQueryParameter != nil {
-			qrScopeIncludeExtensions = *o.ScopeIncludeExtensionsQueryParameter
+		if o.ScopeIncludeExtensions != nil {
+			qrScopeIncludeExtensions = *o.ScopeIncludeExtensions
 		}
 		qScopeIncludeExtensions := qrScopeIncludeExtensions
 		if qScopeIncludeExtensions != "" {
@@ -588,13 +588,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeMaxFileSizeQueryParameter != nil {
+	if o.ScopeMaxFileSize != nil {
 
 		// query param scope.max_file_size
 		var qrScopeMaxFileSize int64
 
-		if o.ScopeMaxFileSizeQueryParameter != nil {
-			qrScopeMaxFileSize = *o.ScopeMaxFileSizeQueryParameter
+		if o.ScopeMaxFileSize != nil {
+			qrScopeMaxFileSize = *o.ScopeMaxFileSize
 		}
 		qScopeMaxFileSize := swag.FormatInt64(qrScopeMaxFileSize)
 		if qScopeMaxFileSize != "" {
@@ -605,13 +605,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeOnlyExecuteAccessQueryParameter != nil {
+	if o.ScopeOnlyExecuteAccess != nil {
 
 		// query param scope.only_execute_access
 		var qrScopeOnlyExecuteAccess bool
 
-		if o.ScopeOnlyExecuteAccessQueryParameter != nil {
-			qrScopeOnlyExecuteAccess = *o.ScopeOnlyExecuteAccessQueryParameter
+		if o.ScopeOnlyExecuteAccess != nil {
+			qrScopeOnlyExecuteAccess = *o.ScopeOnlyExecuteAccess
 		}
 		qScopeOnlyExecuteAccess := swag.FormatBool(qrScopeOnlyExecuteAccess)
 		if qScopeOnlyExecuteAccess != "" {
@@ -622,13 +622,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeScanReadonlyVolumesQueryParameter != nil {
+	if o.ScopeScanReadonlyVolumes != nil {
 
 		// query param scope.scan_readonly_volumes
 		var qrScopeScanReadonlyVolumes bool
 
-		if o.ScopeScanReadonlyVolumesQueryParameter != nil {
-			qrScopeScanReadonlyVolumes = *o.ScopeScanReadonlyVolumesQueryParameter
+		if o.ScopeScanReadonlyVolumes != nil {
+			qrScopeScanReadonlyVolumes = *o.ScopeScanReadonlyVolumes
 		}
 		qScopeScanReadonlyVolumes := swag.FormatBool(qrScopeScanReadonlyVolumes)
 		if qScopeScanReadonlyVolumes != "" {
@@ -639,13 +639,13 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeScanWithoutExtensionQueryParameter != nil {
+	if o.ScopeScanWithoutExtension != nil {
 
 		// query param scope.scan_without_extension
 		var qrScopeScanWithoutExtension bool
 
-		if o.ScopeScanWithoutExtensionQueryParameter != nil {
-			qrScopeScanWithoutExtension = *o.ScopeScanWithoutExtensionQueryParameter
+		if o.ScopeScanWithoutExtension != nil {
+			qrScopeScanWithoutExtension = *o.ScopeScanWithoutExtension
 		}
 		qScopeScanWithoutExtension := swag.FormatBool(qrScopeScanWithoutExtension)
 		if qScopeScanWithoutExtension != "" {
@@ -657,7 +657,7 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -669,7 +669,7 @@ func (o *VscanOnAccessPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamVscanOnAccessPolicyCollectionGet binds the parameter fields
 func (o *VscanOnAccessPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -686,7 +686,7 @@ func (o *VscanOnAccessPolicyCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamVscanOnAccessPolicyCollectionGet binds the parameter order_by
 func (o *VscanOnAccessPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

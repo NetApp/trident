@@ -66,19 +66,19 @@ type ExportRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Export Rule Index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* PolicyID.
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *ExportRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the export rule get params
-func (o *ExportRuleGetParams) WithFieldsQueryParameter(fields []string) *ExportRuleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the export rule get params
+func (o *ExportRuleGetParams) WithFields(fields []string) *ExportRuleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the export rule get params
-func (o *ExportRuleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the export rule get params
+func (o *ExportRuleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the export rule get params
-func (o *ExportRuleGetParams) WithIndexPathParameter(index int64) *ExportRuleGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the export rule get params
+func (o *ExportRuleGetParams) WithIndex(index int64) *ExportRuleGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the export rule get params
-func (o *ExportRuleGetParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the export rule get params
+func (o *ExportRuleGetParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule get params
-func (o *ExportRuleGetParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleGetParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule get params
+func (o *ExportRuleGetParams) WithPolicyID(policyID int64) *ExportRuleGetParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule get params
-func (o *ExportRuleGetParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule get params
+func (o *ExportRuleGetParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *ExportRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *ExportRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *ExportRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamExportRuleGet binds the parameter fields
 func (o *ExportRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

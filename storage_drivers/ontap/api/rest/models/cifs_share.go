@@ -24,15 +24,12 @@ import (
 type CifsShare struct {
 
 	// links
-	Links *CifsShareLinks `json:"_links,omitempty"`
+	Links *CifsShareInlineLinks `json:"_links,omitempty"`
 
 	// If enabled, all folders inside this share are visible to a user based on that individual user access right; prevents
 	// the display of folders or other shared resources that the user does not have access to.
 	//
 	AccessBasedEnumeration *bool `json:"access_based_enumeration,omitempty"`
-
-	// acls
-	Acls []*CifsShareAclsItems0 `json:"acls,omitempty"`
 
 	// Specifies whether or not the SMB2 clients are allowed to access the encrypted share.
 	//
@@ -41,11 +38,14 @@ type CifsShare struct {
 	// Specifies whether CIFS clients can request for change notifications for directories on this share.
 	ChangeNotify *bool `json:"change_notify,omitempty"`
 
+	// cifs share inline acls
+	CifsShareInlineAcls []*CifsShareInlineAclsInlineArrayItem `json:"acls,omitempty"`
+
 	// Specify the CIFS share descriptions.
 	// Example: HR Department Share
 	// Max Length: 256
 	// Min Length: 1
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Specifies whether or not the clients connecting to this share can open files in a persistent manner.
 	// Files opened in this way are protected from disruptive events, such as, failover and giveback.
@@ -54,7 +54,7 @@ type CifsShare struct {
 
 	// Directory Mode Creation Mask to be viewed as an octal number.
 	// Example: 22
-	DirUmask int64 `json:"dir_umask,omitempty"`
+	DirUmask *int64 `json:"dir_umask,omitempty"`
 
 	// Specifies that SMB encryption must be used when accessing this share. Clients that do not support encryption are not
 	// able to access this share.
@@ -63,14 +63,14 @@ type CifsShare struct {
 
 	// File Mode Creation Mask to be viewed as an octal number.
 	// Example: 22
-	FileUmask int64 `json:"file_umask,omitempty"`
+	FileUmask *int64 `json:"file_umask,omitempty"`
 
 	// Specifies that all files that CIFS users create in a specific share belong to the same group
 	// (also called the "force-group"). The "force-group" must be a predefined group in the UNIX group
 	// database. This setting has no effect unless the security style of the volume is UNIX or mixed
 	// security style.
 	//
-	ForceGroupForCreate string `json:"force_group_for_create,omitempty"`
+	ForceGroupForCreate *string `json:"force_group_for_create,omitempty"`
 
 	// Specifies whether or not the share is a home directory share, where the share and path names are dynamic.
 	// ONTAP home directory functionality automatically offer each user a dynamic share to their home directory without creating an
@@ -91,7 +91,7 @@ type CifsShare struct {
 	// Example: HR_SHARE
 	// Max Length: 80
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies whether or not the SMB clients connecting to this share can cache the directory enumeration
 	// results returned by the CIFS servers.
@@ -127,14 +127,14 @@ type CifsShare struct {
 	// Example: /volume_1/eng_vol/
 	// Max Length: 256
 	// Min Length: 1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Specifies whether or not the Snapshot copies can be viewed and traversed by clients.
 	//
 	ShowSnapshot *bool `json:"show_snapshot,omitempty"`
 
 	// svm
-	Svm *CifsShareSvm `json:"svm,omitempty"`
+	Svm *CifsShareInlineSvm `json:"svm,omitempty"`
 
 	// Controls the access of UNIX symbolic links to CIFS clients.
 	// The supported values are:
@@ -146,7 +146,7 @@ type CifsShare struct {
 	UnixSymlink *string `json:"unix_symlink,omitempty"`
 
 	// volume
-	Volume *CifsShareVolume `json:"volume,omitempty"`
+	Volume *CifsShareInlineVolume `json:"volume,omitempty"`
 
 	// Vscan File-Operations Profile
 	// The supported values are:
@@ -167,7 +167,7 @@ func (m *CifsShare) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAcls(formats); err != nil {
+	if err := m.validateCifsShareInlineAcls(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -226,18 +226,18 @@ func (m *CifsShare) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShare) validateAcls(formats strfmt.Registry) error {
-	if swag.IsZero(m.Acls) { // not required
+func (m *CifsShare) validateCifsShareInlineAcls(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsShareInlineAcls) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Acls); i++ {
-		if swag.IsZero(m.Acls[i]) { // not required
+	for i := 0; i < len(m.CifsShareInlineAcls); i++ {
+		if swag.IsZero(m.CifsShareInlineAcls[i]) { // not required
 			continue
 		}
 
-		if m.Acls[i] != nil {
-			if err := m.Acls[i].Validate(formats); err != nil {
+		if m.CifsShareInlineAcls[i] != nil {
+			if err := m.CifsShareInlineAcls[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("acls" + "." + strconv.Itoa(i))
 				}
@@ -255,11 +255,11 @@ func (m *CifsShare) validateComment(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("comment", "body", m.Comment, 1); err != nil {
+	if err := validate.MinLength("comment", "body", *m.Comment, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("comment", "body", m.Comment, 256); err != nil {
+	if err := validate.MaxLength("comment", "body", *m.Comment, 256); err != nil {
 		return err
 	}
 
@@ -271,11 +271,11 @@ func (m *CifsShare) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 80); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 80); err != nil {
 		return err
 	}
 
@@ -363,11 +363,11 @@ func (m *CifsShare) validatePath(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("path", "body", m.Path, 1); err != nil {
+	if err := validate.MinLength("path", "body", *m.Path, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("path", "body", m.Path, 256); err != nil {
+	if err := validate.MaxLength("path", "body", *m.Path, 256); err != nil {
 		return err
 	}
 
@@ -558,7 +558,7 @@ func (m *CifsShare) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateAcls(ctx, formats); err != nil {
+	if err := m.contextValidateCifsShareInlineAcls(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -590,12 +590,12 @@ func (m *CifsShare) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *CifsShare) contextValidateAcls(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShare) contextValidateCifsShareInlineAcls(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Acls); i++ {
+	for i := 0; i < len(m.CifsShareInlineAcls); i++ {
 
-		if m.Acls[i] != nil {
-			if err := m.Acls[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsShareInlineAcls[i] != nil {
+			if err := m.CifsShareInlineAcls[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("acls" + "." + strconv.Itoa(i))
 				}
@@ -654,13 +654,13 @@ func (m *CifsShare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareAclsItems0 The permissions that users and groups have on a CIFS share.
+// CifsShareInlineAclsInlineArrayItem The permissions that users and groups have on a CIFS share.
 //
-// swagger:model CifsShareAclsItems0
-type CifsShareAclsItems0 struct {
+// swagger:model cifs_share_inline_acls_inline_array_item
+type CifsShareInlineAclsInlineArrayItem struct {
 
 	// links
-	Links *CifsShareAclsItems0Links `json:"_links,omitempty"`
+	Links *CifsShareInlineAclsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the access rights that a user or group has on the defined CIFS Share.
 	// The following values are allowed:
@@ -670,7 +670,7 @@ type CifsShareAclsItems0 struct {
 	// * full_control - User has full_control access
 	//
 	// Enum: [no_access read change full_control]
-	Permission string `json:"permission,omitempty"`
+	Permission *string `json:"permission,omitempty"`
 
 	// Specifies the type of the user or group to add to the access control
 	// list of a CIFS share. The following values are allowed:
@@ -679,15 +679,15 @@ type CifsShareAclsItems0 struct {
 	// * unix_group - UNIX group
 	//
 	// Enum: [windows unix_user unix_group]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Specifies the user or group name to add to the access control list of a CIFS share.
 	// Example: ENGDOMAIN\\ad_user
-	UserOrGroup string `json:"user_or_group,omitempty"`
+	UserOrGroup *string `json:"user_or_group,omitempty"`
 }
 
-// Validate validates this cifs share acls items0
-func (m *CifsShareAclsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline acls inline array item
+func (m *CifsShareInlineAclsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -708,7 +708,7 @@ func (m *CifsShareAclsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareAclsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -725,7 +725,7 @@ func (m *CifsShareAclsItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var cifsShareAclsItems0TypePermissionPropEnum []interface{}
+var cifsShareInlineAclsInlineArrayItemTypePermissionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -733,75 +733,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsShareAclsItems0TypePermissionPropEnum = append(cifsShareAclsItems0TypePermissionPropEnum, v)
+		cifsShareInlineAclsInlineArrayItemTypePermissionPropEnum = append(cifsShareInlineAclsInlineArrayItemTypePermissionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// permission
 	// Permission
 	// no_access
 	// END DEBUGGING
-	// CifsShareAclsItems0PermissionNoAccess captures enum value "no_access"
-	CifsShareAclsItems0PermissionNoAccess string = "no_access"
+	// CifsShareInlineAclsInlineArrayItemPermissionNoAccess captures enum value "no_access"
+	CifsShareInlineAclsInlineArrayItemPermissionNoAccess string = "no_access"
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// permission
 	// Permission
 	// read
 	// END DEBUGGING
-	// CifsShareAclsItems0PermissionRead captures enum value "read"
-	CifsShareAclsItems0PermissionRead string = "read"
+	// CifsShareInlineAclsInlineArrayItemPermissionRead captures enum value "read"
+	CifsShareInlineAclsInlineArrayItemPermissionRead string = "read"
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// permission
 	// Permission
 	// change
 	// END DEBUGGING
-	// CifsShareAclsItems0PermissionChange captures enum value "change"
-	CifsShareAclsItems0PermissionChange string = "change"
+	// CifsShareInlineAclsInlineArrayItemPermissionChange captures enum value "change"
+	CifsShareInlineAclsInlineArrayItemPermissionChange string = "change"
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// permission
 	// Permission
 	// full_control
 	// END DEBUGGING
-	// CifsShareAclsItems0PermissionFullControl captures enum value "full_control"
-	CifsShareAclsItems0PermissionFullControl string = "full_control"
+	// CifsShareInlineAclsInlineArrayItemPermissionFullControl captures enum value "full_control"
+	CifsShareInlineAclsInlineArrayItemPermissionFullControl string = "full_control"
 )
 
 // prop value enum
-func (m *CifsShareAclsItems0) validatePermissionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsShareAclsItems0TypePermissionPropEnum, true); err != nil {
+func (m *CifsShareInlineAclsInlineArrayItem) validatePermissionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareInlineAclsInlineArrayItemTypePermissionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsShareAclsItems0) validatePermission(formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItem) validatePermission(formats strfmt.Registry) error {
 	if swag.IsZero(m.Permission) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validatePermissionEnum("permission", "body", m.Permission); err != nil {
+	if err := m.validatePermissionEnum("permission", "body", *m.Permission); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var cifsShareAclsItems0TypeTypePropEnum []interface{}
+var cifsShareInlineAclsInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -809,66 +809,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsShareAclsItems0TypeTypePropEnum = append(cifsShareAclsItems0TypeTypePropEnum, v)
+		cifsShareInlineAclsInlineArrayItemTypeTypePropEnum = append(cifsShareInlineAclsInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// type
 	// Type
 	// windows
 	// END DEBUGGING
-	// CifsShareAclsItems0TypeWindows captures enum value "windows"
-	CifsShareAclsItems0TypeWindows string = "windows"
+	// CifsShareInlineAclsInlineArrayItemTypeWindows captures enum value "windows"
+	CifsShareInlineAclsInlineArrayItemTypeWindows string = "windows"
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// type
 	// Type
 	// unix_user
 	// END DEBUGGING
-	// CifsShareAclsItems0TypeUnixUser captures enum value "unix_user"
-	CifsShareAclsItems0TypeUnixUser string = "unix_user"
+	// CifsShareInlineAclsInlineArrayItemTypeUnixUser captures enum value "unix_user"
+	CifsShareInlineAclsInlineArrayItemTypeUnixUser string = "unix_user"
 
 	// BEGIN DEBUGGING
-	// CifsShareAclsItems0
-	// CifsShareAclsItems0
+	// cifs_share_inline_acls_inline_array_item
+	// CifsShareInlineAclsInlineArrayItem
 	// type
 	// Type
 	// unix_group
 	// END DEBUGGING
-	// CifsShareAclsItems0TypeUnixGroup captures enum value "unix_group"
-	CifsShareAclsItems0TypeUnixGroup string = "unix_group"
+	// CifsShareInlineAclsInlineArrayItemTypeUnixGroup captures enum value "unix_group"
+	CifsShareInlineAclsInlineArrayItemTypeUnixGroup string = "unix_group"
 )
 
 // prop value enum
-func (m *CifsShareAclsItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsShareAclsItems0TypeTypePropEnum, true); err != nil {
+func (m *CifsShareInlineAclsInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareInlineAclsInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsShareAclsItems0) validateType(formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cifs share acls items0 based on the context it is used
-func (m *CifsShareAclsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline acls inline array item based on the context it is used
+func (m *CifsShareInlineAclsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -881,7 +881,7 @@ func (m *CifsShareAclsItems0) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *CifsShareAclsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -896,7 +896,7 @@ func (m *CifsShareAclsItems0) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareAclsItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineAclsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -904,8 +904,8 @@ func (m *CifsShareAclsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareAclsItems0) UnmarshalBinary(b []byte) error {
-	var res CifsShareAclsItems0
+func (m *CifsShareInlineAclsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineAclsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -913,17 +913,17 @@ func (m *CifsShareAclsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareAclsItems0Links cifs share acls items0 links
+// CifsShareInlineAclsInlineArrayItemInlineLinks cifs share inline acls inline array item inline links
 //
-// swagger:model CifsShareAclsItems0Links
-type CifsShareAclsItems0Links struct {
+// swagger:model cifs_share_inline_acls_inline_array_item_inline__links
+type CifsShareInlineAclsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share acls items0 links
-func (m *CifsShareAclsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline acls inline array item inline links
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -936,7 +936,7 @@ func (m *CifsShareAclsItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareAclsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -953,8 +953,8 @@ func (m *CifsShareAclsItems0Links) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share acls items0 links based on the context it is used
-func (m *CifsShareAclsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline acls inline array item inline links based on the context it is used
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -967,7 +967,7 @@ func (m *CifsShareAclsItems0Links) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CifsShareAclsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -982,7 +982,7 @@ func (m *CifsShareAclsItems0Links) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareAclsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -990,8 +990,8 @@ func (m *CifsShareAclsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareAclsItems0Links) UnmarshalBinary(b []byte) error {
-	var res CifsShareAclsItems0Links
+func (m *CifsShareInlineAclsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineAclsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -999,17 +999,17 @@ func (m *CifsShareAclsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareLinks cifs share links
+// CifsShareInlineLinks cifs share inline links
 //
-// swagger:model CifsShareLinks
-type CifsShareLinks struct {
+// swagger:model cifs_share_inline__links
+type CifsShareInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share links
-func (m *CifsShareLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline links
+func (m *CifsShareInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1022,7 +1022,7 @@ func (m *CifsShareLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1039,8 +1039,8 @@ func (m *CifsShareLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share links based on the context it is used
-func (m *CifsShareLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline links based on the context it is used
+func (m *CifsShareInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1053,7 +1053,7 @@ func (m *CifsShareLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *CifsShareLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1068,7 +1068,7 @@ func (m *CifsShareLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1076,8 +1076,8 @@ func (m *CifsShareLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareLinks) UnmarshalBinary(b []byte) error {
-	var res CifsShareLinks
+func (m *CifsShareInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1085,27 +1085,27 @@ func (m *CifsShareLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareSvm cifs share svm
+// CifsShareInlineSvm cifs share inline svm
 //
-// swagger:model CifsShareSvm
-type CifsShareSvm struct {
+// swagger:model cifs_share_inline_svm
+type CifsShareInlineSvm struct {
 
 	// links
-	Links *CifsShareSvmLinks `json:"_links,omitempty"`
+	Links *CifsShareInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs share svm
-func (m *CifsShareSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline svm
+func (m *CifsShareInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1118,7 +1118,7 @@ func (m *CifsShareSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsShareInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1135,8 +1135,8 @@ func (m *CifsShareSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share svm based on the context it is used
-func (m *CifsShareSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline svm based on the context it is used
+func (m *CifsShareInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1149,7 +1149,7 @@ func (m *CifsShareSvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *CifsShareSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1164,7 +1164,7 @@ func (m *CifsShareSvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1172,8 +1172,8 @@ func (m *CifsShareSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareSvm) UnmarshalBinary(b []byte) error {
-	var res CifsShareSvm
+func (m *CifsShareInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1181,17 +1181,17 @@ func (m *CifsShareSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareSvmLinks cifs share svm links
+// CifsShareInlineSvmInlineLinks cifs share inline svm inline links
 //
-// swagger:model CifsShareSvmLinks
-type CifsShareSvmLinks struct {
+// swagger:model cifs_share_inline_svm_inline__links
+type CifsShareInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share svm links
-func (m *CifsShareSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline svm inline links
+func (m *CifsShareInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1204,7 +1204,7 @@ func (m *CifsShareSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1221,8 +1221,8 @@ func (m *CifsShareSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share svm links based on the context it is used
-func (m *CifsShareSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline svm inline links based on the context it is used
+func (m *CifsShareInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1235,7 +1235,7 @@ func (m *CifsShareSvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CifsShareSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1250,7 +1250,7 @@ func (m *CifsShareSvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1258,8 +1258,8 @@ func (m *CifsShareSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsShareSvmLinks
+func (m *CifsShareInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1267,25 +1267,25 @@ func (m *CifsShareSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareVolume cifs share volume
+// CifsShareInlineVolume cifs share inline volume
 //
-// swagger:model CifsShareVolume
-type CifsShareVolume struct {
+// swagger:model cifs_share_inline_volume
+type CifsShareInlineVolume struct {
 
 	// links
-	Links *CifsShareVolumeLinks `json:"_links,omitempty"`
+	Links *CifsShareInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs share volume
-func (m *CifsShareVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline volume
+func (m *CifsShareInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1298,7 +1298,7 @@ func (m *CifsShareVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareVolume) validateLinks(formats strfmt.Registry) error {
+func (m *CifsShareInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1315,8 +1315,8 @@ func (m *CifsShareVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share volume based on the context it is used
-func (m *CifsShareVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline volume based on the context it is used
+func (m *CifsShareInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1329,7 +1329,7 @@ func (m *CifsShareVolume) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *CifsShareVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1344,7 +1344,7 @@ func (m *CifsShareVolume) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareVolume) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1352,8 +1352,8 @@ func (m *CifsShareVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareVolume) UnmarshalBinary(b []byte) error {
-	var res CifsShareVolume
+func (m *CifsShareInlineVolume) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1361,17 +1361,17 @@ func (m *CifsShareVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareVolumeLinks cifs share volume links
+// CifsShareInlineVolumeInlineLinks cifs share inline volume inline links
 //
-// swagger:model CifsShareVolumeLinks
-type CifsShareVolumeLinks struct {
+// swagger:model cifs_share_inline_volume_inline__links
+type CifsShareInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share volume links
-func (m *CifsShareVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share inline volume inline links
+func (m *CifsShareInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1384,7 +1384,7 @@ func (m *CifsShareVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1401,8 +1401,8 @@ func (m *CifsShareVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share volume links based on the context it is used
-func (m *CifsShareVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share inline volume inline links based on the context it is used
+func (m *CifsShareInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1415,7 +1415,7 @@ func (m *CifsShareVolumeLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *CifsShareVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1430,7 +1430,7 @@ func (m *CifsShareVolumeLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsShareInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1438,8 +1438,8 @@ func (m *CifsShareVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsShareVolumeLinks
+func (m *CifsShareInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

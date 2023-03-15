@@ -20,13 +20,14 @@ import (
 type ExportClientResponse struct {
 
 	// links
-	Links *ExportClientResponseLinks `json:"_links,omitempty"`
+	Links *ExportClientResponseInlineLinks `json:"_links,omitempty"`
+
+	// export client response inline records
+	ExportClientResponseInlineRecords []*ExportClient `json:"records,omitempty"`
 
 	// Number of export rule client records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ExportClient `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this export client response
@@ -37,7 +38,7 @@ func (m *ExportClientResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateExportClientResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ExportClientResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportClientResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ExportClientResponse) validateExportClientResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportClientResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ExportClientResponseInlineRecords); i++ {
+		if swag.IsZero(m.ExportClientResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ExportClientResponseInlineRecords[i] != nil {
+			if err := m.ExportClientResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ExportClientResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateExportClientResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ExportClientResponse) contextValidateLinks(ctx context.Context, formats
 	return nil
 }
 
-func (m *ExportClientResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportClientResponse) contextValidateExportClientResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ExportClientResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ExportClientResponseInlineRecords[i] != nil {
+			if err := m.ExportClientResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ExportClientResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportClientResponseLinks export client response links
+// ExportClientResponseInlineLinks export client response inline links
 //
-// swagger:model ExportClientResponseLinks
-type ExportClientResponseLinks struct {
+// swagger:model export_client_response_inline__links
+type ExportClientResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ExportClientResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export client response links
-func (m *ExportClientResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export client response inline links
+func (m *ExportClientResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ExportClientResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportClientResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ExportClientResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ExportClientResponseLinks) validateNext(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ExportClientResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportClientResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ExportClientResponseLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this export client response links based on the context it is used
-func (m *ExportClientResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export client response inline links based on the context it is used
+func (m *ExportClientResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ExportClientResponseLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ExportClientResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportClientResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ExportClientResponseLinks) contextValidateNext(ctx context.Context, for
 	return nil
 }
 
-func (m *ExportClientResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportClientResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ExportClientResponseLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *ExportClientResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportClientResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ExportClientResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportClientResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ExportClientResponseLinks
+func (m *ExportClientResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportClientResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

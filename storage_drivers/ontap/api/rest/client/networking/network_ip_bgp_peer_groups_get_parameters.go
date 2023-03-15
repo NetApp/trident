@@ -66,91 +66,91 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* LocalInterfaceIPAddress.
 
 	   Filter by local.interface.ip.address
 	*/
-	LocalInterfaceIPAddressQueryParameter *string
+	LocalInterfaceIPAddress *string
 
 	/* LocalInterfaceName.
 
 	   Filter by local.interface.name
 	*/
-	LocalInterfaceNameQueryParameter *string
+	LocalInterfaceName *string
 
 	/* LocalInterfaceUUID.
 
 	   Filter by local.interface.uuid
 	*/
-	LocalInterfaceUUIDQueryParameter *string
+	LocalInterfaceUUID *string
 
 	/* LocalPortName.
 
 	   Filter by local.port.name
 	*/
-	LocalPortNameQueryParameter *string
+	LocalPortName *string
 
 	/* LocalPortNodeName.
 
 	   Filter by local.port.node.name
 	*/
-	LocalPortNodeNameQueryParameter *string
+	LocalPortNodeName *string
 
 	/* LocalPortUUID.
 
 	   Filter by local.port.uuid
 	*/
-	LocalPortUUIDQueryParameter *string
+	LocalPortUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PeerAddress.
 
 	   Filter by peer.address
 	*/
-	PeerAddressQueryParameter *string
+	PeerAddress *string
 
 	/* PeerAsn.
 
 	   Filter by peer.asn
 	*/
-	PeerAsnQueryParameter *int64
+	PeerAsn *int64
 
 	/* PeerIsNextHop.
 
 	   Filter by peer.is_next_hop
 	*/
-	PeerIsNextHopQueryParameter *bool
+	PeerIsNextHop *bool
 
 	/* ReturnRecords.
 
@@ -158,7 +158,7 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -166,19 +166,19 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WithDefaults() *NetworkIPBgpPeerGroups
 // All values with no default are reset to their zero value.
 func (o *NetworkIPBgpPeerGroupsGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPBgpPeerGroupsGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *NetworkIPBgpPeerGroupsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithFields(fields []string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithIpspaceName(ipspaceName *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithIpspaceUUID(ipspaceUUID *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithLocalInterfaceIPAddressQueryParameter adds the localInterfaceIPAddress to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceIPAddressQueryParameter(localInterfaceIPAddress *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalInterfaceIPAddressQueryParameter(localInterfaceIPAddress)
+// WithLocalInterfaceIPAddress adds the localInterfaceIPAddress to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceIPAddress(localInterfaceIPAddress *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalInterfaceIPAddress(localInterfaceIPAddress)
 	return o
 }
 
-// SetLocalInterfaceIPAddressQueryParameter adds the localInterfaceIpAddress to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceIPAddressQueryParameter(localInterfaceIPAddress *string) {
-	o.LocalInterfaceIPAddressQueryParameter = localInterfaceIPAddress
+// SetLocalInterfaceIPAddress adds the localInterfaceIpAddress to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceIPAddress(localInterfaceIPAddress *string) {
+	o.LocalInterfaceIPAddress = localInterfaceIPAddress
 }
 
-// WithLocalInterfaceNameQueryParameter adds the localInterfaceName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceNameQueryParameter(localInterfaceName *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalInterfaceNameQueryParameter(localInterfaceName)
+// WithLocalInterfaceName adds the localInterfaceName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceName(localInterfaceName *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalInterfaceName(localInterfaceName)
 	return o
 }
 
-// SetLocalInterfaceNameQueryParameter adds the localInterfaceName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceNameQueryParameter(localInterfaceName *string) {
-	o.LocalInterfaceNameQueryParameter = localInterfaceName
+// SetLocalInterfaceName adds the localInterfaceName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceName(localInterfaceName *string) {
+	o.LocalInterfaceName = localInterfaceName
 }
 
-// WithLocalInterfaceUUIDQueryParameter adds the localInterfaceUUID to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceUUIDQueryParameter(localInterfaceUUID *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalInterfaceUUIDQueryParameter(localInterfaceUUID)
+// WithLocalInterfaceUUID adds the localInterfaceUUID to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalInterfaceUUID(localInterfaceUUID *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalInterfaceUUID(localInterfaceUUID)
 	return o
 }
 
-// SetLocalInterfaceUUIDQueryParameter adds the localInterfaceUuid to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceUUIDQueryParameter(localInterfaceUUID *string) {
-	o.LocalInterfaceUUIDQueryParameter = localInterfaceUUID
+// SetLocalInterfaceUUID adds the localInterfaceUuid to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalInterfaceUUID(localInterfaceUUID *string) {
+	o.LocalInterfaceUUID = localInterfaceUUID
 }
 
-// WithLocalPortNameQueryParameter adds the localPortName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortNameQueryParameter(localPortName *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalPortNameQueryParameter(localPortName)
+// WithLocalPortName adds the localPortName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortName(localPortName *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalPortName(localPortName)
 	return o
 }
 
-// SetLocalPortNameQueryParameter adds the localPortName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortNameQueryParameter(localPortName *string) {
-	o.LocalPortNameQueryParameter = localPortName
+// SetLocalPortName adds the localPortName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortName(localPortName *string) {
+	o.LocalPortName = localPortName
 }
 
-// WithLocalPortNodeNameQueryParameter adds the localPortNodeName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortNodeNameQueryParameter(localPortNodeName *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalPortNodeNameQueryParameter(localPortNodeName)
+// WithLocalPortNodeName adds the localPortNodeName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortNodeName(localPortNodeName *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalPortNodeName(localPortNodeName)
 	return o
 }
 
-// SetLocalPortNodeNameQueryParameter adds the localPortNodeName to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortNodeNameQueryParameter(localPortNodeName *string) {
-	o.LocalPortNodeNameQueryParameter = localPortNodeName
+// SetLocalPortNodeName adds the localPortNodeName to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortNodeName(localPortNodeName *string) {
+	o.LocalPortNodeName = localPortNodeName
 }
 
-// WithLocalPortUUIDQueryParameter adds the localPortUUID to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortUUIDQueryParameter(localPortUUID *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetLocalPortUUIDQueryParameter(localPortUUID)
+// WithLocalPortUUID adds the localPortUUID to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithLocalPortUUID(localPortUUID *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetLocalPortUUID(localPortUUID)
 	return o
 }
 
-// SetLocalPortUUIDQueryParameter adds the localPortUuid to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortUUIDQueryParameter(localPortUUID *string) {
-	o.LocalPortUUIDQueryParameter = localPortUUID
+// SetLocalPortUUID adds the localPortUuid to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortUUID(localPortUUID *string) {
+	o.LocalPortUUID = localPortUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithNameQueryParameter(name *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithName(name *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithOrderBy(orderBy []string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPeerAddressQueryParameter adds the peerAddress to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerAddressQueryParameter(peerAddress *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetPeerAddressQueryParameter(peerAddress)
+// WithPeerAddress adds the peerAddress to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerAddress(peerAddress *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerAddress(peerAddress)
 	return o
 }
 
-// SetPeerAddressQueryParameter adds the peerAddress to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerAddressQueryParameter(peerAddress *string) {
-	o.PeerAddressQueryParameter = peerAddress
+// SetPeerAddress adds the peerAddress to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerAddress(peerAddress *string) {
+	o.PeerAddress = peerAddress
 }
 
-// WithPeerAsnQueryParameter adds the peerAsn to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerAsnQueryParameter(peerAsn *int64) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetPeerAsnQueryParameter(peerAsn)
+// WithPeerAsn adds the peerAsn to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerAsn(peerAsn *int64) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerAsn(peerAsn)
 	return o
 }
 
-// SetPeerAsnQueryParameter adds the peerAsn to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerAsnQueryParameter(peerAsn *int64) {
-	o.PeerAsnQueryParameter = peerAsn
+// SetPeerAsn adds the peerAsn to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerAsn(peerAsn *int64) {
+	o.PeerAsn = peerAsn
 }
 
-// WithPeerIsNextHopQueryParameter adds the peerIsNextHop to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerIsNextHopQueryParameter(peerIsNextHop *bool) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetPeerIsNextHopQueryParameter(peerIsNextHop)
+// WithPeerIsNextHop adds the peerIsNextHop to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerIsNextHop(peerIsNextHop *bool) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerIsNextHop(peerIsNextHop)
 	return o
 }
 
-// SetPeerIsNextHopQueryParameter adds the peerIsNextHop to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerIsNextHopQueryParameter(peerIsNextHop *bool) {
-	o.PeerIsNextHopQueryParameter = peerIsNextHop
+// SetPeerIsNextHop adds the peerIsNextHop to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerIsNextHop(peerIsNextHop *bool) {
+	o.PeerIsNextHop = peerIsNextHop
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithStateQueryParameter(state *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithState(state *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithUUIDQueryParameter adds the uuid to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithUUIDQueryParameter(uuid *string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithUUID(uuid *string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,7 +464,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -492,13 +492,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -509,13 +509,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalInterfaceIPAddressQueryParameter != nil {
+	if o.LocalInterfaceIPAddress != nil {
 
 		// query param local.interface.ip.address
 		var qrLocalInterfaceIPAddress string
 
-		if o.LocalInterfaceIPAddressQueryParameter != nil {
-			qrLocalInterfaceIPAddress = *o.LocalInterfaceIPAddressQueryParameter
+		if o.LocalInterfaceIPAddress != nil {
+			qrLocalInterfaceIPAddress = *o.LocalInterfaceIPAddress
 		}
 		qLocalInterfaceIPAddress := qrLocalInterfaceIPAddress
 		if qLocalInterfaceIPAddress != "" {
@@ -526,13 +526,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalInterfaceNameQueryParameter != nil {
+	if o.LocalInterfaceName != nil {
 
 		// query param local.interface.name
 		var qrLocalInterfaceName string
 
-		if o.LocalInterfaceNameQueryParameter != nil {
-			qrLocalInterfaceName = *o.LocalInterfaceNameQueryParameter
+		if o.LocalInterfaceName != nil {
+			qrLocalInterfaceName = *o.LocalInterfaceName
 		}
 		qLocalInterfaceName := qrLocalInterfaceName
 		if qLocalInterfaceName != "" {
@@ -543,13 +543,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalInterfaceUUIDQueryParameter != nil {
+	if o.LocalInterfaceUUID != nil {
 
 		// query param local.interface.uuid
 		var qrLocalInterfaceUUID string
 
-		if o.LocalInterfaceUUIDQueryParameter != nil {
-			qrLocalInterfaceUUID = *o.LocalInterfaceUUIDQueryParameter
+		if o.LocalInterfaceUUID != nil {
+			qrLocalInterfaceUUID = *o.LocalInterfaceUUID
 		}
 		qLocalInterfaceUUID := qrLocalInterfaceUUID
 		if qLocalInterfaceUUID != "" {
@@ -560,13 +560,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalPortNameQueryParameter != nil {
+	if o.LocalPortName != nil {
 
 		// query param local.port.name
 		var qrLocalPortName string
 
-		if o.LocalPortNameQueryParameter != nil {
-			qrLocalPortName = *o.LocalPortNameQueryParameter
+		if o.LocalPortName != nil {
+			qrLocalPortName = *o.LocalPortName
 		}
 		qLocalPortName := qrLocalPortName
 		if qLocalPortName != "" {
@@ -577,13 +577,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalPortNodeNameQueryParameter != nil {
+	if o.LocalPortNodeName != nil {
 
 		// query param local.port.node.name
 		var qrLocalPortNodeName string
 
-		if o.LocalPortNodeNameQueryParameter != nil {
-			qrLocalPortNodeName = *o.LocalPortNodeNameQueryParameter
+		if o.LocalPortNodeName != nil {
+			qrLocalPortNodeName = *o.LocalPortNodeName
 		}
 		qLocalPortNodeName := qrLocalPortNodeName
 		if qLocalPortNodeName != "" {
@@ -594,13 +594,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.LocalPortUUIDQueryParameter != nil {
+	if o.LocalPortUUID != nil {
 
 		// query param local.port.uuid
 		var qrLocalPortUUID string
 
-		if o.LocalPortUUIDQueryParameter != nil {
-			qrLocalPortUUID = *o.LocalPortUUIDQueryParameter
+		if o.LocalPortUUID != nil {
+			qrLocalPortUUID = *o.LocalPortUUID
 		}
 		qLocalPortUUID := qrLocalPortUUID
 		if qLocalPortUUID != "" {
@@ -611,13 +611,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -628,13 +628,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -645,7 +645,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -656,13 +656,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PeerAddressQueryParameter != nil {
+	if o.PeerAddress != nil {
 
 		// query param peer.address
 		var qrPeerAddress string
 
-		if o.PeerAddressQueryParameter != nil {
-			qrPeerAddress = *o.PeerAddressQueryParameter
+		if o.PeerAddress != nil {
+			qrPeerAddress = *o.PeerAddress
 		}
 		qPeerAddress := qrPeerAddress
 		if qPeerAddress != "" {
@@ -673,13 +673,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PeerAsnQueryParameter != nil {
+	if o.PeerAsn != nil {
 
 		// query param peer.asn
 		var qrPeerAsn int64
 
-		if o.PeerAsnQueryParameter != nil {
-			qrPeerAsn = *o.PeerAsnQueryParameter
+		if o.PeerAsn != nil {
+			qrPeerAsn = *o.PeerAsn
 		}
 		qPeerAsn := swag.FormatInt64(qrPeerAsn)
 		if qPeerAsn != "" {
@@ -690,13 +690,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PeerIsNextHopQueryParameter != nil {
+	if o.PeerIsNextHop != nil {
 
 		// query param peer.is_next_hop
 		var qrPeerIsNextHop bool
 
-		if o.PeerIsNextHopQueryParameter != nil {
-			qrPeerIsNextHop = *o.PeerIsNextHopQueryParameter
+		if o.PeerIsNextHop != nil {
+			qrPeerIsNextHop = *o.PeerIsNextHop
 		}
 		qPeerIsNextHop := swag.FormatBool(qrPeerIsNextHop)
 		if qPeerIsNextHop != "" {
@@ -707,13 +707,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -724,13 +724,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -741,13 +741,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -758,13 +758,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -783,7 +783,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamNetworkIPBgpPeerGroupsGet binds the parameter fields
 func (o *NetworkIPBgpPeerGroupsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamNetworkIPBgpPeerGroupsGet binds the parameter order_by
 func (o *NetworkIPBgpPeerGroupsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

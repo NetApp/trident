@@ -19,31 +19,31 @@ import (
 type EmsConfig struct {
 
 	// links
-	Links *EmsConfigLinks `json:"_links,omitempty"`
+	Links *EmsConfigInlineLinks `json:"_links,omitempty"`
 
 	// Mail from
 	// Example: administrator@mycompany.com
-	MailFrom string `json:"mail_from,omitempty"`
+	MailFrom *string `json:"mail_from,omitempty"`
 
 	// Mail server (SMTP)
 	// Example: mail@mycompany.com
-	MailServer string `json:"mail_server,omitempty"`
+	MailServer *string `json:"mail_server,omitempty"`
 
 	// Password for HTTP/HTTPS proxy
 	// Example: password
-	ProxyPassword string `json:"proxy_password,omitempty"`
+	ProxyPassword *string `json:"proxy_password,omitempty"`
 
 	// HTTP/HTTPS proxy URL
 	// Example: https://proxyserver.mycompany.com
-	ProxyURL string `json:"proxy_url,omitempty"`
+	ProxyURL *string `json:"proxy_url,omitempty"`
 
 	// User name for HTTP/HTTPS proxy
 	// Example: proxy_user
-	ProxyUser string `json:"proxy_user,omitempty"`
+	ProxyUser *string `json:"proxy_user,omitempty"`
 
 	// Is Publish/Subscribe Messaging Enabled?
 	// Example: true
-	PubsubEnabled bool `json:"pubsub_enabled,omitempty"`
+	PubsubEnabled *bool `json:"pubsub_enabled,omitempty"`
 }
 
 // Validate validates this ems config
@@ -123,17 +123,17 @@ func (m *EmsConfig) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsConfigLinks ems config links
+// EmsConfigInlineLinks ems config inline links
 //
-// swagger:model EmsConfigLinks
-type EmsConfigLinks struct {
+// swagger:model ems_config_inline__links
+type EmsConfigInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems config links
-func (m *EmsConfigLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems config inline links
+func (m *EmsConfigInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -146,7 +146,7 @@ func (m *EmsConfigLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsConfigLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsConfigInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -163,8 +163,8 @@ func (m *EmsConfigLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems config links based on the context it is used
-func (m *EmsConfigLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems config inline links based on the context it is used
+func (m *EmsConfigInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *EmsConfigLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *EmsConfigLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsConfigInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -192,7 +192,7 @@ func (m *EmsConfigLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *EmsConfigLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsConfigInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -200,8 +200,8 @@ func (m *EmsConfigLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsConfigLinks) UnmarshalBinary(b []byte) error {
-	var res EmsConfigLinks
+func (m *EmsConfigInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsConfigInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

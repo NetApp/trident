@@ -66,49 +66,49 @@ type SvmMigrationVolumeGetParams struct {
 
 	   Filter by errors.code
 	*/
-	ErrorsCodeQueryParameter *int64
+	ErrorsCode *string
 
 	/* ErrorsMessage.
 
 	   Filter by errors.message
 	*/
-	ErrorsMessageQueryParameter *string
+	ErrorsMessage *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Healthy.
 
 	   Filter by healthy
 	*/
-	HealthyQueryParameter *bool
+	Healthy *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type SvmMigrationVolumeGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,43 +124,43 @@ type SvmMigrationVolumeGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* SvmMigrationUUID.
 
 	   Migration UUID
 	*/
-	SVMMigrationUUIDPathParameter string
+	SvmMigrationUUID string
 
 	/* TransferState.
 
 	   Filter by transfer_state
 	*/
-	TransferStateQueryParameter *string
+	TransferState *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -180,14 +180,14 @@ func (o *SvmMigrationVolumeGetParams) WithDefaults() *SvmMigrationVolumeGetParam
 // All values with no default are reset to their zero value.
 func (o *SvmMigrationVolumeGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmMigrationVolumeGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -229,180 +229,180 @@ func (o *SvmMigrationVolumeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithErrorsCodeQueryParameter adds the errorsCode to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithErrorsCodeQueryParameter(errorsCode *int64) *SvmMigrationVolumeGetParams {
-	o.SetErrorsCodeQueryParameter(errorsCode)
+// WithErrorsCode adds the errorsCode to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithErrorsCode(errorsCode *string) *SvmMigrationVolumeGetParams {
+	o.SetErrorsCode(errorsCode)
 	return o
 }
 
-// SetErrorsCodeQueryParameter adds the errorsCode to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetErrorsCodeQueryParameter(errorsCode *int64) {
-	o.ErrorsCodeQueryParameter = errorsCode
+// SetErrorsCode adds the errorsCode to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetErrorsCode(errorsCode *string) {
+	o.ErrorsCode = errorsCode
 }
 
-// WithErrorsMessageQueryParameter adds the errorsMessage to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithErrorsMessageQueryParameter(errorsMessage *string) *SvmMigrationVolumeGetParams {
-	o.SetErrorsMessageQueryParameter(errorsMessage)
+// WithErrorsMessage adds the errorsMessage to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithErrorsMessage(errorsMessage *string) *SvmMigrationVolumeGetParams {
+	o.SetErrorsMessage(errorsMessage)
 	return o
 }
 
-// SetErrorsMessageQueryParameter adds the errorsMessage to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetErrorsMessageQueryParameter(errorsMessage *string) {
-	o.ErrorsMessageQueryParameter = errorsMessage
+// SetErrorsMessage adds the errorsMessage to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetErrorsMessage(errorsMessage *string) {
+	o.ErrorsMessage = errorsMessage
 }
 
-// WithFieldsQueryParameter adds the fields to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithFieldsQueryParameter(fields []string) *SvmMigrationVolumeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithFields(fields []string) *SvmMigrationVolumeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHealthyQueryParameter adds the healthy to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithHealthyQueryParameter(healthy *bool) *SvmMigrationVolumeGetParams {
-	o.SetHealthyQueryParameter(healthy)
+// WithHealthy adds the healthy to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithHealthy(healthy *bool) *SvmMigrationVolumeGetParams {
+	o.SetHealthy(healthy)
 	return o
 }
 
-// SetHealthyQueryParameter adds the healthy to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetHealthyQueryParameter(healthy *bool) {
-	o.HealthyQueryParameter = healthy
+// SetHealthy adds the healthy to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetHealthy(healthy *bool) {
+	o.Healthy = healthy
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmMigrationVolumeGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithMaxRecords(maxRecords *int64) *SvmMigrationVolumeGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithNodeNameQueryParameter(nodeName *string) *SvmMigrationVolumeGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithNodeName(nodeName *string) *SvmMigrationVolumeGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SvmMigrationVolumeGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithNodeUUID(nodeUUID *string) *SvmMigrationVolumeGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithOrderByQueryParameter(orderBy []string) *SvmMigrationVolumeGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithOrderBy(orderBy []string) *SvmMigrationVolumeGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmMigrationVolumeGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithReturnRecords(returnRecords *bool) *SvmMigrationVolumeGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmMigrationVolumeGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithReturnTimeout(returnTimeout *int64) *SvmMigrationVolumeGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithSVMNameQueryParameter(svmName *string) *SvmMigrationVolumeGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithSvmName(svmName *string) *SvmMigrationVolumeGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SvmMigrationVolumeGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithSvmUUID(svmUUID *string) *SvmMigrationVolumeGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithSVMMigrationUUIDPathParameter adds the svmMigrationUUID to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithSVMMigrationUUIDPathParameter(svmMigrationUUID string) *SvmMigrationVolumeGetParams {
-	o.SetSVMMigrationUUIDPathParameter(svmMigrationUUID)
+// WithSvmMigrationUUID adds the svmMigrationUUID to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithSvmMigrationUUID(svmMigrationUUID string) *SvmMigrationVolumeGetParams {
+	o.SetSvmMigrationUUID(svmMigrationUUID)
 	return o
 }
 
-// SetSVMMigrationUUIDPathParameter adds the svmMigrationUuid to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetSVMMigrationUUIDPathParameter(svmMigrationUUID string) {
-	o.SVMMigrationUUIDPathParameter = svmMigrationUUID
+// SetSvmMigrationUUID adds the svmMigrationUuid to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetSvmMigrationUUID(svmMigrationUUID string) {
+	o.SvmMigrationUUID = svmMigrationUUID
 }
 
-// WithTransferStateQueryParameter adds the transferState to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithTransferStateQueryParameter(transferState *string) *SvmMigrationVolumeGetParams {
-	o.SetTransferStateQueryParameter(transferState)
+// WithTransferState adds the transferState to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithTransferState(transferState *string) *SvmMigrationVolumeGetParams {
+	o.SetTransferState(transferState)
 	return o
 }
 
-// SetTransferStateQueryParameter adds the transferState to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetTransferStateQueryParameter(transferState *string) {
-	o.TransferStateQueryParameter = transferState
+// SetTransferState adds the transferState to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetTransferState(transferState *string) {
+	o.TransferState = transferState
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithVolumeNameQueryParameter(volumeName *string) *SvmMigrationVolumeGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithVolumeName(volumeName *string) *SvmMigrationVolumeGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *SvmMigrationVolumeGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) WithVolumeUUID(volumeUUID string) *SvmMigrationVolumeGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the svm migration volume get params
-func (o *SvmMigrationVolumeGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the svm migration volume get params
+func (o *SvmMigrationVolumeGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -413,15 +413,15 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.ErrorsCodeQueryParameter != nil {
+	if o.ErrorsCode != nil {
 
 		// query param errors.code
-		var qrErrorsCode int64
+		var qrErrorsCode string
 
-		if o.ErrorsCodeQueryParameter != nil {
-			qrErrorsCode = *o.ErrorsCodeQueryParameter
+		if o.ErrorsCode != nil {
+			qrErrorsCode = *o.ErrorsCode
 		}
-		qErrorsCode := swag.FormatInt64(qrErrorsCode)
+		qErrorsCode := qrErrorsCode
 		if qErrorsCode != "" {
 
 			if err := r.SetQueryParam("errors.code", qErrorsCode); err != nil {
@@ -430,13 +430,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ErrorsMessageQueryParameter != nil {
+	if o.ErrorsMessage != nil {
 
 		// query param errors.message
 		var qrErrorsMessage string
 
-		if o.ErrorsMessageQueryParameter != nil {
-			qrErrorsMessage = *o.ErrorsMessageQueryParameter
+		if o.ErrorsMessage != nil {
+			qrErrorsMessage = *o.ErrorsMessage
 		}
 		qErrorsMessage := qrErrorsMessage
 		if qErrorsMessage != "" {
@@ -447,7 +447,7 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.HealthyQueryParameter != nil {
+	if o.Healthy != nil {
 
 		// query param healthy
 		var qrHealthy bool
 
-		if o.HealthyQueryParameter != nil {
-			qrHealthy = *o.HealthyQueryParameter
+		if o.Healthy != nil {
+			qrHealthy = *o.Healthy
 		}
 		qHealthy := swag.FormatBool(qrHealthy)
 		if qHealthy != "" {
@@ -475,13 +475,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -509,13 +509,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -526,7 +526,7 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -537,13 +537,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -588,13 +588,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -606,17 +606,17 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param svm_migration.uuid
-	if err := r.SetPathParam("svm_migration.uuid", o.SVMMigrationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm_migration.uuid", o.SvmMigrationUUID); err != nil {
 		return err
 	}
 
-	if o.TransferStateQueryParameter != nil {
+	if o.TransferState != nil {
 
 		// query param transfer_state
 		var qrTransferState string
 
-		if o.TransferStateQueryParameter != nil {
-			qrTransferState = *o.TransferStateQueryParameter
+		if o.TransferState != nil {
+			qrTransferState = *o.TransferState
 		}
 		qTransferState := qrTransferState
 		if qTransferState != "" {
@@ -627,13 +627,13 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -645,7 +645,7 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -657,7 +657,7 @@ func (o *SvmMigrationVolumeGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSvmMigrationVolumeGet binds the parameter fields
 func (o *SvmMigrationVolumeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -674,7 +674,7 @@ func (o *SvmMigrationVolumeGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamSvmMigrationVolumeGet binds the parameter order_by
 func (o *SvmMigrationVolumeGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

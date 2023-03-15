@@ -18,10 +18,10 @@ import (
 type CounterProperty struct {
 
 	// Property name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Property value.
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // Validate validates this counter property

@@ -20,13 +20,14 @@ import (
 type QuotaRuleResponse struct {
 
 	// links
-	Links *QuotaRuleResponseLinks `json:"_links,omitempty"`
+	Links *QuotaRuleResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*QuotaRule `json:"records,omitempty"`
+	// quota rule response inline records
+	QuotaRuleResponseInlineRecords []*QuotaRule `json:"records,omitempty"`
 }
 
 // Validate validates this quota rule response
@@ -37,7 +38,7 @@ func (m *QuotaRuleResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateQuotaRuleResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *QuotaRuleResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaRuleResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *QuotaRuleResponse) validateQuotaRuleResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.QuotaRuleResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.QuotaRuleResponseInlineRecords); i++ {
+		if swag.IsZero(m.QuotaRuleResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.QuotaRuleResponseInlineRecords[i] != nil {
+			if err := m.QuotaRuleResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *QuotaRuleResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateQuotaRuleResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *QuotaRuleResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QuotaRuleResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaRuleResponse) contextValidateQuotaRuleResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.QuotaRuleResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.QuotaRuleResponseInlineRecords[i] != nil {
+			if err := m.QuotaRuleResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *QuotaRuleResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaRuleResponseLinks quota rule response links
+// QuotaRuleResponseInlineLinks quota rule response inline links
 //
-// swagger:model QuotaRuleResponseLinks
-type QuotaRuleResponseLinks struct {
+// swagger:model quota_rule_response_inline__links
+type QuotaRuleResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type QuotaRuleResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this quota rule response links
-func (m *QuotaRuleResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this quota rule response inline links
+func (m *QuotaRuleResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *QuotaRuleResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaRuleResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *QuotaRuleResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *QuotaRuleResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuotaRuleResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QuotaRuleResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *QuotaRuleResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota rule response links based on the context it is used
-func (m *QuotaRuleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this quota rule response inline links based on the context it is used
+func (m *QuotaRuleResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *QuotaRuleResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QuotaRuleResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaRuleResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *QuotaRuleResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *QuotaRuleResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QuotaRuleResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *QuotaRuleResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *QuotaRuleResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *QuotaRuleResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *QuotaRuleResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QuotaRuleResponseLinks) UnmarshalBinary(b []byte) error {
-	var res QuotaRuleResponseLinks
+func (m *QuotaRuleResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QuotaRuleResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

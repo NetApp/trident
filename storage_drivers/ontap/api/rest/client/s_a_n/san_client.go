@@ -301,7 +301,7 @@ func (a *Client) FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerform
 	FcpServiceCollectionGet Retrieves FC Protocol services.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -524,7 +524,7 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
 	IgroupCollectionGet Retrieves initiator groups.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
 * `igroups.*`
 * `lun_maps.*`
@@ -670,7 +670,7 @@ func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.Clien
 	IgroupGet Retrieves an initiator group.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `igroups.*`
 * `lun_maps.*`
 * `parent_igroups.*`
@@ -723,7 +723,7 @@ This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not included in this
 collection.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
@@ -864,7 +864,7 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
 This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not part of this collection.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
@@ -1456,7 +1456,7 @@ func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, au
 	IscsiServiceCollectionGet Retrieves iSCSI services.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -1977,7 +1977,7 @@ func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo r
 	LunCollectionGet Retrieves LUNs.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `attributes.*`
 * `auto_delete`
 * `copy.*`
@@ -2176,7 +2176,7 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 
 LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `attributes.*`
 * `auto_delete`
 * `copy.*`
@@ -2456,7 +2456,7 @@ func (a *Client) LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCol
 	LunMapReportingNodeCreate Adds a reporting node and its HA partner to a LUN map.
 
 ### Required properties
-* `node.uuid` or `node.name` - A cluster node to add.
+* `uuid` or `name` - A cluster node to add.
 ### Related ONTAP commands
 * `lun mapping add-reporting-nodes`
 ### Learn more

@@ -21,28 +21,28 @@ import (
 type BroadcastDomain struct {
 
 	// links
-	Links *BroadcastDomainLinks `json:"_links,omitempty"`
+	Links *BroadcastDomainInlineLinks `json:"_links,omitempty"`
+
+	// Ports that belong to the broadcast domain
+	// Read Only: true
+	BroadcastDomainInlinePorts []*BroadcastDomainInlinePortsInlineArrayItem `json:"ports,omitempty"`
 
 	// ipspace
-	Ipspace *BroadcastDomainIpspace `json:"ipspace,omitempty"`
+	Ipspace *BroadcastDomainInlineIpspace `json:"ipspace,omitempty"`
 
 	// Maximum transmission unit, largest packet size on this network
 	// Example: 1500
 	// Minimum: 68
-	Mtu int64 `json:"mtu,omitempty"`
+	Mtu *int64 `json:"mtu,omitempty"`
 
 	// Name of the broadcast domain, scoped to its IPspace
 	// Example: bd1
-	Name string `json:"name,omitempty"`
-
-	// Ports that belong to the broadcast domain
-	// Read Only: true
-	Ports []*BroadcastDomainPortsItems0 `json:"ports,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Broadcast domain UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this broadcast domain
@@ -53,15 +53,15 @@ func (m *BroadcastDomain) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateBroadcastDomainInlinePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIpspace(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateMtu(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePorts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -83,6 +83,30 @@ func (m *BroadcastDomain) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *BroadcastDomain) validateBroadcastDomainInlinePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.BroadcastDomainInlinePorts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.BroadcastDomainInlinePorts); i++ {
+		if swag.IsZero(m.BroadcastDomainInlinePorts[i]) { // not required
+			continue
+		}
+
+		if m.BroadcastDomainInlinePorts[i] != nil {
+			if err := m.BroadcastDomainInlinePorts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -110,32 +134,8 @@ func (m *BroadcastDomain) validateMtu(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("mtu", "body", m.Mtu, 68, false); err != nil {
+	if err := validate.MinimumInt("mtu", "body", *m.Mtu, 68, false); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *BroadcastDomain) validatePorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.Ports) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Ports); i++ {
-		if swag.IsZero(m.Ports[i]) { // not required
-			continue
-		}
-
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -149,11 +149,11 @@ func (m *BroadcastDomain) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIpspace(ctx, formats); err != nil {
+	if err := m.contextValidateBroadcastDomainInlinePorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePorts(ctx, formats); err != nil {
+	if err := m.contextValidateIpspace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -181,6 +181,28 @@ func (m *BroadcastDomain) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *BroadcastDomain) contextValidateBroadcastDomainInlinePorts(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ports", "body", []*BroadcastDomainInlinePortsInlineArrayItem(m.BroadcastDomainInlinePorts)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.BroadcastDomainInlinePorts); i++ {
+
+		if m.BroadcastDomainInlinePorts[i] != nil {
+			if err := m.BroadcastDomainInlinePorts[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *BroadcastDomain) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipspace != nil {
@@ -195,31 +217,9 @@ func (m *BroadcastDomain) contextValidateIpspace(ctx context.Context, formats st
 	return nil
 }
 
-func (m *BroadcastDomain) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "ports", "body", []*BroadcastDomainPortsItems0(m.Ports)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Ports); i++ {
-
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *BroadcastDomain) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -244,25 +244,25 @@ func (m *BroadcastDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input.
+// BroadcastDomainInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name is supplied on input.
 //
-// swagger:model BroadcastDomainIpspace
-type BroadcastDomainIpspace struct {
+// swagger:model broadcast_domain_inline_ipspace
+type BroadcastDomainInlineIpspace struct {
 
 	// links
-	Links *BroadcastDomainIpspaceLinks `json:"_links,omitempty"`
+	Links *BroadcastDomainInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this broadcast domain ipspace
-func (m *BroadcastDomainIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline ipspace
+func (m *BroadcastDomainInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -275,7 +275,7 @@ func (m *BroadcastDomainIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BroadcastDomainIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -292,8 +292,8 @@ func (m *BroadcastDomainIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this broadcast domain ipspace based on the context it is used
-func (m *BroadcastDomainIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain inline ipspace based on the context it is used
+func (m *BroadcastDomainInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -306,7 +306,7 @@ func (m *BroadcastDomainIpspace) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *BroadcastDomainIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -321,7 +321,7 @@ func (m *BroadcastDomainIpspace) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainIpspace) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -329,8 +329,8 @@ func (m *BroadcastDomainIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainIpspace) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainIpspace
+func (m *BroadcastDomainInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -338,17 +338,17 @@ func (m *BroadcastDomainIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainIpspaceLinks broadcast domain ipspace links
+// BroadcastDomainInlineIpspaceInlineLinks broadcast domain inline ipspace inline links
 //
-// swagger:model BroadcastDomainIpspaceLinks
-type BroadcastDomainIpspaceLinks struct {
+// swagger:model broadcast_domain_inline_ipspace_inline__links
+type BroadcastDomainInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this broadcast domain ipspace links
-func (m *BroadcastDomainIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline ipspace inline links
+func (m *BroadcastDomainInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -361,7 +361,7 @@ func (m *BroadcastDomainIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BroadcastDomainIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -378,8 +378,8 @@ func (m *BroadcastDomainIpspaceLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this broadcast domain ipspace links based on the context it is used
-func (m *BroadcastDomainIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain inline ipspace inline links based on the context it is used
+func (m *BroadcastDomainInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -392,7 +392,7 @@ func (m *BroadcastDomainIpspaceLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *BroadcastDomainIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -407,7 +407,7 @@ func (m *BroadcastDomainIpspaceLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -415,8 +415,8 @@ func (m *BroadcastDomainIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainIpspaceLinks
+func (m *BroadcastDomainInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -424,17 +424,17 @@ func (m *BroadcastDomainIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainLinks broadcast domain links
+// BroadcastDomainInlineLinks broadcast domain inline links
 //
-// swagger:model BroadcastDomainLinks
-type BroadcastDomainLinks struct {
+// swagger:model broadcast_domain_inline__links
+type BroadcastDomainInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this broadcast domain links
-func (m *BroadcastDomainLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline links
+func (m *BroadcastDomainInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -447,7 +447,7 @@ func (m *BroadcastDomainLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BroadcastDomainLinks) validateSelf(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -464,8 +464,8 @@ func (m *BroadcastDomainLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this broadcast domain links based on the context it is used
-func (m *BroadcastDomainLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain inline links based on the context it is used
+func (m *BroadcastDomainInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -478,7 +478,7 @@ func (m *BroadcastDomainLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *BroadcastDomainLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -493,7 +493,7 @@ func (m *BroadcastDomainLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainLinks) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -501,8 +501,8 @@ func (m *BroadcastDomainLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainLinks) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainLinks
+func (m *BroadcastDomainInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -510,28 +510,28 @@ func (m *BroadcastDomainLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainPortsItems0 Port UUID along with readable names
+// BroadcastDomainInlinePortsInlineArrayItem Port UUID along with readable names
 //
-// swagger:model BroadcastDomainPortsItems0
-type BroadcastDomainPortsItems0 struct {
+// swagger:model broadcast_domain_inline_ports_inline_array_item
+type BroadcastDomainInlinePortsInlineArrayItem struct {
 
 	// links
-	Links *BroadcastDomainPortsItems0Links `json:"_links,omitempty"`
+	Links *BroadcastDomainInlinePortsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *BroadcastDomainPortsItems0Node `json:"node,omitempty"`
+	Node *BroadcastDomainInlinePortsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this broadcast domain ports items0
-func (m *BroadcastDomainPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline ports inline array item
+func (m *BroadcastDomainInlinePortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -548,7 +548,7 @@ func (m *BroadcastDomainPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -565,7 +565,7 @@ func (m *BroadcastDomainPortsItems0) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0) validateNode(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -582,8 +582,8 @@ func (m *BroadcastDomainPortsItems0) validateNode(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this broadcast domain ports items0 based on the context it is used
-func (m *BroadcastDomainPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain inline ports inline array item based on the context it is used
+func (m *BroadcastDomainInlinePortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -600,7 +600,7 @@ func (m *BroadcastDomainPortsItems0) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -614,7 +614,7 @@ func (m *BroadcastDomainPortsItems0) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -629,7 +629,7 @@ func (m *BroadcastDomainPortsItems0) contextValidateNode(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlinePortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -637,8 +637,8 @@ func (m *BroadcastDomainPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainPortsItems0
+func (m *BroadcastDomainInlinePortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlinePortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -646,17 +646,17 @@ func (m *BroadcastDomainPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainPortsItems0Links broadcast domain ports items0 links
+// BroadcastDomainInlinePortsInlineArrayItemInlineLinks broadcast domain inline ports inline array item inline links
 //
-// swagger:model BroadcastDomainPortsItems0Links
-type BroadcastDomainPortsItems0Links struct {
+// swagger:model broadcast_domain_inline_ports_inline_array_item_inline__links
+type BroadcastDomainInlinePortsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this broadcast domain ports items0 links
-func (m *BroadcastDomainPortsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline ports inline array item inline links
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -669,7 +669,7 @@ func (m *BroadcastDomainPortsItems0Links) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -686,8 +686,8 @@ func (m *BroadcastDomainPortsItems0Links) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this broadcast domain ports items0 links based on the context it is used
-func (m *BroadcastDomainPortsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this broadcast domain inline ports inline array item inline links based on the context it is used
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -700,7 +700,7 @@ func (m *BroadcastDomainPortsItems0Links) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *BroadcastDomainPortsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -715,7 +715,7 @@ func (m *BroadcastDomainPortsItems0Links) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -723,8 +723,8 @@ func (m *BroadcastDomainPortsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0Links) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainPortsItems0Links
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlinePortsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -732,28 +732,28 @@ func (m *BroadcastDomainPortsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// BroadcastDomainPortsItems0Node broadcast domain ports items0 node
+// BroadcastDomainInlinePortsInlineArrayItemInlineNode broadcast domain inline ports inline array item inline node
 //
-// swagger:model BroadcastDomainPortsItems0Node
-type BroadcastDomainPortsItems0Node struct {
+// swagger:model broadcast_domain_inline_ports_inline_array_item_inline_node
+type BroadcastDomainInlinePortsInlineArrayItemInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this broadcast domain ports items0 node
-func (m *BroadcastDomainPortsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this broadcast domain inline ports inline array item inline node
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this broadcast domain ports items0 node based on context it is used
-func (m *BroadcastDomainPortsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this broadcast domain inline ports inline array item inline node based on context it is used
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -761,8 +761,8 @@ func (m *BroadcastDomainPortsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *BroadcastDomainPortsItems0Node) UnmarshalBinary(b []byte) error {
-	var res BroadcastDomainPortsItems0Node
+func (m *BroadcastDomainInlinePortsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res BroadcastDomainInlinePortsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

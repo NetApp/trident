@@ -75,7 +75,7 @@ type FcpServiceModifyParams struct {
 	   The unique identifier of the SVM whose FC Protocol service is to be updated.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *FcpServiceModifyParams) SetInfo(info *models.FcpService) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fcp service modify params
-func (o *FcpServiceModifyParams) WithSVMUUIDPathParameter(svmUUID string) *FcpServiceModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fcp service modify params
+func (o *FcpServiceModifyParams) WithSvmUUID(svmUUID string) *FcpServiceModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fcp service modify params
-func (o *FcpServiceModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fcp service modify params
+func (o *FcpServiceModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *FcpServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -21,31 +21,31 @@ import (
 type VolumeStatisticsReference struct {
 
 	// cifs ops raw
-	CifsOpsRaw *VolumeStatisticsReferenceCifsOpsRaw `json:"cifs_ops_raw,omitempty"`
+	CifsOpsRaw *VolumeStatisticsReferenceInlineCifsOpsRaw `json:"cifs_ops_raw,omitempty"`
 
 	// cloud
-	Cloud *VolumeStatisticsReferenceCloud `json:"cloud,omitempty"`
+	Cloud *VolumeStatisticsReferenceInlineCloud `json:"cloud,omitempty"`
 
 	// flexcache raw
-	FlexcacheRaw *VolumeStatisticsReferenceFlexcacheRaw `json:"flexcache_raw,omitempty"`
+	FlexcacheRaw *VolumeStatisticsReferenceInlineFlexcacheRaw `json:"flexcache_raw,omitempty"`
 
 	// iops raw
-	IopsRaw *VolumeStatisticsReferenceIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *VolumeStatisticsReferenceInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *VolumeStatisticsReferenceLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *VolumeStatisticsReferenceInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// nfs ops raw
-	NfsOpsRaw *VolumeStatisticsReferenceNfsOpsRaw `json:"nfs_ops_raw,omitempty"`
+	NfsOpsRaw *VolumeStatisticsReferenceInlineNfsOpsRaw `json:"nfs_ops_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *VolumeStatisticsReferenceThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *VolumeStatisticsReferenceInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -331,7 +331,7 @@ func (m *VolumeStatisticsReference) validateStatus(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -499,7 +499,7 @@ func (m *VolumeStatisticsReference) contextValidateNfsOpsRaw(ctx context.Context
 
 func (m *VolumeStatisticsReference) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -547,62 +547,62 @@ func (m *VolumeStatisticsReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRaw Raw data component performance values for CIFS operations on this volume, including number of operations and raw latency, in microseconds for each operation. The values are cumulative and increase while the volume is online.
+// VolumeStatisticsReferenceInlineCifsOpsRaw Raw data component performance values for CIFS operations on this volume, including number of operations and raw latency, in microseconds for each operation. The values are cumulative and increase while the volume is online.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRaw
-type VolumeStatisticsReferenceCifsOpsRaw struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw
+type VolumeStatisticsReferenceInlineCifsOpsRaw struct {
 
 	// access
-	Access *VolumeStatisticsReferenceCifsOpsRawAccess `json:"access,omitempty"`
+	Access *VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess `json:"access,omitempty"`
 
 	// audit
-	Audit *VolumeStatisticsReferenceCifsOpsRawAudit `json:"audit,omitempty"`
+	Audit *VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit `json:"audit,omitempty"`
 
 	// create
-	Create *VolumeStatisticsReferenceCifsOpsRawCreate `json:"create,omitempty"`
+	Create *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate `json:"create,omitempty"`
 
 	// getattr
-	Getattr *VolumeStatisticsReferenceCifsOpsRawGetattr `json:"getattr,omitempty"`
+	Getattr *VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr `json:"getattr,omitempty"`
 
 	// link
-	Link *VolumeStatisticsReferenceCifsOpsRawLink `json:"link,omitempty"`
+	Link *VolumeStatisticsReferenceInlineCifsOpsRawInlineLink `json:"link,omitempty"`
 
 	// lock
-	Lock *VolumeStatisticsReferenceCifsOpsRawLock `json:"lock,omitempty"`
+	Lock *VolumeStatisticsReferenceInlineCifsOpsRawInlineLock `json:"lock,omitempty"`
 
 	// lookup
-	Lookup *VolumeStatisticsReferenceCifsOpsRawLookup `json:"lookup,omitempty"`
+	Lookup *VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup `json:"lookup,omitempty"`
 
 	// open
-	Open *VolumeStatisticsReferenceCifsOpsRawOpen `json:"open,omitempty"`
+	Open *VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen `json:"open,omitempty"`
 
 	// read
-	Read *VolumeStatisticsReferenceCifsOpsRawRead `json:"read,omitempty"`
+	Read *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead `json:"read,omitempty"`
 
 	// readdir
-	Readdir *VolumeStatisticsReferenceCifsOpsRawReaddir `json:"readdir,omitempty"`
+	Readdir *VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir `json:"readdir,omitempty"`
 
 	// readlink
-	Readlink *VolumeStatisticsReferenceCifsOpsRawReadlink `json:"readlink,omitempty"`
+	Readlink *VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink `json:"readlink,omitempty"`
 
 	// rename
-	Rename *VolumeStatisticsReferenceCifsOpsRawRename `json:"rename,omitempty"`
+	Rename *VolumeStatisticsReferenceInlineCifsOpsRawInlineRename `json:"rename,omitempty"`
 
 	// setattr
-	Setattr *VolumeStatisticsReferenceCifsOpsRawSetattr `json:"setattr,omitempty"`
+	Setattr *VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr `json:"setattr,omitempty"`
 
 	// unlink
-	Unlink *VolumeStatisticsReferenceCifsOpsRawUnlink `json:"unlink,omitempty"`
+	Unlink *VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink `json:"unlink,omitempty"`
 
 	// watch
-	Watch *VolumeStatisticsReferenceCifsOpsRawWatch `json:"watch,omitempty"`
+	Watch *VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch `json:"watch,omitempty"`
 
 	// write
-	Write *VolumeStatisticsReferenceCifsOpsRawWrite `json:"write,omitempty"`
+	Write *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw
-func (m *VolumeStatisticsReferenceCifsOpsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
@@ -675,7 +675,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateAccess(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateAccess(formats strfmt.Registry) error {
 	if swag.IsZero(m.Access) { // not required
 		return nil
 	}
@@ -692,7 +692,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateAccess(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateAudit(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateAudit(formats strfmt.Registry) error {
 	if swag.IsZero(m.Audit) { // not required
 		return nil
 	}
@@ -709,7 +709,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateAudit(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateCreate(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateCreate(formats strfmt.Registry) error {
 	if swag.IsZero(m.Create) { // not required
 		return nil
 	}
@@ -726,7 +726,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateCreate(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateGetattr(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateGetattr(formats strfmt.Registry) error {
 	if swag.IsZero(m.Getattr) { // not required
 		return nil
 	}
@@ -743,7 +743,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateGetattr(formats strfmt.Reg
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateLink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Link) { // not required
 		return nil
 	}
@@ -760,7 +760,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLink(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLock(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateLock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Lock) { // not required
 		return nil
 	}
@@ -777,7 +777,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLock(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLookup(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateLookup(formats strfmt.Registry) error {
 	if swag.IsZero(m.Lookup) { // not required
 		return nil
 	}
@@ -794,7 +794,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateLookup(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateOpen(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateOpen(formats strfmt.Registry) error {
 	if swag.IsZero(m.Open) { // not required
 		return nil
 	}
@@ -811,7 +811,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateOpen(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateRead(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateRead(formats strfmt.Registry) error {
 	if swag.IsZero(m.Read) { // not required
 		return nil
 	}
@@ -828,7 +828,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateRead(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateReaddir(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateReaddir(formats strfmt.Registry) error {
 	if swag.IsZero(m.Readdir) { // not required
 		return nil
 	}
@@ -845,7 +845,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateReaddir(formats strfmt.Reg
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateReadlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateReadlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Readlink) { // not required
 		return nil
 	}
@@ -862,7 +862,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateReadlink(formats strfmt.Re
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateRename(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateRename(formats strfmt.Registry) error {
 	if swag.IsZero(m.Rename) { // not required
 		return nil
 	}
@@ -879,7 +879,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateRename(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateSetattr(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateSetattr(formats strfmt.Registry) error {
 	if swag.IsZero(m.Setattr) { // not required
 		return nil
 	}
@@ -896,7 +896,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateSetattr(formats strfmt.Reg
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateUnlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateUnlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Unlink) { // not required
 		return nil
 	}
@@ -913,7 +913,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateUnlink(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateWatch(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateWatch(formats strfmt.Registry) error {
 	if swag.IsZero(m.Watch) { // not required
 		return nil
 	}
@@ -930,7 +930,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateWatch(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) validateWrite(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) validateWrite(formats strfmt.Registry) error {
 	if swag.IsZero(m.Write) { // not required
 		return nil
 	}
@@ -947,8 +947,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) validateWrite(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cifs ops raw based on the context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cifs ops raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAccess(ctx, formats); err != nil {
@@ -1021,7 +1021,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Access != nil {
 		if err := m.Access.ContextValidate(ctx, formats); err != nil {
@@ -1035,7 +1035,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateAccess(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateAudit(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateAudit(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Audit != nil {
 		if err := m.Audit.ContextValidate(ctx, formats); err != nil {
@@ -1049,7 +1049,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateAudit(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateCreate(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateCreate(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Create != nil {
 		if err := m.Create.ContextValidate(ctx, formats); err != nil {
@@ -1063,7 +1063,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateCreate(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateGetattr(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateGetattr(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Getattr != nil {
 		if err := m.Getattr.ContextValidate(ctx, formats); err != nil {
@@ -1077,7 +1077,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateGetattr(ctx context
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateLink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Link != nil {
 		if err := m.Link.ContextValidate(ctx, formats); err != nil {
@@ -1091,7 +1091,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLink(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLock(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateLock(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Lock != nil {
 		if err := m.Lock.ContextValidate(ctx, formats); err != nil {
@@ -1105,7 +1105,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLock(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLookup(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateLookup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Lookup != nil {
 		if err := m.Lookup.ContextValidate(ctx, formats); err != nil {
@@ -1119,7 +1119,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateLookup(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateOpen(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateOpen(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Open != nil {
 		if err := m.Open.ContextValidate(ctx, formats); err != nil {
@@ -1133,7 +1133,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateOpen(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Read != nil {
 		if err := m.Read.ContextValidate(ctx, formats); err != nil {
@@ -1147,7 +1147,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateRead(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateReaddir(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateReaddir(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Readdir != nil {
 		if err := m.Readdir.ContextValidate(ctx, formats); err != nil {
@@ -1161,7 +1161,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateReaddir(ctx context
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateReadlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateReadlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Readlink != nil {
 		if err := m.Readlink.ContextValidate(ctx, formats); err != nil {
@@ -1175,7 +1175,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateReadlink(ctx contex
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateRename(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateRename(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Rename != nil {
 		if err := m.Rename.ContextValidate(ctx, formats); err != nil {
@@ -1189,7 +1189,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateRename(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateSetattr(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateSetattr(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Setattr != nil {
 		if err := m.Setattr.ContextValidate(ctx, formats); err != nil {
@@ -1203,7 +1203,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateSetattr(ctx context
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateUnlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateUnlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Unlink != nil {
 		if err := m.Unlink.ContextValidate(ctx, formats); err != nil {
@@ -1217,7 +1217,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateUnlink(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateWatch(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateWatch(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Watch != nil {
 		if err := m.Watch.ContextValidate(ctx, formats); err != nil {
@@ -1231,7 +1231,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateWatch(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Write != nil {
 		if err := m.Write.ContextValidate(ctx, formats); err != nil {
@@ -1246,7 +1246,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) contextValidateWrite(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1254,8 +1254,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRaw
+func (m *VolumeStatisticsReferenceInlineCifsOpsRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1263,32 +1263,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawAccess Raw count and latency data for access operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess Raw count and latency data for access operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawAccess
-type VolumeStatisticsReferenceCifsOpsRawAccess struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_access
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw access
-func (m *VolumeStatisticsReferenceCifsOpsRawAccess) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline access
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw access based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline access based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawAccess) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1296,8 +1296,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawAccess) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawAccess) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawAccess
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineAccess
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1305,32 +1305,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawAccess) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawAudit
-type VolumeStatisticsReferenceCifsOpsRawAudit struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_audit
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw audit
-func (m *VolumeStatisticsReferenceCifsOpsRawAudit) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline audit
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw audit based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline audit based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawAudit) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1338,8 +1338,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawAudit) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawAudit) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawAudit
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineAudit
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1347,26 +1347,26 @@ func (m *VolumeStatisticsReferenceCifsOpsRawAudit) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawCreate Raw count and latency data for create operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate Raw count and latency data for create operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawCreate
-type VolumeStatisticsReferenceCifsOpsRawCreate struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_create
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate struct {
 
 	// dir
-	Dir *VolumeStatisticsReferenceCifsOpsRawCreateDir `json:"dir,omitempty"`
+	Dir *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir `json:"dir,omitempty"`
 
 	// file
-	File *VolumeStatisticsReferenceCifsOpsRawCreateFile `json:"file,omitempty"`
+	File *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile `json:"file,omitempty"`
 
 	// other
-	Other *VolumeStatisticsReferenceCifsOpsRawCreateOther `json:"other,omitempty"`
+	Other *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther `json:"other,omitempty"`
 
 	// symlink
-	Symlink *VolumeStatisticsReferenceCifsOpsRawCreateSymlink `json:"symlink,omitempty"`
+	Symlink *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink `json:"symlink,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw create
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline create
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDir(formats); err != nil {
@@ -1391,7 +1391,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateDir(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) validateDir(formats strfmt.Registry) error {
 	if swag.IsZero(m.Dir) { // not required
 		return nil
 	}
@@ -1408,7 +1408,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateDir(formats strfmt.R
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateFile(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) validateFile(formats strfmt.Registry) error {
 	if swag.IsZero(m.File) { // not required
 		return nil
 	}
@@ -1425,7 +1425,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateFile(formats strfmt.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateOther(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) validateOther(formats strfmt.Registry) error {
 	if swag.IsZero(m.Other) { // not required
 		return nil
 	}
@@ -1442,7 +1442,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateOther(formats strfmt
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateSymlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) validateSymlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Symlink) { // not required
 		return nil
 	}
@@ -1459,8 +1459,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) validateSymlink(formats strf
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cifs ops raw create based on the context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cifs ops raw inline create based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDir(ctx, formats); err != nil {
@@ -1485,7 +1485,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Dir != nil {
 		if err := m.Dir.ContextValidate(ctx, formats); err != nil {
@@ -1499,7 +1499,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateDir(ctx conte
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.File != nil {
 		if err := m.File.ContextValidate(ctx, formats); err != nil {
@@ -1513,7 +1513,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateFile(ctx cont
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Other != nil {
 		if err := m.Other.ContextValidate(ctx, formats); err != nil {
@@ -1527,7 +1527,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateOther(ctx con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Symlink != nil {
 		if err := m.Symlink.ContextValidate(ctx, formats); err != nil {
@@ -1542,7 +1542,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) contextValidateSymlink(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1550,8 +1550,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreate) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawCreate
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineCreate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1559,32 +1559,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreate) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawCreateDir Raw count and latency data for directory-create operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir Raw count and latency data for directory-create operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawCreateDir
-type VolumeStatisticsReferenceCifsOpsRawCreateDir struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_create_inline_dir
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw create dir
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline create inline dir
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw create dir based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline create inline dir based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1592,8 +1592,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawCreateDir
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineDir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1601,32 +1601,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateDir) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawCreateFile Raw count and latency data for file-create operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile Raw count and latency data for file-create operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawCreateFile
-type VolumeStatisticsReferenceCifsOpsRawCreateFile struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_create_inline_file
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw create file
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline create inline file
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw create file based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline create inline file based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1634,8 +1634,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawCreateFile
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1643,32 +1643,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateFile) UnmarshalBinary(b []byte
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawCreateOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawCreateOther
-type VolumeStatisticsReferenceCifsOpsRawCreateOther struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_create_inline_other
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw create other
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline create inline other
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw create other based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline create inline other based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1676,8 +1676,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawCreateOther
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineOther
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1685,32 +1685,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateOther) UnmarshalBinary(b []byt
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawCreateSymlink Raw count and latency data for symlink-create operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink Raw count and latency data for symlink-create operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawCreateSymlink
-type VolumeStatisticsReferenceCifsOpsRawCreateSymlink struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_create_inline_symlink
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw create symlink
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline create inline symlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw create symlink based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline create inline symlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1718,8 +1718,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawCreateSymlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineCreateInlineSymlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1727,32 +1727,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawCreateSymlink) UnmarshalBinary(b []b
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawGetattr Raw count and latency data for getattr operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr Raw count and latency data for getattr operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawGetattr
-type VolumeStatisticsReferenceCifsOpsRawGetattr struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_getattr
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw getattr
-func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline getattr
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw getattr based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline getattr based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1760,8 +1760,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawGetattr
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineGetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1769,32 +1769,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawGetattr) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawLink Raw count and latency data for link operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineLink Raw count and latency data for link operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawLink
-type VolumeStatisticsReferenceCifsOpsRawLink struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_link
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineLink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw link
-func (m *VolumeStatisticsReferenceCifsOpsRawLink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline link
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw link based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline link based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1802,8 +1802,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLink) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawLink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineLink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1811,32 +1811,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLink) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawLock Raw count and latency data for lock operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineLock Raw count and latency data for lock operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawLock
-type VolumeStatisticsReferenceCifsOpsRawLock struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_lock
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineLock struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw lock
-func (m *VolumeStatisticsReferenceCifsOpsRawLock) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline lock
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLock) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw lock based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline lock based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLock) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLock) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1844,8 +1844,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLock) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLock) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawLock
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLock) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineLock
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1853,32 +1853,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLock) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawLookup Raw count and latency data for lookup operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup Raw count and latency data for lookup operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawLookup
-type VolumeStatisticsReferenceCifsOpsRawLookup struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_lookup
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw lookup
-func (m *VolumeStatisticsReferenceCifsOpsRawLookup) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline lookup
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw lookup based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline lookup based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLookup) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1886,8 +1886,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLookup) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawLookup) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawLookup
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineLookup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1895,32 +1895,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawLookup) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawOpen Raw count and latency data for open operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen Raw count and latency data for open operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawOpen
-type VolumeStatisticsReferenceCifsOpsRawOpen struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_open
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw open
-func (m *VolumeStatisticsReferenceCifsOpsRawOpen) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline open
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw open based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline open based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawOpen) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1928,8 +1928,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawOpen) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawOpen) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawOpen
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineOpen
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1937,45 +1937,45 @@ func (m *VolumeStatisticsReferenceCifsOpsRawOpen) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawRead
-type VolumeStatisticsReferenceCifsOpsRawRead struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_read
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineRead struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw read
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline read
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cifs ops raw read based on the context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cifs ops raw inline read based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -1992,18 +1992,18 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRead) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"read"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -2011,7 +2011,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRead) contextValidateTotalTime(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2019,8 +2019,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRead) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawRead) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawRead
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRead) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineRead
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2028,32 +2028,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRead) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawReaddir Raw count and latency data for readdir operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir Raw count and latency data for readdir operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawReaddir
-type VolumeStatisticsReferenceCifsOpsRawReaddir struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_readdir
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw readdir
-func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline readdir
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw readdir based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline readdir based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2061,8 +2061,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawReaddir
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineReaddir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2070,32 +2070,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawReaddir) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawReadlink Raw count and latency data for readlink operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink Raw count and latency data for readlink operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawReadlink
-type VolumeStatisticsReferenceCifsOpsRawReadlink struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_readlink
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw readlink
-func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline readlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw readlink based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline readlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2103,8 +2103,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawReadlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineReadlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2112,32 +2112,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawReadlink) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawRename Raw count and latency data for rename operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineRename Raw count and latency data for rename operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawRename
-type VolumeStatisticsReferenceCifsOpsRawRename struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_rename
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineRename struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw rename
-func (m *VolumeStatisticsReferenceCifsOpsRawRename) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline rename
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRename) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw rename based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline rename based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawRename) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRename) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2145,8 +2145,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRename) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawRename) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawRename
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineRename) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineRename
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2154,32 +2154,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawRename) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawSetattr Raw count and latency data for setattr operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr Raw count and latency data for setattr operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawSetattr
-type VolumeStatisticsReferenceCifsOpsRawSetattr struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_setattr
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw setattr
-func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline setattr
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw setattr based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline setattr based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2187,8 +2187,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawSetattr
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineSetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2196,32 +2196,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawSetattr) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawUnlink Raw count and latency data for unlink operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink Raw count and latency data for unlink operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawUnlink
-type VolumeStatisticsReferenceCifsOpsRawUnlink struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_unlink
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw unlink
-func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline unlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw unlink based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline unlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2229,8 +2229,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawUnlink
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineUnlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2238,32 +2238,32 @@ func (m *VolumeStatisticsReferenceCifsOpsRawUnlink) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawWatch
-type VolumeStatisticsReferenceCifsOpsRawWatch struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_watch
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw watch
-func (m *VolumeStatisticsReferenceCifsOpsRawWatch) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline watch
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference cifs ops raw watch based on context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline cifs ops raw inline watch based on context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawWatch) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2271,8 +2271,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWatch) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawWatch) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawWatch
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineWatch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2280,45 +2280,45 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWatch) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceCifsOpsRawWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
+// VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeStatisticsReferenceCifsOpsRawWrite
-type VolumeStatisticsReferenceCifsOpsRawWrite struct {
+// swagger:model volume_statistics_reference_inline_cifs_ops_raw_inline_write
+type VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume statistics reference cifs ops raw write
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cifs ops raw inline write
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cifs ops raw write based on the context it is used
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cifs ops raw inline write based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -2335,18 +2335,18 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWrite) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "cifs_ops_raw"+"."+"write"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -2354,7 +2354,7 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWrite) contextValidateTotalTime(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2362,8 +2362,8 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWrite) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCifsOpsRawWrite) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCifsOpsRawWrite
+func (m *VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCifsOpsRawInlineWrite
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2371,22 +2371,22 @@ func (m *VolumeStatisticsReferenceCifsOpsRawWrite) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceCloud These are raw performance numbers (IOPS and latency) for the cloud store. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster. These numbers are relevant only for volumes hosted on FabricPools.
+// VolumeStatisticsReferenceInlineCloud These are raw performance numbers (IOPS and latency) for the cloud store. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster. These numbers are relevant only for volumes hosted on FabricPools.
 //
-// swagger:model VolumeStatisticsReferenceCloud
-type VolumeStatisticsReferenceCloud struct {
+// swagger:model volume_statistics_reference_inline_cloud
+type VolumeStatisticsReferenceInlineCloud struct {
 
 	// iops raw
-	IopsRaw *VolumeStatisticsReferenceCloudIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *VolumeStatisticsReferenceInlineCloudInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *VolumeStatisticsReferenceCloudLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *VolumeStatisticsReferenceInlineCloudInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2395,8 +2395,8 @@ type VolumeStatisticsReferenceCloud struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this volume statistics reference cloud
-func (m *VolumeStatisticsReferenceCloud) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cloud
+func (m *VolumeStatisticsReferenceInlineCloud) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -2421,7 +2421,7 @@ func (m *VolumeStatisticsReferenceCloud) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) validateIopsRaw(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -2438,7 +2438,7 @@ func (m *VolumeStatisticsReferenceCloud) validateIopsRaw(formats strfmt.Registry
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -2455,7 +2455,7 @@ func (m *VolumeStatisticsReferenceCloud) validateLatencyRaw(formats strfmt.Regis
 	return nil
 }
 
-var volumeStatisticsReferenceCloudTypeStatusPropEnum []interface{}
+var volumeStatisticsReferenceInlineCloudTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2463,135 +2463,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeStatisticsReferenceCloudTypeStatusPropEnum = append(volumeStatisticsReferenceCloudTypeStatusPropEnum, v)
+		volumeStatisticsReferenceInlineCloudTypeStatusPropEnum = append(volumeStatisticsReferenceInlineCloudTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusOk captures enum value "ok"
-	VolumeStatisticsReferenceCloudStatusOk string = "ok"
+	// VolumeStatisticsReferenceInlineCloudStatusOk captures enum value "ok"
+	VolumeStatisticsReferenceInlineCloudStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusError captures enum value "error"
-	VolumeStatisticsReferenceCloudStatusError string = "error"
+	// VolumeStatisticsReferenceInlineCloudStatusError captures enum value "error"
+	VolumeStatisticsReferenceInlineCloudStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusPartialNoData captures enum value "partial_no_data"
-	VolumeStatisticsReferenceCloudStatusPartialNoData string = "partial_no_data"
+	// VolumeStatisticsReferenceInlineCloudStatusPartialNoData captures enum value "partial_no_data"
+	VolumeStatisticsReferenceInlineCloudStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
-	VolumeStatisticsReferenceCloudStatusPartialNoUUID string = "partial_no_uuid"
+	// VolumeStatisticsReferenceInlineCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeStatisticsReferenceInlineCloudStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusPartialNoResponse captures enum value "partial_no_response"
-	VolumeStatisticsReferenceCloudStatusPartialNoResponse string = "partial_no_response"
+	// VolumeStatisticsReferenceInlineCloudStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeStatisticsReferenceInlineCloudStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusPartialOtherError captures enum value "partial_other_error"
-	VolumeStatisticsReferenceCloudStatusPartialOtherError string = "partial_other_error"
+	// VolumeStatisticsReferenceInlineCloudStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeStatisticsReferenceInlineCloudStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusNegativeDelta captures enum value "negative_delta"
-	VolumeStatisticsReferenceCloudStatusNegativeDelta string = "negative_delta"
+	// VolumeStatisticsReferenceInlineCloudStatusNegativeDelta captures enum value "negative_delta"
+	VolumeStatisticsReferenceInlineCloudStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusBackfilledData captures enum value "backfilled_data"
-	VolumeStatisticsReferenceCloudStatusBackfilledData string = "backfilled_data"
+	// VolumeStatisticsReferenceInlineCloudStatusBackfilledData captures enum value "backfilled_data"
+	VolumeStatisticsReferenceInlineCloudStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	VolumeStatisticsReferenceCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// VolumeStatisticsReferenceInlineCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeStatisticsReferenceInlineCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceCloud
-	// VolumeStatisticsReferenceCloud
+	// volume_statistics_reference_inline_cloud
+	// VolumeStatisticsReferenceInlineCloud
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	VolumeStatisticsReferenceCloudStatusInconsistentOldData string = "inconsistent_old_data"
+	// VolumeStatisticsReferenceInlineCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeStatisticsReferenceInlineCloudStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *VolumeStatisticsReferenceCloud) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeStatisticsReferenceCloudTypeStatusPropEnum, true); err != nil {
+func (m *VolumeStatisticsReferenceInlineCloud) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeStatisticsReferenceInlineCloudTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) validateStatus(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("cloud"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("cloud"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) validateTimestamp(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2603,8 +2603,8 @@ func (m *VolumeStatisticsReferenceCloud) validateTimestamp(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cloud based on the context it is used
-func (m *VolumeStatisticsReferenceCloud) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cloud based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCloud) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -2629,7 +2629,7 @@ func (m *VolumeStatisticsReferenceCloud) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -2643,7 +2643,7 @@ func (m *VolumeStatisticsReferenceCloud) contextValidateIopsRaw(ctx context.Cont
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -2657,16 +2657,16 @@ func (m *VolumeStatisticsReferenceCloud) contextValidateLatencyRaw(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cloud"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "cloud"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceCloud) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineCloud) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cloud"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2676,7 +2676,7 @@ func (m *VolumeStatisticsReferenceCloud) contextValidateTimestamp(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloud) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCloud) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2684,8 +2684,8 @@ func (m *VolumeStatisticsReferenceCloud) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloud) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCloud
+func (m *VolumeStatisticsReferenceInlineCloud) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCloud
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2693,34 +2693,34 @@ func (m *VolumeStatisticsReferenceCloud) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceCloudIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
+// VolumeStatisticsReferenceInlineCloudInlineIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model VolumeStatisticsReferenceCloudIopsRaw
-type VolumeStatisticsReferenceCloudIopsRaw struct {
+// swagger:model volume_statistics_reference_inline_cloud_inline_iops_raw
+type VolumeStatisticsReferenceInlineCloudInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference cloud iops raw
-func (m *VolumeStatisticsReferenceCloudIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cloud inline iops raw
+func (m *VolumeStatisticsReferenceInlineCloudInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cloud iops raw based on the context it is used
-func (m *VolumeStatisticsReferenceCloudIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cloud inline iops raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCloudInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2730,7 +2730,7 @@ func (m *VolumeStatisticsReferenceCloudIopsRaw) ContextValidate(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloudIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCloudInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2738,8 +2738,8 @@ func (m *VolumeStatisticsReferenceCloudIopsRaw) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloudIopsRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCloudIopsRaw
+func (m *VolumeStatisticsReferenceInlineCloudInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCloudInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2747,34 +2747,34 @@ func (m *VolumeStatisticsReferenceCloudIopsRaw) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeStatisticsReferenceCloudLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// VolumeStatisticsReferenceInlineCloudInlineLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model VolumeStatisticsReferenceCloudLatencyRaw
-type VolumeStatisticsReferenceCloudLatencyRaw struct {
+// swagger:model volume_statistics_reference_inline_cloud_inline_latency_raw
+type VolumeStatisticsReferenceInlineCloudInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference cloud latency raw
-func (m *VolumeStatisticsReferenceCloudLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline cloud inline latency raw
+func (m *VolumeStatisticsReferenceInlineCloudInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference cloud latency raw based on the context it is used
-func (m *VolumeStatisticsReferenceCloudLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline cloud inline latency raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineCloudInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2784,7 +2784,7 @@ func (m *VolumeStatisticsReferenceCloudLatencyRaw) ContextValidate(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloudLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineCloudInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2792,8 +2792,8 @@ func (m *VolumeStatisticsReferenceCloudLatencyRaw) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceCloudLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceCloudLatencyRaw
+func (m *VolumeStatisticsReferenceInlineCloudInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineCloudInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2801,24 +2801,24 @@ func (m *VolumeStatisticsReferenceCloudLatencyRaw) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceFlexcacheRaw Performance numbers for FlexCache used to measure cache effectiveness.
+// VolumeStatisticsReferenceInlineFlexcacheRaw Performance numbers for FlexCache used to measure cache effectiveness.
 //
-// swagger:model VolumeStatisticsReferenceFlexcacheRaw
-type VolumeStatisticsReferenceFlexcacheRaw struct {
+// swagger:model volume_statistics_reference_inline_flexcache_raw
+type VolumeStatisticsReferenceInlineFlexcacheRaw struct {
 
 	// Blocks retrieved from origin in case of a cache miss. This can be divided by the raw client_requested_blocks and multiplied by 100 to calculate the cache miss percentage.
 	// Example: 10
-	CacheMissBlocks int64 `json:"cache_miss_blocks,omitempty"`
+	CacheMissBlocks *int64 `json:"cache_miss_blocks,omitempty"`
 
 	// Total blocks requested by the client.
 	// Example: 500
-	ClientRequestedBlocks int64 `json:"client_requested_blocks,omitempty"`
+	ClientRequestedBlocks *int64 `json:"client_requested_blocks,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2827,8 +2827,8 @@ type VolumeStatisticsReferenceFlexcacheRaw struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this volume statistics reference flexcache raw
-func (m *VolumeStatisticsReferenceFlexcacheRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline flexcache raw
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStatus(formats); err != nil {
@@ -2845,7 +2845,7 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) Validate(formats strfmt.Registry
 	return nil
 }
 
-var volumeStatisticsReferenceFlexcacheRawTypeStatusPropEnum []interface{}
+var volumeStatisticsReferenceInlineFlexcacheRawTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2853,135 +2853,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeStatisticsReferenceFlexcacheRawTypeStatusPropEnum = append(volumeStatisticsReferenceFlexcacheRawTypeStatusPropEnum, v)
+		volumeStatisticsReferenceInlineFlexcacheRawTypeStatusPropEnum = append(volumeStatisticsReferenceInlineFlexcacheRawTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusOk captures enum value "ok"
-	VolumeStatisticsReferenceFlexcacheRawStatusOk string = "ok"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusOk captures enum value "ok"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusError captures enum value "error"
-	VolumeStatisticsReferenceFlexcacheRawStatusError string = "error"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusError captures enum value "error"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusPartialNoData captures enum value "partial_no_data"
-	VolumeStatisticsReferenceFlexcacheRawStatusPartialNoData string = "partial_no_data"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoData captures enum value "partial_no_data"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusPartialNoUUID captures enum value "partial_no_uuid"
-	VolumeStatisticsReferenceFlexcacheRawStatusPartialNoUUID string = "partial_no_uuid"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusPartialNoResponse captures enum value "partial_no_response"
-	VolumeStatisticsReferenceFlexcacheRawStatusPartialNoResponse string = "partial_no_response"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusPartialOtherError captures enum value "partial_other_error"
-	VolumeStatisticsReferenceFlexcacheRawStatusPartialOtherError string = "partial_other_error"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusNegativeDelta captures enum value "negative_delta"
-	VolumeStatisticsReferenceFlexcacheRawStatusNegativeDelta string = "negative_delta"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusNegativeDelta captures enum value "negative_delta"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusBackfilledData captures enum value "backfilled_data"
-	VolumeStatisticsReferenceFlexcacheRawStatusBackfilledData string = "backfilled_data"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusBackfilledData captures enum value "backfilled_data"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	VolumeStatisticsReferenceFlexcacheRawStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRaw
-	// VolumeStatisticsReferenceFlexcacheRaw
+	// volume_statistics_reference_inline_flexcache_raw
+	// VolumeStatisticsReferenceInlineFlexcacheRaw
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// VolumeStatisticsReferenceFlexcacheRawStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	VolumeStatisticsReferenceFlexcacheRawStatusInconsistentOldData string = "inconsistent_old_data"
+	// VolumeStatisticsReferenceInlineFlexcacheRawStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeStatisticsReferenceInlineFlexcacheRawStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *VolumeStatisticsReferenceFlexcacheRaw) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeStatisticsReferenceFlexcacheRawTypeStatusPropEnum, true); err != nil {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeStatisticsReferenceInlineFlexcacheRawTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceFlexcacheRaw) validateStatus(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("flexcache_raw"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("flexcache_raw"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceFlexcacheRaw) validateTimestamp(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2993,8 +2993,8 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) validateTimestamp(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference flexcache raw based on the context it is used
-func (m *VolumeStatisticsReferenceFlexcacheRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline flexcache raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
@@ -3011,16 +3011,16 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceFlexcacheRaw) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "flexcache_raw"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "flexcache_raw"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceFlexcacheRaw) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "flexcache_raw"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -3030,7 +3030,7 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) contextValidateTimestamp(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceFlexcacheRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3038,8 +3038,8 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceFlexcacheRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceFlexcacheRaw
+func (m *VolumeStatisticsReferenceInlineFlexcacheRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineFlexcacheRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3047,34 +3047,34 @@ func (m *VolumeStatisticsReferenceFlexcacheRaw) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// VolumeStatisticsReferenceIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
+// VolumeStatisticsReferenceInlineIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model VolumeStatisticsReferenceIopsRaw
-type VolumeStatisticsReferenceIopsRaw struct {
+// swagger:model volume_statistics_reference_inline_iops_raw
+type VolumeStatisticsReferenceInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference iops raw
-func (m *VolumeStatisticsReferenceIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline iops raw
+func (m *VolumeStatisticsReferenceInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference iops raw based on the context it is used
-func (m *VolumeStatisticsReferenceIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline iops raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3084,7 +3084,7 @@ func (m *VolumeStatisticsReferenceIopsRaw) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3092,8 +3092,8 @@ func (m *VolumeStatisticsReferenceIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceIopsRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceIopsRaw
+func (m *VolumeStatisticsReferenceInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3101,34 +3101,34 @@ func (m *VolumeStatisticsReferenceIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// VolumeStatisticsReferenceInlineLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model VolumeStatisticsReferenceLatencyRaw
-type VolumeStatisticsReferenceLatencyRaw struct {
+// swagger:model volume_statistics_reference_inline_latency_raw
+type VolumeStatisticsReferenceInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference latency raw
-func (m *VolumeStatisticsReferenceLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline latency raw
+func (m *VolumeStatisticsReferenceInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference latency raw based on the context it is used
-func (m *VolumeStatisticsReferenceLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline latency raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3138,7 +3138,7 @@ func (m *VolumeStatisticsReferenceLatencyRaw) ContextValidate(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3146,8 +3146,8 @@ func (m *VolumeStatisticsReferenceLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceLatencyRaw
+func (m *VolumeStatisticsReferenceInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3155,62 +3155,62 @@ func (m *VolumeStatisticsReferenceLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRaw Raw data component performance values for NFS operations on this volume, including number of operations and raw latency, in microseconds for each operation. The values are cumulative and increase while the volume is online.
+// VolumeStatisticsReferenceInlineNfsOpsRaw Raw data component performance values for NFS operations on this volume, including number of operations and raw latency, in microseconds for each operation. The values are cumulative and increase while the volume is online.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRaw
-type VolumeStatisticsReferenceNfsOpsRaw struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw
+type VolumeStatisticsReferenceInlineNfsOpsRaw struct {
 
 	// access
-	Access *VolumeStatisticsReferenceNfsOpsRawAccess `json:"access,omitempty"`
+	Access *VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess `json:"access,omitempty"`
 
 	// audit
-	Audit *VolumeStatisticsReferenceNfsOpsRawAudit `json:"audit,omitempty"`
+	Audit *VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit `json:"audit,omitempty"`
 
 	// create
-	Create *VolumeStatisticsReferenceNfsOpsRawCreate `json:"create,omitempty"`
+	Create *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate `json:"create,omitempty"`
 
 	// getattr
-	Getattr *VolumeStatisticsReferenceNfsOpsRawGetattr `json:"getattr,omitempty"`
+	Getattr *VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr `json:"getattr,omitempty"`
 
 	// link
-	Link *VolumeStatisticsReferenceNfsOpsRawLink `json:"link,omitempty"`
+	Link *VolumeStatisticsReferenceInlineNfsOpsRawInlineLink `json:"link,omitempty"`
 
 	// lock
-	Lock *VolumeStatisticsReferenceNfsOpsRawLock `json:"lock,omitempty"`
+	Lock *VolumeStatisticsReferenceInlineNfsOpsRawInlineLock `json:"lock,omitempty"`
 
 	// lookup
-	Lookup *VolumeStatisticsReferenceNfsOpsRawLookup `json:"lookup,omitempty"`
+	Lookup *VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup `json:"lookup,omitempty"`
 
 	// open
-	Open *VolumeStatisticsReferenceNfsOpsRawOpen `json:"open,omitempty"`
+	Open *VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen `json:"open,omitempty"`
 
 	// read
-	Read *VolumeStatisticsReferenceNfsOpsRawRead `json:"read,omitempty"`
+	Read *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead `json:"read,omitempty"`
 
 	// readdir
-	Readdir *VolumeStatisticsReferenceNfsOpsRawReaddir `json:"readdir,omitempty"`
+	Readdir *VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir `json:"readdir,omitempty"`
 
 	// readlink
-	Readlink *VolumeStatisticsReferenceNfsOpsRawReadlink `json:"readlink,omitempty"`
+	Readlink *VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink `json:"readlink,omitempty"`
 
 	// rename
-	Rename *VolumeStatisticsReferenceNfsOpsRawRename `json:"rename,omitempty"`
+	Rename *VolumeStatisticsReferenceInlineNfsOpsRawInlineRename `json:"rename,omitempty"`
 
 	// setattr
-	Setattr *VolumeStatisticsReferenceNfsOpsRawSetattr `json:"setattr,omitempty"`
+	Setattr *VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr `json:"setattr,omitempty"`
 
 	// unlink
-	Unlink *VolumeStatisticsReferenceNfsOpsRawUnlink `json:"unlink,omitempty"`
+	Unlink *VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink `json:"unlink,omitempty"`
 
 	// watch
-	Watch *VolumeStatisticsReferenceNfsOpsRawWatch `json:"watch,omitempty"`
+	Watch *VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch `json:"watch,omitempty"`
 
 	// write
-	Write *VolumeStatisticsReferenceNfsOpsRawWrite `json:"write,omitempty"`
+	Write *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw
-func (m *VolumeStatisticsReferenceNfsOpsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
@@ -3283,7 +3283,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateAccess(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateAccess(formats strfmt.Registry) error {
 	if swag.IsZero(m.Access) { // not required
 		return nil
 	}
@@ -3300,7 +3300,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateAccess(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateAudit(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateAudit(formats strfmt.Registry) error {
 	if swag.IsZero(m.Audit) { // not required
 		return nil
 	}
@@ -3317,7 +3317,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateAudit(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateCreate(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateCreate(formats strfmt.Registry) error {
 	if swag.IsZero(m.Create) { // not required
 		return nil
 	}
@@ -3334,7 +3334,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateCreate(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateGetattr(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateGetattr(formats strfmt.Registry) error {
 	if swag.IsZero(m.Getattr) { // not required
 		return nil
 	}
@@ -3351,7 +3351,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateGetattr(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateLink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Link) { // not required
 		return nil
 	}
@@ -3368,7 +3368,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLink(formats strfmt.Registr
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLock(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateLock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Lock) { // not required
 		return nil
 	}
@@ -3385,7 +3385,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLock(formats strfmt.Registr
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLookup(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateLookup(formats strfmt.Registry) error {
 	if swag.IsZero(m.Lookup) { // not required
 		return nil
 	}
@@ -3402,7 +3402,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateLookup(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateOpen(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateOpen(formats strfmt.Registry) error {
 	if swag.IsZero(m.Open) { // not required
 		return nil
 	}
@@ -3419,7 +3419,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateOpen(formats strfmt.Registr
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateRead(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateRead(formats strfmt.Registry) error {
 	if swag.IsZero(m.Read) { // not required
 		return nil
 	}
@@ -3436,7 +3436,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateRead(formats strfmt.Registr
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateReaddir(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateReaddir(formats strfmt.Registry) error {
 	if swag.IsZero(m.Readdir) { // not required
 		return nil
 	}
@@ -3453,7 +3453,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateReaddir(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateReadlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateReadlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Readlink) { // not required
 		return nil
 	}
@@ -3470,7 +3470,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateReadlink(formats strfmt.Reg
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateRename(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateRename(formats strfmt.Registry) error {
 	if swag.IsZero(m.Rename) { // not required
 		return nil
 	}
@@ -3487,7 +3487,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateRename(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateSetattr(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateSetattr(formats strfmt.Registry) error {
 	if swag.IsZero(m.Setattr) { // not required
 		return nil
 	}
@@ -3504,7 +3504,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateSetattr(formats strfmt.Regi
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateUnlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateUnlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Unlink) { // not required
 		return nil
 	}
@@ -3521,7 +3521,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateUnlink(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateWatch(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateWatch(formats strfmt.Registry) error {
 	if swag.IsZero(m.Watch) { // not required
 		return nil
 	}
@@ -3538,7 +3538,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateWatch(formats strfmt.Regist
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) validateWrite(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) validateWrite(formats strfmt.Registry) error {
 	if swag.IsZero(m.Write) { // not required
 		return nil
 	}
@@ -3555,8 +3555,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) validateWrite(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference nfs ops raw based on the context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline nfs ops raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAccess(ctx, formats); err != nil {
@@ -3629,7 +3629,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Access != nil {
 		if err := m.Access.ContextValidate(ctx, formats); err != nil {
@@ -3643,7 +3643,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateAccess(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateAudit(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateAudit(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Audit != nil {
 		if err := m.Audit.ContextValidate(ctx, formats); err != nil {
@@ -3657,7 +3657,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateAudit(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateCreate(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateCreate(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Create != nil {
 		if err := m.Create.ContextValidate(ctx, formats); err != nil {
@@ -3671,7 +3671,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateCreate(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateGetattr(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateGetattr(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Getattr != nil {
 		if err := m.Getattr.ContextValidate(ctx, formats); err != nil {
@@ -3685,7 +3685,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateGetattr(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateLink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Link != nil {
 		if err := m.Link.ContextValidate(ctx, formats); err != nil {
@@ -3699,7 +3699,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLink(ctx context.Con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLock(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateLock(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Lock != nil {
 		if err := m.Lock.ContextValidate(ctx, formats); err != nil {
@@ -3713,7 +3713,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLock(ctx context.Con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLookup(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateLookup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Lookup != nil {
 		if err := m.Lookup.ContextValidate(ctx, formats); err != nil {
@@ -3727,7 +3727,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateLookup(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateOpen(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateOpen(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Open != nil {
 		if err := m.Open.ContextValidate(ctx, formats); err != nil {
@@ -3741,7 +3741,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateOpen(ctx context.Con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Read != nil {
 		if err := m.Read.ContextValidate(ctx, formats); err != nil {
@@ -3755,7 +3755,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateRead(ctx context.Con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateReaddir(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateReaddir(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Readdir != nil {
 		if err := m.Readdir.ContextValidate(ctx, formats); err != nil {
@@ -3769,7 +3769,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateReaddir(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateReadlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateReadlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Readlink != nil {
 		if err := m.Readlink.ContextValidate(ctx, formats); err != nil {
@@ -3783,7 +3783,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateReadlink(ctx context
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateRename(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateRename(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Rename != nil {
 		if err := m.Rename.ContextValidate(ctx, formats); err != nil {
@@ -3797,7 +3797,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateRename(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateSetattr(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateSetattr(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Setattr != nil {
 		if err := m.Setattr.ContextValidate(ctx, formats); err != nil {
@@ -3811,7 +3811,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateSetattr(ctx context.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateUnlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateUnlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Unlink != nil {
 		if err := m.Unlink.ContextValidate(ctx, formats); err != nil {
@@ -3825,7 +3825,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateUnlink(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateWatch(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateWatch(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Watch != nil {
 		if err := m.Watch.ContextValidate(ctx, formats); err != nil {
@@ -3839,7 +3839,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateWatch(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Write != nil {
 		if err := m.Write.ContextValidate(ctx, formats); err != nil {
@@ -3854,7 +3854,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) contextValidateWrite(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3862,8 +3862,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRaw
+func (m *VolumeStatisticsReferenceInlineNfsOpsRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3871,32 +3871,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawAccess Raw count and latency data for access operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess Raw count and latency data for access operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawAccess
-type VolumeStatisticsReferenceNfsOpsRawAccess struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_access
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw access
-func (m *VolumeStatisticsReferenceNfsOpsRawAccess) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline access
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw access based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline access based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawAccess) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3904,8 +3904,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawAccess) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawAccess) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawAccess
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineAccess
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3913,32 +3913,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawAccess) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit Raw count and latency data for audit operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawAudit
-type VolumeStatisticsReferenceNfsOpsRawAudit struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_audit
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw audit
-func (m *VolumeStatisticsReferenceNfsOpsRawAudit) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline audit
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw audit based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline audit based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawAudit) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3946,8 +3946,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawAudit) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawAudit) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawAudit
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineAudit
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3955,26 +3955,26 @@ func (m *VolumeStatisticsReferenceNfsOpsRawAudit) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawCreate Raw count and latency data for create operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate Raw count and latency data for create operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawCreate
-type VolumeStatisticsReferenceNfsOpsRawCreate struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_create
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate struct {
 
 	// dir
-	Dir *VolumeStatisticsReferenceNfsOpsRawCreateDir `json:"dir,omitempty"`
+	Dir *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir `json:"dir,omitempty"`
 
 	// file
-	File *VolumeStatisticsReferenceNfsOpsRawCreateFile `json:"file,omitempty"`
+	File *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile `json:"file,omitempty"`
 
 	// other
-	Other *VolumeStatisticsReferenceNfsOpsRawCreateOther `json:"other,omitempty"`
+	Other *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther `json:"other,omitempty"`
 
 	// symlink
-	Symlink *VolumeStatisticsReferenceNfsOpsRawCreateSymlink `json:"symlink,omitempty"`
+	Symlink *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink `json:"symlink,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw create
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline create
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDir(formats); err != nil {
@@ -3999,7 +3999,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateDir(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) validateDir(formats strfmt.Registry) error {
 	if swag.IsZero(m.Dir) { // not required
 		return nil
 	}
@@ -4016,7 +4016,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateDir(formats strfmt.Re
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateFile(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) validateFile(formats strfmt.Registry) error {
 	if swag.IsZero(m.File) { // not required
 		return nil
 	}
@@ -4033,7 +4033,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateFile(formats strfmt.R
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateOther(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) validateOther(formats strfmt.Registry) error {
 	if swag.IsZero(m.Other) { // not required
 		return nil
 	}
@@ -4050,7 +4050,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateOther(formats strfmt.
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateSymlink(formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) validateSymlink(formats strfmt.Registry) error {
 	if swag.IsZero(m.Symlink) { // not required
 		return nil
 	}
@@ -4067,8 +4067,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) validateSymlink(formats strfm
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference nfs ops raw create based on the context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline nfs ops raw inline create based on the context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDir(ctx, formats); err != nil {
@@ -4093,7 +4093,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) contextValidateDir(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Dir != nil {
 		if err := m.Dir.ContextValidate(ctx, formats); err != nil {
@@ -4107,7 +4107,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateDir(ctx contex
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.File != nil {
 		if err := m.File.ContextValidate(ctx, formats); err != nil {
@@ -4121,7 +4121,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateFile(ctx conte
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) contextValidateOther(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Other != nil {
 		if err := m.Other.ContextValidate(ctx, formats); err != nil {
@@ -4135,7 +4135,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateOther(ctx cont
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) contextValidateSymlink(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Symlink != nil {
 		if err := m.Symlink.ContextValidate(ctx, formats); err != nil {
@@ -4150,7 +4150,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) contextValidateSymlink(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4158,8 +4158,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreate) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawCreate
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineCreate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4167,32 +4167,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreate) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawCreateDir Raw count and latency data for directory-create operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir Raw count and latency data for directory-create operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawCreateDir
-type VolumeStatisticsReferenceNfsOpsRawCreateDir struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_create_inline_dir
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw create dir
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline create inline dir
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw create dir based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline create inline dir based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4200,8 +4200,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawCreateDir
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineDir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4209,32 +4209,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateDir) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawCreateFile Raw count and latency data for file-create operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile Raw count and latency data for file-create operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawCreateFile
-type VolumeStatisticsReferenceNfsOpsRawCreateFile struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_create_inline_file
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw create file
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline create inline file
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw create file based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline create inline file based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4242,8 +4242,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawCreateFile
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4251,32 +4251,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateFile) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawCreateOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawCreateOther
-type VolumeStatisticsReferenceNfsOpsRawCreateOther struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_create_inline_other
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw create other
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline create inline other
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw create other based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline create inline other based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4284,8 +4284,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawCreateOther
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineOther
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4293,32 +4293,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateOther) UnmarshalBinary(b []byte
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawCreateSymlink Raw count and latency data for symlink-create operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink Raw count and latency data for symlink-create operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawCreateSymlink
-type VolumeStatisticsReferenceNfsOpsRawCreateSymlink struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_create_inline_symlink
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw create symlink
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline create inline symlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw create symlink based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline create inline symlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4326,8 +4326,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawCreateSymlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineCreateInlineSymlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4335,32 +4335,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawCreateSymlink) UnmarshalBinary(b []by
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawGetattr Raw count and latency data for getattr operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr Raw count and latency data for getattr operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawGetattr
-type VolumeStatisticsReferenceNfsOpsRawGetattr struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_getattr
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw getattr
-func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline getattr
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw getattr based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline getattr based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4368,8 +4368,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawGetattr
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineGetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4377,32 +4377,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawGetattr) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawLink Raw count and latency data for link operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineLink Raw count and latency data for link operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawLink
-type VolumeStatisticsReferenceNfsOpsRawLink struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_link
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineLink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw link
-func (m *VolumeStatisticsReferenceNfsOpsRawLink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline link
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw link based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline link based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4410,8 +4410,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLink) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawLink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineLink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4419,32 +4419,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLink) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawLock Raw count and latency data for lock operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineLock Raw count and latency data for lock operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawLock
-type VolumeStatisticsReferenceNfsOpsRawLock struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_lock
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineLock struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw lock
-func (m *VolumeStatisticsReferenceNfsOpsRawLock) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline lock
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLock) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw lock based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline lock based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLock) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLock) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4452,8 +4452,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLock) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLock) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawLock
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLock) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineLock
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4461,32 +4461,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLock) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawLookup Raw count and latency data for lookup operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup Raw count and latency data for lookup operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawLookup
-type VolumeStatisticsReferenceNfsOpsRawLookup struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_lookup
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw lookup
-func (m *VolumeStatisticsReferenceNfsOpsRawLookup) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline lookup
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw lookup based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline lookup based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLookup) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4494,8 +4494,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLookup) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawLookup) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawLookup
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineLookup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4503,32 +4503,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawLookup) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawOpen Raw count and latency data for open operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen Raw count and latency data for open operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawOpen
-type VolumeStatisticsReferenceNfsOpsRawOpen struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_open
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw open
-func (m *VolumeStatisticsReferenceNfsOpsRawOpen) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline open
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw open based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline open based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawOpen) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4536,8 +4536,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawOpen) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawOpen) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawOpen
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineOpen
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4545,45 +4545,45 @@ func (m *VolumeStatisticsReferenceNfsOpsRawOpen) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineRead Raw count and latency data for read operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawRead
-type VolumeStatisticsReferenceNfsOpsRawRead struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_read
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineRead struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw read
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline read
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference nfs ops raw read based on the context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline nfs ops raw inline read based on the context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -4600,18 +4600,18 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRead) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"read"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -4619,7 +4619,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRead) contextValidateTotalTime(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4627,8 +4627,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRead) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawRead) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawRead
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRead) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineRead
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4636,32 +4636,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRead) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawReaddir Raw count and latency data for readdir operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir Raw count and latency data for readdir operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawReaddir
-type VolumeStatisticsReferenceNfsOpsRawReaddir struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_readdir
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw readdir
-func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline readdir
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw readdir based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline readdir based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4669,8 +4669,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawReaddir
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineReaddir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4678,32 +4678,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawReaddir) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawReadlink Raw count and latency data for readlink operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink Raw count and latency data for readlink operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawReadlink
-type VolumeStatisticsReferenceNfsOpsRawReadlink struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_readlink
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw readlink
-func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline readlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw readlink based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline readlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4711,8 +4711,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawReadlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineReadlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4720,32 +4720,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawReadlink) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawRename Raw count and latency data for rename operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineRename Raw count and latency data for rename operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawRename
-type VolumeStatisticsReferenceNfsOpsRawRename struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_rename
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineRename struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw rename
-func (m *VolumeStatisticsReferenceNfsOpsRawRename) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline rename
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRename) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw rename based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline rename based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRename) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawRename) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRename) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4753,8 +4753,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRename) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawRename) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawRename
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineRename) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineRename
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4762,32 +4762,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawRename) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawSetattr Raw count and latency data for setattr operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr Raw count and latency data for setattr operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawSetattr
-type VolumeStatisticsReferenceNfsOpsRawSetattr struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_setattr
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw setattr
-func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline setattr
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw setattr based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline setattr based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4795,8 +4795,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawSetattr
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineSetattr
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4804,32 +4804,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawSetattr) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawUnlink Raw count and latency data for unlink operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink Raw count and latency data for unlink operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawUnlink
-type VolumeStatisticsReferenceNfsOpsRawUnlink struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_unlink
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw unlink
-func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline unlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw unlink based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline unlink based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4837,8 +4837,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawUnlink
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineUnlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4846,32 +4846,32 @@ func (m *VolumeStatisticsReferenceNfsOpsRawUnlink) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch Raw count and latency data for watch operations. These statistics are only applicable for CIFS protocol operations.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawWatch
-type VolumeStatisticsReferenceNfsOpsRawWatch struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_watch
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw watch
-func (m *VolumeStatisticsReferenceNfsOpsRawWatch) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline watch
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume statistics reference nfs ops raw watch based on context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume statistics reference inline nfs ops raw inline watch based on context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawWatch) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4879,8 +4879,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWatch) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawWatch) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawWatch
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineWatch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4888,45 +4888,45 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWatch) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceNfsOpsRawWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
+// VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite Raw count and latency data for write operations, including histograms categorizing operations by size and latency.
 //
-// swagger:model VolumeStatisticsReferenceNfsOpsRawWrite
-type VolumeStatisticsReferenceNfsOpsRawWrite struct {
+// swagger:model volume_statistics_reference_inline_nfs_ops_raw_inline_write
+type VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
 	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
 	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
-// Validate validates this volume statistics reference nfs ops raw write
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline nfs ops raw inline write
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference nfs ops raw write based on the context it is used
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline nfs ops raw inline write based on the context it is used
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -4943,18 +4943,18 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWrite) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "nfs_ops_raw"+"."+"write"+"."+"total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 
@@ -4962,7 +4962,7 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWrite) contextValidateTotalTime(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4970,8 +4970,8 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWrite) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceNfsOpsRawWrite) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceNfsOpsRawWrite
+func (m *VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineNfsOpsRawInlineWrite
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4979,34 +4979,34 @@ func (m *VolumeStatisticsReferenceNfsOpsRawWrite) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// VolumeStatisticsReferenceThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// VolumeStatisticsReferenceInlineThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model VolumeStatisticsReferenceThroughputRaw
-type VolumeStatisticsReferenceThroughputRaw struct {
+// swagger:model volume_statistics_reference_inline_throughput_raw
+type VolumeStatisticsReferenceInlineThroughputRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume statistics reference throughput raw
-func (m *VolumeStatisticsReferenceThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this volume statistics reference inline throughput raw
+func (m *VolumeStatisticsReferenceInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume statistics reference throughput raw based on the context it is used
-func (m *VolumeStatisticsReferenceThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume statistics reference inline throughput raw based on the context it is used
+func (m *VolumeStatisticsReferenceInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -5016,7 +5016,7 @@ func (m *VolumeStatisticsReferenceThroughputRaw) ContextValidate(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *VolumeStatisticsReferenceInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5024,8 +5024,8 @@ func (m *VolumeStatisticsReferenceThroughputRaw) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeStatisticsReferenceThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res VolumeStatisticsReferenceThroughputRaw
+func (m *VolumeStatisticsReferenceInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsReferenceInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

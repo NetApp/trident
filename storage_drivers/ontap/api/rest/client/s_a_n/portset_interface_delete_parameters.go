@@ -66,14 +66,14 @@ type PortsetInterfaceDeleteParams struct {
 	   The unique identifier of the portset.
 
 	*/
-	PortsetUUIDPathParameter string
+	PortsetUUID string
 
 	/* UUID.
 
 	   The unique identifier of the network interface in the portset.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *PortsetInterfaceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithPortsetUUIDPathParameter adds the portsetUUID to the portset interface delete params
-func (o *PortsetInterfaceDeleteParams) WithPortsetUUIDPathParameter(portsetUUID string) *PortsetInterfaceDeleteParams {
-	o.SetPortsetUUIDPathParameter(portsetUUID)
+// WithPortsetUUID adds the portsetUUID to the portset interface delete params
+func (o *PortsetInterfaceDeleteParams) WithPortsetUUID(portsetUUID string) *PortsetInterfaceDeleteParams {
+	o.SetPortsetUUID(portsetUUID)
 	return o
 }
 
-// SetPortsetUUIDPathParameter adds the portsetUuid to the portset interface delete params
-func (o *PortsetInterfaceDeleteParams) SetPortsetUUIDPathParameter(portsetUUID string) {
-	o.PortsetUUIDPathParameter = portsetUUID
+// SetPortsetUUID adds the portsetUuid to the portset interface delete params
+func (o *PortsetInterfaceDeleteParams) SetPortsetUUID(portsetUUID string) {
+	o.PortsetUUID = portsetUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the portset interface delete params
-func (o *PortsetInterfaceDeleteParams) WithUUIDPathParameter(uuid string) *PortsetInterfaceDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the portset interface delete params
+func (o *PortsetInterfaceDeleteParams) WithUUID(uuid string) *PortsetInterfaceDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the portset interface delete params
-func (o *PortsetInterfaceDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the portset interface delete params
+func (o *PortsetInterfaceDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -159,12 +159,12 @@ func (o *PortsetInterfaceDeleteParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param portset.uuid
-	if err := r.SetPathParam("portset.uuid", o.PortsetUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("portset.uuid", o.PortsetUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

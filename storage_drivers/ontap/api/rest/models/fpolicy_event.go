@@ -21,14 +21,14 @@ import (
 type FpolicyEvent struct {
 
 	// file operations
-	FileOperations *FpolicyEventFileOperations `json:"file_operations,omitempty"`
+	FileOperations *FpolicyEventInlineFileOperations `json:"file_operations,omitempty"`
 
 	// filters
-	Filters *FpolicyEventFilters `json:"filters,omitempty"`
+	Filters *FpolicyEventInlineFilters `json:"filters,omitempty"`
 
 	// Specifies the name of the FPolicy event.
 	// Example: event_nfs_close
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Protocol for which event is created. If you specify protocol, then you
 	// must also specify a valid value for the file operation parameters.
@@ -38,10 +38,10 @@ type FpolicyEvent struct {
 	//     * nfsv4 - for the NFSv4 protocol.
 	//
 	// Enum: [cifs nfsv3 nfsv4]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
-	Svm *FpolicyEventSvm `json:"svm,omitempty"`
+	Svm *FpolicyEventInlineSvm `json:"svm,omitempty"`
 
 	// Specifies whether volume operation monitoring is required.
 	VolumeMonitoring *bool `json:"volume_monitoring,omitempty"`
@@ -166,7 +166,7 @@ func (m *FpolicyEvent) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -272,70 +272,70 @@ func (m *FpolicyEvent) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEventFileOperations Specifies the file operations for the FPolicy event. You must specify a valid protocol in the protocol parameter.
+// FpolicyEventInlineFileOperations Specifies the file operations for the FPolicy event. You must specify a valid protocol in the protocol parameter.
 // The event will check the operations specified from all client requests using the protocol.
 //
-// swagger:model FpolicyEventFileOperations
-type FpolicyEventFileOperations struct {
+// swagger:model fpolicy_event_inline_file_operations
+type FpolicyEventInlineFileOperations struct {
 
 	// File close operations
-	Close bool `json:"close,omitempty"`
+	Close *bool `json:"close,omitempty"`
 
 	// File create operations
-	Create bool `json:"create,omitempty"`
+	Create *bool `json:"create,omitempty"`
 
 	// Directory create operations
-	CreateDir bool `json:"create_dir,omitempty"`
+	CreateDir *bool `json:"create_dir,omitempty"`
 
 	// File delete operations
-	Delete bool `json:"delete,omitempty"`
+	Delete *bool `json:"delete,omitempty"`
 
 	// Directory delete operations
-	DeleteDir bool `json:"delete_dir,omitempty"`
+	DeleteDir *bool `json:"delete_dir,omitempty"`
 
 	// Get attribute operations
-	Getattr bool `json:"getattr,omitempty"`
+	Getattr *bool `json:"getattr,omitempty"`
 
 	// Link operations
-	Link bool `json:"link,omitempty"`
+	Link *bool `json:"link,omitempty"`
 
 	// Lookup operations
-	Lookup bool `json:"lookup,omitempty"`
+	Lookup *bool `json:"lookup,omitempty"`
 
 	// File open operations
-	Open bool `json:"open,omitempty"`
+	Open *bool `json:"open,omitempty"`
 
 	// File read operations
-	Read bool `json:"read,omitempty"`
+	Read *bool `json:"read,omitempty"`
 
 	// File rename operations
-	Rename bool `json:"rename,omitempty"`
+	Rename *bool `json:"rename,omitempty"`
 
 	// Directory rename operations
-	RenameDir bool `json:"rename_dir,omitempty"`
+	RenameDir *bool `json:"rename_dir,omitempty"`
 
 	// Set attribute operations
-	Setattr bool `json:"setattr,omitempty"`
+	Setattr *bool `json:"setattr,omitempty"`
 
 	// Symbolic link operations
-	Symlink bool `json:"symlink,omitempty"`
+	Symlink *bool `json:"symlink,omitempty"`
 
 	// File write operations
-	Write bool `json:"write,omitempty"`
+	Write *bool `json:"write,omitempty"`
 }
 
-// Validate validates this fpolicy event file operations
-func (m *FpolicyEventFileOperations) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy event inline file operations
+func (m *FpolicyEventInlineFileOperations) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy event file operations based on context it is used
-func (m *FpolicyEventFileOperations) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fpolicy event inline file operations based on context it is used
+func (m *FpolicyEventInlineFileOperations) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEventFileOperations) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEventInlineFileOperations) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -343,8 +343,8 @@ func (m *FpolicyEventFileOperations) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEventFileOperations) UnmarshalBinary(b []byte) error {
-	var res FpolicyEventFileOperations
+func (m *FpolicyEventInlineFileOperations) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventInlineFileOperations
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -352,88 +352,88 @@ func (m *FpolicyEventFileOperations) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEventFilters Specifies the list of filters for a given file operation for the specified protocol.
+// FpolicyEventInlineFilters Specifies the list of filters for a given file operation for the specified protocol.
 // When you specify the filters, you must specify the valid protocols and a valid file operations.
 //
-// swagger:model FpolicyEventFilters
-type FpolicyEventFilters struct {
+// swagger:model fpolicy_event_inline_filters
+type FpolicyEventInlineFilters struct {
 
 	// Filter the client request for close with modification.
-	CloseWithModification bool `json:"close_with_modification,omitempty"`
+	CloseWithModification *bool `json:"close_with_modification,omitempty"`
 
 	// Filter the client request for close with read.
-	CloseWithRead bool `json:"close_with_read,omitempty"`
+	CloseWithRead *bool `json:"close_with_read,omitempty"`
 
 	// Filter the client request for close without modification.
-	CloseWithoutModification bool `json:"close_without_modification,omitempty"`
+	CloseWithoutModification *bool `json:"close_without_modification,omitempty"`
 
 	// Filter the client requests for directory operations. When this filter is specified directory operations are not monitored.
-	ExcludeDirectory bool `json:"exclude_directory,omitempty"`
+	ExcludeDirectory *bool `json:"exclude_directory,omitempty"`
 
 	// Filter the client requests for the first-read.
-	FirstRead bool `json:"first_read,omitempty"`
+	FirstRead *bool `json:"first_read,omitempty"`
 
 	// Filter the client requests for the first-write.
-	FirstWrite bool `json:"first_write,omitempty"`
+	FirstWrite *bool `json:"first_write,omitempty"`
 
 	// Filter the client request for alternate data stream.
-	MonitorAds bool `json:"monitor_ads,omitempty"`
+	MonitorAds *bool `json:"monitor_ads,omitempty"`
 
 	// Filter the client request for offline bit set. FPolicy server receives notification only when offline files are accessed.
-	OfflineBit bool `json:"offline_bit,omitempty"`
+	OfflineBit *bool `json:"offline_bit,omitempty"`
 
 	// Filter the client request for open with delete intent.
-	OpenWithDeleteIntent bool `json:"open_with_delete_intent,omitempty"`
+	OpenWithDeleteIntent *bool `json:"open_with_delete_intent,omitempty"`
 
 	// Filter the client request for open with write intent.
-	OpenWithWriteIntent bool `json:"open_with_write_intent,omitempty"`
+	OpenWithWriteIntent *bool `json:"open_with_write_intent,omitempty"`
 
 	// Filter the client setattr requests for changing the access time of a file or directory.
-	SetattrWithAccessTimeChange bool `json:"setattr_with_access_time_change,omitempty"`
+	SetattrWithAccessTimeChange *bool `json:"setattr_with_access_time_change,omitempty"`
 
 	// Filter the client setattr requests for changing the allocation size of a file.
-	SetattrWithAllocationSizeChange bool `json:"setattr_with_allocation_size_change,omitempty"`
+	SetattrWithAllocationSizeChange *bool `json:"setattr_with_allocation_size_change,omitempty"`
 
 	// Filter the client setattr requests for changing the creation time of a file or directory.
-	SetattrWithCreationTimeChange bool `json:"setattr_with_creation_time_change,omitempty"`
+	SetattrWithCreationTimeChange *bool `json:"setattr_with_creation_time_change,omitempty"`
 
 	// Filter the client setattr requests for changing dacl on a file or directory.
-	SetattrWithDaclChange bool `json:"setattr_with_dacl_change,omitempty"`
+	SetattrWithDaclChange *bool `json:"setattr_with_dacl_change,omitempty"`
 
 	// Filter the client setattr requests for changing group of a file or directory.
-	SetattrWithGroupChange bool `json:"setattr_with_group_change,omitempty"`
+	SetattrWithGroupChange *bool `json:"setattr_with_group_change,omitempty"`
 
 	// Filter the client setattr requests for changing the mode bits on a file or directory.
-	SetattrWithModeChange bool `json:"setattr_with_mode_change,omitempty"`
+	SetattrWithModeChange *bool `json:"setattr_with_mode_change,omitempty"`
 
 	// Filter the client setattr requests for changing the modification time of a file or directory.
-	SetattrWithModifyTimeChange bool `json:"setattr_with_modify_time_change,omitempty"`
+	SetattrWithModifyTimeChange *bool `json:"setattr_with_modify_time_change,omitempty"`
 
 	// Filter the client setattr requests for changing owner of a file or directory.
-	SetattrWithOwnerChange bool `json:"setattr_with_owner_change,omitempty"`
+	SetattrWithOwnerChange *bool `json:"setattr_with_owner_change,omitempty"`
 
 	// Filter the client setattr requests for changing sacl on a file or directory.
-	SetattrWithSaclChange bool `json:"setattr_with_sacl_change,omitempty"`
+	SetattrWithSaclChange *bool `json:"setattr_with_sacl_change,omitempty"`
 
 	// Filter the client setattr requests for changing the size of a file.
-	SetattrWithSizeChange bool `json:"setattr_with_size_change,omitempty"`
+	SetattrWithSizeChange *bool `json:"setattr_with_size_change,omitempty"`
 
 	// Filter the client request for write with size change.
-	WriteWithSizeChange bool `json:"write_with_size_change,omitempty"`
+	WriteWithSizeChange *bool `json:"write_with_size_change,omitempty"`
 }
 
-// Validate validates this fpolicy event filters
-func (m *FpolicyEventFilters) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy event inline filters
+func (m *FpolicyEventInlineFilters) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy event filters based on context it is used
-func (m *FpolicyEventFilters) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fpolicy event inline filters based on context it is used
+func (m *FpolicyEventInlineFilters) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEventFilters) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEventInlineFilters) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -441,8 +441,8 @@ func (m *FpolicyEventFilters) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEventFilters) UnmarshalBinary(b []byte) error {
-	var res FpolicyEventFilters
+func (m *FpolicyEventInlineFilters) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventInlineFilters
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -450,23 +450,23 @@ func (m *FpolicyEventFilters) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEventSvm fpolicy event svm
+// FpolicyEventInlineSvm fpolicy event inline svm
 //
-// swagger:model FpolicyEventSvm
-type FpolicyEventSvm struct {
+// swagger:model fpolicy_event_inline_svm
+type FpolicyEventInlineSvm struct {
 
 	// SVM UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fpolicy event svm
-func (m *FpolicyEventSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy event inline svm
+func (m *FpolicyEventInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy event svm based on the context it is used
-func (m *FpolicyEventSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy event inline svm based on the context it is used
+func (m *FpolicyEventInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
@@ -479,9 +479,9 @@ func (m *FpolicyEventSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FpolicyEventSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEventInlineSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -489,7 +489,7 @@ func (m *FpolicyEventSvm) contextValidateUUID(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEventSvm) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEventInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,8 +497,8 @@ func (m *FpolicyEventSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEventSvm) UnmarshalBinary(b []byte) error {
-	var res FpolicyEventSvm
+func (m *FpolicyEventInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

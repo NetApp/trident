@@ -21,7 +21,7 @@ import (
 type PerformanceSvmNfsMetricHistorical struct {
 
 	// links
-	Links *PerformanceSvmNfsMetricHistoricalLinks `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsMetricHistoricalInlineLinks `json:"_links,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -30,13 +30,13 @@ type PerformanceSvmNfsMetricHistorical struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// v3
-	V3 *PerformanceSvmNfsMetricHistoricalV3 `json:"v3,omitempty"`
+	V3 *PerformanceSvmNfsMetricHistoricalInlineV3 `json:"v3,omitempty"`
 
 	// v4
-	V4 *PerformanceSvmNfsMetricHistoricalV4 `json:"v4,omitempty"`
+	V4 *PerformanceSvmNfsMetricHistoricalInlineV4 `json:"v4,omitempty"`
 
 	// v41
-	V41 *PerformanceSvmNfsMetricHistoricalV41 `json:"v41,omitempty"`
+	V41 *PerformanceSvmNfsMetricHistoricalInlineV41 `json:"v41,omitempty"`
 }
 
 // Validate validates this performance svm nfs metric historical
@@ -262,17 +262,17 @@ func (m *PerformanceSvmNfsMetricHistorical) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalLinks performance svm nfs metric historical links
+// PerformanceSvmNfsMetricHistoricalInlineLinks performance svm nfs metric historical inline links
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalLinks
-type PerformanceSvmNfsMetricHistoricalLinks struct {
+// swagger:model performance_svm_nfs_metric_historical_inline__links
+type PerformanceSvmNfsMetricHistoricalInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical links
-func (m *PerformanceSvmNfsMetricHistoricalLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline links
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -285,7 +285,7 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -302,8 +302,8 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) validateSelf(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical links based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline links based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -316,7 +316,7 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -331,7 +331,7 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) contextValidateSelf(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -339,8 +339,8 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalLinks
+func (m *PerformanceSvmNfsMetricHistoricalInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -348,36 +348,36 @@ func (m *PerformanceSvmNfsMetricHistoricalLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV3 The NFSv3 operations
+// PerformanceSvmNfsMetricHistoricalInlineV3 The NFSv3 operations
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV3
-type PerformanceSvmNfsMetricHistoricalV3 struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v3
+type PerformanceSvmNfsMetricHistoricalInlineV3 struct {
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsMetricHistoricalV3Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsMetricHistoricalInlineV3InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsMetricHistoricalV3Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsMetricHistoricalV3Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput `json:"throughput,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v3
-func (m *PerformanceSvmNfsMetricHistoricalV3) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v3
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDuration(formats); err != nil {
@@ -406,7 +406,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV3TypeDurationPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV3TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -414,95 +414,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV3TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalV3TypeDurationPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV3TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalInlineV3TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsMetricHistoricalV3DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationPT4M captures enum value "PT4M"
-	PerformanceSvmNfsMetricHistoricalV3DurationPT4M string = "PT4M"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationPT4M captures enum value "PT4M"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsMetricHistoricalV3DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsMetricHistoricalV3DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsMetricHistoricalV3DurationP1D string = "P1D"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsMetricHistoricalV3DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsMetricHistoricalInlineV3DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsMetricHistoricalInlineV3DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV3TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV3TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v3"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v3"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -519,7 +519,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) validateIops(formats strfmt.Regist
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -536,7 +536,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) validateLatency(formats strfmt.Reg
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV3TypeStatusPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV3TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -544,145 +544,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV3TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalV3TypeStatusPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV3TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalInlineV3TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusOk captures enum value "ok"
-	PerformanceSvmNfsMetricHistoricalV3StatusOk string = "ok"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusOk captures enum value "ok"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusError captures enum value "error"
-	PerformanceSvmNfsMetricHistoricalV3StatusError string = "error"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusError captures enum value "error"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsMetricHistoricalV3StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsMetricHistoricalV3StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsMetricHistoricalV3StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsMetricHistoricalV3StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsMetricHistoricalV3StatusNotFound string = "not_found"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsMetricHistoricalV3StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsMetricHistoricalV3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsMetricHistoricalV3StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3
-	// PerformanceSvmNfsMetricHistoricalV3
+	// performance_svm_nfs_metric_historical_inline_v3
+	// PerformanceSvmNfsMetricHistoricalInlineV3
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV3StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsMetricHistoricalV3StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsMetricHistoricalInlineV3StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV3TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV3TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v3"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v3"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -699,8 +699,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) validateThroughput(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v3 based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v3 based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDuration(ctx, formats); err != nil {
@@ -729,16 +729,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v3"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v3"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -752,7 +752,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateIops(ctx context.Co
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -766,16 +766,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateLatency(ctx context
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v3"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v3"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -790,7 +790,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) contextValidateThroughput(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -798,8 +798,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV3
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV3
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -807,34 +807,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV3) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV3Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV3InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV3Iops
-type PerformanceSvmNfsMetricHistoricalV3Iops struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v3_inline_iops
+type PerformanceSvmNfsMetricHistoricalInlineV3InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v3 iops
-func (m *PerformanceSvmNfsMetricHistoricalV3Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v3 inline iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v3 iops based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV3Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v3 inline iops based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -844,7 +844,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Iops) ContextValidate(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -852,8 +852,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Iops) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV3Iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV3InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -861,34 +861,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Iops) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV3Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV3Latency
-type PerformanceSvmNfsMetricHistoricalV3Latency struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v3_inline_latency
+type PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v3 latency
-func (m *PerformanceSvmNfsMetricHistoricalV3Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v3 inline latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v3 latency based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV3Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v3 inline latency based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -898,7 +898,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Latency) ContextValidate(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -906,8 +906,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Latency) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV3Latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV3InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -915,31 +915,31 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Latency) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV3Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV3Throughput
-type PerformanceSvmNfsMetricHistoricalV3Throughput struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v3_inline_throughput
+type PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v3 throughput
-func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v3 inline throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v3 throughput based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v3 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -949,7 +949,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) ContextValidate(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -957,8 +957,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV3Throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV3InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -966,36 +966,36 @@ func (m *PerformanceSvmNfsMetricHistoricalV3Throughput) UnmarshalBinary(b []byte
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV4 The NFSv4 operations
+// PerformanceSvmNfsMetricHistoricalInlineV4 The NFSv4 operations
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV4
-type PerformanceSvmNfsMetricHistoricalV4 struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v4
+type PerformanceSvmNfsMetricHistoricalInlineV4 struct {
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsMetricHistoricalV4Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsMetricHistoricalInlineV4InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsMetricHistoricalV4Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsMetricHistoricalV4Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput `json:"throughput,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v4
-func (m *PerformanceSvmNfsMetricHistoricalV4) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v4
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDuration(formats); err != nil {
@@ -1024,7 +1024,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV4TypeDurationPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV4TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1032,85 +1032,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV4TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalV4TypeDurationPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV4TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalInlineV4TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsMetricHistoricalV4DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsMetricHistoricalInlineV4DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsMetricHistoricalInlineV4DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsMetricHistoricalV4DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsMetricHistoricalInlineV4DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsMetricHistoricalInlineV4DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsMetricHistoricalV4DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsMetricHistoricalInlineV4DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsMetricHistoricalInlineV4DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsMetricHistoricalV4DurationP1D string = "P1D"
+	// PerformanceSvmNfsMetricHistoricalInlineV4DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsMetricHistoricalInlineV4DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsMetricHistoricalV4DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsMetricHistoricalInlineV4DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsMetricHistoricalInlineV4DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV4TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV4TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v4"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v4"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1127,7 +1127,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) validateIops(formats strfmt.Regist
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1144,7 +1144,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) validateLatency(formats strfmt.Reg
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV4TypeStatusPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV4TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1152,145 +1152,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV4TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalV4TypeStatusPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV4TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalInlineV4TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusOk captures enum value "ok"
-	PerformanceSvmNfsMetricHistoricalV4StatusOk string = "ok"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusOk captures enum value "ok"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusError captures enum value "error"
-	PerformanceSvmNfsMetricHistoricalV4StatusError string = "error"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusError captures enum value "error"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsMetricHistoricalV4StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsMetricHistoricalV4StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsMetricHistoricalV4StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsMetricHistoricalV4StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsMetricHistoricalV4StatusNotFound string = "not_found"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsMetricHistoricalV4StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsMetricHistoricalV4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsMetricHistoricalV4StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4
-	// PerformanceSvmNfsMetricHistoricalV4
+	// performance_svm_nfs_metric_historical_inline_v4
+	// PerformanceSvmNfsMetricHistoricalInlineV4
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV4StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsMetricHistoricalV4StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsMetricHistoricalInlineV4StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV4TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV4TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v4"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v4"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1307,8 +1307,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) validateThroughput(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v4 based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v4 based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDuration(ctx, formats); err != nil {
@@ -1337,16 +1337,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v4"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v4"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1360,7 +1360,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateIops(ctx context.Co
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1374,16 +1374,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateLatency(ctx context
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v4"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v4"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1398,7 +1398,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) contextValidateThroughput(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1406,8 +1406,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV4
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV4
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1415,36 +1415,36 @@ func (m *PerformanceSvmNfsMetricHistoricalV4) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV41 The NFSv4.1 operations
+// PerformanceSvmNfsMetricHistoricalInlineV41 The NFSv4.1 operations
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV41
-type PerformanceSvmNfsMetricHistoricalV41 struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v41
+type PerformanceSvmNfsMetricHistoricalInlineV41 struct {
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceSvmNfsMetricHistoricalV41Iops `json:"iops,omitempty"`
+	Iops *PerformanceSvmNfsMetricHistoricalInlineV41InlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceSvmNfsMetricHistoricalV41Latency `json:"latency,omitempty"`
+	Latency *PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceSvmNfsMetricHistoricalV41Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput `json:"throughput,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v41
-func (m *PerformanceSvmNfsMetricHistoricalV41) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v41
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDuration(formats); err != nil {
@@ -1473,7 +1473,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) Validate(formats strfmt.Registry)
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV41TypeDurationPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV41TypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1481,85 +1481,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV41TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalV41TypeDurationPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV41TypeDurationPropEnum = append(performanceSvmNfsMetricHistoricalInlineV41TypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41DurationPT15S captures enum value "PT15S"
-	PerformanceSvmNfsMetricHistoricalV41DurationPT15S string = "PT15S"
+	// PerformanceSvmNfsMetricHistoricalInlineV41DurationPT15S captures enum value "PT15S"
+	PerformanceSvmNfsMetricHistoricalInlineV41DurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41DurationPT30M captures enum value "PT30M"
-	PerformanceSvmNfsMetricHistoricalV41DurationPT30M string = "PT30M"
+	// PerformanceSvmNfsMetricHistoricalInlineV41DurationPT30M captures enum value "PT30M"
+	PerformanceSvmNfsMetricHistoricalInlineV41DurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41DurationPT2H captures enum value "PT2H"
-	PerformanceSvmNfsMetricHistoricalV41DurationPT2H string = "PT2H"
+	// PerformanceSvmNfsMetricHistoricalInlineV41DurationPT2H captures enum value "PT2H"
+	PerformanceSvmNfsMetricHistoricalInlineV41DurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41DurationP1D captures enum value "P1D"
-	PerformanceSvmNfsMetricHistoricalV41DurationP1D string = "P1D"
+	// PerformanceSvmNfsMetricHistoricalInlineV41DurationP1D captures enum value "P1D"
+	PerformanceSvmNfsMetricHistoricalInlineV41DurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41DurationPT5M captures enum value "PT5M"
-	PerformanceSvmNfsMetricHistoricalV41DurationPT5M string = "PT5M"
+	// PerformanceSvmNfsMetricHistoricalInlineV41DurationPT5M captures enum value "PT5M"
+	PerformanceSvmNfsMetricHistoricalInlineV41DurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV41TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV41TypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("v41"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("v41"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1576,7 +1576,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) validateIops(formats strfmt.Regis
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1593,7 +1593,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) validateLatency(formats strfmt.Re
 	return nil
 }
 
-var performanceSvmNfsMetricHistoricalV41TypeStatusPropEnum []interface{}
+var performanceSvmNfsMetricHistoricalInlineV41TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1601,145 +1601,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceSvmNfsMetricHistoricalV41TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalV41TypeStatusPropEnum, v)
+		performanceSvmNfsMetricHistoricalInlineV41TypeStatusPropEnum = append(performanceSvmNfsMetricHistoricalInlineV41TypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusOk captures enum value "ok"
-	PerformanceSvmNfsMetricHistoricalV41StatusOk string = "ok"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusOk captures enum value "ok"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusError captures enum value "error"
-	PerformanceSvmNfsMetricHistoricalV41StatusError string = "error"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusError captures enum value "error"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceSvmNfsMetricHistoricalV41StatusPartialNoData string = "partial_no_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoData captures enum value "partial_no_data"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceSvmNfsMetricHistoricalV41StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceSvmNfsMetricHistoricalV41StatusPartialOtherError string = "partial_other_error"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceSvmNfsMetricHistoricalV41StatusNegativeDelta string = "negative_delta"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusNegativeDelta captures enum value "negative_delta"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusNotFound captures enum value "not_found"
-	PerformanceSvmNfsMetricHistoricalV41StatusNotFound string = "not_found"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusNotFound captures enum value "not_found"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceSvmNfsMetricHistoricalV41StatusBackfilledData string = "backfilled_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusBackfilledData captures enum value "backfilled_data"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceSvmNfsMetricHistoricalV41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceSvmNfsMetricHistoricalV41StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41
-	// PerformanceSvmNfsMetricHistoricalV41
+	// performance_svm_nfs_metric_historical_inline_v41
+	// PerformanceSvmNfsMetricHistoricalInlineV41
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceSvmNfsMetricHistoricalV41StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceSvmNfsMetricHistoricalV41StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceSvmNfsMetricHistoricalInlineV41StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalV41TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceSvmNfsMetricHistoricalInlineV41TypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("v41"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("v41"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1756,8 +1756,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) validateThroughput(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v41 based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v41 based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDuration(ctx, formats); err != nil {
@@ -1786,16 +1786,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v41"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "v41"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1809,7 +1809,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateIops(ctx context.C
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1823,16 +1823,16 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateLatency(ctx contex
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "v41"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "v41"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1847,7 +1847,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) contextValidateThroughput(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1855,8 +1855,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV41
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV41
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1864,34 +1864,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV41) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV41Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV41InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV41Iops
-type PerformanceSvmNfsMetricHistoricalV41Iops struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v41_inline_iops
+type PerformanceSvmNfsMetricHistoricalInlineV41InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v41 iops
-func (m *PerformanceSvmNfsMetricHistoricalV41Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v41 inline iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v41 iops based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV41Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v41 inline iops based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1901,7 +1901,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Iops) ContextValidate(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1909,8 +1909,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Iops) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV41Iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV41InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1918,34 +1918,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Iops) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV41Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV41Latency
-type PerformanceSvmNfsMetricHistoricalV41Latency struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v41_inline_latency
+type PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v41 latency
-func (m *PerformanceSvmNfsMetricHistoricalV41Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v41 inline latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v41 latency based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV41Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v41 inline latency based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1955,7 +1955,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Latency) ContextValidate(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1963,8 +1963,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Latency) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV41Latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV41InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1972,31 +1972,31 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Latency) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV41Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV41Throughput
-type PerformanceSvmNfsMetricHistoricalV41Throughput struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v41_inline_throughput
+type PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v41 throughput
-func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v41 inline throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v41 throughput based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v41 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2006,7 +2006,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) ContextValidate(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2014,8 +2014,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV41Throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV41InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2023,34 +2023,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV41Throughput) UnmarshalBinary(b []byt
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV4Iops The rate of I/O operations observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV4InlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV4Iops
-type PerformanceSvmNfsMetricHistoricalV4Iops struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v4_inline_iops
+type PerformanceSvmNfsMetricHistoricalInlineV4InlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v4 iops
-func (m *PerformanceSvmNfsMetricHistoricalV4Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v4 inline iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v4 iops based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV4Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v4 inline iops based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2060,7 +2060,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Iops) ContextValidate(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2068,8 +2068,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Iops) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV4Iops
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV4InlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2077,34 +2077,34 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Iops) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV4Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV4Latency
-type PerformanceSvmNfsMetricHistoricalV4Latency struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v4_inline_latency
+type PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v4 latency
-func (m *PerformanceSvmNfsMetricHistoricalV4Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v4 inline latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v4 latency based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV4Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v4 inline latency based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2114,7 +2114,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Latency) ContextValidate(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2122,8 +2122,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Latency) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV4Latency
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV4InlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2131,31 +2131,31 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Latency) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// PerformanceSvmNfsMetricHistoricalV4Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceSvmNfsMetricHistoricalV4Throughput
-type PerformanceSvmNfsMetricHistoricalV4Throughput struct {
+// swagger:model performance_svm_nfs_metric_historical_inline_v4_inline_throughput
+type PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance svm nfs metric historical v4 throughput
-func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs metric historical inline v4 inline throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs metric historical v4 throughput based on the context it is used
-func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs metric historical inline v4 inline throughput based on the context it is used
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2165,7 +2165,7 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) ContextValidate(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2173,8 +2173,8 @@ func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsMetricHistoricalV4Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsMetricHistoricalV4Throughput
+func (m *PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsMetricHistoricalInlineV4InlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

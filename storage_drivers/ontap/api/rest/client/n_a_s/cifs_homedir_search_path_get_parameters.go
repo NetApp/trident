@@ -66,19 +66,19 @@ type CifsHomedirSearchPathGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Home directory search path index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CifsHomedirSearchPathGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) WithFieldsQueryParameter(fields []string) *CifsHomedirSearchPathGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) WithFields(fields []string) *CifsHomedirSearchPathGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) WithIndexPathParameter(index int64) *CifsHomedirSearchPathGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) WithIndex(index int64) *CifsHomedirSearchPathGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsHomedirSearchPathGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) WithSvmUUID(svmUUID string) *CifsHomedirSearchPathGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs homedir search path get params
-func (o *CifsHomedirSearchPathGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs homedir search path get params
+func (o *CifsHomedirSearchPathGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *CifsHomedirSearchPathGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *CifsHomedirSearchPathGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CifsHomedirSearchPathGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCifsHomedirSearchPathGet binds the parameter fields
 func (o *CifsHomedirSearchPathGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -15,7 +15,7 @@ import (
 )
 
 // RolePrivilegeLevel Access level for the REST endpoint or command/command directory path. If it denotes the access level for a command/command directory path, the only supported enum values are 'none','readonly' and 'all'.
-// Example: readonly
+// Example: all
 //
 // swagger:model role_privilege_level
 type RolePrivilegeLevel string

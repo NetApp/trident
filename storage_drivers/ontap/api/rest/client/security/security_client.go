@@ -50,6 +50,22 @@ type ClientService interface {
 
 	AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error)
 
+	AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCollectionGetOK, error)
+
+	AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, error)
+
+	AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, error)
+
+	AwsKmsGet(params *AwsKmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsGetOK, error)
+
+	AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, error)
+
+	AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalAccepted, error)
+
+	AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalAccepted, error)
+
+	AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreAccepted, error)
+
 	AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCollectionGetOK, error)
 
 	AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, error)
@@ -129,6 +145,14 @@ type ClientService interface {
 	IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyGetOK, error)
 
 	IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyOK, error)
+
+	KeyManagerAuthKeyCollectionGet(params *KeyManagerAuthKeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCollectionGetOK, error)
+
+	KeyManagerAuthKeyCreate(params *KeyManagerAuthKeyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCreateCreated, error)
+
+	KeyManagerAuthKeyDelete(params *KeyManagerAuthKeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyDeleteOK, error)
+
+	KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyGetOK, error)
 
 	KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigGetOK, error)
 
@@ -740,6 +764,374 @@ func (a *Client) AuditLogForwardingGet(params *AuditLogForwardingGetParams, auth
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AuditLogForwardingGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsCollectionGet Retrieves all AWS KMS instances configured for all clusters and SVMs.
+
+### Related ONTAP commands
+* `security key-manager external aws show`
+* `security key-manager external aws check`
+*/
+func (a *Client) AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/aws-kms",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsCreate Configures the AWS KMS configuration for the specified SVM.
+
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create an AWS KMS.
+* `region` - AWS region of the AWS KMS.
+* `key_id` - AWS Key ID
+### Optional properties
+* `access_key_id` - AWS access key ID of the user who has the appropriate access to AWS KMS.
+* `secret_access_key` - AWS secret access key for the access key ID provided.
+* `service` - AWS service type.
+* `default_domain` - AWS KMS default domain.
+* `port` - AWS KMS port.
+* `proxy_type` - Type of proxy (http, https, etc.), if proxy configuration is used.
+* `proxy_host` - Proxy hostname if proxy configuration is used.
+* `proxy_port` - Proxy port number if proxy configuration is used.
+* `proxy_username` - Proxy username if proxy configuration is used.
+* `proxy_password` - Proxy password if proxy configuration is used.
+* `polling_period` - Polling period in minutes.
+* `encryption_context` - Additional layer of authentication and logging.
+### Related ONTAP commands
+* `security key-manager external aws enable`
+*/
+func (a *Client) AwsKmsCreate(params *AwsKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_create",
+		Method:             "POST",
+		PathPattern:        "/security/aws-kms",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsDelete Deletes an AWS KMS configuration.
+
+### Related ONTAP commands
+* `security key-manager external aws disable`
+*/
+func (a *Client) AwsKmsDelete(params *AwsKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/aws-kms/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsGet Retrieves the AWS KMS configuration for the SVM specified by the UUID.
+
+### Related ONTAP commands
+* `security key-manager external aws show`
+* `security key-manager external aws check`
+*/
+func (a *Client) AwsKmsGet(params *AwsKmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_get",
+		Method:             "GET",
+		PathPattern:        "/security/aws-kms/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsModify Updates the AWS KMS configuration.
+
+### Optional properties
+* `region` - AWS region of the AWS KMS.
+* `service` - AWS service type.
+* `default_domain` - AWS KMS default domain.
+* `port` - AWS KMS port.
+* `proxy_type` - Type of proxy (http, https, etc.), if proxy configuration is used.
+* `proxy_host` - Proxy hostname if proxy configuration is used.
+* `proxy_port` - Proxy port number if proxy configuration is used.
+* `proxy_username` - Proxy username if proxy configuration is used.
+* `proxy_password` - Proxy password if proxy configuration is used.
+* `polling_period` - Polling period in minutes.
+* `timeout` - AWS Connection timeout, in seconds.
+* `verify` - Set to true to verify the AWS KMS host.
+* `verify_host` - Set to true to verify the AWS KMS host's hostname.
+* `verify_ip` - Set to true to verify the AWS KMS host's IP address.
+* `host` - AWS KMS host's hostname.
+* `secret_access_key` - AWS secret access key for the access key ID provided.
+* `access-key-id` - AWS access key ID of the user with the appropriate access to AWS KMS.
+* `skip_verify` - Set to true to bypass verfication of updated user credentials when updating credentials.
+* `encryption_context` - Additional layer of authentication and logging.
+### Related ONTAP commands
+* `security key-manager external aws update-config`
+* `security key-manager external aws update-credentials`
+*/
+func (a *Client) AwsKmsModify(params *AwsKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/aws-kms/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsRekeyExternal Rekeys or re-versions the AWS KMS Key Encryption Key (KEK) for the given AWS KMS.
+
+### Related ONTAP commands
+* `security key-manager external aws rekey-external`
+*/
+func (a *Client) AwsKmsRekeyExternal(params *AwsKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyExternalAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsRekeyExternalParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_rekey_external",
+		Method:             "POST",
+		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/rekey-external",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsRekeyExternalReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsRekeyExternalAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsRekeyExternalDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsRekeyInternal Rekeys SVM KEK for the given AWS KMS.
+
+### Related ONTAP commands
+* `security key-manager external aws rekey-internal`
+*/
+func (a *Client) AwsKmsRekeyInternal(params *AwsKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRekeyInternalAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsRekeyInternalParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_rekey_internal",
+		Method:             "POST",
+		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/rekey-internal",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsRekeyInternalReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsRekeyInternalAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsRekeyInternalDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	AwsKmsRestore Restores the keys for an SVM from a configured AWS KMS.
+
+### Related ONTAP commands
+* `security key-manager external AWS restore`
+*/
+func (a *Client) AwsKmsRestore(params *AwsKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsRestoreAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAwsKmsRestoreParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "aws_kms_restore",
+		Method:             "POST",
+		PathPattern:        "/security/aws-kms/{aws_kms.uuid}/restore",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AwsKmsRestoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AwsKmsRestoreAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AwsKmsRestoreDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1753,7 +2145,7 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 * `key_name`- Key Identifier of the Google Cloud KMS key encryption key.
 * `application_credentials` - Google Cloud application's service account credentials required to access the specified KMS. It is a JSON file containing an email address and the private key of the service account holder.
 ### Optional properties
-* `proxy_type“ - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_type` - Type of proxy (http/https) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
@@ -2506,6 +2898,180 @@ func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*IpsecPolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	KeyManagerAuthKeyCollectionGet Retrieves a list of all authentication keys associated with the admin SVM.
+
+### Related ONTAP commands
+* `security key-manager key query`
+### Required properties
+* `security_key_manager.uuid` - UUID of the external key manager.
+*/
+func (a *Client) KeyManagerAuthKeyCollectionGet(params *KeyManagerAuthKeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerAuthKeyCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_auth_key_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerAuthKeyCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerAuthKeyCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerAuthKeyCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	KeyManagerAuthKeyCreate Creates an authentication key.
+
+### Related ONTAP commands
+* `security key-manager key create`
+### Required properties
+* `security_key_manager.uuid` - UUID of the external key manager.
+*/
+func (a *Client) KeyManagerAuthKeyCreate(params *KeyManagerAuthKeyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerAuthKeyCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_auth_key_create",
+		Method:             "POST",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerAuthKeyCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerAuthKeyCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerAuthKeyCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	KeyManagerAuthKeyDelete Deletes an authentication key.
+
+### Related ONTAP commands
+* `security key-manager key delete`
+### Required properties
+* `security_key_manager.uuid` - UUID of the external key manager.
+* `key_id` - Key ID of the authentication key to be deleted.
+*/
+func (a *Client) KeyManagerAuthKeyDelete(params *KeyManagerAuthKeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerAuthKeyDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_auth_key_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerAuthKeyDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerAuthKeyDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerAuthKeyDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	KeyManagerAuthKeyGet Retrieves a list of all authentication keys associated with the admin SVM.
+
+### Related ONTAP commands
+* `security key-manager key query`
+### Required properties
+* `security_key_manager.uuid` - UUID of the external key manager.
+* `key_id` - Key ID of the authentication key to be deleted.
+*/
+func (a *Client) KeyManagerAuthKeyGet(params *KeyManagerAuthKeyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerAuthKeyGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerAuthKeyGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_auth_key_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/auth-keys/{key_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerAuthKeyGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerAuthKeyGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerAuthKeyGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -3858,7 +4424,20 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - REST URI path (example: <i>/api/storage/volumes</i>) or command/command directory path (example: <i>snaplock compliance-clock</i>). Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `path` - REST URI path (example: <i>/api/storage/volumes</i>) or command/command directory path (example: <i>snaplock compliance-clock</i>). Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the following&#58;
+#### Snapshots APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/snapshots</i><br/>
+#### File System Analytics APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/users</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
 * `access` - Desired access level for the REST URI path or command/command directory.
 ### Related ONTAP commands
 * `security login rest-role create`
@@ -3903,12 +4482,25 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 }
 
 /*
-	RolePrivilegeDelete Deletes a privilege tuple (of REST URI or command/command directory path, its access level and an optional query) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeDelete Deletes a privilege tuple (of REST URI or command/command directory path, its access level and an optional query) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are the following&#58;<p/>
 
+### Snapshots APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/snapshots</i><br/>
+### File System Analytics APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/users</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/svm/svms/43256a71-be02-474d-a2a9-9642e12a6a2c/top-metrics/users</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i> and <i>File System Analytics</i> endpoints listed above in the description.
 ### Related ONTAP commands
 * `security login rest-role delete`
 * `security login role delete`
@@ -3952,8 +4544,21 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 }
 
 /*
-	RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are the following&#58;<p/>
 
+### Snapshots APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/snapshots</i><br/>
+### File System Analytics APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/users</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
@@ -3997,12 +4602,25 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 }
 
 /*
-	RolePrivilegeModify Updates the access level for a REST API path or command/command directory path. Optionally updates the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeModify Updates the access level for a REST API path or command/command directory path. Optionally updates the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are the following&#58;<p/>
 
+### Snapshots APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/snapshots</i><br/>
+### File System Analytics APIs
+&ndash; <i>/api/storage/volumes/{volume.uuid}/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/files</i>
+&ndash; <i>/api/storage/volumes/{volume.uuid}/top-metrics/users</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
+In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.<br/>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i> and <i>File System Analytics</i> endpoints listed above in the description.
 * `access` - Access level for the path.
 ### Optional parameters
 * `query` - Optional query, if the path refers to a command/command directory path.
@@ -4560,7 +5178,7 @@ func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authIn
 	SecurityKeyManagerCollectionGet Retrieves key managers.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
@@ -4700,7 +5318,7 @@ func (a *Client) SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams
 	SecurityKeyManagerGet Retrieves key managers.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
@@ -5053,7 +5671,7 @@ func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams
 	SecurityKeystoreCollectionGet Retrieves keystores.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `keystore.location`
 * `svm.name`
 * `svm.uuid`
@@ -5104,6 +5722,7 @@ All of the following fields are required for creating a remote syslog/splunk des
 ### Optional properties
 All of the following fields are optional for creating a remote syslog/splunk destination
 * `port`
+* `ipspace`
 * `protocol`
 * `facility`
 * `verify_server` (Can only be "true" when protocol is "tcp_encrypted")

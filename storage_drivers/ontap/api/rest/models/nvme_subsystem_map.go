@@ -20,31 +20,31 @@ import (
 type NvmeSubsystemMap struct {
 
 	// links
-	Links *NvmeSubsystemMapLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemMapInlineLinks `json:"_links,omitempty"`
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true
-	Anagrpid string `json:"anagrpid,omitempty"`
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// namespace
-	Namespace *NvmeSubsystemMapNamespace `json:"namespace,omitempty"`
+	Namespace *NvmeSubsystemMapInlineNamespace `json:"namespace,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
 	// Read Only: true
-	Nsid string `json:"nsid,omitempty"`
+	Nsid *string `json:"nsid,omitempty"`
 
 	// subsystem
-	Subsystem *NvmeSubsystemMapSubsystem `json:"subsystem,omitempty"`
+	Subsystem *NvmeSubsystemMapInlineSubsystem `json:"subsystem,omitempty"`
 
 	// svm
-	Svm *NvmeSubsystemMapSvm `json:"svm,omitempty"`
+	Svm *NvmeSubsystemMapInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this nvme subsystem map
@@ -191,7 +191,7 @@ func (m *NvmeSubsystemMap) contextValidateLinks(ctx context.Context, formats str
 
 func (m *NvmeSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "anagrpid", "body", string(m.Anagrpid)); err != nil {
+	if err := validate.ReadOnly(ctx, "anagrpid", "body", m.Anagrpid); err != nil {
 		return err
 	}
 
@@ -214,7 +214,7 @@ func (m *NvmeSubsystemMap) contextValidateNamespace(ctx context.Context, formats
 
 func (m *NvmeSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nsid", "body", string(m.Nsid)); err != nil {
+	if err := validate.ReadOnly(ctx, "nsid", "body", m.Nsid); err != nil {
 		return err
 	}
 
@@ -267,17 +267,17 @@ func (m *NvmeSubsystemMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapLinks nvme subsystem map links
+// NvmeSubsystemMapInlineLinks nvme subsystem map inline links
 //
-// swagger:model NvmeSubsystemMapLinks
-type NvmeSubsystemMapLinks struct {
+// swagger:model nvme_subsystem_map_inline__links
+type NvmeSubsystemMapInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem map links
-func (m *NvmeSubsystemMapLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline links
+func (m *NvmeSubsystemMapInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -290,7 +290,7 @@ func (m *NvmeSubsystemMapLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemMapLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -307,8 +307,8 @@ func (m *NvmeSubsystemMapLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map links based on the context it is used
-func (m *NvmeSubsystemMapLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline links based on the context it is used
+func (m *NvmeSubsystemMapInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -321,7 +321,7 @@ func (m *NvmeSubsystemMapLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NvmeSubsystemMapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -336,7 +336,7 @@ func (m *NvmeSubsystemMapLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -344,8 +344,8 @@ func (m *NvmeSubsystemMapLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapLinks
+func (m *NvmeSubsystemMapInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -353,29 +353,29 @@ func (m *NvmeSubsystemMapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapNamespace The NVMe namespace to which the NVMe subsystem is mapped. Required in POST by supplying either the UUID, name, or both.
+// NvmeSubsystemMapInlineNamespace The NVMe namespace to which the NVMe subsystem is mapped. Required in POST by supplying either the UUID, name, or both.
 //
-// swagger:model NvmeSubsystemMapNamespace
-type NvmeSubsystemMapNamespace struct {
+// swagger:model nvme_subsystem_map_inline_namespace
+type NvmeSubsystemMapInlineNamespace struct {
 
 	// links
-	Links *NvmeSubsystemMapNamespaceLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemMapInlineNamespaceInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the NVMe namespace composed from the volume name, qtree name, and file name of the NVMe namespace. Valid in POST.
 	//
 	// Example: /vol/vol1/namespace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *NvmeSubsystemMapNamespaceNode `json:"node,omitempty"`
+	Node *NvmeSubsystemMapInlineNamespaceInlineNode `json:"node,omitempty"`
 
 	// The unique identifier of the NVMe namespace. Valid in POST.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem map namespace
-func (m *NvmeSubsystemMapNamespace) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline namespace
+func (m *NvmeSubsystemMapInlineNamespace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -392,7 +392,7 @@ func (m *NvmeSubsystemMapNamespace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespace) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -409,7 +409,7 @@ func (m *NvmeSubsystemMapNamespace) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespace) validateNode(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespace) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -426,8 +426,8 @@ func (m *NvmeSubsystemMapNamespace) validateNode(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map namespace based on the context it is used
-func (m *NvmeSubsystemMapNamespace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline namespace based on the context it is used
+func (m *NvmeSubsystemMapInlineNamespace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -444,7 +444,7 @@ func (m *NvmeSubsystemMapNamespace) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -458,7 +458,7 @@ func (m *NvmeSubsystemMapNamespace) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespace) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespace) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -473,7 +473,7 @@ func (m *NvmeSubsystemMapNamespace) contextValidateNode(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespace) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineNamespace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -481,8 +481,8 @@ func (m *NvmeSubsystemMapNamespace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespace) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapNamespace
+func (m *NvmeSubsystemMapInlineNamespace) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineNamespace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -490,17 +490,17 @@ func (m *NvmeSubsystemMapNamespace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapNamespaceLinks nvme subsystem map namespace links
+// NvmeSubsystemMapInlineNamespaceInlineLinks nvme subsystem map inline namespace inline links
 //
-// swagger:model NvmeSubsystemMapNamespaceLinks
-type NvmeSubsystemMapNamespaceLinks struct {
+// swagger:model nvme_subsystem_map_inline_namespace_inline__links
+type NvmeSubsystemMapInlineNamespaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem map namespace links
-func (m *NvmeSubsystemMapNamespaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline namespace inline links
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -513,7 +513,7 @@ func (m *NvmeSubsystemMapNamespaceLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -530,8 +530,8 @@ func (m *NvmeSubsystemMapNamespaceLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map namespace links based on the context it is used
-func (m *NvmeSubsystemMapNamespaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline namespace inline links based on the context it is used
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -544,7 +544,7 @@ func (m *NvmeSubsystemMapNamespaceLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -559,7 +559,7 @@ func (m *NvmeSubsystemMapNamespaceLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -567,8 +567,8 @@ func (m *NvmeSubsystemMapNamespaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapNamespaceLinks
+func (m *NvmeSubsystemMapInlineNamespaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineNamespaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -576,25 +576,25 @@ func (m *NvmeSubsystemMapNamespaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapNamespaceNode nvme subsystem map namespace node
+// NvmeSubsystemMapInlineNamespaceInlineNode nvme subsystem map inline namespace inline node
 //
-// swagger:model NvmeSubsystemMapNamespaceNode
-type NvmeSubsystemMapNamespaceNode struct {
+// swagger:model nvme_subsystem_map_inline_namespace_inline_node
+type NvmeSubsystemMapInlineNamespaceInlineNode struct {
 
 	// links
-	Links *NvmeSubsystemMapNamespaceNodeLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem map namespace node
-func (m *NvmeSubsystemMapNamespaceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline namespace inline node
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -607,7 +607,7 @@ func (m *NvmeSubsystemMapNamespaceNode) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceNode) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -624,8 +624,8 @@ func (m *NvmeSubsystemMapNamespaceNode) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map namespace node based on the context it is used
-func (m *NvmeSubsystemMapNamespaceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline namespace inline node based on the context it is used
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -638,7 +638,7 @@ func (m *NvmeSubsystemMapNamespaceNode) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -653,7 +653,7 @@ func (m *NvmeSubsystemMapNamespaceNode) contextValidateLinks(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceNode) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -661,8 +661,8 @@ func (m *NvmeSubsystemMapNamespaceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceNode) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapNamespaceNode
+func (m *NvmeSubsystemMapInlineNamespaceInlineNode) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineNamespaceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -670,17 +670,17 @@ func (m *NvmeSubsystemMapNamespaceNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapNamespaceNodeLinks nvme subsystem map namespace node links
+// NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks nvme subsystem map inline namespace inline node inline links
 //
-// swagger:model NvmeSubsystemMapNamespaceNodeLinks
-type NvmeSubsystemMapNamespaceNodeLinks struct {
+// swagger:model nvme_subsystem_map_inline_namespace_inline_node_inline__links
+type NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem map namespace node links
-func (m *NvmeSubsystemMapNamespaceNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline namespace inline node inline links
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -693,7 +693,7 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -710,8 +710,8 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map namespace node links based on the context it is used
-func (m *NvmeSubsystemMapNamespaceNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline namespace inline node inline links based on the context it is used
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -724,7 +724,7 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *NvmeSubsystemMapNamespaceNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -739,7 +739,7 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -747,8 +747,8 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapNamespaceNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapNamespaceNodeLinks
+func (m *NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineNamespaceInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -756,28 +756,29 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapSubsystem The NVMe subsystem to which the NVMe namespace is mapped. Required in POST by supplying either `subsystem.uuid`, `subsystem.name`  or both.
+// NvmeSubsystemMapInlineSubsystem The NVMe subsystem to which the NVMe namespace is mapped. Required in POST by supplying either `subsystem.uuid`, `subsystem.name`  or both.
 //
-// swagger:model NvmeSubsystemMapSubsystem
-type NvmeSubsystemMapSubsystem struct {
+// swagger:model nvme_subsystem_map_inline_subsystem
+type NvmeSubsystemMapInlineSubsystem struct {
 
 	// links
-	Links *NvmeSubsystemMapSubsystemLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemMapInlineSubsystemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the NVMe subsystem.
 	//
+	// Example: subsystem1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the NVMe subsystem.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem map subsystem
-func (m *NvmeSubsystemMapSubsystem) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline subsystem
+func (m *NvmeSubsystemMapInlineSubsystem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -794,7 +795,7 @@ func (m *NvmeSubsystemMapSubsystem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemMapSubsystem) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSubsystem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -811,24 +812,24 @@ func (m *NvmeSubsystemMapSubsystem) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemMapSubsystem) validateName(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSubsystem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("subsystem"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("subsystem"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("subsystem"+"."+"name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("subsystem"+"."+"name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map subsystem based on the context it is used
-func (m *NvmeSubsystemMapSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline subsystem based on the context it is used
+func (m *NvmeSubsystemMapInlineSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -841,7 +842,7 @@ func (m *NvmeSubsystemMapSubsystem) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NvmeSubsystemMapSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSubsystem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -856,7 +857,7 @@ func (m *NvmeSubsystemMapSubsystem) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapSubsystem) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineSubsystem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -864,8 +865,8 @@ func (m *NvmeSubsystemMapSubsystem) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapSubsystem) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapSubsystem
+func (m *NvmeSubsystemMapInlineSubsystem) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineSubsystem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -873,17 +874,17 @@ func (m *NvmeSubsystemMapSubsystem) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapSubsystemLinks nvme subsystem map subsystem links
+// NvmeSubsystemMapInlineSubsystemInlineLinks nvme subsystem map inline subsystem inline links
 //
-// swagger:model NvmeSubsystemMapSubsystemLinks
-type NvmeSubsystemMapSubsystemLinks struct {
+// swagger:model nvme_subsystem_map_inline_subsystem_inline__links
+type NvmeSubsystemMapInlineSubsystemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem map subsystem links
-func (m *NvmeSubsystemMapSubsystemLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline subsystem inline links
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -896,7 +897,7 @@ func (m *NvmeSubsystemMapSubsystemLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemMapSubsystemLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -913,8 +914,8 @@ func (m *NvmeSubsystemMapSubsystemLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map subsystem links based on the context it is used
-func (m *NvmeSubsystemMapSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline subsystem inline links based on the context it is used
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -927,7 +928,7 @@ func (m *NvmeSubsystemMapSubsystemLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeSubsystemMapSubsystemLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -942,7 +943,7 @@ func (m *NvmeSubsystemMapSubsystemLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapSubsystemLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -950,8 +951,8 @@ func (m *NvmeSubsystemMapSubsystemLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapSubsystemLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapSubsystemLinks
+func (m *NvmeSubsystemMapInlineSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineSubsystemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -959,27 +960,27 @@ func (m *NvmeSubsystemMapSubsystemLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapSvm nvme subsystem map svm
+// NvmeSubsystemMapInlineSvm nvme subsystem map inline svm
 //
-// swagger:model NvmeSubsystemMapSvm
-type NvmeSubsystemMapSvm struct {
+// swagger:model nvme_subsystem_map_inline_svm
+type NvmeSubsystemMapInlineSvm struct {
 
 	// links
-	Links *NvmeSubsystemMapSvmLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemMapInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem map svm
-func (m *NvmeSubsystemMapSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline svm
+func (m *NvmeSubsystemMapInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -992,7 +993,7 @@ func (m *NvmeSubsystemMapSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemMapSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1009,8 +1010,8 @@ func (m *NvmeSubsystemMapSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map svm based on the context it is used
-func (m *NvmeSubsystemMapSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline svm based on the context it is used
+func (m *NvmeSubsystemMapInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1023,7 +1024,7 @@ func (m *NvmeSubsystemMapSvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NvmeSubsystemMapSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1038,7 +1039,7 @@ func (m *NvmeSubsystemMapSvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapSvm) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1046,8 +1047,8 @@ func (m *NvmeSubsystemMapSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapSvm) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapSvm
+func (m *NvmeSubsystemMapInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1055,17 +1056,17 @@ func (m *NvmeSubsystemMapSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemMapSvmLinks nvme subsystem map svm links
+// NvmeSubsystemMapInlineSvmInlineLinks nvme subsystem map inline svm inline links
 //
-// swagger:model NvmeSubsystemMapSvmLinks
-type NvmeSubsystemMapSvmLinks struct {
+// swagger:model nvme_subsystem_map_inline_svm_inline__links
+type NvmeSubsystemMapInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem map svm links
-func (m *NvmeSubsystemMapSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem map inline svm inline links
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1078,7 +1079,7 @@ func (m *NvmeSubsystemMapSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemMapSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1095,8 +1096,8 @@ func (m *NvmeSubsystemMapSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem map svm links based on the context it is used
-func (m *NvmeSubsystemMapSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem map inline svm inline links based on the context it is used
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1109,7 +1110,7 @@ func (m *NvmeSubsystemMapSvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NvmeSubsystemMapSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1124,7 +1125,7 @@ func (m *NvmeSubsystemMapSvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemMapSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1132,8 +1133,8 @@ func (m *NvmeSubsystemMapSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemMapSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemMapSvmLinks
+func (m *NvmeSubsystemMapInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemMapInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

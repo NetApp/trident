@@ -66,43 +66,55 @@ type AuditLogForwardingGetParams struct {
 
 	   Filter by address
 	*/
-	AddressQueryParameter *string
+	Address *string
 
 	/* Facility.
 
 	   Filter by facility
 	*/
-	FacilityQueryParameter *string
+	Facility *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* IpspaceName.
+
+	   Filter by ipspace.name
+	*/
+	IpspaceName *string
+
+	/* IpspaceUUID.
+
+	   Filter by ipspace.uuid
+	*/
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -110,7 +122,7 @@ type AuditLogForwardingGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,13 +130,13 @@ type AuditLogForwardingGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VerifyServer.
 
 	   Filter by verify_server
 	*/
-	VerifyServerQueryParameter *bool
+	VerifyServer *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +156,14 @@ func (o *AuditLogForwardingGetParams) WithDefaults() *AuditLogForwardingGetParam
 // All values with no default are reset to their zero value.
 func (o *AuditLogForwardingGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AuditLogForwardingGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +205,136 @@ func (o *AuditLogForwardingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressQueryParameter adds the address to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithAddressQueryParameter(address *string) *AuditLogForwardingGetParams {
-	o.SetAddressQueryParameter(address)
+// WithAddress adds the address to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithAddress(address *string) *AuditLogForwardingGetParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressQueryParameter adds the address to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetAddressQueryParameter(address *string) {
-	o.AddressQueryParameter = address
+// SetAddress adds the address to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetAddress(address *string) {
+	o.Address = address
 }
 
-// WithFacilityQueryParameter adds the facility to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithFacilityQueryParameter(facility *string) *AuditLogForwardingGetParams {
-	o.SetFacilityQueryParameter(facility)
+// WithFacility adds the facility to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithFacility(facility *string) *AuditLogForwardingGetParams {
+	o.SetFacility(facility)
 	return o
 }
 
-// SetFacilityQueryParameter adds the facility to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetFacilityQueryParameter(facility *string) {
-	o.FacilityQueryParameter = facility
+// SetFacility adds the facility to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetFacility(facility *string) {
+	o.Facility = facility
 }
 
-// WithFieldsQueryParameter adds the fields to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithFieldsQueryParameter(fields []string) *AuditLogForwardingGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithFields(fields []string) *AuditLogForwardingGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AuditLogForwardingGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithIpspaceName adds the ipspaceName to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithIpspaceName(ipspaceName *string) *AuditLogForwardingGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetIpspaceName adds the ipspaceName to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithOrderByQueryParameter adds the orderBy to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithOrderByQueryParameter(orderBy []string) *AuditLogForwardingGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithIpspaceUUID adds the ipspaceUUID to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithIpspaceUUID(ipspaceUUID *string) *AuditLogForwardingGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetIpspaceUUID adds the ipspaceUuid to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithPortQueryParameter adds the port to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithPortQueryParameter(port *int64) *AuditLogForwardingGetParams {
-	o.SetPortQueryParameter(port)
+// WithMaxRecords adds the maxRecords to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithMaxRecords(maxRecords *int64) *AuditLogForwardingGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetMaxRecords adds the maxRecords to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithProtocolQueryParameter adds the protocol to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithProtocolQueryParameter(protocol *string) *AuditLogForwardingGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithOrderBy adds the orderBy to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithOrderBy(orderBy []string) *AuditLogForwardingGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetOrderBy adds the orderBy to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AuditLogForwardingGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithPort adds the port to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithPort(port *int64) *AuditLogForwardingGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetPort adds the port to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AuditLogForwardingGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithProtocol adds the protocol to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithProtocol(protocol *string) *AuditLogForwardingGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetProtocol adds the protocol to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithVerifyServerQueryParameter adds the verifyServer to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) WithVerifyServerQueryParameter(verifyServer *bool) *AuditLogForwardingGetParams {
-	o.SetVerifyServerQueryParameter(verifyServer)
+// WithReturnRecords adds the returnRecords to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithReturnRecords(returnRecords *bool) *AuditLogForwardingGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetVerifyServerQueryParameter adds the verifyServer to the audit log forwarding get params
-func (o *AuditLogForwardingGetParams) SetVerifyServerQueryParameter(verifyServer *bool) {
-	o.VerifyServerQueryParameter = verifyServer
+// SetReturnRecords adds the returnRecords to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
+}
+
+// WithReturnTimeout adds the returnTimeout to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithReturnTimeout(returnTimeout *int64) *AuditLogForwardingGetParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithVerifyServer adds the verifyServer to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) WithVerifyServer(verifyServer *bool) *AuditLogForwardingGetParams {
+	o.SetVerifyServer(verifyServer)
+	return o
+}
+
+// SetVerifyServer adds the verifyServer to the audit log forwarding get params
+func (o *AuditLogForwardingGetParams) SetVerifyServer(verifyServer *bool) {
+	o.VerifyServer = verifyServer
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,13 +345,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.AddressQueryParameter != nil {
+	if o.Address != nil {
 
 		// query param address
 		var qrAddress string
 
-		if o.AddressQueryParameter != nil {
-			qrAddress = *o.AddressQueryParameter
+		if o.Address != nil {
+			qrAddress = *o.Address
 		}
 		qAddress := qrAddress
 		if qAddress != "" {
@@ -328,13 +362,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FacilityQueryParameter != nil {
+	if o.Facility != nil {
 
 		// query param facility
 		var qrFacility string
 
-		if o.FacilityQueryParameter != nil {
-			qrFacility = *o.FacilityQueryParameter
+		if o.Facility != nil {
+			qrFacility = *o.Facility
 		}
 		qFacility := qrFacility
 		if qFacility != "" {
@@ -345,7 +379,7 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +390,47 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.IpspaceName != nil {
+
+		// query param ipspace.name
+		var qrIpspaceName string
+
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
+		}
+		qIpspaceName := qrIpspaceName
+		if qIpspaceName != "" {
+
+			if err := r.SetQueryParam("ipspace.name", qIpspaceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpspaceUUID != nil {
+
+		// query param ipspace.uuid
+		var qrIpspaceUUID string
+
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
+		}
+		qIpspaceUUID := qrIpspaceUUID
+		if qIpspaceUUID != "" {
+
+			if err := r.SetQueryParam("ipspace.uuid", qIpspaceUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -373,7 +441,7 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -384,13 +452,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -401,13 +469,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -418,13 +486,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +503,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +520,13 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VerifyServerQueryParameter != nil {
+	if o.VerifyServer != nil {
 
 		// query param verify_server
 		var qrVerifyServer bool
 
-		if o.VerifyServerQueryParameter != nil {
-			qrVerifyServer = *o.VerifyServerQueryParameter
+		if o.VerifyServer != nil {
+			qrVerifyServer = *o.VerifyServer
 		}
 		qVerifyServer := swag.FormatBool(qrVerifyServer)
 		if qVerifyServer != "" {
@@ -477,7 +545,7 @@ func (o *AuditLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamAuditLogForwardingGet binds the parameter fields
 func (o *AuditLogForwardingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +562,7 @@ func (o *AuditLogForwardingGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamAuditLogForwardingGet binds the parameter order_by
 func (o *AuditLogForwardingGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

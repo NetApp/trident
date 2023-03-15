@@ -23,10 +23,11 @@ type S3BucketSvmResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*S3BucketSvm `json:"records,omitempty"`
+	// s3 bucket svm response inline records
+	S3BucketSvmResponseInlineRecords []*S3BucketSvm `json:"records,omitempty"`
 }
 
 // Validate validates this s3 bucket svm response
@@ -37,7 +38,7 @@ func (m *S3BucketSvmResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateS3BucketSvmResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *S3BucketSvmResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketSvmResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *S3BucketSvmResponse) validateS3BucketSvmResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3BucketSvmResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.S3BucketSvmResponseInlineRecords); i++ {
+		if swag.IsZero(m.S3BucketSvmResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.S3BucketSvmResponseInlineRecords[i] != nil {
+			if err := m.S3BucketSvmResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *S3BucketSvmResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateS3BucketSvmResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *S3BucketSvmResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *S3BucketSvmResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketSvmResponse) contextValidateS3BucketSvmResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.S3BucketSvmResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3BucketSvmResponseInlineRecords[i] != nil {
+			if err := m.S3BucketSvmResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

@@ -22,22 +22,22 @@ import (
 type SecurityConfig struct {
 
 	// links
-	Links *SecurityConfigLinks `json:"_links,omitempty"`
+	Links *SecurityConfigInlineLinks `json:"_links,omitempty"`
 
 	// fips
-	Fips *SecurityConfigFips `json:"fips,omitempty"`
+	Fips *SecurityConfigInlineFips `json:"fips,omitempty"`
 
 	// management protocols
-	ManagementProtocols *SecurityConfigManagementProtocols `json:"management_protocols,omitempty"`
+	ManagementProtocols *SecurityConfigInlineManagementProtocols `json:"management_protocols,omitempty"`
 
 	// onboard key manager configurable status
-	OnboardKeyManagerConfigurableStatus *SecurityConfigOnboardKeyManagerConfigurableStatus `json:"onboard_key_manager_configurable_status,omitempty"`
+	OnboardKeyManagerConfigurableStatus *SecurityConfigInlineOnboardKeyManagerConfigurableStatus `json:"onboard_key_manager_configurable_status,omitempty"`
 
 	// software data encryption
-	SoftwareDataEncryption *SecurityConfigSoftwareDataEncryption `json:"software_data_encryption,omitempty"`
+	SoftwareDataEncryption *SecurityConfigInlineSoftwareDataEncryption `json:"software_data_encryption,omitempty"`
 
 	// tls
-	TLS *SecurityConfigTLS `json:"tls,omitempty"`
+	TLS *SecurityConfigInlineTLS `json:"tls,omitempty"`
 }
 
 // Validate validates this security config
@@ -312,27 +312,27 @@ func (m *SecurityConfig) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityConfigFips Cluster-wide Federal Information Processing Standards (FIPS) mode information.
+// SecurityConfigInlineFips Cluster-wide Federal Information Processing Standards (FIPS) mode information.
 //
-// swagger:model SecurityConfigFips
-type SecurityConfigFips struct {
+// swagger:model security_config_inline_fips
+type SecurityConfigInlineFips struct {
 
 	// Indicates whether or not the software FIPS mode is enabled on the cluster. Our FIPS compliance involves configuring the use of only approved algorithms in applicable contexts (for example TLS), as well as the use of formally validated cryptographic module software implementations, where applicable. The US government documents concerning FIPS 140-2 outline the relevant security policies in detail.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
-// Validate validates this security config fips
-func (m *SecurityConfigFips) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline fips
+func (m *SecurityConfigInlineFips) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security config fips based on context it is used
-func (m *SecurityConfigFips) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security config inline fips based on context it is used
+func (m *SecurityConfigInlineFips) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigFips) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineFips) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -340,8 +340,8 @@ func (m *SecurityConfigFips) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigFips) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigFips
+func (m *SecurityConfigInlineFips) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineFips
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -349,17 +349,17 @@ func (m *SecurityConfigFips) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityConfigLinks security config links
+// SecurityConfigInlineLinks security config inline links
 //
-// swagger:model SecurityConfigLinks
-type SecurityConfigLinks struct {
+// swagger:model security_config_inline__links
+type SecurityConfigInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security config links
-func (m *SecurityConfigLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline links
+func (m *SecurityConfigInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -372,7 +372,7 @@ func (m *SecurityConfigLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityConfigLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityConfigInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -389,8 +389,8 @@ func (m *SecurityConfigLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security config links based on the context it is used
-func (m *SecurityConfigLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security config inline links based on the context it is used
+func (m *SecurityConfigInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -403,7 +403,7 @@ func (m *SecurityConfigLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SecurityConfigLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityConfigInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -418,7 +418,7 @@ func (m *SecurityConfigLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -426,8 +426,8 @@ func (m *SecurityConfigLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigLinks
+func (m *SecurityConfigInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -435,30 +435,30 @@ func (m *SecurityConfigLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityConfigManagementProtocols Cluster-wide security protocols related information.
+// SecurityConfigInlineManagementProtocols Cluster-wide security protocols related information.
 //
-// swagger:model SecurityConfigManagementProtocols
-type SecurityConfigManagementProtocols struct {
+// swagger:model security_config_inline_management_protocols
+type SecurityConfigInlineManagementProtocols struct {
 
 	// Indicates whether or not security protocol rsh is enabled on the cluster.
-	RshEnabled bool `json:"rsh_enabled,omitempty"`
+	RshEnabled *bool `json:"rsh_enabled,omitempty"`
 
 	// Indicates whether or not security protocol telnet is enabled on the cluster.
-	TelnetEnabled bool `json:"telnet_enabled,omitempty"`
+	TelnetEnabled *bool `json:"telnet_enabled,omitempty"`
 }
 
-// Validate validates this security config management protocols
-func (m *SecurityConfigManagementProtocols) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline management protocols
+func (m *SecurityConfigInlineManagementProtocols) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security config management protocols based on context it is used
-func (m *SecurityConfigManagementProtocols) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security config inline management protocols based on context it is used
+func (m *SecurityConfigInlineManagementProtocols) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigManagementProtocols) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineManagementProtocols) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -466,8 +466,8 @@ func (m *SecurityConfigManagementProtocols) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigManagementProtocols) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigManagementProtocols
+func (m *SecurityConfigInlineManagementProtocols) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineManagementProtocols
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -475,35 +475,35 @@ func (m *SecurityConfigManagementProtocols) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityConfigOnboardKeyManagerConfigurableStatus Indicates whether the Onboard Key Manager can be configured in the cluster.
+// SecurityConfigInlineOnboardKeyManagerConfigurableStatus Indicates whether the Onboard Key Manager can be configured in the cluster.
 //
-// swagger:model SecurityConfigOnboardKeyManagerConfigurableStatus
-type SecurityConfigOnboardKeyManagerConfigurableStatus struct {
+// swagger:model security_config_inline_onboard_key_manager_configurable_status
+type SecurityConfigInlineOnboardKeyManagerConfigurableStatus struct {
 
 	// Code corresponding to the status message. Returns a 0 if the Onboard Key Manager can be configured in the cluster.
 	// Example: 65537300
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Reason that Onboard Key Manager cannot be configured in the cluster.
 	// Example: No platform support for volume encryption in following nodes - node1, node2.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Set to true if the Onboard Key Manager can be configured in the cluster.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
-// Validate validates this security config onboard key manager configurable status
-func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline onboard key manager configurable status
+func (m *SecurityConfigInlineOnboardKeyManagerConfigurableStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security config onboard key manager configurable status based on context it is used
-func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security config inline onboard key manager configurable status based on context it is used
+func (m *SecurityConfigInlineOnboardKeyManagerConfigurableStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineOnboardKeyManagerConfigurableStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -511,8 +511,8 @@ func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigOnboardKeyManagerConfigurableStatus
+func (m *SecurityConfigInlineOnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineOnboardKeyManagerConfigurableStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -520,30 +520,30 @@ func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []
 	return nil
 }
 
-// SecurityConfigSoftwareDataEncryption Cluster-wide software data encryption related information.
+// SecurityConfigInlineSoftwareDataEncryption Cluster-wide software data encryption related information.
 //
-// swagger:model SecurityConfigSoftwareDataEncryption
-type SecurityConfigSoftwareDataEncryption struct {
+// swagger:model security_config_inline_software_data_encryption
+type SecurityConfigInlineSoftwareDataEncryption struct {
 
 	// Indicates whether or not software encryption conversion is enabled on the cluster. A PATCH request initiates the conversion of all non-encrypted metadata volumes in the cluster to encrypted metadata volumes and all non-NAE aggregates to NAE aggregates. For the PATCH request to start, the cluster must have either an Onboard or an external key manager set up and the aggregates should either be empty or have only metadata volumes. No data volumes should be present in any of the aggregates in the cluster. For MetroCluster configurations, a PATCH request enables conversion on all the aggregates and metadata volumes of both local and remote clusters and is not allowed when the MetroCluster is in switchover state.
-	ConversionEnabled bool `json:"conversion_enabled,omitempty"`
+	ConversionEnabled *bool `json:"conversion_enabled,omitempty"`
 
 	// Indicates whether or not default software data at rest encryption is disabled on the cluster.
-	DisabledByDefault bool `json:"disabled_by_default,omitempty"`
+	DisabledByDefault *bool `json:"disabled_by_default,omitempty"`
 }
 
-// Validate validates this security config software data encryption
-func (m *SecurityConfigSoftwareDataEncryption) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline software data encryption
+func (m *SecurityConfigInlineSoftwareDataEncryption) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security config software data encryption based on context it is used
-func (m *SecurityConfigSoftwareDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security config inline software data encryption based on context it is used
+func (m *SecurityConfigInlineSoftwareDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigSoftwareDataEncryption) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineSoftwareDataEncryption) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -551,8 +551,8 @@ func (m *SecurityConfigSoftwareDataEncryption) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigSoftwareDataEncryption
+func (m *SecurityConfigInlineSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineSoftwareDataEncryption
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -560,20 +560,20 @@ func (m *SecurityConfigSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityConfigTLS Cluster-wide Transport Layer Security (TLS) configuration information
+// SecurityConfigInlineTLS Cluster-wide Transport Layer Security (TLS) configuration information
 //
-// swagger:model SecurityConfigTLS
-type SecurityConfigTLS struct {
+// swagger:model security_config_inline_tls
+type SecurityConfigInlineTLS struct {
 
 	// Names a cipher suite that the system can select during TLS handshakes. A list of available options can be found on the Internet Assigned Number Authority (IANA) website.
-	CipherSuites []string `json:"cipher_suites,omitempty"`
+	CipherSuites []*string `json:"cipher_suites,omitempty"`
 
 	// Names a TLS protocol version that the system can select during TLS handshakes. The use of SSLv3 or TLSv1 is discouraged.
-	ProtocolVersions []string `json:"protocol_versions,omitempty"`
+	ProtocolVersions []*string `json:"protocol_versions,omitempty"`
 }
 
-// Validate validates this security config TLS
-func (m *SecurityConfigTLS) Validate(formats strfmt.Registry) error {
+// Validate validates this security config inline tls
+func (m *SecurityConfigInlineTLS) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProtocolVersions(formats); err != nil {
@@ -586,7 +586,7 @@ func (m *SecurityConfigTLS) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var securityConfigTlsProtocolVersionsItemsEnum []interface{}
+var securityConfigInlineTlsProtocolVersionsItemsEnum []interface{}
 
 func init() {
 	var res []string
@@ -594,26 +594,29 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		securityConfigTlsProtocolVersionsItemsEnum = append(securityConfigTlsProtocolVersionsItemsEnum, v)
+		securityConfigInlineTlsProtocolVersionsItemsEnum = append(securityConfigInlineTlsProtocolVersionsItemsEnum, v)
 	}
 }
 
-func (m *SecurityConfigTLS) validateProtocolVersionsItemsEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, securityConfigTlsProtocolVersionsItemsEnum, true); err != nil {
+func (m *SecurityConfigInlineTLS) validateProtocolVersionsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityConfigInlineTlsProtocolVersionsItemsEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SecurityConfigTLS) validateProtocolVersions(formats strfmt.Registry) error {
+func (m *SecurityConfigInlineTLS) validateProtocolVersions(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProtocolVersions) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.ProtocolVersions); i++ {
+		if swag.IsZero(m.ProtocolVersions[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateProtocolVersionsItemsEnum("tls"+"."+"protocol_versions"+"."+strconv.Itoa(i), "body", m.ProtocolVersions[i]); err != nil {
+		if err := m.validateProtocolVersionsItemsEnum("tls"+"."+"protocol_versions"+"."+strconv.Itoa(i), "body", *m.ProtocolVersions[i]); err != nil {
 			return err
 		}
 
@@ -622,13 +625,13 @@ func (m *SecurityConfigTLS) validateProtocolVersions(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validates this security config TLS based on context it is used
-func (m *SecurityConfigTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security config inline tls based on context it is used
+func (m *SecurityConfigInlineTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityConfigTLS) MarshalBinary() ([]byte, error) {
+func (m *SecurityConfigInlineTLS) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -636,8 +639,8 @@ func (m *SecurityConfigTLS) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityConfigTLS) UnmarshalBinary(b []byte) error {
-	var res SecurityConfigTLS
+func (m *SecurityConfigInlineTLS) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigInlineTLS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

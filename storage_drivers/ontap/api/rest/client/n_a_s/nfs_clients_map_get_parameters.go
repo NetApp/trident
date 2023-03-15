@@ -66,37 +66,37 @@ type NfsClientsMapGetParams struct {
 
 	   Filter by client_ips
 	*/
-	ClientIPsQueryParameter *string
+	ClientIps *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type NfsClientsMapGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,25 +112,25 @@ type NfsClientsMapGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServerIP.
 
 	   Filter by server_ip
 	*/
-	ServerIPQueryParameter *string
+	ServerIP *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *NfsClientsMapGetParams) WithDefaults() *NfsClientsMapGetParams {
 // All values with no default are reset to their zero value.
 func (o *NfsClientsMapGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NfsClientsMapGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *NfsClientsMapGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientIPsQueryParameter adds the clientIps to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithClientIPsQueryParameter(clientIps *string) *NfsClientsMapGetParams {
-	o.SetClientIPsQueryParameter(clientIps)
+// WithClientIps adds the clientIps to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithClientIps(clientIps *string) *NfsClientsMapGetParams {
+	o.SetClientIps(clientIps)
 	return o
 }
 
-// SetClientIPsQueryParameter adds the clientIps to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetClientIPsQueryParameter(clientIps *string) {
-	o.ClientIPsQueryParameter = clientIps
+// SetClientIps adds the clientIps to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetClientIps(clientIps *string) {
+	o.ClientIps = clientIps
 }
 
-// WithFieldsQueryParameter adds the fields to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithFieldsQueryParameter(fields []string) *NfsClientsMapGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithFields(fields []string) *NfsClientsMapGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NfsClientsMapGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithMaxRecords(maxRecords *int64) *NfsClientsMapGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithNodeNameQueryParameter(nodeName *string) *NfsClientsMapGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithNodeName(nodeName *string) *NfsClientsMapGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NfsClientsMapGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithNodeUUID(nodeUUID *string) *NfsClientsMapGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithOrderByQueryParameter(orderBy []string) *NfsClientsMapGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithOrderBy(orderBy []string) *NfsClientsMapGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NfsClientsMapGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithReturnRecords(returnRecords *bool) *NfsClientsMapGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NfsClientsMapGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithReturnTimeout(returnTimeout *int64) *NfsClientsMapGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerIPQueryParameter adds the serverIP to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithServerIPQueryParameter(serverIP *string) *NfsClientsMapGetParams {
-	o.SetServerIPQueryParameter(serverIP)
+// WithServerIP adds the serverIP to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithServerIP(serverIP *string) *NfsClientsMapGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetServerIPQueryParameter adds the serverIp to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetServerIPQueryParameter(serverIP *string) {
-	o.ServerIPQueryParameter = serverIP
+// SetServerIP adds the serverIp to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetServerIP(serverIP *string) {
+	o.ServerIP = serverIP
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithSVMNameQueryParameter(svmName *string) *NfsClientsMapGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithSvmName(svmName *string) *NfsClientsMapGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nfs clients map get params
-func (o *NfsClientsMapGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NfsClientsMapGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs clients map get params
+func (o *NfsClientsMapGetParams) WithSvmUUID(svmUUID *string) *NfsClientsMapGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nfs clients map get params
-func (o *NfsClientsMapGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs clients map get params
+func (o *NfsClientsMapGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,13 +328,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.ClientIPsQueryParameter != nil {
+	if o.ClientIps != nil {
 
 		// query param client_ips
 		var qrClientIps string
 
-		if o.ClientIPsQueryParameter != nil {
-			qrClientIps = *o.ClientIPsQueryParameter
+		if o.ClientIps != nil {
+			qrClientIps = *o.ClientIps
 		}
 		qClientIps := qrClientIps
 		if qClientIps != "" {
@@ -345,7 +345,7 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -373,13 +373,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -390,13 +390,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -407,7 +407,7 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +435,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +452,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ServerIPQueryParameter != nil {
+	if o.ServerIP != nil {
 
 		// query param server_ip
 		var qrServerIP string
 
-		if o.ServerIPQueryParameter != nil {
-			qrServerIP = *o.ServerIPQueryParameter
+		if o.ServerIP != nil {
+			qrServerIP = *o.ServerIP
 		}
 		qServerIP := qrServerIP
 		if qServerIP != "" {
@@ -469,13 +469,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -486,13 +486,13 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -511,7 +511,7 @@ func (o *NfsClientsMapGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamNfsClientsMapGet binds the parameter fields
 func (o *NfsClientsMapGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *NfsClientsMapGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamNfsClientsMapGet binds the parameter order_by
 func (o *NfsClientsMapGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

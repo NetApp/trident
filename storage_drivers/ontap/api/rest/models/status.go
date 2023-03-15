@@ -23,23 +23,23 @@ type Status struct {
 	// Code corresponding to the status message. Code is 0 when the state is 'up'.
 	//
 	// Example: 6684732
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Detailed description of the validation state if the state is 'down' or
 	// the response time of the DNS server if the state is 'up'.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// The IP address of the DNS server. The address can be either an IPv4 or an IPv6 address.
 	//
 	// Example: 10.10.10.10
-	NameServer string `json:"name_server,omitempty"`
+	NameServer *string `json:"name_server,omitempty"`
 
 	// The validation status of the DNS server.
 	//
 	// Example: up
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this status
@@ -105,7 +105,7 @@ func (m *Status) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

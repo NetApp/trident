@@ -66,49 +66,49 @@ type MultiAdminVerifyApprovalGroupCollectionGetParams struct {
 
 	   Filter by approvers
 	*/
-	ApproversQueryParameter *string
+	Approvers *string
 
 	/* Email.
 
 	   Filter by email
 	*/
-	EmailQueryParameter *string
+	Email *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type MultiAdminVerifyApprovalGroupCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,7 +124,7 @@ type MultiAdminVerifyApprovalGroupCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithDefaults() *Multi
 // All values with no default are reset to their zero value.
 func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MultiAdminVerifyApprovalGroupCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetHTTPClient(client 
 	o.HTTPClient = client
 }
 
-// WithApproversQueryParameter adds the approvers to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithApproversQueryParameter(approvers *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetApproversQueryParameter(approvers)
+// WithApprovers adds the approvers to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithApprovers(approvers *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetApprovers(approvers)
 	return o
 }
 
-// SetApproversQueryParameter adds the approvers to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetApproversQueryParameter(approvers *string) {
-	o.ApproversQueryParameter = approvers
+// SetApprovers adds the approvers to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetApprovers(approvers *string) {
+	o.Approvers = approvers
 }
 
-// WithEmailQueryParameter adds the email to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithEmailQueryParameter(email *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetEmailQueryParameter(email)
+// WithEmail adds the email to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithEmail(email *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetEmail(email)
 	return o
 }
 
-// SetEmailQueryParameter adds the email to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetEmailQueryParameter(email *string) {
-	o.EmailQueryParameter = email
+// SetEmail adds the email to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetEmail(email *string) {
+	o.Email = email
 }
 
-// WithFieldsQueryParameter adds the fields to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithFieldsQueryParameter(fields []string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithFields(fields []string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithMaxRecords(maxRecords *int64) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithNameQueryParameter(name *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithName(name *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOrderBy(orderBy []string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOwnerName(ownerName *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithOwnerUUID(ownerUUID *string) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithReturnRecords(returnRecords *bool) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MultiAdminVerifyApprovalGroupCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MultiAdminVerifyApprovalGroupCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the multi admin verify approval group collection get params
-func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the multi admin verify approval group collection get params
+func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,13 +311,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 	}
 	var res []error
 
-	if o.ApproversQueryParameter != nil {
+	if o.Approvers != nil {
 
 		// query param approvers
 		var qrApprovers string
 
-		if o.ApproversQueryParameter != nil {
-			qrApprovers = *o.ApproversQueryParameter
+		if o.Approvers != nil {
+			qrApprovers = *o.Approvers
 		}
 		qApprovers := qrApprovers
 		if qApprovers != "" {
@@ -328,13 +328,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.EmailQueryParameter != nil {
+	if o.Email != nil {
 
 		// query param email
 		var qrEmail string
 
-		if o.EmailQueryParameter != nil {
-			qrEmail = *o.EmailQueryParameter
+		if o.Email != nil {
+			qrEmail = *o.Email
 		}
 		qEmail := qrEmail
 		if qEmail != "" {
@@ -345,7 +345,7 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -373,13 +373,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -390,7 +390,7 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +401,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -418,13 +418,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -435,13 +435,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -452,13 +452,13 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -477,7 +477,7 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) WriteToRequest(r runt
 
 // bindParamMultiAdminVerifyApprovalGroupCollectionGet binds the parameter fields
 func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) bindParamFields(forma
 
 // bindParamMultiAdminVerifyApprovalGroupCollectionGet binds the parameter order_by
 func (o *MultiAdminVerifyApprovalGroupCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

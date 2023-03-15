@@ -75,14 +75,14 @@ type LunAttributeModifyParams struct {
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* Name.
 
 	   The name of the attribute.
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -148,26 +148,26 @@ func (o *LunAttributeModifyParams) SetInfo(info *models.LunAttribute) {
 	o.Info = info
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun attribute modify params
-func (o *LunAttributeModifyParams) WithLunUUIDPathParameter(lunUUID string) *LunAttributeModifyParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun attribute modify params
+func (o *LunAttributeModifyParams) WithLunUUID(lunUUID string) *LunAttributeModifyParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun attribute modify params
-func (o *LunAttributeModifyParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun attribute modify params
+func (o *LunAttributeModifyParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithNamePathParameter adds the name to the lun attribute modify params
-func (o *LunAttributeModifyParams) WithNamePathParameter(name string) *LunAttributeModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the lun attribute modify params
+func (o *LunAttributeModifyParams) WithName(name string) *LunAttributeModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the lun attribute modify params
-func (o *LunAttributeModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the lun attribute modify params
+func (o *LunAttributeModifyParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -184,12 +184,12 @@ func (o *LunAttributeModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

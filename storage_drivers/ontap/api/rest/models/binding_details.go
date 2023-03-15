@@ -22,7 +22,7 @@ type BindingDetails struct {
 	// Hostname/IP address of the NIS server in the domain.
 	// Max Length: 255
 	// Min Length: 1
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// status
 	Status *BindingStatus `json:"status,omitempty"`
@@ -51,11 +51,11 @@ func (m *BindingDetails) validateServer(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("server", "body", m.Server, 1); err != nil {
+	if err := validate.MinLength("server", "body", *m.Server, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("server", "body", m.Server, 255); err != nil {
+	if err := validate.MaxLength("server", "body", *m.Server, 255); err != nil {
 		return err
 	}
 

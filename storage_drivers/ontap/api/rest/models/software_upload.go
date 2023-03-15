@@ -19,7 +19,7 @@ type SoftwareUpload struct {
 
 	// Package file on a local file system
 	// Example: base64 encoded package file content
-	File string `json:"file,omitempty"`
+	File *string `json:"file,omitempty"`
 }
 
 // Validate validates this software upload

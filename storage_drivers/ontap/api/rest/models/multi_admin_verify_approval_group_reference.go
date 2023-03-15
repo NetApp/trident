@@ -18,7 +18,7 @@ import (
 type MultiAdminVerifyApprovalGroupReference struct {
 
 	// Name of the approval group.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this multi admin verify approval group reference

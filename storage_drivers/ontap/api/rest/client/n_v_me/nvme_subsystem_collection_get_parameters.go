@@ -66,61 +66,79 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* DeleteOnUnmap.
 
 	   Filter by delete_on_unmap
 	*/
-	DeleteOnUnmapQueryParameter *bool
+	DeleteOnUnmap *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* HostsDhHmacChapGroupSize.
+
+	   Filter by hosts.dh_hmac_chap.group_size
+	*/
+	HostsDhHmacChapGroupSize *string
+
+	/* HostsDhHmacChapHashFunction.
+
+	   Filter by hosts.dh_hmac_chap.hash_function
+	*/
+	HostsDhHmacChapHashFunction *string
+
+	/* HostsDhHmacChapMode.
+
+	   Filter by hosts.dh_hmac_chap.mode
+	*/
+	HostsDhHmacChapMode *string
 
 	/* HostsNqn.
 
 	   Filter by hosts.nqn
 	*/
-	HostsNqnQueryParameter *string
+	HostsNqn *string
 
 	/* IoQueueDefaultCount.
 
 	   Filter by io_queue.default.count
 	*/
-	IoQueueDefaultCountQueryParameter *int64
+	IoQueueDefaultCount *int64
 
 	/* IoQueueDefaultDepth.
 
 	   Filter by io_queue.default.depth
 	*/
-	IoQueueDefaultDepthQueryParameter *int64
+	IoQueueDefaultDepth *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OsType.
 
 	   Filter by os_type
 	*/
-	OsTypeQueryParameter *string
+	OsType *string
 
 	/* ReturnRecords.
 
@@ -128,7 +146,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,67 +154,67 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* SubsystemMapsAnagrpid.
 
 	   Filter by subsystem_maps.anagrpid
 	*/
-	SubsystemMapsAnagrpIDQueryParameter *string
+	SubsystemMapsAnagrpid *string
 
 	/* SubsystemMapsNamespaceName.
 
 	   Filter by subsystem_maps.namespace.name
 	*/
-	SubsystemMapsNamespaceNameQueryParameter *string
+	SubsystemMapsNamespaceName *string
 
 	/* SubsystemMapsNamespaceUUID.
 
 	   Filter by subsystem_maps.namespace.uuid
 	*/
-	SubsystemMapsNamespaceUUIDQueryParameter *string
+	SubsystemMapsNamespaceUUID *string
 
 	/* SubsystemMapsNsid.
 
 	   Filter by subsystem_maps.nsid
 	*/
-	SubsystemMapsNsIDQueryParameter *string
+	SubsystemMapsNsid *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TargetNqn.
 
 	   Filter by target_nqn
 	*/
-	TargetNqnQueryParameter *string
+	TargetNqn *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VendorUuids.
 
 	   Filter by vendor_uuids
 	*/
-	VendorUUIDsQueryParameter *string
+	VendorUuids *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -216,14 +234,14 @@ func (o *NvmeSubsystemCollectionGetParams) WithDefaults() *NvmeSubsystemCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeSubsystemCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeSubsystemCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -265,246 +283,279 @@ func (o *NvmeSubsystemCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithCommentQueryParameter(comment *string) *NvmeSubsystemCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithComment(comment *string) *NvmeSubsystemCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) *NvmeSubsystemCollectionGetParams {
-	o.SetDeleteOnUnmapQueryParameter(deleteOnUnmap)
+// WithDeleteOnUnmap adds the deleteOnUnmap to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithDeleteOnUnmap(deleteOnUnmap *bool) *NvmeSubsystemCollectionGetParams {
+	o.SetDeleteOnUnmap(deleteOnUnmap)
 	return o
 }
 
-// SetDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) {
-	o.DeleteOnUnmapQueryParameter = deleteOnUnmap
+// SetDeleteOnUnmap adds the deleteOnUnmap to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetDeleteOnUnmap(deleteOnUnmap *bool) {
+	o.DeleteOnUnmap = deleteOnUnmap
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithFields(fields []string) *NvmeSubsystemCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHostsNqnQueryParameter adds the hostsNqn to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithHostsNqnQueryParameter(hostsNqn *string) *NvmeSubsystemCollectionGetParams {
-	o.SetHostsNqnQueryParameter(hostsNqn)
+// WithHostsDhHmacChapGroupSize adds the hostsDhHmacChapGroupSize to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsDhHmacChapGroupSize(hostsDhHmacChapGroupSize *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsDhHmacChapGroupSize(hostsDhHmacChapGroupSize)
 	return o
 }
 
-// SetHostsNqnQueryParameter adds the hostsNqn to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetHostsNqnQueryParameter(hostsNqn *string) {
-	o.HostsNqnQueryParameter = hostsNqn
+// SetHostsDhHmacChapGroupSize adds the hostsDhHmacChapGroupSize to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsDhHmacChapGroupSize(hostsDhHmacChapGroupSize *string) {
+	o.HostsDhHmacChapGroupSize = hostsDhHmacChapGroupSize
 }
 
-// WithIoQueueDefaultCountQueryParameter adds the ioQueueDefaultCount to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithIoQueueDefaultCountQueryParameter(ioQueueDefaultCount *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetIoQueueDefaultCountQueryParameter(ioQueueDefaultCount)
+// WithHostsDhHmacChapHashFunction adds the hostsDhHmacChapHashFunction to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsDhHmacChapHashFunction(hostsDhHmacChapHashFunction *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsDhHmacChapHashFunction(hostsDhHmacChapHashFunction)
 	return o
 }
 
-// SetIoQueueDefaultCountQueryParameter adds the ioQueueDefaultCount to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetIoQueueDefaultCountQueryParameter(ioQueueDefaultCount *int64) {
-	o.IoQueueDefaultCountQueryParameter = ioQueueDefaultCount
+// SetHostsDhHmacChapHashFunction adds the hostsDhHmacChapHashFunction to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsDhHmacChapHashFunction(hostsDhHmacChapHashFunction *string) {
+	o.HostsDhHmacChapHashFunction = hostsDhHmacChapHashFunction
 }
 
-// WithIoQueueDefaultDepthQueryParameter adds the ioQueueDefaultDepth to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithIoQueueDefaultDepthQueryParameter(ioQueueDefaultDepth *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetIoQueueDefaultDepthQueryParameter(ioQueueDefaultDepth)
+// WithHostsDhHmacChapMode adds the hostsDhHmacChapMode to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsDhHmacChapMode(hostsDhHmacChapMode *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsDhHmacChapMode(hostsDhHmacChapMode)
 	return o
 }
 
-// SetIoQueueDefaultDepthQueryParameter adds the ioQueueDefaultDepth to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetIoQueueDefaultDepthQueryParameter(ioQueueDefaultDepth *int64) {
-	o.IoQueueDefaultDepthQueryParameter = ioQueueDefaultDepth
+// SetHostsDhHmacChapMode adds the hostsDhHmacChapMode to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsDhHmacChapMode(hostsDhHmacChapMode *string) {
+	o.HostsDhHmacChapMode = hostsDhHmacChapMode
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithHostsNqn adds the hostsNqn to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithHostsNqn(hostsNqn *string) *NvmeSubsystemCollectionGetParams {
+	o.SetHostsNqn(hostsNqn)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetHostsNqn adds the hostsNqn to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetHostsNqn(hostsNqn *string) {
+	o.HostsNqn = hostsNqn
 }
 
-// WithNameQueryParameter adds the name to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithNameQueryParameter(name *string) *NvmeSubsystemCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithIoQueueDefaultCount adds the ioQueueDefaultCount to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithIoQueueDefaultCount(ioQueueDefaultCount *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetIoQueueDefaultCount(ioQueueDefaultCount)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetIoQueueDefaultCount adds the ioQueueDefaultCount to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetIoQueueDefaultCount(ioQueueDefaultCount *int64) {
+	o.IoQueueDefaultCount = ioQueueDefaultCount
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeSubsystemCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithIoQueueDefaultDepth adds the ioQueueDefaultDepth to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithIoQueueDefaultDepth(ioQueueDefaultDepth *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetIoQueueDefaultDepth(ioQueueDefaultDepth)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetIoQueueDefaultDepth adds the ioQueueDefaultDepth to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetIoQueueDefaultDepth(ioQueueDefaultDepth *int64) {
+	o.IoQueueDefaultDepth = ioQueueDefaultDepth
 }
 
-// WithOsTypeQueryParameter adds the osType to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithOsTypeQueryParameter(osType *string) *NvmeSubsystemCollectionGetParams {
-	o.SetOsTypeQueryParameter(osType)
+// WithMaxRecords adds the maxRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetOsTypeQueryParameter adds the osType to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetOsTypeQueryParameter(osType *string) {
-	o.OsTypeQueryParameter = osType
+// SetMaxRecords adds the maxRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeSubsystemCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithName adds the name to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithName(name *string) *NvmeSubsystemCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetName adds the name to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithOrderBy adds the orderBy to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithOrderBy(orderBy []string) *NvmeSubsystemCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetOrderBy adds the orderBy to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithOsType adds the osType to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithOsType(osType *string) *NvmeSubsystemCollectionGetParams {
+	o.SetOsType(osType)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetOsType adds the osType to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetOsType(osType *string) {
+	o.OsType = osType
 }
 
-// WithSubsystemMapsAnagrpIDQueryParameter adds the subsystemMapsAnagrpid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsAnagrpIDQueryParameter(subsystemMapsAnagrpid *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSubsystemMapsAnagrpIDQueryParameter(subsystemMapsAnagrpid)
+// WithReturnRecords adds the returnRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeSubsystemCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetSubsystemMapsAnagrpIDQueryParameter adds the subsystemMapsAnagrpid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsAnagrpIDQueryParameter(subsystemMapsAnagrpid *string) {
-	o.SubsystemMapsAnagrpIDQueryParameter = subsystemMapsAnagrpid
+// SetReturnRecords adds the returnRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSubsystemMapsNamespaceNameQueryParameter adds the subsystemMapsNamespaceName to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNamespaceNameQueryParameter(subsystemMapsNamespaceName *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSubsystemMapsNamespaceNameQueryParameter(subsystemMapsNamespaceName)
+// WithReturnTimeout adds the returnTimeout to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSubsystemMapsNamespaceNameQueryParameter adds the subsystemMapsNamespaceName to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNamespaceNameQueryParameter(subsystemMapsNamespaceName *string) {
-	o.SubsystemMapsNamespaceNameQueryParameter = subsystemMapsNamespaceName
+// SetReturnTimeout adds the returnTimeout to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSubsystemMapsNamespaceUUIDQueryParameter adds the subsystemMapsNamespaceUUID to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNamespaceUUIDQueryParameter(subsystemMapsNamespaceUUID *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSubsystemMapsNamespaceUUIDQueryParameter(subsystemMapsNamespaceUUID)
+// WithSerialNumber adds the serialNumber to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSerialNumber(serialNumber *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSubsystemMapsNamespaceUUIDQueryParameter adds the subsystemMapsNamespaceUuid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNamespaceUUIDQueryParameter(subsystemMapsNamespaceUUID *string) {
-	o.SubsystemMapsNamespaceUUIDQueryParameter = subsystemMapsNamespaceUUID
+// SetSerialNumber adds the serialNumber to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithSubsystemMapsNsIDQueryParameter adds the subsystemMapsNsid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNsIDQueryParameter(subsystemMapsNsid *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSubsystemMapsNsIDQueryParameter(subsystemMapsNsid)
+// WithSubsystemMapsAnagrpid adds the subsystemMapsAnagrpid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsAnagrpid(subsystemMapsAnagrpid *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSubsystemMapsAnagrpid(subsystemMapsAnagrpid)
 	return o
 }
 
-// SetSubsystemMapsNsIDQueryParameter adds the subsystemMapsNsid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNsIDQueryParameter(subsystemMapsNsid *string) {
-	o.SubsystemMapsNsIDQueryParameter = subsystemMapsNsid
+// SetSubsystemMapsAnagrpid adds the subsystemMapsAnagrpid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsAnagrpid(subsystemMapsAnagrpid *string) {
+	o.SubsystemMapsAnagrpid = subsystemMapsAnagrpid
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSubsystemMapsNamespaceName adds the subsystemMapsNamespaceName to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNamespaceName(subsystemMapsNamespaceName *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSubsystemMapsNamespaceName(subsystemMapsNamespaceName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSubsystemMapsNamespaceName adds the subsystemMapsNamespaceName to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNamespaceName(subsystemMapsNamespaceName *string) {
+	o.SubsystemMapsNamespaceName = subsystemMapsNamespaceName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NvmeSubsystemCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSubsystemMapsNamespaceUUID adds the subsystemMapsNamespaceUUID to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNamespaceUUID(subsystemMapsNamespaceUUID *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSubsystemMapsNamespaceUUID(subsystemMapsNamespaceUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSubsystemMapsNamespaceUUID adds the subsystemMapsNamespaceUuid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNamespaceUUID(subsystemMapsNamespaceUUID *string) {
+	o.SubsystemMapsNamespaceUUID = subsystemMapsNamespaceUUID
 }
 
-// WithTargetNqnQueryParameter adds the targetNqn to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithTargetNqnQueryParameter(targetNqn *string) *NvmeSubsystemCollectionGetParams {
-	o.SetTargetNqnQueryParameter(targetNqn)
+// WithSubsystemMapsNsid adds the subsystemMapsNsid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSubsystemMapsNsid(subsystemMapsNsid *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSubsystemMapsNsid(subsystemMapsNsid)
 	return o
 }
 
-// SetTargetNqnQueryParameter adds the targetNqn to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetTargetNqnQueryParameter(targetNqn *string) {
-	o.TargetNqnQueryParameter = targetNqn
+// SetSubsystemMapsNsid adds the subsystemMapsNsid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSubsystemMapsNsid(subsystemMapsNsid *string) {
+	o.SubsystemMapsNsid = subsystemMapsNsid
 }
 
-// WithUUIDQueryParameter adds the uuid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithUUIDQueryParameter(uuid *string) *NvmeSubsystemCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithSvmName adds the svmName to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSvmName(svmName *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetSvmName adds the svmName to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithVendorUUIDsQueryParameter adds the vendorUuids to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithVendorUUIDsQueryParameter(vendorUuids *string) *NvmeSubsystemCollectionGetParams {
-	o.SetVendorUUIDsQueryParameter(vendorUuids)
+// WithSvmUUID adds the svmUUID to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithSvmUUID(svmUUID *string) *NvmeSubsystemCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetVendorUUIDsQueryParameter adds the vendorUuids to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetVendorUUIDsQueryParameter(vendorUuids *string) {
-	o.VendorUUIDsQueryParameter = vendorUuids
+// SetSvmUUID adds the svmUuid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
+}
+
+// WithTargetNqn adds the targetNqn to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithTargetNqn(targetNqn *string) *NvmeSubsystemCollectionGetParams {
+	o.SetTargetNqn(targetNqn)
+	return o
+}
+
+// SetTargetNqn adds the targetNqn to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetTargetNqn(targetNqn *string) {
+	o.TargetNqn = targetNqn
+}
+
+// WithUUID adds the uuid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithUUID(uuid *string) *NvmeSubsystemCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVendorUuids adds the vendorUuids to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithVendorUuids(vendorUuids *string) *NvmeSubsystemCollectionGetParams {
+	o.SetVendorUuids(vendorUuids)
+	return o
+}
+
+// SetVendorUuids adds the vendorUuids to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetVendorUuids(vendorUuids *string) {
+	o.VendorUuids = vendorUuids
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -515,13 +566,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -532,13 +583,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DeleteOnUnmapQueryParameter != nil {
+	if o.DeleteOnUnmap != nil {
 
 		// query param delete_on_unmap
 		var qrDeleteOnUnmap bool
 
-		if o.DeleteOnUnmapQueryParameter != nil {
-			qrDeleteOnUnmap = *o.DeleteOnUnmapQueryParameter
+		if o.DeleteOnUnmap != nil {
+			qrDeleteOnUnmap = *o.DeleteOnUnmap
 		}
 		qDeleteOnUnmap := swag.FormatBool(qrDeleteOnUnmap)
 		if qDeleteOnUnmap != "" {
@@ -549,7 +600,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -560,13 +611,64 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.HostsNqnQueryParameter != nil {
+	if o.HostsDhHmacChapGroupSize != nil {
+
+		// query param hosts.dh_hmac_chap.group_size
+		var qrHostsDhHmacChapGroupSize string
+
+		if o.HostsDhHmacChapGroupSize != nil {
+			qrHostsDhHmacChapGroupSize = *o.HostsDhHmacChapGroupSize
+		}
+		qHostsDhHmacChapGroupSize := qrHostsDhHmacChapGroupSize
+		if qHostsDhHmacChapGroupSize != "" {
+
+			if err := r.SetQueryParam("hosts.dh_hmac_chap.group_size", qHostsDhHmacChapGroupSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsDhHmacChapHashFunction != nil {
+
+		// query param hosts.dh_hmac_chap.hash_function
+		var qrHostsDhHmacChapHashFunction string
+
+		if o.HostsDhHmacChapHashFunction != nil {
+			qrHostsDhHmacChapHashFunction = *o.HostsDhHmacChapHashFunction
+		}
+		qHostsDhHmacChapHashFunction := qrHostsDhHmacChapHashFunction
+		if qHostsDhHmacChapHashFunction != "" {
+
+			if err := r.SetQueryParam("hosts.dh_hmac_chap.hash_function", qHostsDhHmacChapHashFunction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsDhHmacChapMode != nil {
+
+		// query param hosts.dh_hmac_chap.mode
+		var qrHostsDhHmacChapMode string
+
+		if o.HostsDhHmacChapMode != nil {
+			qrHostsDhHmacChapMode = *o.HostsDhHmacChapMode
+		}
+		qHostsDhHmacChapMode := qrHostsDhHmacChapMode
+		if qHostsDhHmacChapMode != "" {
+
+			if err := r.SetQueryParam("hosts.dh_hmac_chap.mode", qHostsDhHmacChapMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsNqn != nil {
 
 		// query param hosts.nqn
 		var qrHostsNqn string
 
-		if o.HostsNqnQueryParameter != nil {
-			qrHostsNqn = *o.HostsNqnQueryParameter
+		if o.HostsNqn != nil {
+			qrHostsNqn = *o.HostsNqn
 		}
 		qHostsNqn := qrHostsNqn
 		if qHostsNqn != "" {
@@ -577,13 +679,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IoQueueDefaultCountQueryParameter != nil {
+	if o.IoQueueDefaultCount != nil {
 
 		// query param io_queue.default.count
 		var qrIoQueueDefaultCount int64
 
-		if o.IoQueueDefaultCountQueryParameter != nil {
-			qrIoQueueDefaultCount = *o.IoQueueDefaultCountQueryParameter
+		if o.IoQueueDefaultCount != nil {
+			qrIoQueueDefaultCount = *o.IoQueueDefaultCount
 		}
 		qIoQueueDefaultCount := swag.FormatInt64(qrIoQueueDefaultCount)
 		if qIoQueueDefaultCount != "" {
@@ -594,13 +696,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IoQueueDefaultDepthQueryParameter != nil {
+	if o.IoQueueDefaultDepth != nil {
 
 		// query param io_queue.default.depth
 		var qrIoQueueDefaultDepth int64
 
-		if o.IoQueueDefaultDepthQueryParameter != nil {
-			qrIoQueueDefaultDepth = *o.IoQueueDefaultDepthQueryParameter
+		if o.IoQueueDefaultDepth != nil {
+			qrIoQueueDefaultDepth = *o.IoQueueDefaultDepth
 		}
 		qIoQueueDefaultDepth := swag.FormatInt64(qrIoQueueDefaultDepth)
 		if qIoQueueDefaultDepth != "" {
@@ -611,13 +713,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -628,13 +730,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -645,7 +747,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -656,13 +758,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OsTypeQueryParameter != nil {
+	if o.OsType != nil {
 
 		// query param os_type
 		var qrOsType string
 
-		if o.OsTypeQueryParameter != nil {
-			qrOsType = *o.OsTypeQueryParameter
+		if o.OsType != nil {
+			qrOsType = *o.OsType
 		}
 		qOsType := qrOsType
 		if qOsType != "" {
@@ -673,13 +775,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -690,13 +792,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -707,13 +809,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -724,13 +826,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapsAnagrpIDQueryParameter != nil {
+	if o.SubsystemMapsAnagrpid != nil {
 
 		// query param subsystem_maps.anagrpid
 		var qrSubsystemMapsAnagrpid string
 
-		if o.SubsystemMapsAnagrpIDQueryParameter != nil {
-			qrSubsystemMapsAnagrpid = *o.SubsystemMapsAnagrpIDQueryParameter
+		if o.SubsystemMapsAnagrpid != nil {
+			qrSubsystemMapsAnagrpid = *o.SubsystemMapsAnagrpid
 		}
 		qSubsystemMapsAnagrpid := qrSubsystemMapsAnagrpid
 		if qSubsystemMapsAnagrpid != "" {
@@ -741,13 +843,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapsNamespaceNameQueryParameter != nil {
+	if o.SubsystemMapsNamespaceName != nil {
 
 		// query param subsystem_maps.namespace.name
 		var qrSubsystemMapsNamespaceName string
 
-		if o.SubsystemMapsNamespaceNameQueryParameter != nil {
-			qrSubsystemMapsNamespaceName = *o.SubsystemMapsNamespaceNameQueryParameter
+		if o.SubsystemMapsNamespaceName != nil {
+			qrSubsystemMapsNamespaceName = *o.SubsystemMapsNamespaceName
 		}
 		qSubsystemMapsNamespaceName := qrSubsystemMapsNamespaceName
 		if qSubsystemMapsNamespaceName != "" {
@@ -758,13 +860,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapsNamespaceUUIDQueryParameter != nil {
+	if o.SubsystemMapsNamespaceUUID != nil {
 
 		// query param subsystem_maps.namespace.uuid
 		var qrSubsystemMapsNamespaceUUID string
 
-		if o.SubsystemMapsNamespaceUUIDQueryParameter != nil {
-			qrSubsystemMapsNamespaceUUID = *o.SubsystemMapsNamespaceUUIDQueryParameter
+		if o.SubsystemMapsNamespaceUUID != nil {
+			qrSubsystemMapsNamespaceUUID = *o.SubsystemMapsNamespaceUUID
 		}
 		qSubsystemMapsNamespaceUUID := qrSubsystemMapsNamespaceUUID
 		if qSubsystemMapsNamespaceUUID != "" {
@@ -775,13 +877,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SubsystemMapsNsIDQueryParameter != nil {
+	if o.SubsystemMapsNsid != nil {
 
 		// query param subsystem_maps.nsid
 		var qrSubsystemMapsNsid string
 
-		if o.SubsystemMapsNsIDQueryParameter != nil {
-			qrSubsystemMapsNsid = *o.SubsystemMapsNsIDQueryParameter
+		if o.SubsystemMapsNsid != nil {
+			qrSubsystemMapsNsid = *o.SubsystemMapsNsid
 		}
 		qSubsystemMapsNsid := qrSubsystemMapsNsid
 		if qSubsystemMapsNsid != "" {
@@ -792,13 +894,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -809,13 +911,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -826,13 +928,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TargetNqnQueryParameter != nil {
+	if o.TargetNqn != nil {
 
 		// query param target_nqn
 		var qrTargetNqn string
 
-		if o.TargetNqnQueryParameter != nil {
-			qrTargetNqn = *o.TargetNqnQueryParameter
+		if o.TargetNqn != nil {
+			qrTargetNqn = *o.TargetNqn
 		}
 		qTargetNqn := qrTargetNqn
 		if qTargetNqn != "" {
@@ -843,13 +945,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -860,13 +962,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.VendorUUIDsQueryParameter != nil {
+	if o.VendorUuids != nil {
 
 		// query param vendor_uuids
 		var qrVendorUuids string
 
-		if o.VendorUUIDsQueryParameter != nil {
-			qrVendorUuids = *o.VendorUUIDsQueryParameter
+		if o.VendorUuids != nil {
+			qrVendorUuids = *o.VendorUuids
 		}
 		qVendorUuids := qrVendorUuids
 		if qVendorUuids != "" {
@@ -885,7 +987,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeSubsystemCollectionGet binds the parameter fields
 func (o *NvmeSubsystemCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -902,7 +1004,7 @@ func (o *NvmeSubsystemCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamNvmeSubsystemCollectionGet binds the parameter order_by
 func (o *NvmeSubsystemCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

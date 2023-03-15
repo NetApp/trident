@@ -22,10 +22,10 @@ type ConsistencyGroupVdiskProvisioningOptions struct {
 
 	// Operation to perform
 	// Enum: [create]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 }
 
 // Validate validates this consistency group vdisk provisioning options
@@ -81,7 +81,7 @@ func (m *ConsistencyGroupVdiskProvisioningOptions) validateAction(formats strfmt
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 

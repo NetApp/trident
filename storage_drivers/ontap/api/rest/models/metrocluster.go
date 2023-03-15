@@ -24,23 +24,28 @@ type Metrocluster struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// DR Pairs to create as part of a MetroCluster configure.
-	DrPairs []*MetroclusterDrPairsItems0 `json:"dr_pairs,omitempty"`
+	// Displays the MetroCluster configuration type.
+	// Read Only: true
+	// Enum: [invalid stretch fabric two_node_fabric ip_fabric ip_two_node_fabric mixed_fabric]
+	ConfigurationType *string `json:"configuration_type,omitempty"`
 
 	// local
-	Local *MetroclusterLocal `json:"local,omitempty"`
-
-	// List of Port specifications.
-	MccipPorts []*MetroclusterMccipPortsItems0 `json:"mccip_ports,omitempty"`
+	Local *MetroclusterInlineLocal `json:"local,omitempty"`
 
 	// mediator
-	Mediator *MetroclusterMediator `json:"mediator,omitempty"`
+	Mediator *MetroclusterInlineMediator `json:"mediator,omitempty"`
+
+	// DR Pairs to create as part of a MetroCluster configure.
+	MetroclusterInlineDrPairs []*MetroclusterInlineDrPairsInlineArrayItem `json:"dr_pairs,omitempty"`
+
+	// List of Port specifications.
+	MetroclusterInlineMccipPorts []*MetroclusterInlineMccipPortsInlineArrayItem `json:"mccip_ports,omitempty"`
 
 	// partner cluster
-	PartnerCluster *MetroclusterPartnerCluster `json:"partner_cluster,omitempty"`
+	PartnerCluster *MetroclusterInlinePartnerCluster `json:"partner_cluster,omitempty"`
 
 	// remote
-	Remote *MetroclusterRemote `json:"remote,omitempty"`
+	Remote *MetroclusterInlineRemote `json:"remote,omitempty"`
 }
 
 // Validate validates this metrocluster
@@ -51,7 +56,7 @@ func (m *Metrocluster) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateDrPairs(formats); err != nil {
+	if err := m.validateConfigurationType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -59,11 +64,15 @@ func (m *Metrocluster) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMccipPorts(formats); err != nil {
+	if err := m.validateMediator(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateMediator(formats); err != nil {
+	if err := m.validateMetroclusterInlineDrPairs(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMetroclusterInlineMccipPorts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -98,25 +107,107 @@ func (m *Metrocluster) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Metrocluster) validateDrPairs(formats strfmt.Registry) error {
-	if swag.IsZero(m.DrPairs) { // not required
+var metroclusterTypeConfigurationTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["invalid","stretch","fabric","two_node_fabric","ip_fabric","ip_two_node_fabric","mixed_fabric"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterTypeConfigurationTypePropEnum = append(metroclusterTypeConfigurationTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// invalid
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeInvalid captures enum value "invalid"
+	MetroclusterConfigurationTypeInvalid string = "invalid"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// stretch
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeStretch captures enum value "stretch"
+	MetroclusterConfigurationTypeStretch string = "stretch"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// fabric
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeFabric captures enum value "fabric"
+	MetroclusterConfigurationTypeFabric string = "fabric"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// two_node_fabric
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeTwoNodeFabric captures enum value "two_node_fabric"
+	MetroclusterConfigurationTypeTwoNodeFabric string = "two_node_fabric"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// ip_fabric
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeIPFabric captures enum value "ip_fabric"
+	MetroclusterConfigurationTypeIPFabric string = "ip_fabric"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// ip_two_node_fabric
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeIPTwoNodeFabric captures enum value "ip_two_node_fabric"
+	MetroclusterConfigurationTypeIPTwoNodeFabric string = "ip_two_node_fabric"
+
+	// BEGIN DEBUGGING
+	// metrocluster
+	// Metrocluster
+	// configuration_type
+	// ConfigurationType
+	// mixed_fabric
+	// END DEBUGGING
+	// MetroclusterConfigurationTypeMixedFabric captures enum value "mixed_fabric"
+	MetroclusterConfigurationTypeMixedFabric string = "mixed_fabric"
+)
+
+// prop value enum
+func (m *Metrocluster) validateConfigurationTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterTypeConfigurationTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Metrocluster) validateConfigurationType(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConfigurationType) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.DrPairs); i++ {
-		if swag.IsZero(m.DrPairs[i]) { // not required
-			continue
-		}
-
-		if m.DrPairs[i] != nil {
-			if err := m.DrPairs[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+	// value enum
+	if err := m.validateConfigurationTypeEnum("configuration_type", "body", *m.ConfigurationType); err != nil {
+		return err
 	}
 
 	return nil
@@ -139,30 +230,6 @@ func (m *Metrocluster) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Metrocluster) validateMccipPorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.MccipPorts) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.MccipPorts); i++ {
-		if swag.IsZero(m.MccipPorts[i]) { // not required
-			continue
-		}
-
-		if m.MccipPorts[i] != nil {
-			if err := m.MccipPorts[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Metrocluster) validateMediator(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mediator) { // not required
 		return nil
@@ -175,6 +242,54 @@ func (m *Metrocluster) validateMediator(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Metrocluster) validateMetroclusterInlineDrPairs(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterInlineDrPairs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MetroclusterInlineDrPairs); i++ {
+		if swag.IsZero(m.MetroclusterInlineDrPairs[i]) { // not required
+			continue
+		}
+
+		if m.MetroclusterInlineDrPairs[i] != nil {
+			if err := m.MetroclusterInlineDrPairs[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Metrocluster) validateMetroclusterInlineMccipPorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterInlineMccipPorts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MetroclusterInlineMccipPorts); i++ {
+		if swag.IsZero(m.MetroclusterInlineMccipPorts[i]) { // not required
+			continue
+		}
+
+		if m.MetroclusterInlineMccipPorts[i] != nil {
+			if err := m.MetroclusterInlineMccipPorts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -222,7 +337,7 @@ func (m *Metrocluster) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateDrPairs(ctx, formats); err != nil {
+	if err := m.contextValidateConfigurationType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -230,11 +345,15 @@ func (m *Metrocluster) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMccipPorts(ctx, formats); err != nil {
+	if err := m.contextValidateMediator(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMediator(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterInlineDrPairs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetroclusterInlineMccipPorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -266,19 +385,10 @@ func (m *Metrocluster) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *Metrocluster) contextValidateDrPairs(ctx context.Context, formats strfmt.Registry) error {
+func (m *Metrocluster) contextValidateConfigurationType(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.DrPairs); i++ {
-
-		if m.DrPairs[i] != nil {
-			if err := m.DrPairs[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+	if err := validate.ReadOnly(ctx, "configuration_type", "body", m.ConfigurationType); err != nil {
+		return err
 	}
 
 	return nil
@@ -298,14 +408,28 @@ func (m *Metrocluster) contextValidateLocal(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *Metrocluster) contextValidateMccipPorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *Metrocluster) contextValidateMediator(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.MccipPorts); i++ {
+	if m.Mediator != nil {
+		if err := m.Mediator.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("mediator")
+			}
+			return err
+		}
+	}
 
-		if m.MccipPorts[i] != nil {
-			if err := m.MccipPorts[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *Metrocluster) contextValidateMetroclusterInlineDrPairs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.MetroclusterInlineDrPairs); i++ {
+
+		if m.MetroclusterInlineDrPairs[i] != nil {
+			if err := m.MetroclusterInlineDrPairs[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
+					return ve.ValidateName("dr_pairs" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -316,15 +440,19 @@ func (m *Metrocluster) contextValidateMccipPorts(ctx context.Context, formats st
 	return nil
 }
 
-func (m *Metrocluster) contextValidateMediator(ctx context.Context, formats strfmt.Registry) error {
+func (m *Metrocluster) contextValidateMetroclusterInlineMccipPorts(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Mediator != nil {
-		if err := m.Mediator.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("mediator")
+	for i := 0; i < len(m.MetroclusterInlineMccipPorts); i++ {
+
+		if m.MetroclusterInlineMccipPorts[i] != nil {
+			if err := m.MetroclusterInlineMccipPorts[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mccip_ports" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
+
 	}
 
 	return nil
@@ -376,20 +504,20 @@ func (m *Metrocluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrPairsItems0 metrocluster dr pairs items0
+// MetroclusterInlineDrPairsInlineArrayItem metrocluster inline dr pairs inline array item
 //
-// swagger:model MetroclusterDrPairsItems0
-type MetroclusterDrPairsItems0 struct {
+// swagger:model metrocluster_inline_dr_pairs_inline_array_item
+type MetroclusterInlineDrPairsInlineArrayItem struct {
 
 	// node
-	Node *MetroclusterDrPairsItems0Node `json:"node,omitempty"`
+	Node *MetroclusterInlineDrPairsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// partner
-	Partner *MetroclusterDrPairsItems0Partner `json:"partner,omitempty"`
+	Partner *MetroclusterInlineDrPairsInlineArrayItemInlinePartner `json:"partner,omitempty"`
 }
 
-// Validate validates this metrocluster dr pairs items0
-func (m *MetroclusterDrPairsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline dr pairs inline array item
+func (m *MetroclusterInlineDrPairsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -406,7 +534,7 @@ func (m *MetroclusterDrPairsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0) validateNode(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -423,7 +551,7 @@ func (m *MetroclusterDrPairsItems0) validateNode(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0) validatePartner(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItem) validatePartner(formats strfmt.Registry) error {
 	if swag.IsZero(m.Partner) { // not required
 		return nil
 	}
@@ -440,8 +568,8 @@ func (m *MetroclusterDrPairsItems0) validatePartner(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr pairs items0 based on the context it is used
-func (m *MetroclusterDrPairsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline dr pairs inline array item based on the context it is used
+func (m *MetroclusterInlineDrPairsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -458,7 +586,7 @@ func (m *MetroclusterDrPairsItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -472,7 +600,7 @@ func (m *MetroclusterDrPairsItems0) contextValidateNode(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItem) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Partner != nil {
 		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
@@ -487,7 +615,7 @@ func (m *MetroclusterDrPairsItems0) contextValidatePartner(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineDrPairsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -495,8 +623,8 @@ func (m *MetroclusterDrPairsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrPairsItems0
+func (m *MetroclusterInlineDrPairsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineDrPairsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -504,25 +632,25 @@ func (m *MetroclusterDrPairsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrPairsItems0Node Local node of the DR Group.
+// MetroclusterInlineDrPairsInlineArrayItemInlineNode Local node of the DR Group.
 //
-// swagger:model MetroclusterDrPairsItems0Node
-type MetroclusterDrPairsItems0Node struct {
+// swagger:model metrocluster_inline_dr_pairs_inline_array_item_inline_node
+type MetroclusterInlineDrPairsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *MetroclusterDrPairsItems0NodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster dr pairs items0 node
-func (m *MetroclusterDrPairsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline dr pairs inline array item inline node
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -535,7 +663,7 @@ func (m *MetroclusterDrPairsItems0Node) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -552,8 +680,8 @@ func (m *MetroclusterDrPairsItems0Node) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr pairs items0 node based on the context it is used
-func (m *MetroclusterDrPairsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline dr pairs inline array item inline node based on the context it is used
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -566,7 +694,7 @@ func (m *MetroclusterDrPairsItems0Node) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -581,7 +709,7 @@ func (m *MetroclusterDrPairsItems0Node) contextValidateLinks(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -589,8 +717,8 @@ func (m *MetroclusterDrPairsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0Node) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrPairsItems0Node
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineDrPairsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -598,17 +726,17 @@ func (m *MetroclusterDrPairsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrPairsItems0NodeLinks metrocluster dr pairs items0 node links
+// MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks metrocluster inline dr pairs inline array item inline node inline links
 //
-// swagger:model MetroclusterDrPairsItems0NodeLinks
-type MetroclusterDrPairsItems0NodeLinks struct {
+// swagger:model metrocluster_inline_dr_pairs_inline_array_item_inline_node_inline__links
+type MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster dr pairs items0 node links
-func (m *MetroclusterDrPairsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline dr pairs inline array item inline node inline links
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -621,7 +749,7 @@ func (m *MetroclusterDrPairsItems0NodeLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -638,8 +766,8 @@ func (m *MetroclusterDrPairsItems0NodeLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr pairs items0 node links based on the context it is used
-func (m *MetroclusterDrPairsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline dr pairs inline array item inline node inline links based on the context it is used
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -652,7 +780,7 @@ func (m *MetroclusterDrPairsItems0NodeLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -667,7 +795,7 @@ func (m *MetroclusterDrPairsItems0NodeLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -675,8 +803,8 @@ func (m *MetroclusterDrPairsItems0NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrPairsItems0NodeLinks
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineDrPairsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -684,25 +812,25 @@ func (m *MetroclusterDrPairsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrPairsItems0Partner Partner node of the DR Group.
+// MetroclusterInlineDrPairsInlineArrayItemInlinePartner Partner node of the DR Group.
 //
-// swagger:model MetroclusterDrPairsItems0Partner
-type MetroclusterDrPairsItems0Partner struct {
+// swagger:model metrocluster_inline_dr_pairs_inline_array_item_inline_partner
+type MetroclusterInlineDrPairsInlineArrayItemInlinePartner struct {
 
 	// links
-	Links *MetroclusterDrPairsItems0PartnerLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster dr pairs items0 partner
-func (m *MetroclusterDrPairsItems0Partner) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline dr pairs inline array item inline partner
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -715,7 +843,7 @@ func (m *MetroclusterDrPairsItems0Partner) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0Partner) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -732,8 +860,8 @@ func (m *MetroclusterDrPairsItems0Partner) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr pairs items0 partner based on the context it is used
-func (m *MetroclusterDrPairsItems0Partner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline dr pairs inline array item inline partner based on the context it is used
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -746,7 +874,7 @@ func (m *MetroclusterDrPairsItems0Partner) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0Partner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -761,7 +889,7 @@ func (m *MetroclusterDrPairsItems0Partner) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0Partner) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -769,8 +897,8 @@ func (m *MetroclusterDrPairsItems0Partner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0Partner) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrPairsItems0Partner
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartner) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineDrPairsInlineArrayItemInlinePartner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -778,17 +906,17 @@ func (m *MetroclusterDrPairsItems0Partner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrPairsItems0PartnerLinks metrocluster dr pairs items0 partner links
+// MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks metrocluster inline dr pairs inline array item inline partner inline links
 //
-// swagger:model MetroclusterDrPairsItems0PartnerLinks
-type MetroclusterDrPairsItems0PartnerLinks struct {
+// swagger:model metrocluster_inline_dr_pairs_inline_array_item_inline_partner_inline__links
+type MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster dr pairs items0 partner links
-func (m *MetroclusterDrPairsItems0PartnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline dr pairs inline array item inline partner inline links
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -801,7 +929,7 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0PartnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -818,8 +946,8 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr pairs items0 partner links based on the context it is used
-func (m *MetroclusterDrPairsItems0PartnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline dr pairs inline array item inline partner inline links based on the context it is used
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -832,7 +960,7 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *MetroclusterDrPairsItems0PartnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -847,7 +975,7 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0PartnerLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -855,8 +983,8 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrPairsItems0PartnerLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrPairsItems0PartnerLinks
+func (m *MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineDrPairsInlineArrayItemInlinePartnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -864,23 +992,23 @@ func (m *MetroclusterDrPairsItems0PartnerLinks) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// MetroclusterLocal metrocluster local
+// MetroclusterInlineLocal metrocluster inline local
 //
-// swagger:model MetroclusterLocal
-type MetroclusterLocal struct {
+// swagger:model metrocluster_inline_local
+type MetroclusterInlineLocal struct {
 
 	// cluster
-	Cluster *MetroclusterLocalCluster `json:"cluster,omitempty"`
+	Cluster *MetroclusterInlineLocalInlineCluster `json:"cluster,omitempty"`
 
 	// Indicates the state of the local cluster configuration.
 	// Read Only: true
 	// Enum: [configuration_error configured not_configured not_reachable partially_configured unknown]
-	ConfigurationState string `json:"configuration_state,omitempty"`
+	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// Specifies the mode of operation of the local cluster.
 	// Read Only: true
 	// Enum: [normal not_configured not_reachable partial_switchback partial_switchover switchover unknown waiting_for_switchback]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Specifies whether the partner cluster is reachable from the local cluster.
 	// Read Only: true
@@ -891,8 +1019,8 @@ type MetroclusterLocal struct {
 	PeriodicCheckEnabled *bool `json:"periodic_check_enabled,omitempty"`
 }
 
-// Validate validates this metrocluster local
-func (m *MetroclusterLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline local
+func (m *MetroclusterInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCluster(formats); err != nil {
@@ -913,7 +1041,7 @@ func (m *MetroclusterLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterLocal) validateCluster(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) validateCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cluster) { // not required
 		return nil
 	}
@@ -930,7 +1058,7 @@ func (m *MetroclusterLocal) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
-var metroclusterLocalTypeConfigurationStatePropEnum []interface{}
+var metroclusterInlineLocalTypeConfigurationStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -938,95 +1066,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterLocalTypeConfigurationStatePropEnum = append(metroclusterLocalTypeConfigurationStatePropEnum, v)
+		metroclusterInlineLocalTypeConfigurationStatePropEnum = append(metroclusterInlineLocalTypeConfigurationStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// configuration_error
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStateConfigurationError captures enum value "configuration_error"
-	MetroclusterLocalConfigurationStateConfigurationError string = "configuration_error"
+	// MetroclusterInlineLocalConfigurationStateConfigurationError captures enum value "configuration_error"
+	MetroclusterInlineLocalConfigurationStateConfigurationError string = "configuration_error"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// configured
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStateConfigured captures enum value "configured"
-	MetroclusterLocalConfigurationStateConfigured string = "configured"
+	// MetroclusterInlineLocalConfigurationStateConfigured captures enum value "configured"
+	MetroclusterInlineLocalConfigurationStateConfigured string = "configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// not_configured
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStateNotConfigured captures enum value "not_configured"
-	MetroclusterLocalConfigurationStateNotConfigured string = "not_configured"
+	// MetroclusterInlineLocalConfigurationStateNotConfigured captures enum value "not_configured"
+	MetroclusterInlineLocalConfigurationStateNotConfigured string = "not_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// not_reachable
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStateNotReachable captures enum value "not_reachable"
-	MetroclusterLocalConfigurationStateNotReachable string = "not_reachable"
+	// MetroclusterInlineLocalConfigurationStateNotReachable captures enum value "not_reachable"
+	MetroclusterInlineLocalConfigurationStateNotReachable string = "not_reachable"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// partially_configured
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStatePartiallyConfigured captures enum value "partially_configured"
-	MetroclusterLocalConfigurationStatePartiallyConfigured string = "partially_configured"
+	// MetroclusterInlineLocalConfigurationStatePartiallyConfigured captures enum value "partially_configured"
+	MetroclusterInlineLocalConfigurationStatePartiallyConfigured string = "partially_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// configuration_state
 	// ConfigurationState
 	// unknown
 	// END DEBUGGING
-	// MetroclusterLocalConfigurationStateUnknown captures enum value "unknown"
-	MetroclusterLocalConfigurationStateUnknown string = "unknown"
+	// MetroclusterInlineLocalConfigurationStateUnknown captures enum value "unknown"
+	MetroclusterInlineLocalConfigurationStateUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *MetroclusterLocal) validateConfigurationStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterLocalTypeConfigurationStatePropEnum, true); err != nil {
+func (m *MetroclusterInlineLocal) validateConfigurationStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineLocalTypeConfigurationStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterLocal) validateConfigurationState(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) validateConfigurationState(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConfigurationState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConfigurationStateEnum("local"+"."+"configuration_state", "body", m.ConfigurationState); err != nil {
+	if err := m.validateConfigurationStateEnum("local"+"."+"configuration_state", "body", *m.ConfigurationState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var metroclusterLocalTypeModePropEnum []interface{}
+var metroclusterInlineLocalTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1034,116 +1162,116 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterLocalTypeModePropEnum = append(metroclusterLocalTypeModePropEnum, v)
+		metroclusterInlineLocalTypeModePropEnum = append(metroclusterInlineLocalTypeModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// normal
 	// END DEBUGGING
-	// MetroclusterLocalModeNormal captures enum value "normal"
-	MetroclusterLocalModeNormal string = "normal"
+	// MetroclusterInlineLocalModeNormal captures enum value "normal"
+	MetroclusterInlineLocalModeNormal string = "normal"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// not_configured
 	// END DEBUGGING
-	// MetroclusterLocalModeNotConfigured captures enum value "not_configured"
-	MetroclusterLocalModeNotConfigured string = "not_configured"
+	// MetroclusterInlineLocalModeNotConfigured captures enum value "not_configured"
+	MetroclusterInlineLocalModeNotConfigured string = "not_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// not_reachable
 	// END DEBUGGING
-	// MetroclusterLocalModeNotReachable captures enum value "not_reachable"
-	MetroclusterLocalModeNotReachable string = "not_reachable"
+	// MetroclusterInlineLocalModeNotReachable captures enum value "not_reachable"
+	MetroclusterInlineLocalModeNotReachable string = "not_reachable"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// partial_switchback
 	// END DEBUGGING
-	// MetroclusterLocalModePartialSwitchback captures enum value "partial_switchback"
-	MetroclusterLocalModePartialSwitchback string = "partial_switchback"
+	// MetroclusterInlineLocalModePartialSwitchback captures enum value "partial_switchback"
+	MetroclusterInlineLocalModePartialSwitchback string = "partial_switchback"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// partial_switchover
 	// END DEBUGGING
-	// MetroclusterLocalModePartialSwitchover captures enum value "partial_switchover"
-	MetroclusterLocalModePartialSwitchover string = "partial_switchover"
+	// MetroclusterInlineLocalModePartialSwitchover captures enum value "partial_switchover"
+	MetroclusterInlineLocalModePartialSwitchover string = "partial_switchover"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// switchover
 	// END DEBUGGING
-	// MetroclusterLocalModeSwitchover captures enum value "switchover"
-	MetroclusterLocalModeSwitchover string = "switchover"
+	// MetroclusterInlineLocalModeSwitchover captures enum value "switchover"
+	MetroclusterInlineLocalModeSwitchover string = "switchover"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// unknown
 	// END DEBUGGING
-	// MetroclusterLocalModeUnknown captures enum value "unknown"
-	MetroclusterLocalModeUnknown string = "unknown"
+	// MetroclusterInlineLocalModeUnknown captures enum value "unknown"
+	MetroclusterInlineLocalModeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// MetroclusterLocal
-	// MetroclusterLocal
+	// metrocluster_inline_local
+	// MetroclusterInlineLocal
 	// mode
 	// Mode
 	// waiting_for_switchback
 	// END DEBUGGING
-	// MetroclusterLocalModeWaitingForSwitchback captures enum value "waiting_for_switchback"
-	MetroclusterLocalModeWaitingForSwitchback string = "waiting_for_switchback"
+	// MetroclusterInlineLocalModeWaitingForSwitchback captures enum value "waiting_for_switchback"
+	MetroclusterInlineLocalModeWaitingForSwitchback string = "waiting_for_switchback"
 )
 
 // prop value enum
-func (m *MetroclusterLocal) validateModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterLocalTypeModePropEnum, true); err != nil {
+func (m *MetroclusterInlineLocal) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineLocalTypeModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterLocal) validateMode(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) validateMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModeEnum("local"+"."+"mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("local"+"."+"mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster local based on the context it is used
-func (m *MetroclusterLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline local based on the context it is used
+func (m *MetroclusterInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCluster(ctx, formats); err != nil {
@@ -1172,7 +1300,7 @@ func (m *MetroclusterLocal) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *MetroclusterLocal) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cluster != nil {
 		if err := m.Cluster.ContextValidate(ctx, formats); err != nil {
@@ -1186,25 +1314,25 @@ func (m *MetroclusterLocal) contextValidateCluster(ctx context.Context, formats 
 	return nil
 }
 
-func (m *MetroclusterLocal) contextValidateConfigurationState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) contextValidateConfigurationState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "local"+"."+"configuration_state", "body", string(m.ConfigurationState)); err != nil {
+	if err := validate.ReadOnly(ctx, "local"+"."+"configuration_state", "body", m.ConfigurationState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterLocal) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "local"+"."+"mode", "body", string(m.Mode)); err != nil {
+	if err := validate.ReadOnly(ctx, "local"+"."+"mode", "body", m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterLocal) contextValidatePartnerClusterReachable(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) contextValidatePartnerClusterReachable(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "local"+"."+"partner_cluster_reachable", "body", m.PartnerClusterReachable); err != nil {
 		return err
@@ -1213,7 +1341,7 @@ func (m *MetroclusterLocal) contextValidatePartnerClusterReachable(ctx context.C
 	return nil
 }
 
-func (m *MetroclusterLocal) contextValidatePeriodicCheckEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocal) contextValidatePeriodicCheckEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "local"+"."+"periodic_check_enabled", "body", m.PeriodicCheckEnabled); err != nil {
 		return err
@@ -1223,7 +1351,7 @@ func (m *MetroclusterLocal) contextValidatePeriodicCheckEnabled(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterLocal) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1231,8 +1359,8 @@ func (m *MetroclusterLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterLocal) UnmarshalBinary(b []byte) error {
-	var res MetroclusterLocal
+func (m *MetroclusterInlineLocal) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1240,26 +1368,26 @@ func (m *MetroclusterLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterLocalCluster metrocluster local cluster
+// MetroclusterInlineLocalInlineCluster metrocluster inline local inline cluster
 //
-// swagger:model MetroclusterLocalCluster
-type MetroclusterLocalCluster struct {
+// swagger:model metrocluster_inline_local_inline_cluster
+type MetroclusterInlineLocalInlineCluster struct {
 
 	// links
-	Links *MetroclusterLocalClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineLocalInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster local cluster
-func (m *MetroclusterLocalCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline local inline cluster
+func (m *MetroclusterInlineLocalInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1276,7 +1404,7 @@ func (m *MetroclusterLocalCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterLocalCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocalInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1293,7 +1421,7 @@ func (m *MetroclusterLocalCluster) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MetroclusterLocalCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocalInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -1305,8 +1433,8 @@ func (m *MetroclusterLocalCluster) validateUUID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster local cluster based on the context it is used
-func (m *MetroclusterLocalCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline local inline cluster based on the context it is used
+func (m *MetroclusterInlineLocalInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1319,7 +1447,7 @@ func (m *MetroclusterLocalCluster) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *MetroclusterLocalCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocalInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1334,7 +1462,7 @@ func (m *MetroclusterLocalCluster) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterLocalCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineLocalInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1342,8 +1470,8 @@ func (m *MetroclusterLocalCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterLocalCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterLocalCluster
+func (m *MetroclusterInlineLocalInlineCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineLocalInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1351,17 +1479,17 @@ func (m *MetroclusterLocalCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterLocalClusterLinks metrocluster local cluster links
+// MetroclusterInlineLocalInlineClusterInlineLinks metrocluster inline local inline cluster inline links
 //
-// swagger:model MetroclusterLocalClusterLinks
-type MetroclusterLocalClusterLinks struct {
+// swagger:model metrocluster_inline_local_inline_cluster_inline__links
+type MetroclusterInlineLocalInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster local cluster links
-func (m *MetroclusterLocalClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline local inline cluster inline links
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1374,7 +1502,7 @@ func (m *MetroclusterLocalClusterLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MetroclusterLocalClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1391,8 +1519,8 @@ func (m *MetroclusterLocalClusterLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this metrocluster local cluster links based on the context it is used
-func (m *MetroclusterLocalClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline local inline cluster inline links based on the context it is used
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1405,7 +1533,7 @@ func (m *MetroclusterLocalClusterLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterLocalClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1420,7 +1548,7 @@ func (m *MetroclusterLocalClusterLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterLocalClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1428,8 +1556,8 @@ func (m *MetroclusterLocalClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterLocalClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterLocalClusterLinks
+func (m *MetroclusterInlineLocalInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineLocalInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1437,34 +1565,34 @@ func (m *MetroclusterLocalClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMccipPortsItems0 Port configuration specification.
+// MetroclusterInlineMccipPortsInlineArrayItem Port configuration specification.
 // l3_config information is only needed when configuring a MetroCluster IP for use in a layer 3 network.
 //
-// swagger:model MetroclusterMccipPortsItems0
-type MetroclusterMccipPortsItems0 struct {
+// swagger:model metrocluster_inline_mccip_ports_inline_array_item
+type MetroclusterInlineMccipPortsInlineArrayItem struct {
 
 	// l3 config
-	L3Config *MetroclusterMccipPortsItems0L3Config `json:"l3_config,omitempty"`
+	L3Config *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config `json:"l3_config,omitempty"`
 
 	// Port name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *MetroclusterMccipPortsItems0Node `json:"node,omitempty"`
+	Node *MetroclusterInlineMccipPortsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Port UUID
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
 	// Minimum: 10
-	VlanID int64 `json:"vlan_id,omitempty"`
+	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
-// Validate validates this metrocluster mccip ports items0
-func (m *MetroclusterMccipPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mccip ports inline array item
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateL3Config(formats); err != nil {
@@ -1485,7 +1613,7 @@ func (m *MetroclusterMccipPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0) validateL3Config(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) validateL3Config(formats strfmt.Registry) error {
 	if swag.IsZero(m.L3Config) { // not required
 		return nil
 	}
@@ -1502,7 +1630,7 @@ func (m *MetroclusterMccipPortsItems0) validateL3Config(formats strfmt.Registry)
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0) validateNode(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1519,24 +1647,24 @@ func (m *MetroclusterMccipPortsItems0) validateNode(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0) validateVlanID(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) validateVlanID(formats strfmt.Registry) error {
 	if swag.IsZero(m.VlanID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("vlan_id", "body", m.VlanID, 4095, false); err != nil {
+	if err := validate.MaximumInt("vlan_id", "body", *m.VlanID, 4095, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster mccip ports items0 based on the context it is used
-func (m *MetroclusterMccipPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mccip ports inline array item based on the context it is used
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateL3Config(ctx, formats); err != nil {
@@ -1553,7 +1681,7 @@ func (m *MetroclusterMccipPortsItems0) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0) contextValidateL3Config(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) contextValidateL3Config(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.L3Config != nil {
 		if err := m.L3Config.ContextValidate(ctx, formats); err != nil {
@@ -1567,7 +1695,7 @@ func (m *MetroclusterMccipPortsItems0) contextValidateL3Config(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1582,7 +1710,7 @@ func (m *MetroclusterMccipPortsItems0) contextValidateNode(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1590,8 +1718,8 @@ func (m *MetroclusterMccipPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMccipPortsItems0
+func (m *MetroclusterInlineMccipPortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMccipPortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1599,17 +1727,17 @@ func (m *MetroclusterMccipPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMccipPortsItems0L3Config metrocluster mccip ports items0 l3 config
+// MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config metrocluster inline mccip ports inline array item inline l3 config
 //
-// swagger:model MetroclusterMccipPortsItems0L3Config
-type MetroclusterMccipPortsItems0L3Config struct {
+// swagger:model metrocluster_inline_mccip_ports_inline_array_item_inline_l3_config
+type MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config struct {
 
 	// ipv4 interface
-	IPV4Interface *MetroclusterMccipPortsItems0L3ConfigIPV4Interface `json:"ipv4_interface,omitempty"`
+	IPV4Interface *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface `json:"ipv4_interface,omitempty"`
 }
 
-// Validate validates this metrocluster mccip ports items0 l3 config
-func (m *MetroclusterMccipPortsItems0L3Config) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mccip ports inline array item inline l3 config
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIPV4Interface(formats); err != nil {
@@ -1622,7 +1750,7 @@ func (m *MetroclusterMccipPortsItems0L3Config) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0L3Config) validateIPV4Interface(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) validateIPV4Interface(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPV4Interface) { // not required
 		return nil
 	}
@@ -1639,8 +1767,8 @@ func (m *MetroclusterMccipPortsItems0L3Config) validateIPV4Interface(formats str
 	return nil
 }
 
-// ContextValidate validate this metrocluster mccip ports items0 l3 config based on the context it is used
-func (m *MetroclusterMccipPortsItems0L3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mccip ports inline array item inline l3 config based on the context it is used
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIPV4Interface(ctx, formats); err != nil {
@@ -1653,7 +1781,7 @@ func (m *MetroclusterMccipPortsItems0L3Config) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0L3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IPV4Interface != nil {
 		if err := m.IPV4Interface.ContextValidate(ctx, formats); err != nil {
@@ -1668,7 +1796,7 @@ func (m *MetroclusterMccipPortsItems0L3Config) contextValidateIPV4Interface(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0L3Config) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1676,8 +1804,8 @@ func (m *MetroclusterMccipPortsItems0L3Config) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0L3Config) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMccipPortsItems0L3Config
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMccipPortsInlineArrayItemInlineL3Config
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1685,25 +1813,25 @@ func (m *MetroclusterMccipPortsItems0L3Config) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMccipPortsItems0L3ConfigIPV4Interface Object to setup an interface along with its default router.
+// MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface Object to setup an interface along with its default router.
 //
-// swagger:model MetroclusterMccipPortsItems0L3ConfigIPV4Interface
-type MetroclusterMccipPortsItems0L3ConfigIPV4Interface struct {
+// swagger:model metrocluster_inline_mccip_ports_inline_array_item_inline_l3_config_inline_ipv4_interface
+type MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this metrocluster mccip ports items0 l3 config IP v4 interface
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mccip ports inline array item inline l3 config inline ipv4 interface
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNetmask(formats); err != nil {
@@ -1716,23 +1844,25 @@ func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) Validate(formats str
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) validateNetmask(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster mccip ports items0 l3 config IP v4 interface based on the context it is used
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mccip ports inline array item inline l3 config inline ipv4 interface based on the context it is used
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNetmask(ctx, formats); err != nil {
@@ -1745,20 +1875,22 @@ func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) ContextValidate(ctx 
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1766,8 +1898,8 @@ func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMccipPortsItems0L3ConfigIPV4Interface
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMccipPortsInlineArrayItemInlineL3ConfigInlineIPV4Interface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1775,25 +1907,25 @@ func (m *MetroclusterMccipPortsItems0L3ConfigIPV4Interface) UnmarshalBinary(b []
 	return nil
 }
 
-// MetroclusterMccipPortsItems0Node Node information
+// MetroclusterInlineMccipPortsInlineArrayItemInlineNode Node information
 //
-// swagger:model MetroclusterMccipPortsItems0Node
-type MetroclusterMccipPortsItems0Node struct {
+// swagger:model metrocluster_inline_mccip_ports_inline_array_item_inline_node
+type MetroclusterInlineMccipPortsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *MetroclusterMccipPortsItems0NodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster mccip ports items0 node
-func (m *MetroclusterMccipPortsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mccip ports inline array item inline node
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1806,7 +1938,7 @@ func (m *MetroclusterMccipPortsItems0Node) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1823,8 +1955,8 @@ func (m *MetroclusterMccipPortsItems0Node) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this metrocluster mccip ports items0 node based on the context it is used
-func (m *MetroclusterMccipPortsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mccip ports inline array item inline node based on the context it is used
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1837,7 +1969,7 @@ func (m *MetroclusterMccipPortsItems0Node) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1852,7 +1984,7 @@ func (m *MetroclusterMccipPortsItems0Node) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1860,8 +1992,8 @@ func (m *MetroclusterMccipPortsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0Node) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMccipPortsItems0Node
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMccipPortsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1869,17 +2001,17 @@ func (m *MetroclusterMccipPortsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMccipPortsItems0NodeLinks metrocluster mccip ports items0 node links
+// MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks metrocluster inline mccip ports inline array item inline node inline links
 //
-// swagger:model MetroclusterMccipPortsItems0NodeLinks
-type MetroclusterMccipPortsItems0NodeLinks struct {
+// swagger:model metrocluster_inline_mccip_ports_inline_array_item_inline_node_inline__links
+type MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster mccip ports items0 node links
-func (m *MetroclusterMccipPortsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mccip ports inline array item inline node inline links
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1892,7 +2024,7 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1909,8 +2041,8 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this metrocluster mccip ports items0 node links based on the context it is used
-func (m *MetroclusterMccipPortsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mccip ports inline array item inline node inline links based on the context it is used
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1923,7 +2055,7 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *MetroclusterMccipPortsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1938,7 +2070,7 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1946,8 +2078,8 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMccipPortsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMccipPortsItems0NodeLinks
+func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1955,33 +2087,33 @@ func (m *MetroclusterMccipPortsItems0NodeLinks) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// MetroclusterMediator Mediator information
+// MetroclusterInlineMediator Mediator information
 //
-// swagger:model MetroclusterMediator
-type MetroclusterMediator struct {
+// swagger:model metrocluster_inline_mediator
+type MetroclusterInlineMediator struct {
 
 	// CA certificate for ONTAP Mediator. This is optional if the certificate is already installed.
-	CaCertificate string `json:"ca_certificate,omitempty"`
+	CaCertificate *string `json:"ca_certificate,omitempty"`
 
 	// dr group
-	DrGroup *MetroclusterMediatorDrGroup `json:"dr_group,omitempty"`
+	DrGroup *MetroclusterInlineMediatorInlineDrGroup `json:"dr_group,omitempty"`
 
 	// The IP address of the mediator.
 	// Example: 10.10.10.7
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// The password used to connect to the REST server on the mediator.
 	// Example: mypassword
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// peer cluster
-	PeerCluster *MetroclusterMediatorPeerCluster `json:"peer_cluster,omitempty"`
+	PeerCluster *MetroclusterInlineMediatorInlinePeerCluster `json:"peer_cluster,omitempty"`
 
 	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
 	// Example: connected
 	// Read Only: true
-	PeerMediatorConnectivity string `json:"peer_mediator_connectivity,omitempty"`
+	PeerMediatorConnectivity *string `json:"peer_mediator_connectivity,omitempty"`
 
 	// The REST server's port number on the mediator.
 	// Example: 31784
@@ -1994,15 +2126,15 @@ type MetroclusterMediator struct {
 
 	// The username used to connect to the REST server on the mediator.
 	// Example: myusername
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 
 	// The unique identifier for the mediator service.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster mediator
-func (m *MetroclusterMediator) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mediator
+func (m *MetroclusterInlineMediator) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDrGroup(formats); err != nil {
@@ -2023,7 +2155,7 @@ func (m *MetroclusterMediator) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterMediator) validateDrGroup(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) validateDrGroup(formats strfmt.Registry) error {
 	if swag.IsZero(m.DrGroup) { // not required
 		return nil
 	}
@@ -2040,7 +2172,7 @@ func (m *MetroclusterMediator) validateDrGroup(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterMediator) validatePassword(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
@@ -2052,7 +2184,7 @@ func (m *MetroclusterMediator) validatePassword(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterMediator) validatePeerCluster(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) validatePeerCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.PeerCluster) { // not required
 		return nil
 	}
@@ -2069,8 +2201,8 @@ func (m *MetroclusterMediator) validatePeerCluster(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this metrocluster mediator based on the context it is used
-func (m *MetroclusterMediator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mediator based on the context it is used
+func (m *MetroclusterInlineMediator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDrGroup(ctx, formats); err != nil {
@@ -2099,7 +2231,7 @@ func (m *MetroclusterMediator) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *MetroclusterMediator) contextValidateDrGroup(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) contextValidateDrGroup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.DrGroup != nil {
 		if err := m.DrGroup.ContextValidate(ctx, formats); err != nil {
@@ -2113,7 +2245,7 @@ func (m *MetroclusterMediator) contextValidateDrGroup(ctx context.Context, forma
 	return nil
 }
 
-func (m *MetroclusterMediator) contextValidatePeerCluster(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) contextValidatePeerCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.PeerCluster != nil {
 		if err := m.PeerCluster.ContextValidate(ctx, formats); err != nil {
@@ -2127,16 +2259,16 @@ func (m *MetroclusterMediator) contextValidatePeerCluster(ctx context.Context, f
 	return nil
 }
 
-func (m *MetroclusterMediator) contextValidatePeerMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) contextValidatePeerMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mediator"+"."+"peer_mediator_connectivity", "body", string(m.PeerMediatorConnectivity)); err != nil {
+	if err := validate.ReadOnly(ctx, "mediator"+"."+"peer_mediator_connectivity", "body", m.PeerMediatorConnectivity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterMediator) contextValidateReachable(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) contextValidateReachable(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "mediator"+"."+"reachable", "body", m.Reachable); err != nil {
 		return err
@@ -2145,9 +2277,9 @@ func (m *MetroclusterMediator) contextValidateReachable(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterMediator) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediator) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mediator"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "mediator"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -2155,7 +2287,7 @@ func (m *MetroclusterMediator) contextValidateUUID(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMediator) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMediator) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2163,8 +2295,8 @@ func (m *MetroclusterMediator) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMediator) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMediator
+func (m *MetroclusterInlineMediator) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMediator
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2172,23 +2304,23 @@ func (m *MetroclusterMediator) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMediatorDrGroup DR group reference.
+// MetroclusterInlineMediatorInlineDrGroup DR group reference.
 //
-// swagger:model MetroclusterMediatorDrGroup
-type MetroclusterMediatorDrGroup struct {
+// swagger:model metrocluster_inline_mediator_inline_dr_group
+type MetroclusterInlineMediatorInlineDrGroup struct {
 
 	// DR Group ID
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
-// Validate validates this metrocluster mediator dr group
-func (m *MetroclusterMediatorDrGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mediator inline dr group
+func (m *MetroclusterInlineMediatorInlineDrGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster mediator dr group based on the context it is used
-func (m *MetroclusterMediatorDrGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mediator inline dr group based on the context it is used
+func (m *MetroclusterInlineMediatorInlineDrGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateID(ctx, formats); err != nil {
@@ -2201,9 +2333,9 @@ func (m *MetroclusterMediatorDrGroup) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *MetroclusterMediatorDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediatorInlineDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mediator"+"."+"dr_group"+"."+"id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "mediator"+"."+"dr_group"+"."+"id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -2211,7 +2343,7 @@ func (m *MetroclusterMediatorDrGroup) contextValidateID(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMediatorDrGroup) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMediatorInlineDrGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2219,8 +2351,8 @@ func (m *MetroclusterMediatorDrGroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMediatorDrGroup) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMediatorDrGroup
+func (m *MetroclusterInlineMediatorInlineDrGroup) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMediatorInlineDrGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2228,25 +2360,25 @@ func (m *MetroclusterMediatorDrGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMediatorPeerCluster The peer cluster that the mediator service is used for.
+// MetroclusterInlineMediatorInlinePeerCluster The peer cluster that the mediator service is used for.
 //
-// swagger:model MetroclusterMediatorPeerCluster
-type MetroclusterMediatorPeerCluster struct {
+// swagger:model metrocluster_inline_mediator_inline_peer_cluster
+type MetroclusterInlineMediatorInlinePeerCluster struct {
 
 	// links
-	Links *MetroclusterMediatorPeerClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineMediatorInlinePeerClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster2
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: ebe27c49-1adf-4496-8335-ab862aebebf2
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster mediator peer cluster
-func (m *MetroclusterMediatorPeerCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mediator inline peer cluster
+func (m *MetroclusterInlineMediatorInlinePeerCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2259,7 +2391,7 @@ func (m *MetroclusterMediatorPeerCluster) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *MetroclusterMediatorPeerCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediatorInlinePeerCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2276,8 +2408,8 @@ func (m *MetroclusterMediatorPeerCluster) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this metrocluster mediator peer cluster based on the context it is used
-func (m *MetroclusterMediatorPeerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mediator inline peer cluster based on the context it is used
+func (m *MetroclusterInlineMediatorInlinePeerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2290,7 +2422,7 @@ func (m *MetroclusterMediatorPeerCluster) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *MetroclusterMediatorPeerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediatorInlinePeerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2305,7 +2437,7 @@ func (m *MetroclusterMediatorPeerCluster) contextValidateLinks(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMediatorPeerCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMediatorInlinePeerCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2313,8 +2445,8 @@ func (m *MetroclusterMediatorPeerCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMediatorPeerCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMediatorPeerCluster
+func (m *MetroclusterInlineMediatorInlinePeerCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMediatorInlinePeerCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2322,17 +2454,17 @@ func (m *MetroclusterMediatorPeerCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterMediatorPeerClusterLinks metrocluster mediator peer cluster links
+// MetroclusterInlineMediatorInlinePeerClusterInlineLinks metrocluster inline mediator inline peer cluster inline links
 //
-// swagger:model MetroclusterMediatorPeerClusterLinks
-type MetroclusterMediatorPeerClusterLinks struct {
+// swagger:model metrocluster_inline_mediator_inline_peer_cluster_inline__links
+type MetroclusterInlineMediatorInlinePeerClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster mediator peer cluster links
-func (m *MetroclusterMediatorPeerClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline mediator inline peer cluster inline links
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2345,7 +2477,7 @@ func (m *MetroclusterMediatorPeerClusterLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *MetroclusterMediatorPeerClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2362,8 +2494,8 @@ func (m *MetroclusterMediatorPeerClusterLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this metrocluster mediator peer cluster links based on the context it is used
-func (m *MetroclusterMediatorPeerClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline mediator inline peer cluster inline links based on the context it is used
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2376,7 +2508,7 @@ func (m *MetroclusterMediatorPeerClusterLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterMediatorPeerClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2391,7 +2523,7 @@ func (m *MetroclusterMediatorPeerClusterLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterMediatorPeerClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2399,8 +2531,8 @@ func (m *MetroclusterMediatorPeerClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterMediatorPeerClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterMediatorPeerClusterLinks
+func (m *MetroclusterInlineMediatorInlinePeerClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineMediatorInlinePeerClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2408,26 +2540,26 @@ func (m *MetroclusterMediatorPeerClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterPartnerCluster Partner cluster information.
+// MetroclusterInlinePartnerCluster Partner cluster information.
 //
-// swagger:model MetroclusterPartnerCluster
-type MetroclusterPartnerCluster struct {
+// swagger:model metrocluster_inline_partner_cluster
+type MetroclusterInlinePartnerCluster struct {
 
 	// links
-	Links *MetroclusterPartnerClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlinePartnerClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster partner cluster
-func (m *MetroclusterPartnerCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline partner cluster
+func (m *MetroclusterInlinePartnerCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2444,7 +2576,7 @@ func (m *MetroclusterPartnerCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterPartnerCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlinePartnerCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2461,7 +2593,7 @@ func (m *MetroclusterPartnerCluster) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *MetroclusterPartnerCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterInlinePartnerCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -2473,8 +2605,8 @@ func (m *MetroclusterPartnerCluster) validateUUID(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this metrocluster partner cluster based on the context it is used
-func (m *MetroclusterPartnerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline partner cluster based on the context it is used
+func (m *MetroclusterInlinePartnerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2487,7 +2619,7 @@ func (m *MetroclusterPartnerCluster) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *MetroclusterPartnerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlinePartnerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2502,7 +2634,7 @@ func (m *MetroclusterPartnerCluster) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterPartnerCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlinePartnerCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2510,8 +2642,8 @@ func (m *MetroclusterPartnerCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterPartnerCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterPartnerCluster
+func (m *MetroclusterInlinePartnerCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlinePartnerCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2519,17 +2651,17 @@ func (m *MetroclusterPartnerCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterPartnerClusterLinks metrocluster partner cluster links
+// MetroclusterInlinePartnerClusterInlineLinks metrocluster inline partner cluster inline links
 //
-// swagger:model MetroclusterPartnerClusterLinks
-type MetroclusterPartnerClusterLinks struct {
+// swagger:model metrocluster_inline_partner_cluster_inline__links
+type MetroclusterInlinePartnerClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster partner cluster links
-func (m *MetroclusterPartnerClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline partner cluster inline links
+func (m *MetroclusterInlinePartnerClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2542,7 +2674,7 @@ func (m *MetroclusterPartnerClusterLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *MetroclusterPartnerClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlinePartnerClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2559,8 +2691,8 @@ func (m *MetroclusterPartnerClusterLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this metrocluster partner cluster links based on the context it is used
-func (m *MetroclusterPartnerClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline partner cluster inline links based on the context it is used
+func (m *MetroclusterInlinePartnerClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2573,7 +2705,7 @@ func (m *MetroclusterPartnerClusterLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *MetroclusterPartnerClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlinePartnerClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2588,7 +2720,7 @@ func (m *MetroclusterPartnerClusterLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterPartnerClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlinePartnerClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2596,8 +2728,8 @@ func (m *MetroclusterPartnerClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterPartnerClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterPartnerClusterLinks
+func (m *MetroclusterInlinePartnerClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlinePartnerClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2605,31 +2737,31 @@ func (m *MetroclusterPartnerClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterRemote metrocluster remote
+// MetroclusterInlineRemote metrocluster inline remote
 //
-// swagger:model MetroclusterRemote
-type MetroclusterRemote struct {
+// swagger:model metrocluster_inline_remote
+type MetroclusterInlineRemote struct {
 
 	// cluster
-	Cluster *MetroclusterRemoteCluster `json:"cluster,omitempty"`
+	Cluster *MetroclusterInlineRemoteInlineCluster `json:"cluster,omitempty"`
 
 	// Indicates the state of the remote cluster configuration.
 	// Read Only: true
 	// Enum: [configuration_error configured not_configured not_reachable partially_configured unknown]
-	ConfigurationState string `json:"configuration_state,omitempty"`
+	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// Specifies the mode of operation of the remote cluster.
 	// Read Only: true
 	// Enum: [normal not_configured not_reachable partial_switchback partial_switchover switchover unknown waiting_for_switchback]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Indicates whether or not a periodic check is enabled on the remote cluster.
 	// Read Only: true
 	PeriodicCheckEnabled *bool `json:"periodic_check_enabled,omitempty"`
 }
 
-// Validate validates this metrocluster remote
-func (m *MetroclusterRemote) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline remote
+func (m *MetroclusterInlineRemote) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCluster(formats); err != nil {
@@ -2650,7 +2782,7 @@ func (m *MetroclusterRemote) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterRemote) validateCluster(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) validateCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cluster) { // not required
 		return nil
 	}
@@ -2667,7 +2799,7 @@ func (m *MetroclusterRemote) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
-var metroclusterRemoteTypeConfigurationStatePropEnum []interface{}
+var metroclusterInlineRemoteTypeConfigurationStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2675,95 +2807,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterRemoteTypeConfigurationStatePropEnum = append(metroclusterRemoteTypeConfigurationStatePropEnum, v)
+		metroclusterInlineRemoteTypeConfigurationStatePropEnum = append(metroclusterInlineRemoteTypeConfigurationStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// configuration_error
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStateConfigurationError captures enum value "configuration_error"
-	MetroclusterRemoteConfigurationStateConfigurationError string = "configuration_error"
+	// MetroclusterInlineRemoteConfigurationStateConfigurationError captures enum value "configuration_error"
+	MetroclusterInlineRemoteConfigurationStateConfigurationError string = "configuration_error"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// configured
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStateConfigured captures enum value "configured"
-	MetroclusterRemoteConfigurationStateConfigured string = "configured"
+	// MetroclusterInlineRemoteConfigurationStateConfigured captures enum value "configured"
+	MetroclusterInlineRemoteConfigurationStateConfigured string = "configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// not_configured
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStateNotConfigured captures enum value "not_configured"
-	MetroclusterRemoteConfigurationStateNotConfigured string = "not_configured"
+	// MetroclusterInlineRemoteConfigurationStateNotConfigured captures enum value "not_configured"
+	MetroclusterInlineRemoteConfigurationStateNotConfigured string = "not_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// not_reachable
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStateNotReachable captures enum value "not_reachable"
-	MetroclusterRemoteConfigurationStateNotReachable string = "not_reachable"
+	// MetroclusterInlineRemoteConfigurationStateNotReachable captures enum value "not_reachable"
+	MetroclusterInlineRemoteConfigurationStateNotReachable string = "not_reachable"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// partially_configured
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStatePartiallyConfigured captures enum value "partially_configured"
-	MetroclusterRemoteConfigurationStatePartiallyConfigured string = "partially_configured"
+	// MetroclusterInlineRemoteConfigurationStatePartiallyConfigured captures enum value "partially_configured"
+	MetroclusterInlineRemoteConfigurationStatePartiallyConfigured string = "partially_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// configuration_state
 	// ConfigurationState
 	// unknown
 	// END DEBUGGING
-	// MetroclusterRemoteConfigurationStateUnknown captures enum value "unknown"
-	MetroclusterRemoteConfigurationStateUnknown string = "unknown"
+	// MetroclusterInlineRemoteConfigurationStateUnknown captures enum value "unknown"
+	MetroclusterInlineRemoteConfigurationStateUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *MetroclusterRemote) validateConfigurationStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterRemoteTypeConfigurationStatePropEnum, true); err != nil {
+func (m *MetroclusterInlineRemote) validateConfigurationStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineRemoteTypeConfigurationStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterRemote) validateConfigurationState(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) validateConfigurationState(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConfigurationState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConfigurationStateEnum("remote"+"."+"configuration_state", "body", m.ConfigurationState); err != nil {
+	if err := m.validateConfigurationStateEnum("remote"+"."+"configuration_state", "body", *m.ConfigurationState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var metroclusterRemoteTypeModePropEnum []interface{}
+var metroclusterInlineRemoteTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2771,116 +2903,116 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterRemoteTypeModePropEnum = append(metroclusterRemoteTypeModePropEnum, v)
+		metroclusterInlineRemoteTypeModePropEnum = append(metroclusterInlineRemoteTypeModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// normal
 	// END DEBUGGING
-	// MetroclusterRemoteModeNormal captures enum value "normal"
-	MetroclusterRemoteModeNormal string = "normal"
+	// MetroclusterInlineRemoteModeNormal captures enum value "normal"
+	MetroclusterInlineRemoteModeNormal string = "normal"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// not_configured
 	// END DEBUGGING
-	// MetroclusterRemoteModeNotConfigured captures enum value "not_configured"
-	MetroclusterRemoteModeNotConfigured string = "not_configured"
+	// MetroclusterInlineRemoteModeNotConfigured captures enum value "not_configured"
+	MetroclusterInlineRemoteModeNotConfigured string = "not_configured"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// not_reachable
 	// END DEBUGGING
-	// MetroclusterRemoteModeNotReachable captures enum value "not_reachable"
-	MetroclusterRemoteModeNotReachable string = "not_reachable"
+	// MetroclusterInlineRemoteModeNotReachable captures enum value "not_reachable"
+	MetroclusterInlineRemoteModeNotReachable string = "not_reachable"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// partial_switchback
 	// END DEBUGGING
-	// MetroclusterRemoteModePartialSwitchback captures enum value "partial_switchback"
-	MetroclusterRemoteModePartialSwitchback string = "partial_switchback"
+	// MetroclusterInlineRemoteModePartialSwitchback captures enum value "partial_switchback"
+	MetroclusterInlineRemoteModePartialSwitchback string = "partial_switchback"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// partial_switchover
 	// END DEBUGGING
-	// MetroclusterRemoteModePartialSwitchover captures enum value "partial_switchover"
-	MetroclusterRemoteModePartialSwitchover string = "partial_switchover"
+	// MetroclusterInlineRemoteModePartialSwitchover captures enum value "partial_switchover"
+	MetroclusterInlineRemoteModePartialSwitchover string = "partial_switchover"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// switchover
 	// END DEBUGGING
-	// MetroclusterRemoteModeSwitchover captures enum value "switchover"
-	MetroclusterRemoteModeSwitchover string = "switchover"
+	// MetroclusterInlineRemoteModeSwitchover captures enum value "switchover"
+	MetroclusterInlineRemoteModeSwitchover string = "switchover"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// unknown
 	// END DEBUGGING
-	// MetroclusterRemoteModeUnknown captures enum value "unknown"
-	MetroclusterRemoteModeUnknown string = "unknown"
+	// MetroclusterInlineRemoteModeUnknown captures enum value "unknown"
+	MetroclusterInlineRemoteModeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// MetroclusterRemote
-	// MetroclusterRemote
+	// metrocluster_inline_remote
+	// MetroclusterInlineRemote
 	// mode
 	// Mode
 	// waiting_for_switchback
 	// END DEBUGGING
-	// MetroclusterRemoteModeWaitingForSwitchback captures enum value "waiting_for_switchback"
-	MetroclusterRemoteModeWaitingForSwitchback string = "waiting_for_switchback"
+	// MetroclusterInlineRemoteModeWaitingForSwitchback captures enum value "waiting_for_switchback"
+	MetroclusterInlineRemoteModeWaitingForSwitchback string = "waiting_for_switchback"
 )
 
 // prop value enum
-func (m *MetroclusterRemote) validateModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterRemoteTypeModePropEnum, true); err != nil {
+func (m *MetroclusterInlineRemote) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineRemoteTypeModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterRemote) validateMode(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) validateMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModeEnum("remote"+"."+"mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("remote"+"."+"mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster remote based on the context it is used
-func (m *MetroclusterRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline remote based on the context it is used
+func (m *MetroclusterInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCluster(ctx, formats); err != nil {
@@ -2905,7 +3037,7 @@ func (m *MetroclusterRemote) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *MetroclusterRemote) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cluster != nil {
 		if err := m.Cluster.ContextValidate(ctx, formats); err != nil {
@@ -2919,25 +3051,25 @@ func (m *MetroclusterRemote) contextValidateCluster(ctx context.Context, formats
 	return nil
 }
 
-func (m *MetroclusterRemote) contextValidateConfigurationState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) contextValidateConfigurationState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote"+"."+"configuration_state", "body", string(m.ConfigurationState)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote"+"."+"configuration_state", "body", m.ConfigurationState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterRemote) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote"+"."+"mode", "body", string(m.Mode)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote"+"."+"mode", "body", m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterRemote) contextValidatePeriodicCheckEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemote) contextValidatePeriodicCheckEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "remote"+"."+"periodic_check_enabled", "body", m.PeriodicCheckEnabled); err != nil {
 		return err
@@ -2947,7 +3079,7 @@ func (m *MetroclusterRemote) contextValidatePeriodicCheckEnabled(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterRemote) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineRemote) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2955,8 +3087,8 @@ func (m *MetroclusterRemote) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterRemote) UnmarshalBinary(b []byte) error {
-	var res MetroclusterRemote
+func (m *MetroclusterInlineRemote) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2964,26 +3096,26 @@ func (m *MetroclusterRemote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterRemoteCluster metrocluster remote cluster
+// MetroclusterInlineRemoteInlineCluster metrocluster inline remote inline cluster
 //
-// swagger:model MetroclusterRemoteCluster
-type MetroclusterRemoteCluster struct {
+// swagger:model metrocluster_inline_remote_inline_cluster
+type MetroclusterInlineRemoteInlineCluster struct {
 
 	// links
-	Links *MetroclusterRemoteClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterInlineRemoteInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster remote cluster
-func (m *MetroclusterRemoteCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline remote inline cluster
+func (m *MetroclusterInlineRemoteInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3000,7 +3132,7 @@ func (m *MetroclusterRemoteCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterRemoteCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemoteInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3017,7 +3149,7 @@ func (m *MetroclusterRemoteCluster) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MetroclusterRemoteCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemoteInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -3029,8 +3161,8 @@ func (m *MetroclusterRemoteCluster) validateUUID(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this metrocluster remote cluster based on the context it is used
-func (m *MetroclusterRemoteCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline remote inline cluster based on the context it is used
+func (m *MetroclusterInlineRemoteInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3043,7 +3175,7 @@ func (m *MetroclusterRemoteCluster) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *MetroclusterRemoteCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemoteInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3058,7 +3190,7 @@ func (m *MetroclusterRemoteCluster) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterRemoteCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineRemoteInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3066,8 +3198,8 @@ func (m *MetroclusterRemoteCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterRemoteCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterRemoteCluster
+func (m *MetroclusterInlineRemoteInlineCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineRemoteInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3075,17 +3207,17 @@ func (m *MetroclusterRemoteCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterRemoteClusterLinks metrocluster remote cluster links
+// MetroclusterInlineRemoteInlineClusterInlineLinks metrocluster inline remote inline cluster inline links
 //
-// swagger:model MetroclusterRemoteClusterLinks
-type MetroclusterRemoteClusterLinks struct {
+// swagger:model metrocluster_inline_remote_inline_cluster_inline__links
+type MetroclusterInlineRemoteInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster remote cluster links
-func (m *MetroclusterRemoteClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster inline remote inline cluster inline links
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3098,7 +3230,7 @@ func (m *MetroclusterRemoteClusterLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MetroclusterRemoteClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3115,8 +3247,8 @@ func (m *MetroclusterRemoteClusterLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this metrocluster remote cluster links based on the context it is used
-func (m *MetroclusterRemoteClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster inline remote inline cluster inline links based on the context it is used
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3129,7 +3261,7 @@ func (m *MetroclusterRemoteClusterLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MetroclusterRemoteClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3144,7 +3276,7 @@ func (m *MetroclusterRemoteClusterLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterRemoteClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3152,8 +3284,8 @@ func (m *MetroclusterRemoteClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterRemoteClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterRemoteClusterLinks
+func (m *MetroclusterInlineRemoteInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInlineRemoteInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,13 +66,13 @@ type SplitLoadGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node Uuid
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SplitLoadGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the split load get params
-func (o *SplitLoadGetParams) WithFieldsQueryParameter(fields []string) *SplitLoadGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the split load get params
+func (o *SplitLoadGetParams) WithFields(fields []string) *SplitLoadGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the split load get params
-func (o *SplitLoadGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the split load get params
+func (o *SplitLoadGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the split load get params
-func (o *SplitLoadGetParams) WithNodeUUIDPathParameter(nodeUUID string) *SplitLoadGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the split load get params
+func (o *SplitLoadGetParams) WithNodeUUID(nodeUUID string) *SplitLoadGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the split load get params
-func (o *SplitLoadGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the split load get params
+func (o *SplitLoadGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SplitLoadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SplitLoadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SplitLoadGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamSplitLoadGet binds the parameter fields
 func (o *SplitLoadGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

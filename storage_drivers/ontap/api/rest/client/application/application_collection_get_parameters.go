@@ -66,37 +66,37 @@ type ApplicationCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Generation.
 
 	   Filter by generation
 	*/
-	GenerationQueryParameter *string
+	Generation *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProtectionGranularity.
 
 	   Filter by protection granularity
 	*/
-	ProtectionGranularityQueryParameter *string
+	ProtectionGranularity *string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type ApplicationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,331 +112,331 @@ type ApplicationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* RpoComponentsName.
 
 	   Filter by rpo.components.name
 	*/
-	RpoComponentsNameQueryParameter *string
+	RpoComponentsName *string
 
 	/* RpoComponentsRpoLocalDescription.
 
 	   Filter by rpo.components.rpo.local.description
 	*/
-	RpoComponentsRpoLocalDescriptionQueryParameter *string
+	RpoComponentsRpoLocalDescription *string
 
 	/* RpoComponentsRpoLocalName.
 
 	   Filter by rpo.components.rpo.local.name
 	*/
-	RpoComponentsRpoLocalNameQueryParameter *string
+	RpoComponentsRpoLocalName *string
 
 	/* RpoComponentsRpoRemoteDescription.
 
 	   Filter by rpo.components.rpo.remote.description
 	*/
-	RpoComponentsRpoRemoteDescriptionQueryParameter *string
+	RpoComponentsRpoRemoteDescription *string
 
 	/* RpoComponentsRpoRemoteName.
 
 	   Filter by rpo.components.rpo.remote.name
 	*/
-	RpoComponentsRpoRemoteNameQueryParameter *string
+	RpoComponentsRpoRemoteName *string
 
 	/* RpoComponentsUUID.
 
 	   Filter by rpo.components.uuid
 	*/
-	RpoComponentsUUIDQueryParameter *string
+	RpoComponentsUUID *string
 
 	/* RpoIsSupported.
 
 	   Filter by rpo.is_supported
 	*/
-	RpoIsSupportedQueryParameter *string
+	RpoIsSupported *string
 
 	/* RpoLocalDescription.
 
 	   Filter by rpo.local.description
 	*/
-	RpoLocalDescriptionQueryParameter *string
+	RpoLocalDescription *string
 
 	/* RpoLocalName.
 
 	   Filter by rpo.local.name
 	*/
-	RpoLocalNameQueryParameter *string
+	RpoLocalName *string
 
 	/* RpoRemoteDescription.
 
 	   Filter by rpo.remote.description
 	*/
-	RpoRemoteDescriptionQueryParameter *string
+	RpoRemoteDescription *string
 
 	/* RpoRemoteName.
 
 	   Filter by rpo.remote.name
 	*/
-	RpoRemoteNameQueryParameter *string
+	RpoRemoteName *string
 
 	/* SmartContainer.
 
 	   Filter by smart_container
 	*/
-	SmartContainerQueryParameter *string
+	SmartContainer *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatisticsComponentsIopsPerTb.
 
 	   Filter by statistics.components.iops.per_tb
 	*/
-	StatisticsComponentsIopsPerTbQueryParameter *string
+	StatisticsComponentsIopsPerTb *string
 
 	/* StatisticsComponentsIopsTotal.
 
 	   Filter by statistics.components.iops.total
 	*/
-	StatisticsComponentsIopsTotalQueryParameter *string
+	StatisticsComponentsIopsTotal *string
 
 	/* StatisticsComponentsLatencyAverage.
 
 	   Filter by statistics.components.latency.average
 	*/
-	StatisticsComponentsLatencyAverageQueryParameter *string
+	StatisticsComponentsLatencyAverage *string
 
 	/* StatisticsComponentsLatencyRaw.
 
 	   Filter by statistics.components.latency.raw
 	*/
-	StatisticsComponentsLatencyRawQueryParameter *string
+	StatisticsComponentsLatencyRaw *string
 
 	/* StatisticsComponentsName.
 
 	   Filter by statistics.components.name
 	*/
-	StatisticsComponentsNameQueryParameter *string
+	StatisticsComponentsName *string
 
 	/* StatisticsComponentsSharedStoragePool.
 
 	   Filter by statistics.components.shared_storage_pool
 	*/
-	StatisticsComponentsSharedStoragePoolQueryParameter *string
+	StatisticsComponentsSharedStoragePool *string
 
 	/* StatisticsComponentsSnapshotReserve.
 
 	   Filter by statistics.components.snapshot.reserve
 	*/
-	StatisticsComponentsSnapshotReserveQueryParameter *string
+	StatisticsComponentsSnapshotReserve *string
 
 	/* StatisticsComponentsSnapshotUsed.
 
 	   Filter by statistics.components.snapshot.used
 	*/
-	StatisticsComponentsSnapshotUsedQueryParameter *string
+	StatisticsComponentsSnapshotUsed *string
 
 	/* StatisticsComponentsSpaceAvailable.
 
 	   Filter by statistics.components.space.available
 	*/
-	StatisticsComponentsSpaceAvailableQueryParameter *string
+	StatisticsComponentsSpaceAvailable *string
 
 	/* StatisticsComponentsSpaceLogicalUsed.
 
 	   Filter by statistics.components.space.logical_used
 	*/
-	StatisticsComponentsSpaceLogicalUsedQueryParameter *string
+	StatisticsComponentsSpaceLogicalUsed *string
 
 	/* StatisticsComponentsSpaceProvisioned.
 
 	   Filter by statistics.components.space.provisioned
 	*/
-	StatisticsComponentsSpaceProvisionedQueryParameter *string
+	StatisticsComponentsSpaceProvisioned *string
 
 	/* StatisticsComponentsSpaceReservedUnused.
 
 	   Filter by statistics.components.space.reserved_unused
 	*/
-	StatisticsComponentsSpaceReservedUnusedQueryParameter *string
+	StatisticsComponentsSpaceReservedUnused *string
 
 	/* StatisticsComponentsSpaceSavings.
 
 	   Filter by statistics.components.space.savings
 	*/
-	StatisticsComponentsSpaceSavingsQueryParameter *string
+	StatisticsComponentsSpaceSavings *string
 
 	/* StatisticsComponentsSpaceUsed.
 
 	   Filter by statistics.components.space.used
 	*/
-	StatisticsComponentsSpaceUsedQueryParameter *string
+	StatisticsComponentsSpaceUsed *string
 
 	/* StatisticsComponentsSpaceUsedExcludingReserves.
 
 	   Filter by statistics.components.space.used_excluding_reserves
 	*/
-	StatisticsComponentsSpaceUsedExcludingReservesQueryParameter *string
+	StatisticsComponentsSpaceUsedExcludingReserves *string
 
 	/* StatisticsComponentsSpaceUsedPercent.
 
 	   Filter by statistics.components.space.used_percent
 	*/
-	StatisticsComponentsSpaceUsedPercentQueryParameter *string
+	StatisticsComponentsSpaceUsedPercent *string
 
 	/* StatisticsComponentsStatisticsIncomplete.
 
 	   Filter by statistics.components.statistics_incomplete
 	*/
-	StatisticsComponentsStatisticsIncompleteQueryParameter *string
+	StatisticsComponentsStatisticsIncomplete *string
 
 	/* StatisticsComponentsStorageServiceName.
 
 	   Filter by statistics.components.storage_service.name
 	*/
-	StatisticsComponentsStorageServiceNameQueryParameter *string
+	StatisticsComponentsStorageServiceName *string
 
 	/* StatisticsComponentsUUID.
 
 	   Filter by statistics.components.uuid
 	*/
-	StatisticsComponentsUUIDQueryParameter *string
+	StatisticsComponentsUUID *string
 
 	/* StatisticsIopsPerTb.
 
 	   Filter by statistics.iops.per_tb
 	*/
-	StatisticsIopsPerTbQueryParameter *string
+	StatisticsIopsPerTb *string
 
 	/* StatisticsIopsTotal.
 
 	   Filter by statistics.iops.total
 	*/
-	StatisticsIopsTotalQueryParameter *string
+	StatisticsIopsTotal *string
 
 	/* StatisticsLatencyAverage.
 
 	   Filter by statistics.latency.average
 	*/
-	StatisticsLatencyAverageQueryParameter *string
+	StatisticsLatencyAverage *string
 
 	/* StatisticsLatencyRaw.
 
 	   Filter by statistics.latency.raw
 	*/
-	StatisticsLatencyRawQueryParameter *string
+	StatisticsLatencyRaw *string
 
 	/* StatisticsSharedStoragePool.
 
 	   Filter by statistics.shared_storage_pool
 	*/
-	StatisticsSharedStoragePoolQueryParameter *string
+	StatisticsSharedStoragePool *string
 
 	/* StatisticsSnapshotReserve.
 
 	   Filter by statistics.snapshot.reserve
 	*/
-	StatisticsSnapshotReserveQueryParameter *string
+	StatisticsSnapshotReserve *string
 
 	/* StatisticsSnapshotUsed.
 
 	   Filter by statistics.snapshot.used
 	*/
-	StatisticsSnapshotUsedQueryParameter *string
+	StatisticsSnapshotUsed *string
 
 	/* StatisticsSpaceAvailable.
 
 	   Filter by statistics.space.available
 	*/
-	StatisticsSpaceAvailableQueryParameter *string
+	StatisticsSpaceAvailable *string
 
 	/* StatisticsSpaceLogicalUsed.
 
 	   Filter by statistics.space.logical_used
 	*/
-	StatisticsSpaceLogicalUsedQueryParameter *string
+	StatisticsSpaceLogicalUsed *string
 
 	/* StatisticsSpaceProvisioned.
 
 	   Filter by statistics.space.provisioned
 	*/
-	StatisticsSpaceProvisionedQueryParameter *string
+	StatisticsSpaceProvisioned *string
 
 	/* StatisticsSpaceReservedUnused.
 
 	   Filter by statistics.space.reserved_unused
 	*/
-	StatisticsSpaceReservedUnusedQueryParameter *string
+	StatisticsSpaceReservedUnused *string
 
 	/* StatisticsSpaceSavings.
 
 	   Filter by statistics.space.savings
 	*/
-	StatisticsSpaceSavingsQueryParameter *string
+	StatisticsSpaceSavings *string
 
 	/* StatisticsSpaceUsed.
 
 	   Filter by statistics.space.used
 	*/
-	StatisticsSpaceUsedQueryParameter *string
+	StatisticsSpaceUsed *string
 
 	/* StatisticsSpaceUsedExcludingReserves.
 
 	   Filter by statistics.space.used_excluding_reserves
 	*/
-	StatisticsSpaceUsedExcludingReservesQueryParameter *string
+	StatisticsSpaceUsedExcludingReserves *string
 
 	/* StatisticsSpaceUsedPercent.
 
 	   Filter by statistics.space.used_percent
 	*/
-	StatisticsSpaceUsedPercentQueryParameter *string
+	StatisticsSpaceUsedPercent *string
 
 	/* StatisticsStatisticsIncomplete.
 
 	   Filter by statistics.statistics_incomplete
 	*/
-	StatisticsStatisticsIncompleteQueryParameter *string
+	StatisticsStatisticsIncomplete *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TemplateName.
 
 	   Filter by template.name
 	*/
-	TemplateNameQueryParameter *string
+	TemplateName *string
 
 	/* TemplateProtocol.
 
 	   Filter by template.protocol
 	*/
-	TemplateProtocolQueryParameter *string
+	TemplateProtocol *string
 
 	/* TemplateVersion.
 
 	   Filter by template.version
 	*/
-	TemplateVersionQueryParameter *string
+	TemplateVersion *string
 
 	/* UUID.
 
 	   Filter by UUID
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -456,14 +456,14 @@ func (o *ApplicationCollectionGetParams) WithDefaults() *ApplicationCollectionGe
 // All values with no default are reset to their zero value.
 func (o *ApplicationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ApplicationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -505,686 +505,686 @@ func (o *ApplicationCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the application collection get params
-func (o *ApplicationCollectionGetParams) WithFieldsQueryParameter(fields []string) *ApplicationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application collection get params
+func (o *ApplicationCollectionGetParams) WithFields(fields []string) *ApplicationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application collection get params
-func (o *ApplicationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application collection get params
+func (o *ApplicationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGenerationQueryParameter adds the generation to the application collection get params
-func (o *ApplicationCollectionGetParams) WithGenerationQueryParameter(generation *string) *ApplicationCollectionGetParams {
-	o.SetGenerationQueryParameter(generation)
+// WithGeneration adds the generation to the application collection get params
+func (o *ApplicationCollectionGetParams) WithGeneration(generation *string) *ApplicationCollectionGetParams {
+	o.SetGeneration(generation)
 	return o
 }
 
-// SetGenerationQueryParameter adds the generation to the application collection get params
-func (o *ApplicationCollectionGetParams) SetGenerationQueryParameter(generation *string) {
-	o.GenerationQueryParameter = generation
+// SetGeneration adds the generation to the application collection get params
+func (o *ApplicationCollectionGetParams) SetGeneration(generation *string) {
+	o.Generation = generation
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the application collection get params
-func (o *ApplicationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ApplicationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the application collection get params
+func (o *ApplicationCollectionGetParams) WithMaxRecords(maxRecords *int64) *ApplicationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the application collection get params
-func (o *ApplicationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the application collection get params
+func (o *ApplicationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the application collection get params
-func (o *ApplicationCollectionGetParams) WithNameQueryParameter(name *string) *ApplicationCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the application collection get params
+func (o *ApplicationCollectionGetParams) WithName(name *string) *ApplicationCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the application collection get params
-func (o *ApplicationCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the application collection get params
+func (o *ApplicationCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the application collection get params
-func (o *ApplicationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ApplicationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the application collection get params
+func (o *ApplicationCollectionGetParams) WithOrderBy(orderBy []string) *ApplicationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the application collection get params
-func (o *ApplicationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the application collection get params
+func (o *ApplicationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtectionGranularityQueryParameter adds the protectionGranularity to the application collection get params
-func (o *ApplicationCollectionGetParams) WithProtectionGranularityQueryParameter(protectionGranularity *string) *ApplicationCollectionGetParams {
-	o.SetProtectionGranularityQueryParameter(protectionGranularity)
+// WithProtectionGranularity adds the protectionGranularity to the application collection get params
+func (o *ApplicationCollectionGetParams) WithProtectionGranularity(protectionGranularity *string) *ApplicationCollectionGetParams {
+	o.SetProtectionGranularity(protectionGranularity)
 	return o
 }
 
-// SetProtectionGranularityQueryParameter adds the protectionGranularity to the application collection get params
-func (o *ApplicationCollectionGetParams) SetProtectionGranularityQueryParameter(protectionGranularity *string) {
-	o.ProtectionGranularityQueryParameter = protectionGranularity
+// SetProtectionGranularity adds the protectionGranularity to the application collection get params
+func (o *ApplicationCollectionGetParams) SetProtectionGranularity(protectionGranularity *string) {
+	o.ProtectionGranularity = protectionGranularity
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the application collection get params
-func (o *ApplicationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the application collection get params
+func (o *ApplicationCollectionGetParams) WithReturnRecords(returnRecords *bool) *ApplicationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the application collection get params
-func (o *ApplicationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the application collection get params
+func (o *ApplicationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application collection get params
-func (o *ApplicationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application collection get params
+func (o *ApplicationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ApplicationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application collection get params
-func (o *ApplicationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application collection get params
+func (o *ApplicationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithRpoComponentsNameQueryParameter adds the rpoComponentsName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsNameQueryParameter(rpoComponentsName *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsNameQueryParameter(rpoComponentsName)
+// WithRpoComponentsName adds the rpoComponentsName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsName(rpoComponentsName *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsName(rpoComponentsName)
 	return o
 }
 
-// SetRpoComponentsNameQueryParameter adds the rpoComponentsName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsNameQueryParameter(rpoComponentsName *string) {
-	o.RpoComponentsNameQueryParameter = rpoComponentsName
+// SetRpoComponentsName adds the rpoComponentsName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsName(rpoComponentsName *string) {
+	o.RpoComponentsName = rpoComponentsName
 }
 
-// WithRpoComponentsRpoLocalDescriptionQueryParameter adds the rpoComponentsRpoLocalDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoLocalDescriptionQueryParameter(rpoComponentsRpoLocalDescription *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsRpoLocalDescriptionQueryParameter(rpoComponentsRpoLocalDescription)
+// WithRpoComponentsRpoLocalDescription adds the rpoComponentsRpoLocalDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoLocalDescription(rpoComponentsRpoLocalDescription *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsRpoLocalDescription(rpoComponentsRpoLocalDescription)
 	return o
 }
 
-// SetRpoComponentsRpoLocalDescriptionQueryParameter adds the rpoComponentsRpoLocalDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoLocalDescriptionQueryParameter(rpoComponentsRpoLocalDescription *string) {
-	o.RpoComponentsRpoLocalDescriptionQueryParameter = rpoComponentsRpoLocalDescription
+// SetRpoComponentsRpoLocalDescription adds the rpoComponentsRpoLocalDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoLocalDescription(rpoComponentsRpoLocalDescription *string) {
+	o.RpoComponentsRpoLocalDescription = rpoComponentsRpoLocalDescription
 }
 
-// WithRpoComponentsRpoLocalNameQueryParameter adds the rpoComponentsRpoLocalName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoLocalNameQueryParameter(rpoComponentsRpoLocalName *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsRpoLocalNameQueryParameter(rpoComponentsRpoLocalName)
+// WithRpoComponentsRpoLocalName adds the rpoComponentsRpoLocalName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoLocalName(rpoComponentsRpoLocalName *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsRpoLocalName(rpoComponentsRpoLocalName)
 	return o
 }
 
-// SetRpoComponentsRpoLocalNameQueryParameter adds the rpoComponentsRpoLocalName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoLocalNameQueryParameter(rpoComponentsRpoLocalName *string) {
-	o.RpoComponentsRpoLocalNameQueryParameter = rpoComponentsRpoLocalName
+// SetRpoComponentsRpoLocalName adds the rpoComponentsRpoLocalName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoLocalName(rpoComponentsRpoLocalName *string) {
+	o.RpoComponentsRpoLocalName = rpoComponentsRpoLocalName
 }
 
-// WithRpoComponentsRpoRemoteDescriptionQueryParameter adds the rpoComponentsRpoRemoteDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoRemoteDescriptionQueryParameter(rpoComponentsRpoRemoteDescription *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsRpoRemoteDescriptionQueryParameter(rpoComponentsRpoRemoteDescription)
+// WithRpoComponentsRpoRemoteDescription adds the rpoComponentsRpoRemoteDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoRemoteDescription(rpoComponentsRpoRemoteDescription *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsRpoRemoteDescription(rpoComponentsRpoRemoteDescription)
 	return o
 }
 
-// SetRpoComponentsRpoRemoteDescriptionQueryParameter adds the rpoComponentsRpoRemoteDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoRemoteDescriptionQueryParameter(rpoComponentsRpoRemoteDescription *string) {
-	o.RpoComponentsRpoRemoteDescriptionQueryParameter = rpoComponentsRpoRemoteDescription
+// SetRpoComponentsRpoRemoteDescription adds the rpoComponentsRpoRemoteDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoRemoteDescription(rpoComponentsRpoRemoteDescription *string) {
+	o.RpoComponentsRpoRemoteDescription = rpoComponentsRpoRemoteDescription
 }
 
-// WithRpoComponentsRpoRemoteNameQueryParameter adds the rpoComponentsRpoRemoteName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoRemoteNameQueryParameter(rpoComponentsRpoRemoteName *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsRpoRemoteNameQueryParameter(rpoComponentsRpoRemoteName)
+// WithRpoComponentsRpoRemoteName adds the rpoComponentsRpoRemoteName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsRpoRemoteName(rpoComponentsRpoRemoteName *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsRpoRemoteName(rpoComponentsRpoRemoteName)
 	return o
 }
 
-// SetRpoComponentsRpoRemoteNameQueryParameter adds the rpoComponentsRpoRemoteName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoRemoteNameQueryParameter(rpoComponentsRpoRemoteName *string) {
-	o.RpoComponentsRpoRemoteNameQueryParameter = rpoComponentsRpoRemoteName
+// SetRpoComponentsRpoRemoteName adds the rpoComponentsRpoRemoteName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsRpoRemoteName(rpoComponentsRpoRemoteName *string) {
+	o.RpoComponentsRpoRemoteName = rpoComponentsRpoRemoteName
 }
 
-// WithRpoComponentsUUIDQueryParameter adds the rpoComponentsUUID to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoComponentsUUIDQueryParameter(rpoComponentsUUID *string) *ApplicationCollectionGetParams {
-	o.SetRpoComponentsUUIDQueryParameter(rpoComponentsUUID)
+// WithRpoComponentsUUID adds the rpoComponentsUUID to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoComponentsUUID(rpoComponentsUUID *string) *ApplicationCollectionGetParams {
+	o.SetRpoComponentsUUID(rpoComponentsUUID)
 	return o
 }
 
-// SetRpoComponentsUUIDQueryParameter adds the rpoComponentsUuid to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoComponentsUUIDQueryParameter(rpoComponentsUUID *string) {
-	o.RpoComponentsUUIDQueryParameter = rpoComponentsUUID
+// SetRpoComponentsUUID adds the rpoComponentsUuid to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoComponentsUUID(rpoComponentsUUID *string) {
+	o.RpoComponentsUUID = rpoComponentsUUID
 }
 
-// WithRpoIsSupportedQueryParameter adds the rpoIsSupported to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoIsSupportedQueryParameter(rpoIsSupported *string) *ApplicationCollectionGetParams {
-	o.SetRpoIsSupportedQueryParameter(rpoIsSupported)
+// WithRpoIsSupported adds the rpoIsSupported to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoIsSupported(rpoIsSupported *string) *ApplicationCollectionGetParams {
+	o.SetRpoIsSupported(rpoIsSupported)
 	return o
 }
 
-// SetRpoIsSupportedQueryParameter adds the rpoIsSupported to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoIsSupportedQueryParameter(rpoIsSupported *string) {
-	o.RpoIsSupportedQueryParameter = rpoIsSupported
+// SetRpoIsSupported adds the rpoIsSupported to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoIsSupported(rpoIsSupported *string) {
+	o.RpoIsSupported = rpoIsSupported
 }
 
-// WithRpoLocalDescriptionQueryParameter adds the rpoLocalDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoLocalDescriptionQueryParameter(rpoLocalDescription *string) *ApplicationCollectionGetParams {
-	o.SetRpoLocalDescriptionQueryParameter(rpoLocalDescription)
+// WithRpoLocalDescription adds the rpoLocalDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoLocalDescription(rpoLocalDescription *string) *ApplicationCollectionGetParams {
+	o.SetRpoLocalDescription(rpoLocalDescription)
 	return o
 }
 
-// SetRpoLocalDescriptionQueryParameter adds the rpoLocalDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoLocalDescriptionQueryParameter(rpoLocalDescription *string) {
-	o.RpoLocalDescriptionQueryParameter = rpoLocalDescription
+// SetRpoLocalDescription adds the rpoLocalDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoLocalDescription(rpoLocalDescription *string) {
+	o.RpoLocalDescription = rpoLocalDescription
 }
 
-// WithRpoLocalNameQueryParameter adds the rpoLocalName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoLocalNameQueryParameter(rpoLocalName *string) *ApplicationCollectionGetParams {
-	o.SetRpoLocalNameQueryParameter(rpoLocalName)
+// WithRpoLocalName adds the rpoLocalName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoLocalName(rpoLocalName *string) *ApplicationCollectionGetParams {
+	o.SetRpoLocalName(rpoLocalName)
 	return o
 }
 
-// SetRpoLocalNameQueryParameter adds the rpoLocalName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoLocalNameQueryParameter(rpoLocalName *string) {
-	o.RpoLocalNameQueryParameter = rpoLocalName
+// SetRpoLocalName adds the rpoLocalName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoLocalName(rpoLocalName *string) {
+	o.RpoLocalName = rpoLocalName
 }
 
-// WithRpoRemoteDescriptionQueryParameter adds the rpoRemoteDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoRemoteDescriptionQueryParameter(rpoRemoteDescription *string) *ApplicationCollectionGetParams {
-	o.SetRpoRemoteDescriptionQueryParameter(rpoRemoteDescription)
+// WithRpoRemoteDescription adds the rpoRemoteDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoRemoteDescription(rpoRemoteDescription *string) *ApplicationCollectionGetParams {
+	o.SetRpoRemoteDescription(rpoRemoteDescription)
 	return o
 }
 
-// SetRpoRemoteDescriptionQueryParameter adds the rpoRemoteDescription to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoRemoteDescriptionQueryParameter(rpoRemoteDescription *string) {
-	o.RpoRemoteDescriptionQueryParameter = rpoRemoteDescription
+// SetRpoRemoteDescription adds the rpoRemoteDescription to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoRemoteDescription(rpoRemoteDescription *string) {
+	o.RpoRemoteDescription = rpoRemoteDescription
 }
 
-// WithRpoRemoteNameQueryParameter adds the rpoRemoteName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithRpoRemoteNameQueryParameter(rpoRemoteName *string) *ApplicationCollectionGetParams {
-	o.SetRpoRemoteNameQueryParameter(rpoRemoteName)
+// WithRpoRemoteName adds the rpoRemoteName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithRpoRemoteName(rpoRemoteName *string) *ApplicationCollectionGetParams {
+	o.SetRpoRemoteName(rpoRemoteName)
 	return o
 }
 
-// SetRpoRemoteNameQueryParameter adds the rpoRemoteName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetRpoRemoteNameQueryParameter(rpoRemoteName *string) {
-	o.RpoRemoteNameQueryParameter = rpoRemoteName
+// SetRpoRemoteName adds the rpoRemoteName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetRpoRemoteName(rpoRemoteName *string) {
+	o.RpoRemoteName = rpoRemoteName
 }
 
-// WithSmartContainerQueryParameter adds the smartContainer to the application collection get params
-func (o *ApplicationCollectionGetParams) WithSmartContainerQueryParameter(smartContainer *string) *ApplicationCollectionGetParams {
-	o.SetSmartContainerQueryParameter(smartContainer)
+// WithSmartContainer adds the smartContainer to the application collection get params
+func (o *ApplicationCollectionGetParams) WithSmartContainer(smartContainer *string) *ApplicationCollectionGetParams {
+	o.SetSmartContainer(smartContainer)
 	return o
 }
 
-// SetSmartContainerQueryParameter adds the smartContainer to the application collection get params
-func (o *ApplicationCollectionGetParams) SetSmartContainerQueryParameter(smartContainer *string) {
-	o.SmartContainerQueryParameter = smartContainer
+// SetSmartContainer adds the smartContainer to the application collection get params
+func (o *ApplicationCollectionGetParams) SetSmartContainer(smartContainer *string) {
+	o.SmartContainer = smartContainer
 }
 
-// WithStateQueryParameter adds the state to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStateQueryParameter(state *string) *ApplicationCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the application collection get params
+func (o *ApplicationCollectionGetParams) WithState(state *string) *ApplicationCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the application collection get params
+func (o *ApplicationCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatisticsComponentsIopsPerTbQueryParameter adds the statisticsComponentsIopsPerTb to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsIopsPerTbQueryParameter(statisticsComponentsIopsPerTb *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsIopsPerTbQueryParameter(statisticsComponentsIopsPerTb)
+// WithStatisticsComponentsIopsPerTb adds the statisticsComponentsIopsPerTb to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsIopsPerTb(statisticsComponentsIopsPerTb *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsIopsPerTb(statisticsComponentsIopsPerTb)
 	return o
 }
 
-// SetStatisticsComponentsIopsPerTbQueryParameter adds the statisticsComponentsIopsPerTb to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsIopsPerTbQueryParameter(statisticsComponentsIopsPerTb *string) {
-	o.StatisticsComponentsIopsPerTbQueryParameter = statisticsComponentsIopsPerTb
+// SetStatisticsComponentsIopsPerTb adds the statisticsComponentsIopsPerTb to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsIopsPerTb(statisticsComponentsIopsPerTb *string) {
+	o.StatisticsComponentsIopsPerTb = statisticsComponentsIopsPerTb
 }
 
-// WithStatisticsComponentsIopsTotalQueryParameter adds the statisticsComponentsIopsTotal to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsIopsTotalQueryParameter(statisticsComponentsIopsTotal *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsIopsTotalQueryParameter(statisticsComponentsIopsTotal)
+// WithStatisticsComponentsIopsTotal adds the statisticsComponentsIopsTotal to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsIopsTotal(statisticsComponentsIopsTotal *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsIopsTotal(statisticsComponentsIopsTotal)
 	return o
 }
 
-// SetStatisticsComponentsIopsTotalQueryParameter adds the statisticsComponentsIopsTotal to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsIopsTotalQueryParameter(statisticsComponentsIopsTotal *string) {
-	o.StatisticsComponentsIopsTotalQueryParameter = statisticsComponentsIopsTotal
+// SetStatisticsComponentsIopsTotal adds the statisticsComponentsIopsTotal to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsIopsTotal(statisticsComponentsIopsTotal *string) {
+	o.StatisticsComponentsIopsTotal = statisticsComponentsIopsTotal
 }
 
-// WithStatisticsComponentsLatencyAverageQueryParameter adds the statisticsComponentsLatencyAverage to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsLatencyAverageQueryParameter(statisticsComponentsLatencyAverage *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsLatencyAverageQueryParameter(statisticsComponentsLatencyAverage)
+// WithStatisticsComponentsLatencyAverage adds the statisticsComponentsLatencyAverage to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsLatencyAverage(statisticsComponentsLatencyAverage *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsLatencyAverage(statisticsComponentsLatencyAverage)
 	return o
 }
 
-// SetStatisticsComponentsLatencyAverageQueryParameter adds the statisticsComponentsLatencyAverage to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsLatencyAverageQueryParameter(statisticsComponentsLatencyAverage *string) {
-	o.StatisticsComponentsLatencyAverageQueryParameter = statisticsComponentsLatencyAverage
+// SetStatisticsComponentsLatencyAverage adds the statisticsComponentsLatencyAverage to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsLatencyAverage(statisticsComponentsLatencyAverage *string) {
+	o.StatisticsComponentsLatencyAverage = statisticsComponentsLatencyAverage
 }
 
-// WithStatisticsComponentsLatencyRawQueryParameter adds the statisticsComponentsLatencyRaw to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsLatencyRawQueryParameter(statisticsComponentsLatencyRaw *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsLatencyRawQueryParameter(statisticsComponentsLatencyRaw)
+// WithStatisticsComponentsLatencyRaw adds the statisticsComponentsLatencyRaw to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsLatencyRaw(statisticsComponentsLatencyRaw *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsLatencyRaw(statisticsComponentsLatencyRaw)
 	return o
 }
 
-// SetStatisticsComponentsLatencyRawQueryParameter adds the statisticsComponentsLatencyRaw to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsLatencyRawQueryParameter(statisticsComponentsLatencyRaw *string) {
-	o.StatisticsComponentsLatencyRawQueryParameter = statisticsComponentsLatencyRaw
+// SetStatisticsComponentsLatencyRaw adds the statisticsComponentsLatencyRaw to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsLatencyRaw(statisticsComponentsLatencyRaw *string) {
+	o.StatisticsComponentsLatencyRaw = statisticsComponentsLatencyRaw
 }
 
-// WithStatisticsComponentsNameQueryParameter adds the statisticsComponentsName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsNameQueryParameter(statisticsComponentsName *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsNameQueryParameter(statisticsComponentsName)
+// WithStatisticsComponentsName adds the statisticsComponentsName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsName(statisticsComponentsName *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsName(statisticsComponentsName)
 	return o
 }
 
-// SetStatisticsComponentsNameQueryParameter adds the statisticsComponentsName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsNameQueryParameter(statisticsComponentsName *string) {
-	o.StatisticsComponentsNameQueryParameter = statisticsComponentsName
+// SetStatisticsComponentsName adds the statisticsComponentsName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsName(statisticsComponentsName *string) {
+	o.StatisticsComponentsName = statisticsComponentsName
 }
 
-// WithStatisticsComponentsSharedStoragePoolQueryParameter adds the statisticsComponentsSharedStoragePool to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSharedStoragePoolQueryParameter(statisticsComponentsSharedStoragePool *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSharedStoragePoolQueryParameter(statisticsComponentsSharedStoragePool)
+// WithStatisticsComponentsSharedStoragePool adds the statisticsComponentsSharedStoragePool to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSharedStoragePool(statisticsComponentsSharedStoragePool *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSharedStoragePool(statisticsComponentsSharedStoragePool)
 	return o
 }
 
-// SetStatisticsComponentsSharedStoragePoolQueryParameter adds the statisticsComponentsSharedStoragePool to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSharedStoragePoolQueryParameter(statisticsComponentsSharedStoragePool *string) {
-	o.StatisticsComponentsSharedStoragePoolQueryParameter = statisticsComponentsSharedStoragePool
+// SetStatisticsComponentsSharedStoragePool adds the statisticsComponentsSharedStoragePool to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSharedStoragePool(statisticsComponentsSharedStoragePool *string) {
+	o.StatisticsComponentsSharedStoragePool = statisticsComponentsSharedStoragePool
 }
 
-// WithStatisticsComponentsSnapshotReserveQueryParameter adds the statisticsComponentsSnapshotReserve to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSnapshotReserveQueryParameter(statisticsComponentsSnapshotReserve *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSnapshotReserveQueryParameter(statisticsComponentsSnapshotReserve)
+// WithStatisticsComponentsSnapshotReserve adds the statisticsComponentsSnapshotReserve to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSnapshotReserve(statisticsComponentsSnapshotReserve *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSnapshotReserve(statisticsComponentsSnapshotReserve)
 	return o
 }
 
-// SetStatisticsComponentsSnapshotReserveQueryParameter adds the statisticsComponentsSnapshotReserve to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSnapshotReserveQueryParameter(statisticsComponentsSnapshotReserve *string) {
-	o.StatisticsComponentsSnapshotReserveQueryParameter = statisticsComponentsSnapshotReserve
+// SetStatisticsComponentsSnapshotReserve adds the statisticsComponentsSnapshotReserve to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSnapshotReserve(statisticsComponentsSnapshotReserve *string) {
+	o.StatisticsComponentsSnapshotReserve = statisticsComponentsSnapshotReserve
 }
 
-// WithStatisticsComponentsSnapshotUsedQueryParameter adds the statisticsComponentsSnapshotUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSnapshotUsedQueryParameter(statisticsComponentsSnapshotUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSnapshotUsedQueryParameter(statisticsComponentsSnapshotUsed)
+// WithStatisticsComponentsSnapshotUsed adds the statisticsComponentsSnapshotUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSnapshotUsed(statisticsComponentsSnapshotUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSnapshotUsed(statisticsComponentsSnapshotUsed)
 	return o
 }
 
-// SetStatisticsComponentsSnapshotUsedQueryParameter adds the statisticsComponentsSnapshotUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSnapshotUsedQueryParameter(statisticsComponentsSnapshotUsed *string) {
-	o.StatisticsComponentsSnapshotUsedQueryParameter = statisticsComponentsSnapshotUsed
+// SetStatisticsComponentsSnapshotUsed adds the statisticsComponentsSnapshotUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSnapshotUsed(statisticsComponentsSnapshotUsed *string) {
+	o.StatisticsComponentsSnapshotUsed = statisticsComponentsSnapshotUsed
 }
 
-// WithStatisticsComponentsSpaceAvailableQueryParameter adds the statisticsComponentsSpaceAvailable to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceAvailableQueryParameter(statisticsComponentsSpaceAvailable *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceAvailableQueryParameter(statisticsComponentsSpaceAvailable)
+// WithStatisticsComponentsSpaceAvailable adds the statisticsComponentsSpaceAvailable to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceAvailable(statisticsComponentsSpaceAvailable *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceAvailable(statisticsComponentsSpaceAvailable)
 	return o
 }
 
-// SetStatisticsComponentsSpaceAvailableQueryParameter adds the statisticsComponentsSpaceAvailable to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceAvailableQueryParameter(statisticsComponentsSpaceAvailable *string) {
-	o.StatisticsComponentsSpaceAvailableQueryParameter = statisticsComponentsSpaceAvailable
+// SetStatisticsComponentsSpaceAvailable adds the statisticsComponentsSpaceAvailable to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceAvailable(statisticsComponentsSpaceAvailable *string) {
+	o.StatisticsComponentsSpaceAvailable = statisticsComponentsSpaceAvailable
 }
 
-// WithStatisticsComponentsSpaceLogicalUsedQueryParameter adds the statisticsComponentsSpaceLogicalUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceLogicalUsedQueryParameter(statisticsComponentsSpaceLogicalUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceLogicalUsedQueryParameter(statisticsComponentsSpaceLogicalUsed)
+// WithStatisticsComponentsSpaceLogicalUsed adds the statisticsComponentsSpaceLogicalUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceLogicalUsed(statisticsComponentsSpaceLogicalUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceLogicalUsed(statisticsComponentsSpaceLogicalUsed)
 	return o
 }
 
-// SetStatisticsComponentsSpaceLogicalUsedQueryParameter adds the statisticsComponentsSpaceLogicalUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceLogicalUsedQueryParameter(statisticsComponentsSpaceLogicalUsed *string) {
-	o.StatisticsComponentsSpaceLogicalUsedQueryParameter = statisticsComponentsSpaceLogicalUsed
+// SetStatisticsComponentsSpaceLogicalUsed adds the statisticsComponentsSpaceLogicalUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceLogicalUsed(statisticsComponentsSpaceLogicalUsed *string) {
+	o.StatisticsComponentsSpaceLogicalUsed = statisticsComponentsSpaceLogicalUsed
 }
 
-// WithStatisticsComponentsSpaceProvisionedQueryParameter adds the statisticsComponentsSpaceProvisioned to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceProvisionedQueryParameter(statisticsComponentsSpaceProvisioned *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceProvisionedQueryParameter(statisticsComponentsSpaceProvisioned)
+// WithStatisticsComponentsSpaceProvisioned adds the statisticsComponentsSpaceProvisioned to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceProvisioned(statisticsComponentsSpaceProvisioned *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceProvisioned(statisticsComponentsSpaceProvisioned)
 	return o
 }
 
-// SetStatisticsComponentsSpaceProvisionedQueryParameter adds the statisticsComponentsSpaceProvisioned to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceProvisionedQueryParameter(statisticsComponentsSpaceProvisioned *string) {
-	o.StatisticsComponentsSpaceProvisionedQueryParameter = statisticsComponentsSpaceProvisioned
+// SetStatisticsComponentsSpaceProvisioned adds the statisticsComponentsSpaceProvisioned to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceProvisioned(statisticsComponentsSpaceProvisioned *string) {
+	o.StatisticsComponentsSpaceProvisioned = statisticsComponentsSpaceProvisioned
 }
 
-// WithStatisticsComponentsSpaceReservedUnusedQueryParameter adds the statisticsComponentsSpaceReservedUnused to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceReservedUnusedQueryParameter(statisticsComponentsSpaceReservedUnused *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceReservedUnusedQueryParameter(statisticsComponentsSpaceReservedUnused)
+// WithStatisticsComponentsSpaceReservedUnused adds the statisticsComponentsSpaceReservedUnused to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceReservedUnused(statisticsComponentsSpaceReservedUnused *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceReservedUnused(statisticsComponentsSpaceReservedUnused)
 	return o
 }
 
-// SetStatisticsComponentsSpaceReservedUnusedQueryParameter adds the statisticsComponentsSpaceReservedUnused to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceReservedUnusedQueryParameter(statisticsComponentsSpaceReservedUnused *string) {
-	o.StatisticsComponentsSpaceReservedUnusedQueryParameter = statisticsComponentsSpaceReservedUnused
+// SetStatisticsComponentsSpaceReservedUnused adds the statisticsComponentsSpaceReservedUnused to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceReservedUnused(statisticsComponentsSpaceReservedUnused *string) {
+	o.StatisticsComponentsSpaceReservedUnused = statisticsComponentsSpaceReservedUnused
 }
 
-// WithStatisticsComponentsSpaceSavingsQueryParameter adds the statisticsComponentsSpaceSavings to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceSavingsQueryParameter(statisticsComponentsSpaceSavings *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceSavingsQueryParameter(statisticsComponentsSpaceSavings)
+// WithStatisticsComponentsSpaceSavings adds the statisticsComponentsSpaceSavings to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceSavings(statisticsComponentsSpaceSavings *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceSavings(statisticsComponentsSpaceSavings)
 	return o
 }
 
-// SetStatisticsComponentsSpaceSavingsQueryParameter adds the statisticsComponentsSpaceSavings to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceSavingsQueryParameter(statisticsComponentsSpaceSavings *string) {
-	o.StatisticsComponentsSpaceSavingsQueryParameter = statisticsComponentsSpaceSavings
+// SetStatisticsComponentsSpaceSavings adds the statisticsComponentsSpaceSavings to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceSavings(statisticsComponentsSpaceSavings *string) {
+	o.StatisticsComponentsSpaceSavings = statisticsComponentsSpaceSavings
 }
 
-// WithStatisticsComponentsSpaceUsedQueryParameter adds the statisticsComponentsSpaceUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsedQueryParameter(statisticsComponentsSpaceUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceUsedQueryParameter(statisticsComponentsSpaceUsed)
+// WithStatisticsComponentsSpaceUsed adds the statisticsComponentsSpaceUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsed(statisticsComponentsSpaceUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceUsed(statisticsComponentsSpaceUsed)
 	return o
 }
 
-// SetStatisticsComponentsSpaceUsedQueryParameter adds the statisticsComponentsSpaceUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsedQueryParameter(statisticsComponentsSpaceUsed *string) {
-	o.StatisticsComponentsSpaceUsedQueryParameter = statisticsComponentsSpaceUsed
+// SetStatisticsComponentsSpaceUsed adds the statisticsComponentsSpaceUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsed(statisticsComponentsSpaceUsed *string) {
+	o.StatisticsComponentsSpaceUsed = statisticsComponentsSpaceUsed
 }
 
-// WithStatisticsComponentsSpaceUsedExcludingReservesQueryParameter adds the statisticsComponentsSpaceUsedExcludingReserves to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsedExcludingReservesQueryParameter(statisticsComponentsSpaceUsedExcludingReserves *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceUsedExcludingReservesQueryParameter(statisticsComponentsSpaceUsedExcludingReserves)
+// WithStatisticsComponentsSpaceUsedExcludingReserves adds the statisticsComponentsSpaceUsedExcludingReserves to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsedExcludingReserves(statisticsComponentsSpaceUsedExcludingReserves *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceUsedExcludingReserves(statisticsComponentsSpaceUsedExcludingReserves)
 	return o
 }
 
-// SetStatisticsComponentsSpaceUsedExcludingReservesQueryParameter adds the statisticsComponentsSpaceUsedExcludingReserves to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsedExcludingReservesQueryParameter(statisticsComponentsSpaceUsedExcludingReserves *string) {
-	o.StatisticsComponentsSpaceUsedExcludingReservesQueryParameter = statisticsComponentsSpaceUsedExcludingReserves
+// SetStatisticsComponentsSpaceUsedExcludingReserves adds the statisticsComponentsSpaceUsedExcludingReserves to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsedExcludingReserves(statisticsComponentsSpaceUsedExcludingReserves *string) {
+	o.StatisticsComponentsSpaceUsedExcludingReserves = statisticsComponentsSpaceUsedExcludingReserves
 }
 
-// WithStatisticsComponentsSpaceUsedPercentQueryParameter adds the statisticsComponentsSpaceUsedPercent to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsedPercentQueryParameter(statisticsComponentsSpaceUsedPercent *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsSpaceUsedPercentQueryParameter(statisticsComponentsSpaceUsedPercent)
+// WithStatisticsComponentsSpaceUsedPercent adds the statisticsComponentsSpaceUsedPercent to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsSpaceUsedPercent(statisticsComponentsSpaceUsedPercent *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsSpaceUsedPercent(statisticsComponentsSpaceUsedPercent)
 	return o
 }
 
-// SetStatisticsComponentsSpaceUsedPercentQueryParameter adds the statisticsComponentsSpaceUsedPercent to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsedPercentQueryParameter(statisticsComponentsSpaceUsedPercent *string) {
-	o.StatisticsComponentsSpaceUsedPercentQueryParameter = statisticsComponentsSpaceUsedPercent
+// SetStatisticsComponentsSpaceUsedPercent adds the statisticsComponentsSpaceUsedPercent to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsSpaceUsedPercent(statisticsComponentsSpaceUsedPercent *string) {
+	o.StatisticsComponentsSpaceUsedPercent = statisticsComponentsSpaceUsedPercent
 }
 
-// WithStatisticsComponentsStatisticsIncompleteQueryParameter adds the statisticsComponentsStatisticsIncomplete to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsStatisticsIncompleteQueryParameter(statisticsComponentsStatisticsIncomplete *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsStatisticsIncompleteQueryParameter(statisticsComponentsStatisticsIncomplete)
+// WithStatisticsComponentsStatisticsIncomplete adds the statisticsComponentsStatisticsIncomplete to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsStatisticsIncomplete(statisticsComponentsStatisticsIncomplete *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsStatisticsIncomplete(statisticsComponentsStatisticsIncomplete)
 	return o
 }
 
-// SetStatisticsComponentsStatisticsIncompleteQueryParameter adds the statisticsComponentsStatisticsIncomplete to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsStatisticsIncompleteQueryParameter(statisticsComponentsStatisticsIncomplete *string) {
-	o.StatisticsComponentsStatisticsIncompleteQueryParameter = statisticsComponentsStatisticsIncomplete
+// SetStatisticsComponentsStatisticsIncomplete adds the statisticsComponentsStatisticsIncomplete to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsStatisticsIncomplete(statisticsComponentsStatisticsIncomplete *string) {
+	o.StatisticsComponentsStatisticsIncomplete = statisticsComponentsStatisticsIncomplete
 }
 
-// WithStatisticsComponentsStorageServiceNameQueryParameter adds the statisticsComponentsStorageServiceName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsStorageServiceNameQueryParameter(statisticsComponentsStorageServiceName *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsStorageServiceNameQueryParameter(statisticsComponentsStorageServiceName)
+// WithStatisticsComponentsStorageServiceName adds the statisticsComponentsStorageServiceName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsStorageServiceName(statisticsComponentsStorageServiceName *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsStorageServiceName(statisticsComponentsStorageServiceName)
 	return o
 }
 
-// SetStatisticsComponentsStorageServiceNameQueryParameter adds the statisticsComponentsStorageServiceName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsStorageServiceNameQueryParameter(statisticsComponentsStorageServiceName *string) {
-	o.StatisticsComponentsStorageServiceNameQueryParameter = statisticsComponentsStorageServiceName
+// SetStatisticsComponentsStorageServiceName adds the statisticsComponentsStorageServiceName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsStorageServiceName(statisticsComponentsStorageServiceName *string) {
+	o.StatisticsComponentsStorageServiceName = statisticsComponentsStorageServiceName
 }
 
-// WithStatisticsComponentsUUIDQueryParameter adds the statisticsComponentsUUID to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsComponentsUUIDQueryParameter(statisticsComponentsUUID *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsComponentsUUIDQueryParameter(statisticsComponentsUUID)
+// WithStatisticsComponentsUUID adds the statisticsComponentsUUID to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsComponentsUUID(statisticsComponentsUUID *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsComponentsUUID(statisticsComponentsUUID)
 	return o
 }
 
-// SetStatisticsComponentsUUIDQueryParameter adds the statisticsComponentsUuid to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsComponentsUUIDQueryParameter(statisticsComponentsUUID *string) {
-	o.StatisticsComponentsUUIDQueryParameter = statisticsComponentsUUID
+// SetStatisticsComponentsUUID adds the statisticsComponentsUuid to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsComponentsUUID(statisticsComponentsUUID *string) {
+	o.StatisticsComponentsUUID = statisticsComponentsUUID
 }
 
-// WithStatisticsIopsPerTbQueryParameter adds the statisticsIopsPerTb to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsIopsPerTbQueryParameter(statisticsIopsPerTb *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsIopsPerTbQueryParameter(statisticsIopsPerTb)
+// WithStatisticsIopsPerTb adds the statisticsIopsPerTb to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsIopsPerTb(statisticsIopsPerTb *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsIopsPerTb(statisticsIopsPerTb)
 	return o
 }
 
-// SetStatisticsIopsPerTbQueryParameter adds the statisticsIopsPerTb to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsIopsPerTbQueryParameter(statisticsIopsPerTb *string) {
-	o.StatisticsIopsPerTbQueryParameter = statisticsIopsPerTb
+// SetStatisticsIopsPerTb adds the statisticsIopsPerTb to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsIopsPerTb(statisticsIopsPerTb *string) {
+	o.StatisticsIopsPerTb = statisticsIopsPerTb
 }
 
-// WithStatisticsIopsTotalQueryParameter adds the statisticsIopsTotal to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsIopsTotalQueryParameter(statisticsIopsTotal *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsIopsTotalQueryParameter(statisticsIopsTotal)
+// WithStatisticsIopsTotal adds the statisticsIopsTotal to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsIopsTotal(statisticsIopsTotal *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsIopsTotal(statisticsIopsTotal)
 	return o
 }
 
-// SetStatisticsIopsTotalQueryParameter adds the statisticsIopsTotal to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsIopsTotalQueryParameter(statisticsIopsTotal *string) {
-	o.StatisticsIopsTotalQueryParameter = statisticsIopsTotal
+// SetStatisticsIopsTotal adds the statisticsIopsTotal to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsIopsTotal(statisticsIopsTotal *string) {
+	o.StatisticsIopsTotal = statisticsIopsTotal
 }
 
-// WithStatisticsLatencyAverageQueryParameter adds the statisticsLatencyAverage to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsLatencyAverageQueryParameter(statisticsLatencyAverage *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsLatencyAverageQueryParameter(statisticsLatencyAverage)
+// WithStatisticsLatencyAverage adds the statisticsLatencyAverage to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsLatencyAverage(statisticsLatencyAverage *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsLatencyAverage(statisticsLatencyAverage)
 	return o
 }
 
-// SetStatisticsLatencyAverageQueryParameter adds the statisticsLatencyAverage to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsLatencyAverageQueryParameter(statisticsLatencyAverage *string) {
-	o.StatisticsLatencyAverageQueryParameter = statisticsLatencyAverage
+// SetStatisticsLatencyAverage adds the statisticsLatencyAverage to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsLatencyAverage(statisticsLatencyAverage *string) {
+	o.StatisticsLatencyAverage = statisticsLatencyAverage
 }
 
-// WithStatisticsLatencyRawQueryParameter adds the statisticsLatencyRaw to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsLatencyRawQueryParameter(statisticsLatencyRaw *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsLatencyRawQueryParameter(statisticsLatencyRaw)
+// WithStatisticsLatencyRaw adds the statisticsLatencyRaw to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsLatencyRaw(statisticsLatencyRaw *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsLatencyRaw(statisticsLatencyRaw)
 	return o
 }
 
-// SetStatisticsLatencyRawQueryParameter adds the statisticsLatencyRaw to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsLatencyRawQueryParameter(statisticsLatencyRaw *string) {
-	o.StatisticsLatencyRawQueryParameter = statisticsLatencyRaw
+// SetStatisticsLatencyRaw adds the statisticsLatencyRaw to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsLatencyRaw(statisticsLatencyRaw *string) {
+	o.StatisticsLatencyRaw = statisticsLatencyRaw
 }
 
-// WithStatisticsSharedStoragePoolQueryParameter adds the statisticsSharedStoragePool to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSharedStoragePoolQueryParameter(statisticsSharedStoragePool *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSharedStoragePoolQueryParameter(statisticsSharedStoragePool)
+// WithStatisticsSharedStoragePool adds the statisticsSharedStoragePool to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSharedStoragePool(statisticsSharedStoragePool *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSharedStoragePool(statisticsSharedStoragePool)
 	return o
 }
 
-// SetStatisticsSharedStoragePoolQueryParameter adds the statisticsSharedStoragePool to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSharedStoragePoolQueryParameter(statisticsSharedStoragePool *string) {
-	o.StatisticsSharedStoragePoolQueryParameter = statisticsSharedStoragePool
+// SetStatisticsSharedStoragePool adds the statisticsSharedStoragePool to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSharedStoragePool(statisticsSharedStoragePool *string) {
+	o.StatisticsSharedStoragePool = statisticsSharedStoragePool
 }
 
-// WithStatisticsSnapshotReserveQueryParameter adds the statisticsSnapshotReserve to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSnapshotReserveQueryParameter(statisticsSnapshotReserve *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSnapshotReserveQueryParameter(statisticsSnapshotReserve)
+// WithStatisticsSnapshotReserve adds the statisticsSnapshotReserve to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSnapshotReserve(statisticsSnapshotReserve *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSnapshotReserve(statisticsSnapshotReserve)
 	return o
 }
 
-// SetStatisticsSnapshotReserveQueryParameter adds the statisticsSnapshotReserve to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSnapshotReserveQueryParameter(statisticsSnapshotReserve *string) {
-	o.StatisticsSnapshotReserveQueryParameter = statisticsSnapshotReserve
+// SetStatisticsSnapshotReserve adds the statisticsSnapshotReserve to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSnapshotReserve(statisticsSnapshotReserve *string) {
+	o.StatisticsSnapshotReserve = statisticsSnapshotReserve
 }
 
-// WithStatisticsSnapshotUsedQueryParameter adds the statisticsSnapshotUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSnapshotUsedQueryParameter(statisticsSnapshotUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSnapshotUsedQueryParameter(statisticsSnapshotUsed)
+// WithStatisticsSnapshotUsed adds the statisticsSnapshotUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSnapshotUsed(statisticsSnapshotUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSnapshotUsed(statisticsSnapshotUsed)
 	return o
 }
 
-// SetStatisticsSnapshotUsedQueryParameter adds the statisticsSnapshotUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSnapshotUsedQueryParameter(statisticsSnapshotUsed *string) {
-	o.StatisticsSnapshotUsedQueryParameter = statisticsSnapshotUsed
+// SetStatisticsSnapshotUsed adds the statisticsSnapshotUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSnapshotUsed(statisticsSnapshotUsed *string) {
+	o.StatisticsSnapshotUsed = statisticsSnapshotUsed
 }
 
-// WithStatisticsSpaceAvailableQueryParameter adds the statisticsSpaceAvailable to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceAvailableQueryParameter(statisticsSpaceAvailable *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceAvailableQueryParameter(statisticsSpaceAvailable)
+// WithStatisticsSpaceAvailable adds the statisticsSpaceAvailable to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceAvailable(statisticsSpaceAvailable *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceAvailable(statisticsSpaceAvailable)
 	return o
 }
 
-// SetStatisticsSpaceAvailableQueryParameter adds the statisticsSpaceAvailable to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceAvailableQueryParameter(statisticsSpaceAvailable *string) {
-	o.StatisticsSpaceAvailableQueryParameter = statisticsSpaceAvailable
+// SetStatisticsSpaceAvailable adds the statisticsSpaceAvailable to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceAvailable(statisticsSpaceAvailable *string) {
+	o.StatisticsSpaceAvailable = statisticsSpaceAvailable
 }
 
-// WithStatisticsSpaceLogicalUsedQueryParameter adds the statisticsSpaceLogicalUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceLogicalUsedQueryParameter(statisticsSpaceLogicalUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceLogicalUsedQueryParameter(statisticsSpaceLogicalUsed)
+// WithStatisticsSpaceLogicalUsed adds the statisticsSpaceLogicalUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceLogicalUsed(statisticsSpaceLogicalUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceLogicalUsed(statisticsSpaceLogicalUsed)
 	return o
 }
 
-// SetStatisticsSpaceLogicalUsedQueryParameter adds the statisticsSpaceLogicalUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceLogicalUsedQueryParameter(statisticsSpaceLogicalUsed *string) {
-	o.StatisticsSpaceLogicalUsedQueryParameter = statisticsSpaceLogicalUsed
+// SetStatisticsSpaceLogicalUsed adds the statisticsSpaceLogicalUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceLogicalUsed(statisticsSpaceLogicalUsed *string) {
+	o.StatisticsSpaceLogicalUsed = statisticsSpaceLogicalUsed
 }
 
-// WithStatisticsSpaceProvisionedQueryParameter adds the statisticsSpaceProvisioned to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceProvisionedQueryParameter(statisticsSpaceProvisioned *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceProvisionedQueryParameter(statisticsSpaceProvisioned)
+// WithStatisticsSpaceProvisioned adds the statisticsSpaceProvisioned to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceProvisioned(statisticsSpaceProvisioned *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceProvisioned(statisticsSpaceProvisioned)
 	return o
 }
 
-// SetStatisticsSpaceProvisionedQueryParameter adds the statisticsSpaceProvisioned to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceProvisionedQueryParameter(statisticsSpaceProvisioned *string) {
-	o.StatisticsSpaceProvisionedQueryParameter = statisticsSpaceProvisioned
+// SetStatisticsSpaceProvisioned adds the statisticsSpaceProvisioned to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceProvisioned(statisticsSpaceProvisioned *string) {
+	o.StatisticsSpaceProvisioned = statisticsSpaceProvisioned
 }
 
-// WithStatisticsSpaceReservedUnusedQueryParameter adds the statisticsSpaceReservedUnused to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceReservedUnusedQueryParameter(statisticsSpaceReservedUnused *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceReservedUnusedQueryParameter(statisticsSpaceReservedUnused)
+// WithStatisticsSpaceReservedUnused adds the statisticsSpaceReservedUnused to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceReservedUnused(statisticsSpaceReservedUnused *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceReservedUnused(statisticsSpaceReservedUnused)
 	return o
 }
 
-// SetStatisticsSpaceReservedUnusedQueryParameter adds the statisticsSpaceReservedUnused to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceReservedUnusedQueryParameter(statisticsSpaceReservedUnused *string) {
-	o.StatisticsSpaceReservedUnusedQueryParameter = statisticsSpaceReservedUnused
+// SetStatisticsSpaceReservedUnused adds the statisticsSpaceReservedUnused to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceReservedUnused(statisticsSpaceReservedUnused *string) {
+	o.StatisticsSpaceReservedUnused = statisticsSpaceReservedUnused
 }
 
-// WithStatisticsSpaceSavingsQueryParameter adds the statisticsSpaceSavings to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceSavingsQueryParameter(statisticsSpaceSavings *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceSavingsQueryParameter(statisticsSpaceSavings)
+// WithStatisticsSpaceSavings adds the statisticsSpaceSavings to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceSavings(statisticsSpaceSavings *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceSavings(statisticsSpaceSavings)
 	return o
 }
 
-// SetStatisticsSpaceSavingsQueryParameter adds the statisticsSpaceSavings to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceSavingsQueryParameter(statisticsSpaceSavings *string) {
-	o.StatisticsSpaceSavingsQueryParameter = statisticsSpaceSavings
+// SetStatisticsSpaceSavings adds the statisticsSpaceSavings to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceSavings(statisticsSpaceSavings *string) {
+	o.StatisticsSpaceSavings = statisticsSpaceSavings
 }
 
-// WithStatisticsSpaceUsedQueryParameter adds the statisticsSpaceUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsedQueryParameter(statisticsSpaceUsed *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceUsedQueryParameter(statisticsSpaceUsed)
+// WithStatisticsSpaceUsed adds the statisticsSpaceUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsed(statisticsSpaceUsed *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceUsed(statisticsSpaceUsed)
 	return o
 }
 
-// SetStatisticsSpaceUsedQueryParameter adds the statisticsSpaceUsed to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsedQueryParameter(statisticsSpaceUsed *string) {
-	o.StatisticsSpaceUsedQueryParameter = statisticsSpaceUsed
+// SetStatisticsSpaceUsed adds the statisticsSpaceUsed to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsed(statisticsSpaceUsed *string) {
+	o.StatisticsSpaceUsed = statisticsSpaceUsed
 }
 
-// WithStatisticsSpaceUsedExcludingReservesQueryParameter adds the statisticsSpaceUsedExcludingReserves to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsedExcludingReservesQueryParameter(statisticsSpaceUsedExcludingReserves *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceUsedExcludingReservesQueryParameter(statisticsSpaceUsedExcludingReserves)
+// WithStatisticsSpaceUsedExcludingReserves adds the statisticsSpaceUsedExcludingReserves to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsedExcludingReserves(statisticsSpaceUsedExcludingReserves *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceUsedExcludingReserves(statisticsSpaceUsedExcludingReserves)
 	return o
 }
 
-// SetStatisticsSpaceUsedExcludingReservesQueryParameter adds the statisticsSpaceUsedExcludingReserves to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsedExcludingReservesQueryParameter(statisticsSpaceUsedExcludingReserves *string) {
-	o.StatisticsSpaceUsedExcludingReservesQueryParameter = statisticsSpaceUsedExcludingReserves
+// SetStatisticsSpaceUsedExcludingReserves adds the statisticsSpaceUsedExcludingReserves to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsedExcludingReserves(statisticsSpaceUsedExcludingReserves *string) {
+	o.StatisticsSpaceUsedExcludingReserves = statisticsSpaceUsedExcludingReserves
 }
 
-// WithStatisticsSpaceUsedPercentQueryParameter adds the statisticsSpaceUsedPercent to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsedPercentQueryParameter(statisticsSpaceUsedPercent *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsSpaceUsedPercentQueryParameter(statisticsSpaceUsedPercent)
+// WithStatisticsSpaceUsedPercent adds the statisticsSpaceUsedPercent to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsSpaceUsedPercent(statisticsSpaceUsedPercent *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsSpaceUsedPercent(statisticsSpaceUsedPercent)
 	return o
 }
 
-// SetStatisticsSpaceUsedPercentQueryParameter adds the statisticsSpaceUsedPercent to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsedPercentQueryParameter(statisticsSpaceUsedPercent *string) {
-	o.StatisticsSpaceUsedPercentQueryParameter = statisticsSpaceUsedPercent
+// SetStatisticsSpaceUsedPercent adds the statisticsSpaceUsedPercent to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsSpaceUsedPercent(statisticsSpaceUsedPercent *string) {
+	o.StatisticsSpaceUsedPercent = statisticsSpaceUsedPercent
 }
 
-// WithStatisticsStatisticsIncompleteQueryParameter adds the statisticsStatisticsIncomplete to the application collection get params
-func (o *ApplicationCollectionGetParams) WithStatisticsStatisticsIncompleteQueryParameter(statisticsStatisticsIncomplete *string) *ApplicationCollectionGetParams {
-	o.SetStatisticsStatisticsIncompleteQueryParameter(statisticsStatisticsIncomplete)
+// WithStatisticsStatisticsIncomplete adds the statisticsStatisticsIncomplete to the application collection get params
+func (o *ApplicationCollectionGetParams) WithStatisticsStatisticsIncomplete(statisticsStatisticsIncomplete *string) *ApplicationCollectionGetParams {
+	o.SetStatisticsStatisticsIncomplete(statisticsStatisticsIncomplete)
 	return o
 }
 
-// SetStatisticsStatisticsIncompleteQueryParameter adds the statisticsStatisticsIncomplete to the application collection get params
-func (o *ApplicationCollectionGetParams) SetStatisticsStatisticsIncompleteQueryParameter(statisticsStatisticsIncomplete *string) {
-	o.StatisticsStatisticsIncompleteQueryParameter = statisticsStatisticsIncomplete
+// SetStatisticsStatisticsIncomplete adds the statisticsStatisticsIncomplete to the application collection get params
+func (o *ApplicationCollectionGetParams) SetStatisticsStatisticsIncomplete(statisticsStatisticsIncomplete *string) {
+	o.StatisticsStatisticsIncomplete = statisticsStatisticsIncomplete
 }
 
-// WithSVMNameQueryParameter adds the svmName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ApplicationCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithSvmName(svmName *string) *ApplicationCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the application collection get params
-func (o *ApplicationCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ApplicationCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the application collection get params
+func (o *ApplicationCollectionGetParams) WithSvmUUID(svmUUID *string) *ApplicationCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the application collection get params
-func (o *ApplicationCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the application collection get params
+func (o *ApplicationCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTemplateNameQueryParameter adds the templateName to the application collection get params
-func (o *ApplicationCollectionGetParams) WithTemplateNameQueryParameter(templateName *string) *ApplicationCollectionGetParams {
-	o.SetTemplateNameQueryParameter(templateName)
+// WithTemplateName adds the templateName to the application collection get params
+func (o *ApplicationCollectionGetParams) WithTemplateName(templateName *string) *ApplicationCollectionGetParams {
+	o.SetTemplateName(templateName)
 	return o
 }
 
-// SetTemplateNameQueryParameter adds the templateName to the application collection get params
-func (o *ApplicationCollectionGetParams) SetTemplateNameQueryParameter(templateName *string) {
-	o.TemplateNameQueryParameter = templateName
+// SetTemplateName adds the templateName to the application collection get params
+func (o *ApplicationCollectionGetParams) SetTemplateName(templateName *string) {
+	o.TemplateName = templateName
 }
 
-// WithTemplateProtocolQueryParameter adds the templateProtocol to the application collection get params
-func (o *ApplicationCollectionGetParams) WithTemplateProtocolQueryParameter(templateProtocol *string) *ApplicationCollectionGetParams {
-	o.SetTemplateProtocolQueryParameter(templateProtocol)
+// WithTemplateProtocol adds the templateProtocol to the application collection get params
+func (o *ApplicationCollectionGetParams) WithTemplateProtocol(templateProtocol *string) *ApplicationCollectionGetParams {
+	o.SetTemplateProtocol(templateProtocol)
 	return o
 }
 
-// SetTemplateProtocolQueryParameter adds the templateProtocol to the application collection get params
-func (o *ApplicationCollectionGetParams) SetTemplateProtocolQueryParameter(templateProtocol *string) {
-	o.TemplateProtocolQueryParameter = templateProtocol
+// SetTemplateProtocol adds the templateProtocol to the application collection get params
+func (o *ApplicationCollectionGetParams) SetTemplateProtocol(templateProtocol *string) {
+	o.TemplateProtocol = templateProtocol
 }
 
-// WithTemplateVersionQueryParameter adds the templateVersion to the application collection get params
-func (o *ApplicationCollectionGetParams) WithTemplateVersionQueryParameter(templateVersion *string) *ApplicationCollectionGetParams {
-	o.SetTemplateVersionQueryParameter(templateVersion)
+// WithTemplateVersion adds the templateVersion to the application collection get params
+func (o *ApplicationCollectionGetParams) WithTemplateVersion(templateVersion *string) *ApplicationCollectionGetParams {
+	o.SetTemplateVersion(templateVersion)
 	return o
 }
 
-// SetTemplateVersionQueryParameter adds the templateVersion to the application collection get params
-func (o *ApplicationCollectionGetParams) SetTemplateVersionQueryParameter(templateVersion *string) {
-	o.TemplateVersionQueryParameter = templateVersion
+// SetTemplateVersion adds the templateVersion to the application collection get params
+func (o *ApplicationCollectionGetParams) SetTemplateVersion(templateVersion *string) {
+	o.TemplateVersion = templateVersion
 }
 
-// WithUUIDQueryParameter adds the uuid to the application collection get params
-func (o *ApplicationCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ApplicationCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the application collection get params
+func (o *ApplicationCollectionGetParams) WithUUID(uuid *string) *ApplicationCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the application collection get params
-func (o *ApplicationCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the application collection get params
+func (o *ApplicationCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1195,7 +1195,7 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1206,13 +1206,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.GenerationQueryParameter != nil {
+	if o.Generation != nil {
 
 		// query param generation
 		var qrGeneration string
 
-		if o.GenerationQueryParameter != nil {
-			qrGeneration = *o.GenerationQueryParameter
+		if o.Generation != nil {
+			qrGeneration = *o.Generation
 		}
 		qGeneration := qrGeneration
 		if qGeneration != "" {
@@ -1223,13 +1223,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1240,13 +1240,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1257,7 +1257,7 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1268,13 +1268,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProtectionGranularityQueryParameter != nil {
+	if o.ProtectionGranularity != nil {
 
 		// query param protection_granularity
 		var qrProtectionGranularity string
 
-		if o.ProtectionGranularityQueryParameter != nil {
-			qrProtectionGranularity = *o.ProtectionGranularityQueryParameter
+		if o.ProtectionGranularity != nil {
+			qrProtectionGranularity = *o.ProtectionGranularity
 		}
 		qProtectionGranularity := qrProtectionGranularity
 		if qProtectionGranularity != "" {
@@ -1285,13 +1285,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1302,13 +1302,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1319,13 +1319,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsNameQueryParameter != nil {
+	if o.RpoComponentsName != nil {
 
 		// query param rpo.components.name
 		var qrRpoComponentsName string
 
-		if o.RpoComponentsNameQueryParameter != nil {
-			qrRpoComponentsName = *o.RpoComponentsNameQueryParameter
+		if o.RpoComponentsName != nil {
+			qrRpoComponentsName = *o.RpoComponentsName
 		}
 		qRpoComponentsName := qrRpoComponentsName
 		if qRpoComponentsName != "" {
@@ -1336,13 +1336,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsRpoLocalDescriptionQueryParameter != nil {
+	if o.RpoComponentsRpoLocalDescription != nil {
 
 		// query param rpo.components.rpo.local.description
 		var qrRpoComponentsRpoLocalDescription string
 
-		if o.RpoComponentsRpoLocalDescriptionQueryParameter != nil {
-			qrRpoComponentsRpoLocalDescription = *o.RpoComponentsRpoLocalDescriptionQueryParameter
+		if o.RpoComponentsRpoLocalDescription != nil {
+			qrRpoComponentsRpoLocalDescription = *o.RpoComponentsRpoLocalDescription
 		}
 		qRpoComponentsRpoLocalDescription := qrRpoComponentsRpoLocalDescription
 		if qRpoComponentsRpoLocalDescription != "" {
@@ -1353,13 +1353,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsRpoLocalNameQueryParameter != nil {
+	if o.RpoComponentsRpoLocalName != nil {
 
 		// query param rpo.components.rpo.local.name
 		var qrRpoComponentsRpoLocalName string
 
-		if o.RpoComponentsRpoLocalNameQueryParameter != nil {
-			qrRpoComponentsRpoLocalName = *o.RpoComponentsRpoLocalNameQueryParameter
+		if o.RpoComponentsRpoLocalName != nil {
+			qrRpoComponentsRpoLocalName = *o.RpoComponentsRpoLocalName
 		}
 		qRpoComponentsRpoLocalName := qrRpoComponentsRpoLocalName
 		if qRpoComponentsRpoLocalName != "" {
@@ -1370,13 +1370,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsRpoRemoteDescriptionQueryParameter != nil {
+	if o.RpoComponentsRpoRemoteDescription != nil {
 
 		// query param rpo.components.rpo.remote.description
 		var qrRpoComponentsRpoRemoteDescription string
 
-		if o.RpoComponentsRpoRemoteDescriptionQueryParameter != nil {
-			qrRpoComponentsRpoRemoteDescription = *o.RpoComponentsRpoRemoteDescriptionQueryParameter
+		if o.RpoComponentsRpoRemoteDescription != nil {
+			qrRpoComponentsRpoRemoteDescription = *o.RpoComponentsRpoRemoteDescription
 		}
 		qRpoComponentsRpoRemoteDescription := qrRpoComponentsRpoRemoteDescription
 		if qRpoComponentsRpoRemoteDescription != "" {
@@ -1387,13 +1387,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsRpoRemoteNameQueryParameter != nil {
+	if o.RpoComponentsRpoRemoteName != nil {
 
 		// query param rpo.components.rpo.remote.name
 		var qrRpoComponentsRpoRemoteName string
 
-		if o.RpoComponentsRpoRemoteNameQueryParameter != nil {
-			qrRpoComponentsRpoRemoteName = *o.RpoComponentsRpoRemoteNameQueryParameter
+		if o.RpoComponentsRpoRemoteName != nil {
+			qrRpoComponentsRpoRemoteName = *o.RpoComponentsRpoRemoteName
 		}
 		qRpoComponentsRpoRemoteName := qrRpoComponentsRpoRemoteName
 		if qRpoComponentsRpoRemoteName != "" {
@@ -1404,13 +1404,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoComponentsUUIDQueryParameter != nil {
+	if o.RpoComponentsUUID != nil {
 
 		// query param rpo.components.uuid
 		var qrRpoComponentsUUID string
 
-		if o.RpoComponentsUUIDQueryParameter != nil {
-			qrRpoComponentsUUID = *o.RpoComponentsUUIDQueryParameter
+		if o.RpoComponentsUUID != nil {
+			qrRpoComponentsUUID = *o.RpoComponentsUUID
 		}
 		qRpoComponentsUUID := qrRpoComponentsUUID
 		if qRpoComponentsUUID != "" {
@@ -1421,13 +1421,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoIsSupportedQueryParameter != nil {
+	if o.RpoIsSupported != nil {
 
 		// query param rpo.is_supported
 		var qrRpoIsSupported string
 
-		if o.RpoIsSupportedQueryParameter != nil {
-			qrRpoIsSupported = *o.RpoIsSupportedQueryParameter
+		if o.RpoIsSupported != nil {
+			qrRpoIsSupported = *o.RpoIsSupported
 		}
 		qRpoIsSupported := qrRpoIsSupported
 		if qRpoIsSupported != "" {
@@ -1438,13 +1438,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoLocalDescriptionQueryParameter != nil {
+	if o.RpoLocalDescription != nil {
 
 		// query param rpo.local.description
 		var qrRpoLocalDescription string
 
-		if o.RpoLocalDescriptionQueryParameter != nil {
-			qrRpoLocalDescription = *o.RpoLocalDescriptionQueryParameter
+		if o.RpoLocalDescription != nil {
+			qrRpoLocalDescription = *o.RpoLocalDescription
 		}
 		qRpoLocalDescription := qrRpoLocalDescription
 		if qRpoLocalDescription != "" {
@@ -1455,13 +1455,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoLocalNameQueryParameter != nil {
+	if o.RpoLocalName != nil {
 
 		// query param rpo.local.name
 		var qrRpoLocalName string
 
-		if o.RpoLocalNameQueryParameter != nil {
-			qrRpoLocalName = *o.RpoLocalNameQueryParameter
+		if o.RpoLocalName != nil {
+			qrRpoLocalName = *o.RpoLocalName
 		}
 		qRpoLocalName := qrRpoLocalName
 		if qRpoLocalName != "" {
@@ -1472,13 +1472,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoRemoteDescriptionQueryParameter != nil {
+	if o.RpoRemoteDescription != nil {
 
 		// query param rpo.remote.description
 		var qrRpoRemoteDescription string
 
-		if o.RpoRemoteDescriptionQueryParameter != nil {
-			qrRpoRemoteDescription = *o.RpoRemoteDescriptionQueryParameter
+		if o.RpoRemoteDescription != nil {
+			qrRpoRemoteDescription = *o.RpoRemoteDescription
 		}
 		qRpoRemoteDescription := qrRpoRemoteDescription
 		if qRpoRemoteDescription != "" {
@@ -1489,13 +1489,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RpoRemoteNameQueryParameter != nil {
+	if o.RpoRemoteName != nil {
 
 		// query param rpo.remote.name
 		var qrRpoRemoteName string
 
-		if o.RpoRemoteNameQueryParameter != nil {
-			qrRpoRemoteName = *o.RpoRemoteNameQueryParameter
+		if o.RpoRemoteName != nil {
+			qrRpoRemoteName = *o.RpoRemoteName
 		}
 		qRpoRemoteName := qrRpoRemoteName
 		if qRpoRemoteName != "" {
@@ -1506,13 +1506,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SmartContainerQueryParameter != nil {
+	if o.SmartContainer != nil {
 
 		// query param smart_container
 		var qrSmartContainer string
 
-		if o.SmartContainerQueryParameter != nil {
-			qrSmartContainer = *o.SmartContainerQueryParameter
+		if o.SmartContainer != nil {
+			qrSmartContainer = *o.SmartContainer
 		}
 		qSmartContainer := qrSmartContainer
 		if qSmartContainer != "" {
@@ -1523,13 +1523,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1540,13 +1540,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsIopsPerTbQueryParameter != nil {
+	if o.StatisticsComponentsIopsPerTb != nil {
 
 		// query param statistics.components.iops.per_tb
 		var qrStatisticsComponentsIopsPerTb string
 
-		if o.StatisticsComponentsIopsPerTbQueryParameter != nil {
-			qrStatisticsComponentsIopsPerTb = *o.StatisticsComponentsIopsPerTbQueryParameter
+		if o.StatisticsComponentsIopsPerTb != nil {
+			qrStatisticsComponentsIopsPerTb = *o.StatisticsComponentsIopsPerTb
 		}
 		qStatisticsComponentsIopsPerTb := qrStatisticsComponentsIopsPerTb
 		if qStatisticsComponentsIopsPerTb != "" {
@@ -1557,13 +1557,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsIopsTotalQueryParameter != nil {
+	if o.StatisticsComponentsIopsTotal != nil {
 
 		// query param statistics.components.iops.total
 		var qrStatisticsComponentsIopsTotal string
 
-		if o.StatisticsComponentsIopsTotalQueryParameter != nil {
-			qrStatisticsComponentsIopsTotal = *o.StatisticsComponentsIopsTotalQueryParameter
+		if o.StatisticsComponentsIopsTotal != nil {
+			qrStatisticsComponentsIopsTotal = *o.StatisticsComponentsIopsTotal
 		}
 		qStatisticsComponentsIopsTotal := qrStatisticsComponentsIopsTotal
 		if qStatisticsComponentsIopsTotal != "" {
@@ -1574,13 +1574,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsLatencyAverageQueryParameter != nil {
+	if o.StatisticsComponentsLatencyAverage != nil {
 
 		// query param statistics.components.latency.average
 		var qrStatisticsComponentsLatencyAverage string
 
-		if o.StatisticsComponentsLatencyAverageQueryParameter != nil {
-			qrStatisticsComponentsLatencyAverage = *o.StatisticsComponentsLatencyAverageQueryParameter
+		if o.StatisticsComponentsLatencyAverage != nil {
+			qrStatisticsComponentsLatencyAverage = *o.StatisticsComponentsLatencyAverage
 		}
 		qStatisticsComponentsLatencyAverage := qrStatisticsComponentsLatencyAverage
 		if qStatisticsComponentsLatencyAverage != "" {
@@ -1591,13 +1591,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsLatencyRawQueryParameter != nil {
+	if o.StatisticsComponentsLatencyRaw != nil {
 
 		// query param statistics.components.latency.raw
 		var qrStatisticsComponentsLatencyRaw string
 
-		if o.StatisticsComponentsLatencyRawQueryParameter != nil {
-			qrStatisticsComponentsLatencyRaw = *o.StatisticsComponentsLatencyRawQueryParameter
+		if o.StatisticsComponentsLatencyRaw != nil {
+			qrStatisticsComponentsLatencyRaw = *o.StatisticsComponentsLatencyRaw
 		}
 		qStatisticsComponentsLatencyRaw := qrStatisticsComponentsLatencyRaw
 		if qStatisticsComponentsLatencyRaw != "" {
@@ -1608,13 +1608,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsNameQueryParameter != nil {
+	if o.StatisticsComponentsName != nil {
 
 		// query param statistics.components.name
 		var qrStatisticsComponentsName string
 
-		if o.StatisticsComponentsNameQueryParameter != nil {
-			qrStatisticsComponentsName = *o.StatisticsComponentsNameQueryParameter
+		if o.StatisticsComponentsName != nil {
+			qrStatisticsComponentsName = *o.StatisticsComponentsName
 		}
 		qStatisticsComponentsName := qrStatisticsComponentsName
 		if qStatisticsComponentsName != "" {
@@ -1625,13 +1625,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSharedStoragePoolQueryParameter != nil {
+	if o.StatisticsComponentsSharedStoragePool != nil {
 
 		// query param statistics.components.shared_storage_pool
 		var qrStatisticsComponentsSharedStoragePool string
 
-		if o.StatisticsComponentsSharedStoragePoolQueryParameter != nil {
-			qrStatisticsComponentsSharedStoragePool = *o.StatisticsComponentsSharedStoragePoolQueryParameter
+		if o.StatisticsComponentsSharedStoragePool != nil {
+			qrStatisticsComponentsSharedStoragePool = *o.StatisticsComponentsSharedStoragePool
 		}
 		qStatisticsComponentsSharedStoragePool := qrStatisticsComponentsSharedStoragePool
 		if qStatisticsComponentsSharedStoragePool != "" {
@@ -1642,13 +1642,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSnapshotReserveQueryParameter != nil {
+	if o.StatisticsComponentsSnapshotReserve != nil {
 
 		// query param statistics.components.snapshot.reserve
 		var qrStatisticsComponentsSnapshotReserve string
 
-		if o.StatisticsComponentsSnapshotReserveQueryParameter != nil {
-			qrStatisticsComponentsSnapshotReserve = *o.StatisticsComponentsSnapshotReserveQueryParameter
+		if o.StatisticsComponentsSnapshotReserve != nil {
+			qrStatisticsComponentsSnapshotReserve = *o.StatisticsComponentsSnapshotReserve
 		}
 		qStatisticsComponentsSnapshotReserve := qrStatisticsComponentsSnapshotReserve
 		if qStatisticsComponentsSnapshotReserve != "" {
@@ -1659,13 +1659,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSnapshotUsedQueryParameter != nil {
+	if o.StatisticsComponentsSnapshotUsed != nil {
 
 		// query param statistics.components.snapshot.used
 		var qrStatisticsComponentsSnapshotUsed string
 
-		if o.StatisticsComponentsSnapshotUsedQueryParameter != nil {
-			qrStatisticsComponentsSnapshotUsed = *o.StatisticsComponentsSnapshotUsedQueryParameter
+		if o.StatisticsComponentsSnapshotUsed != nil {
+			qrStatisticsComponentsSnapshotUsed = *o.StatisticsComponentsSnapshotUsed
 		}
 		qStatisticsComponentsSnapshotUsed := qrStatisticsComponentsSnapshotUsed
 		if qStatisticsComponentsSnapshotUsed != "" {
@@ -1676,13 +1676,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceAvailableQueryParameter != nil {
+	if o.StatisticsComponentsSpaceAvailable != nil {
 
 		// query param statistics.components.space.available
 		var qrStatisticsComponentsSpaceAvailable string
 
-		if o.StatisticsComponentsSpaceAvailableQueryParameter != nil {
-			qrStatisticsComponentsSpaceAvailable = *o.StatisticsComponentsSpaceAvailableQueryParameter
+		if o.StatisticsComponentsSpaceAvailable != nil {
+			qrStatisticsComponentsSpaceAvailable = *o.StatisticsComponentsSpaceAvailable
 		}
 		qStatisticsComponentsSpaceAvailable := qrStatisticsComponentsSpaceAvailable
 		if qStatisticsComponentsSpaceAvailable != "" {
@@ -1693,13 +1693,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceLogicalUsedQueryParameter != nil {
+	if o.StatisticsComponentsSpaceLogicalUsed != nil {
 
 		// query param statistics.components.space.logical_used
 		var qrStatisticsComponentsSpaceLogicalUsed string
 
-		if o.StatisticsComponentsSpaceLogicalUsedQueryParameter != nil {
-			qrStatisticsComponentsSpaceLogicalUsed = *o.StatisticsComponentsSpaceLogicalUsedQueryParameter
+		if o.StatisticsComponentsSpaceLogicalUsed != nil {
+			qrStatisticsComponentsSpaceLogicalUsed = *o.StatisticsComponentsSpaceLogicalUsed
 		}
 		qStatisticsComponentsSpaceLogicalUsed := qrStatisticsComponentsSpaceLogicalUsed
 		if qStatisticsComponentsSpaceLogicalUsed != "" {
@@ -1710,13 +1710,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceProvisionedQueryParameter != nil {
+	if o.StatisticsComponentsSpaceProvisioned != nil {
 
 		// query param statistics.components.space.provisioned
 		var qrStatisticsComponentsSpaceProvisioned string
 
-		if o.StatisticsComponentsSpaceProvisionedQueryParameter != nil {
-			qrStatisticsComponentsSpaceProvisioned = *o.StatisticsComponentsSpaceProvisionedQueryParameter
+		if o.StatisticsComponentsSpaceProvisioned != nil {
+			qrStatisticsComponentsSpaceProvisioned = *o.StatisticsComponentsSpaceProvisioned
 		}
 		qStatisticsComponentsSpaceProvisioned := qrStatisticsComponentsSpaceProvisioned
 		if qStatisticsComponentsSpaceProvisioned != "" {
@@ -1727,13 +1727,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceReservedUnusedQueryParameter != nil {
+	if o.StatisticsComponentsSpaceReservedUnused != nil {
 
 		// query param statistics.components.space.reserved_unused
 		var qrStatisticsComponentsSpaceReservedUnused string
 
-		if o.StatisticsComponentsSpaceReservedUnusedQueryParameter != nil {
-			qrStatisticsComponentsSpaceReservedUnused = *o.StatisticsComponentsSpaceReservedUnusedQueryParameter
+		if o.StatisticsComponentsSpaceReservedUnused != nil {
+			qrStatisticsComponentsSpaceReservedUnused = *o.StatisticsComponentsSpaceReservedUnused
 		}
 		qStatisticsComponentsSpaceReservedUnused := qrStatisticsComponentsSpaceReservedUnused
 		if qStatisticsComponentsSpaceReservedUnused != "" {
@@ -1744,13 +1744,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceSavingsQueryParameter != nil {
+	if o.StatisticsComponentsSpaceSavings != nil {
 
 		// query param statistics.components.space.savings
 		var qrStatisticsComponentsSpaceSavings string
 
-		if o.StatisticsComponentsSpaceSavingsQueryParameter != nil {
-			qrStatisticsComponentsSpaceSavings = *o.StatisticsComponentsSpaceSavingsQueryParameter
+		if o.StatisticsComponentsSpaceSavings != nil {
+			qrStatisticsComponentsSpaceSavings = *o.StatisticsComponentsSpaceSavings
 		}
 		qStatisticsComponentsSpaceSavings := qrStatisticsComponentsSpaceSavings
 		if qStatisticsComponentsSpaceSavings != "" {
@@ -1761,13 +1761,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceUsedQueryParameter != nil {
+	if o.StatisticsComponentsSpaceUsed != nil {
 
 		// query param statistics.components.space.used
 		var qrStatisticsComponentsSpaceUsed string
 
-		if o.StatisticsComponentsSpaceUsedQueryParameter != nil {
-			qrStatisticsComponentsSpaceUsed = *o.StatisticsComponentsSpaceUsedQueryParameter
+		if o.StatisticsComponentsSpaceUsed != nil {
+			qrStatisticsComponentsSpaceUsed = *o.StatisticsComponentsSpaceUsed
 		}
 		qStatisticsComponentsSpaceUsed := qrStatisticsComponentsSpaceUsed
 		if qStatisticsComponentsSpaceUsed != "" {
@@ -1778,13 +1778,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceUsedExcludingReservesQueryParameter != nil {
+	if o.StatisticsComponentsSpaceUsedExcludingReserves != nil {
 
 		// query param statistics.components.space.used_excluding_reserves
 		var qrStatisticsComponentsSpaceUsedExcludingReserves string
 
-		if o.StatisticsComponentsSpaceUsedExcludingReservesQueryParameter != nil {
-			qrStatisticsComponentsSpaceUsedExcludingReserves = *o.StatisticsComponentsSpaceUsedExcludingReservesQueryParameter
+		if o.StatisticsComponentsSpaceUsedExcludingReserves != nil {
+			qrStatisticsComponentsSpaceUsedExcludingReserves = *o.StatisticsComponentsSpaceUsedExcludingReserves
 		}
 		qStatisticsComponentsSpaceUsedExcludingReserves := qrStatisticsComponentsSpaceUsedExcludingReserves
 		if qStatisticsComponentsSpaceUsedExcludingReserves != "" {
@@ -1795,13 +1795,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsSpaceUsedPercentQueryParameter != nil {
+	if o.StatisticsComponentsSpaceUsedPercent != nil {
 
 		// query param statistics.components.space.used_percent
 		var qrStatisticsComponentsSpaceUsedPercent string
 
-		if o.StatisticsComponentsSpaceUsedPercentQueryParameter != nil {
-			qrStatisticsComponentsSpaceUsedPercent = *o.StatisticsComponentsSpaceUsedPercentQueryParameter
+		if o.StatisticsComponentsSpaceUsedPercent != nil {
+			qrStatisticsComponentsSpaceUsedPercent = *o.StatisticsComponentsSpaceUsedPercent
 		}
 		qStatisticsComponentsSpaceUsedPercent := qrStatisticsComponentsSpaceUsedPercent
 		if qStatisticsComponentsSpaceUsedPercent != "" {
@@ -1812,13 +1812,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsStatisticsIncompleteQueryParameter != nil {
+	if o.StatisticsComponentsStatisticsIncomplete != nil {
 
 		// query param statistics.components.statistics_incomplete
 		var qrStatisticsComponentsStatisticsIncomplete string
 
-		if o.StatisticsComponentsStatisticsIncompleteQueryParameter != nil {
-			qrStatisticsComponentsStatisticsIncomplete = *o.StatisticsComponentsStatisticsIncompleteQueryParameter
+		if o.StatisticsComponentsStatisticsIncomplete != nil {
+			qrStatisticsComponentsStatisticsIncomplete = *o.StatisticsComponentsStatisticsIncomplete
 		}
 		qStatisticsComponentsStatisticsIncomplete := qrStatisticsComponentsStatisticsIncomplete
 		if qStatisticsComponentsStatisticsIncomplete != "" {
@@ -1829,13 +1829,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsStorageServiceNameQueryParameter != nil {
+	if o.StatisticsComponentsStorageServiceName != nil {
 
 		// query param statistics.components.storage_service.name
 		var qrStatisticsComponentsStorageServiceName string
 
-		if o.StatisticsComponentsStorageServiceNameQueryParameter != nil {
-			qrStatisticsComponentsStorageServiceName = *o.StatisticsComponentsStorageServiceNameQueryParameter
+		if o.StatisticsComponentsStorageServiceName != nil {
+			qrStatisticsComponentsStorageServiceName = *o.StatisticsComponentsStorageServiceName
 		}
 		qStatisticsComponentsStorageServiceName := qrStatisticsComponentsStorageServiceName
 		if qStatisticsComponentsStorageServiceName != "" {
@@ -1846,13 +1846,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsComponentsUUIDQueryParameter != nil {
+	if o.StatisticsComponentsUUID != nil {
 
 		// query param statistics.components.uuid
 		var qrStatisticsComponentsUUID string
 
-		if o.StatisticsComponentsUUIDQueryParameter != nil {
-			qrStatisticsComponentsUUID = *o.StatisticsComponentsUUIDQueryParameter
+		if o.StatisticsComponentsUUID != nil {
+			qrStatisticsComponentsUUID = *o.StatisticsComponentsUUID
 		}
 		qStatisticsComponentsUUID := qrStatisticsComponentsUUID
 		if qStatisticsComponentsUUID != "" {
@@ -1863,13 +1863,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsPerTbQueryParameter != nil {
+	if o.StatisticsIopsPerTb != nil {
 
 		// query param statistics.iops.per_tb
 		var qrStatisticsIopsPerTb string
 
-		if o.StatisticsIopsPerTbQueryParameter != nil {
-			qrStatisticsIopsPerTb = *o.StatisticsIopsPerTbQueryParameter
+		if o.StatisticsIopsPerTb != nil {
+			qrStatisticsIopsPerTb = *o.StatisticsIopsPerTb
 		}
 		qStatisticsIopsPerTb := qrStatisticsIopsPerTb
 		if qStatisticsIopsPerTb != "" {
@@ -1880,13 +1880,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsIopsTotalQueryParameter != nil {
+	if o.StatisticsIopsTotal != nil {
 
 		// query param statistics.iops.total
 		var qrStatisticsIopsTotal string
 
-		if o.StatisticsIopsTotalQueryParameter != nil {
-			qrStatisticsIopsTotal = *o.StatisticsIopsTotalQueryParameter
+		if o.StatisticsIopsTotal != nil {
+			qrStatisticsIopsTotal = *o.StatisticsIopsTotal
 		}
 		qStatisticsIopsTotal := qrStatisticsIopsTotal
 		if qStatisticsIopsTotal != "" {
@@ -1897,13 +1897,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyAverageQueryParameter != nil {
+	if o.StatisticsLatencyAverage != nil {
 
 		// query param statistics.latency.average
 		var qrStatisticsLatencyAverage string
 
-		if o.StatisticsLatencyAverageQueryParameter != nil {
-			qrStatisticsLatencyAverage = *o.StatisticsLatencyAverageQueryParameter
+		if o.StatisticsLatencyAverage != nil {
+			qrStatisticsLatencyAverage = *o.StatisticsLatencyAverage
 		}
 		qStatisticsLatencyAverage := qrStatisticsLatencyAverage
 		if qStatisticsLatencyAverage != "" {
@@ -1914,13 +1914,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsLatencyRawQueryParameter != nil {
+	if o.StatisticsLatencyRaw != nil {
 
 		// query param statistics.latency.raw
 		var qrStatisticsLatencyRaw string
 
-		if o.StatisticsLatencyRawQueryParameter != nil {
-			qrStatisticsLatencyRaw = *o.StatisticsLatencyRawQueryParameter
+		if o.StatisticsLatencyRaw != nil {
+			qrStatisticsLatencyRaw = *o.StatisticsLatencyRaw
 		}
 		qStatisticsLatencyRaw := qrStatisticsLatencyRaw
 		if qStatisticsLatencyRaw != "" {
@@ -1931,13 +1931,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSharedStoragePoolQueryParameter != nil {
+	if o.StatisticsSharedStoragePool != nil {
 
 		// query param statistics.shared_storage_pool
 		var qrStatisticsSharedStoragePool string
 
-		if o.StatisticsSharedStoragePoolQueryParameter != nil {
-			qrStatisticsSharedStoragePool = *o.StatisticsSharedStoragePoolQueryParameter
+		if o.StatisticsSharedStoragePool != nil {
+			qrStatisticsSharedStoragePool = *o.StatisticsSharedStoragePool
 		}
 		qStatisticsSharedStoragePool := qrStatisticsSharedStoragePool
 		if qStatisticsSharedStoragePool != "" {
@@ -1948,13 +1948,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSnapshotReserveQueryParameter != nil {
+	if o.StatisticsSnapshotReserve != nil {
 
 		// query param statistics.snapshot.reserve
 		var qrStatisticsSnapshotReserve string
 
-		if o.StatisticsSnapshotReserveQueryParameter != nil {
-			qrStatisticsSnapshotReserve = *o.StatisticsSnapshotReserveQueryParameter
+		if o.StatisticsSnapshotReserve != nil {
+			qrStatisticsSnapshotReserve = *o.StatisticsSnapshotReserve
 		}
 		qStatisticsSnapshotReserve := qrStatisticsSnapshotReserve
 		if qStatisticsSnapshotReserve != "" {
@@ -1965,13 +1965,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSnapshotUsedQueryParameter != nil {
+	if o.StatisticsSnapshotUsed != nil {
 
 		// query param statistics.snapshot.used
 		var qrStatisticsSnapshotUsed string
 
-		if o.StatisticsSnapshotUsedQueryParameter != nil {
-			qrStatisticsSnapshotUsed = *o.StatisticsSnapshotUsedQueryParameter
+		if o.StatisticsSnapshotUsed != nil {
+			qrStatisticsSnapshotUsed = *o.StatisticsSnapshotUsed
 		}
 		qStatisticsSnapshotUsed := qrStatisticsSnapshotUsed
 		if qStatisticsSnapshotUsed != "" {
@@ -1982,13 +1982,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceAvailableQueryParameter != nil {
+	if o.StatisticsSpaceAvailable != nil {
 
 		// query param statistics.space.available
 		var qrStatisticsSpaceAvailable string
 
-		if o.StatisticsSpaceAvailableQueryParameter != nil {
-			qrStatisticsSpaceAvailable = *o.StatisticsSpaceAvailableQueryParameter
+		if o.StatisticsSpaceAvailable != nil {
+			qrStatisticsSpaceAvailable = *o.StatisticsSpaceAvailable
 		}
 		qStatisticsSpaceAvailable := qrStatisticsSpaceAvailable
 		if qStatisticsSpaceAvailable != "" {
@@ -1999,13 +1999,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceLogicalUsedQueryParameter != nil {
+	if o.StatisticsSpaceLogicalUsed != nil {
 
 		// query param statistics.space.logical_used
 		var qrStatisticsSpaceLogicalUsed string
 
-		if o.StatisticsSpaceLogicalUsedQueryParameter != nil {
-			qrStatisticsSpaceLogicalUsed = *o.StatisticsSpaceLogicalUsedQueryParameter
+		if o.StatisticsSpaceLogicalUsed != nil {
+			qrStatisticsSpaceLogicalUsed = *o.StatisticsSpaceLogicalUsed
 		}
 		qStatisticsSpaceLogicalUsed := qrStatisticsSpaceLogicalUsed
 		if qStatisticsSpaceLogicalUsed != "" {
@@ -2016,13 +2016,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceProvisionedQueryParameter != nil {
+	if o.StatisticsSpaceProvisioned != nil {
 
 		// query param statistics.space.provisioned
 		var qrStatisticsSpaceProvisioned string
 
-		if o.StatisticsSpaceProvisionedQueryParameter != nil {
-			qrStatisticsSpaceProvisioned = *o.StatisticsSpaceProvisionedQueryParameter
+		if o.StatisticsSpaceProvisioned != nil {
+			qrStatisticsSpaceProvisioned = *o.StatisticsSpaceProvisioned
 		}
 		qStatisticsSpaceProvisioned := qrStatisticsSpaceProvisioned
 		if qStatisticsSpaceProvisioned != "" {
@@ -2033,13 +2033,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceReservedUnusedQueryParameter != nil {
+	if o.StatisticsSpaceReservedUnused != nil {
 
 		// query param statistics.space.reserved_unused
 		var qrStatisticsSpaceReservedUnused string
 
-		if o.StatisticsSpaceReservedUnusedQueryParameter != nil {
-			qrStatisticsSpaceReservedUnused = *o.StatisticsSpaceReservedUnusedQueryParameter
+		if o.StatisticsSpaceReservedUnused != nil {
+			qrStatisticsSpaceReservedUnused = *o.StatisticsSpaceReservedUnused
 		}
 		qStatisticsSpaceReservedUnused := qrStatisticsSpaceReservedUnused
 		if qStatisticsSpaceReservedUnused != "" {
@@ -2050,13 +2050,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceSavingsQueryParameter != nil {
+	if o.StatisticsSpaceSavings != nil {
 
 		// query param statistics.space.savings
 		var qrStatisticsSpaceSavings string
 
-		if o.StatisticsSpaceSavingsQueryParameter != nil {
-			qrStatisticsSpaceSavings = *o.StatisticsSpaceSavingsQueryParameter
+		if o.StatisticsSpaceSavings != nil {
+			qrStatisticsSpaceSavings = *o.StatisticsSpaceSavings
 		}
 		qStatisticsSpaceSavings := qrStatisticsSpaceSavings
 		if qStatisticsSpaceSavings != "" {
@@ -2067,13 +2067,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceUsedQueryParameter != nil {
+	if o.StatisticsSpaceUsed != nil {
 
 		// query param statistics.space.used
 		var qrStatisticsSpaceUsed string
 
-		if o.StatisticsSpaceUsedQueryParameter != nil {
-			qrStatisticsSpaceUsed = *o.StatisticsSpaceUsedQueryParameter
+		if o.StatisticsSpaceUsed != nil {
+			qrStatisticsSpaceUsed = *o.StatisticsSpaceUsed
 		}
 		qStatisticsSpaceUsed := qrStatisticsSpaceUsed
 		if qStatisticsSpaceUsed != "" {
@@ -2084,13 +2084,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceUsedExcludingReservesQueryParameter != nil {
+	if o.StatisticsSpaceUsedExcludingReserves != nil {
 
 		// query param statistics.space.used_excluding_reserves
 		var qrStatisticsSpaceUsedExcludingReserves string
 
-		if o.StatisticsSpaceUsedExcludingReservesQueryParameter != nil {
-			qrStatisticsSpaceUsedExcludingReserves = *o.StatisticsSpaceUsedExcludingReservesQueryParameter
+		if o.StatisticsSpaceUsedExcludingReserves != nil {
+			qrStatisticsSpaceUsedExcludingReserves = *o.StatisticsSpaceUsedExcludingReserves
 		}
 		qStatisticsSpaceUsedExcludingReserves := qrStatisticsSpaceUsedExcludingReserves
 		if qStatisticsSpaceUsedExcludingReserves != "" {
@@ -2101,13 +2101,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsSpaceUsedPercentQueryParameter != nil {
+	if o.StatisticsSpaceUsedPercent != nil {
 
 		// query param statistics.space.used_percent
 		var qrStatisticsSpaceUsedPercent string
 
-		if o.StatisticsSpaceUsedPercentQueryParameter != nil {
-			qrStatisticsSpaceUsedPercent = *o.StatisticsSpaceUsedPercentQueryParameter
+		if o.StatisticsSpaceUsedPercent != nil {
+			qrStatisticsSpaceUsedPercent = *o.StatisticsSpaceUsedPercent
 		}
 		qStatisticsSpaceUsedPercent := qrStatisticsSpaceUsedPercent
 		if qStatisticsSpaceUsedPercent != "" {
@@ -2118,13 +2118,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatisticsStatisticsIncompleteQueryParameter != nil {
+	if o.StatisticsStatisticsIncomplete != nil {
 
 		// query param statistics.statistics_incomplete
 		var qrStatisticsStatisticsIncomplete string
 
-		if o.StatisticsStatisticsIncompleteQueryParameter != nil {
-			qrStatisticsStatisticsIncomplete = *o.StatisticsStatisticsIncompleteQueryParameter
+		if o.StatisticsStatisticsIncomplete != nil {
+			qrStatisticsStatisticsIncomplete = *o.StatisticsStatisticsIncomplete
 		}
 		qStatisticsStatisticsIncomplete := qrStatisticsStatisticsIncomplete
 		if qStatisticsStatisticsIncomplete != "" {
@@ -2135,13 +2135,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -2152,13 +2152,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -2169,13 +2169,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TemplateNameQueryParameter != nil {
+	if o.TemplateName != nil {
 
 		// query param template.name
 		var qrTemplateName string
 
-		if o.TemplateNameQueryParameter != nil {
-			qrTemplateName = *o.TemplateNameQueryParameter
+		if o.TemplateName != nil {
+			qrTemplateName = *o.TemplateName
 		}
 		qTemplateName := qrTemplateName
 		if qTemplateName != "" {
@@ -2186,13 +2186,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TemplateProtocolQueryParameter != nil {
+	if o.TemplateProtocol != nil {
 
 		// query param template.protocol
 		var qrTemplateProtocol string
 
-		if o.TemplateProtocolQueryParameter != nil {
-			qrTemplateProtocol = *o.TemplateProtocolQueryParameter
+		if o.TemplateProtocol != nil {
+			qrTemplateProtocol = *o.TemplateProtocol
 		}
 		qTemplateProtocol := qrTemplateProtocol
 		if qTemplateProtocol != "" {
@@ -2203,13 +2203,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TemplateVersionQueryParameter != nil {
+	if o.TemplateVersion != nil {
 
 		// query param template.version
 		var qrTemplateVersion string
 
-		if o.TemplateVersionQueryParameter != nil {
-			qrTemplateVersion = *o.TemplateVersionQueryParameter
+		if o.TemplateVersion != nil {
+			qrTemplateVersion = *o.TemplateVersion
 		}
 		qTemplateVersion := qrTemplateVersion
 		if qTemplateVersion != "" {
@@ -2220,13 +2220,13 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -2245,7 +2245,7 @@ func (o *ApplicationCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamApplicationCollectionGet binds the parameter fields
 func (o *ApplicationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2262,7 +2262,7 @@ func (o *ApplicationCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamApplicationCollectionGet binds the parameter order_by
 func (o *ApplicationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

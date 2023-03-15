@@ -66,19 +66,19 @@ type SnaplockRetentionOperationCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type SnaplockRetentionOperationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,13 +94,13 @@ type SnaplockRetentionOperationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDQueryParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,14 +120,14 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WithDefaults() *Snaplock
 // All values with no default are reset to their zero value.
 func (o *SnaplockRetentionOperationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnaplockRetentionOperationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -169,70 +169,70 @@ func (o *SnaplockRetentionOperationCollectionGetParams) SetHTTPClient(client *ht
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithFields(fields []string) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithOrderBy(orderBy []string) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID string) *SnaplockRetentionOperationCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) WithVolumeUUID(volumeUUID string) *SnaplockRetentionOperationCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the snaplock retention operation collection get params
-func (o *SnaplockRetentionOperationCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snaplock retention operation collection get params
+func (o *SnaplockRetentionOperationCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -243,7 +243,7 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -254,13 +254,13 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -271,7 +271,7 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -282,13 +282,13 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -299,13 +299,13 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -317,7 +317,7 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 	}
 
 	// query param volume.uuid
-	qrVolumeUUID := o.VolumeUUIDQueryParameter
+	qrVolumeUUID := o.VolumeUUID
 	qVolumeUUID := qrVolumeUUID
 	if qVolumeUUID != "" {
 
@@ -334,7 +334,7 @@ func (o *SnaplockRetentionOperationCollectionGetParams) WriteToRequest(r runtime
 
 // bindParamSnaplockRetentionOperationCollectionGet binds the parameter fields
 func (o *SnaplockRetentionOperationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -351,7 +351,7 @@ func (o *SnaplockRetentionOperationCollectionGetParams) bindParamFields(formats 
 
 // bindParamSnaplockRetentionOperationCollectionGet binds the parameter order_by
 func (o *SnaplockRetentionOperationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -19,11 +19,11 @@ type FirmwareHistoryUpdateStateError struct {
 
 	// Code corresponding to the status message.
 	// Example: 2228325
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Error message returned when a firmware update job fails.
 	// Example: Cannot open local staging ZIP file disk_firmware.zip
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this firmware history update state error

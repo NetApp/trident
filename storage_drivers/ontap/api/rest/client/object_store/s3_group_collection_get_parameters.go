@@ -66,43 +66,43 @@ type S3GroupCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *int64
+	ID *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PoliciesName.
 
 	   Filter by policies.name
 	*/
-	PoliciesNameQueryParameter *string
+	PoliciesName *string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type S3GroupCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,25 +118,25 @@ type S3GroupCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UsersName.
 
 	   Filter by users.name
 	*/
-	UsersNameQueryParameter *string
+	UsersName *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *S3GroupCollectionGetParams) WithDefaults() *S3GroupCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *S3GroupCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := S3GroupCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *S3GroupCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithCommentQueryParameter(comment *string) *S3GroupCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithComment(comment *string) *S3GroupCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithFieldsQueryParameter(fields []string) *S3GroupCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithFields(fields []string) *S3GroupCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDQueryParameter adds the id to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithIDQueryParameter(id *int64) *S3GroupCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithID(id *int64) *S3GroupCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetIDQueryParameter(id *int64) {
-	o.IDQueryParameter = id
+// SetID adds the id to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetID(id *int64) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *S3GroupCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3GroupCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithNameQueryParameter(name *string) *S3GroupCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithName(name *string) *S3GroupCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *S3GroupCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithOrderBy(orderBy []string) *S3GroupCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPoliciesNameQueryParameter adds the policiesName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithPoliciesNameQueryParameter(policiesName *string) *S3GroupCollectionGetParams {
-	o.SetPoliciesNameQueryParameter(policiesName)
+// WithPoliciesName adds the policiesName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithPoliciesName(policiesName *string) *S3GroupCollectionGetParams {
+	o.SetPoliciesName(policiesName)
 	return o
 }
 
-// SetPoliciesNameQueryParameter adds the policiesName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetPoliciesNameQueryParameter(policiesName *string) {
-	o.PoliciesNameQueryParameter = policiesName
+// SetPoliciesName adds the policiesName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetPoliciesName(policiesName *string) {
+	o.PoliciesName = policiesName
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3GroupCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithReturnRecords(returnRecords *bool) *S3GroupCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3GroupCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *S3GroupCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *S3GroupCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithSvmName(svmName *string) *S3GroupCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3GroupCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithSvmUUID(svmUUID string) *S3GroupCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUsersNameQueryParameter adds the usersName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithUsersNameQueryParameter(usersName *string) *S3GroupCollectionGetParams {
-	o.SetUsersNameQueryParameter(usersName)
+// WithUsersName adds the usersName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) WithUsersName(usersName *string) *S3GroupCollectionGetParams {
+	o.SetUsersName(usersName)
 	return o
 }
 
-// SetUsersNameQueryParameter adds the usersName to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetUsersNameQueryParameter(usersName *string) {
-	o.UsersNameQueryParameter = usersName
+// SetUsersName adds the usersName to the s3 group collection get params
+func (o *S3GroupCollectionGetParams) SetUsersName(usersName *string) {
+	o.UsersName = usersName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -362,7 +362,7 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID int64
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := swag.FormatInt64(qrID)
 		if qID != "" {
@@ -390,13 +390,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -407,13 +407,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -424,7 +424,7 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -435,13 +435,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PoliciesNameQueryParameter != nil {
+	if o.PoliciesName != nil {
 
 		// query param policies.name
 		var qrPoliciesName string
 
-		if o.PoliciesNameQueryParameter != nil {
-			qrPoliciesName = *o.PoliciesNameQueryParameter
+		if o.PoliciesName != nil {
+			qrPoliciesName = *o.PoliciesName
 		}
 		qPoliciesName := qrPoliciesName
 		if qPoliciesName != "" {
@@ -452,13 +452,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +469,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +486,13 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -504,17 +504,17 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.UsersNameQueryParameter != nil {
+	if o.UsersName != nil {
 
 		// query param users.name
 		var qrUsersName string
 
-		if o.UsersNameQueryParameter != nil {
-			qrUsersName = *o.UsersNameQueryParameter
+		if o.UsersName != nil {
+			qrUsersName = *o.UsersName
 		}
 		qUsersName := qrUsersName
 		if qUsersName != "" {
@@ -533,7 +533,7 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamS3GroupCollectionGet binds the parameter fields
 func (o *S3GroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -550,7 +550,7 @@ func (o *S3GroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamS3GroupCollectionGet binds the parameter order_by
 func (o *S3GroupCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

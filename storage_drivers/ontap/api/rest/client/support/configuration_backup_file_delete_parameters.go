@@ -65,13 +65,13 @@ type ConfigurationBackupFileDeleteParams struct {
 
 	   Name of the configuration backup to be deleted.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   UUID of the node that owns the configuration backup.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *ConfigurationBackupFileDeleteParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the configuration backup file delete params
-func (o *ConfigurationBackupFileDeleteParams) WithNamePathParameter(name string) *ConfigurationBackupFileDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the configuration backup file delete params
+func (o *ConfigurationBackupFileDeleteParams) WithName(name string) *ConfigurationBackupFileDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the configuration backup file delete params
-func (o *ConfigurationBackupFileDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the configuration backup file delete params
+func (o *ConfigurationBackupFileDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the configuration backup file delete params
-func (o *ConfigurationBackupFileDeleteParams) WithNodeUUIDPathParameter(nodeUUID string) *ConfigurationBackupFileDeleteParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the configuration backup file delete params
+func (o *ConfigurationBackupFileDeleteParams) WithNodeUUID(nodeUUID string) *ConfigurationBackupFileDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the configuration backup file delete params
-func (o *ConfigurationBackupFileDeleteParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the configuration backup file delete params
+func (o *ConfigurationBackupFileDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *ConfigurationBackupFileDeleteParams) WriteToRequest(r runtime.ClientReq
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

@@ -21,27 +21,27 @@ import (
 type SvmSSHServer struct {
 
 	// links
-	Links *SvmSSHServerLinks `json:"_links,omitempty"`
-
-	// Ciphers for encrypting the data.
-	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
-	Ciphers []Cipher `json:"ciphers,omitempty"`
-
-	// Key exchange algorithms.
-	// Example: ["diffie_hellman_group_exchange_sha256","diffie_hellman_group14_sha1"]
-	KeyExchangeAlgorithms []KeyExchangeAlgorithm `json:"key_exchange_algorithms,omitempty"`
-
-	// MAC algorithms.
-	// Example: ["hmac_sha1","hmac_sha2_512_etm"]
-	MacAlgorithms []MacAlgorithm `json:"mac_algorithms,omitempty"`
+	Links *SvmSSHServerInlineLinks `json:"_links,omitempty"`
 
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
 	// Minimum: 2
-	MaxAuthenticationRetryCount int64 `json:"max_authentication_retry_count,omitempty"`
+	MaxAuthenticationRetryCount *int64 `json:"max_authentication_retry_count,omitempty"`
 
 	// svm
-	Svm *SvmSSHServerSvm `json:"svm,omitempty"`
+	Svm *SvmSSHServerInlineSvm `json:"svm,omitempty"`
+
+	// Ciphers for encrypting the data.
+	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
+	SvmSSHServerInlineCiphers []*Cipher `json:"ciphers,omitempty"`
+
+	// Key exchange algorithms.
+	// Example: ["diffie_hellman_group_exchange_sha256","diffie_hellman_group14_sha1"]
+	SvmSSHServerInlineKeyExchangeAlgorithms []*KeyExchangeAlgorithm `json:"key_exchange_algorithms,omitempty"`
+
+	// MAC algorithms.
+	// Example: ["hmac_sha1","hmac_sha2_512_etm"]
+	SvmSSHServerInlineMacAlgorithms []*MacAlgorithm `json:"mac_algorithms,omitempty"`
 }
 
 // Validate validates this svm ssh server
@@ -52,23 +52,23 @@ func (m *SvmSSHServer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateCiphers(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateKeyExchangeAlgorithms(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateMacAlgorithms(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateMaxAuthenticationRetryCount(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvmSSHServerInlineCiphers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvmSSHServerInlineKeyExchangeAlgorithms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvmSSHServerInlineMacAlgorithms(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,73 +95,16 @@ func (m *SvmSSHServer) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmSSHServer) validateCiphers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Ciphers) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Ciphers); i++ {
-
-		if err := m.Ciphers[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SvmSSHServer) validateKeyExchangeAlgorithms(formats strfmt.Registry) error {
-	if swag.IsZero(m.KeyExchangeAlgorithms) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.KeyExchangeAlgorithms); i++ {
-
-		if err := m.KeyExchangeAlgorithms[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SvmSSHServer) validateMacAlgorithms(formats strfmt.Registry) error {
-	if swag.IsZero(m.MacAlgorithms) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.MacAlgorithms); i++ {
-
-		if err := m.MacAlgorithms[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *SvmSSHServer) validateMaxAuthenticationRetryCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.MaxAuthenticationRetryCount) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("max_authentication_retry_count", "body", m.MaxAuthenticationRetryCount, 2, false); err != nil {
+	if err := validate.MinimumInt("max_authentication_retry_count", "body", *m.MaxAuthenticationRetryCount, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("max_authentication_retry_count", "body", m.MaxAuthenticationRetryCount, 6, false); err != nil {
+	if err := validate.MaximumInt("max_authentication_retry_count", "body", *m.MaxAuthenticationRetryCount, 6, false); err != nil {
 		return err
 	}
 
@@ -185,6 +128,78 @@ func (m *SvmSSHServer) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmSSHServer) validateSvmSSHServerInlineCiphers(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmSSHServerInlineCiphers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SvmSSHServerInlineCiphers); i++ {
+		if swag.IsZero(m.SvmSSHServerInlineCiphers[i]) { // not required
+			continue
+		}
+
+		if m.SvmSSHServerInlineCiphers[i] != nil {
+			if err := m.SvmSSHServerInlineCiphers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SvmSSHServer) validateSvmSSHServerInlineKeyExchangeAlgorithms(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmSSHServerInlineKeyExchangeAlgorithms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SvmSSHServerInlineKeyExchangeAlgorithms); i++ {
+		if swag.IsZero(m.SvmSSHServerInlineKeyExchangeAlgorithms[i]) { // not required
+			continue
+		}
+
+		if m.SvmSSHServerInlineKeyExchangeAlgorithms[i] != nil {
+			if err := m.SvmSSHServerInlineKeyExchangeAlgorithms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SvmSSHServer) validateSvmSSHServerInlineMacAlgorithms(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmSSHServerInlineMacAlgorithms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SvmSSHServerInlineMacAlgorithms); i++ {
+		if swag.IsZero(m.SvmSSHServerInlineMacAlgorithms[i]) { // not required
+			continue
+		}
+
+		if m.SvmSSHServerInlineMacAlgorithms[i] != nil {
+			if err := m.SvmSSHServerInlineMacAlgorithms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this svm ssh server based on the context it is used
 func (m *SvmSSHServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -193,19 +208,19 @@ func (m *SvmSSHServer) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCiphers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateKeyExchangeAlgorithms(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMacAlgorithms(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvmSSHServerInlineCiphers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvmSSHServerInlineKeyExchangeAlgorithms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvmSSHServerInlineMacAlgorithms(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -229,54 +244,6 @@ func (m *SvmSSHServer) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *SvmSSHServer) contextValidateCiphers(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Ciphers); i++ {
-
-		if err := m.Ciphers[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SvmSSHServer) contextValidateKeyExchangeAlgorithms(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.KeyExchangeAlgorithms); i++ {
-
-		if err := m.KeyExchangeAlgorithms[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SvmSSHServer) contextValidateMacAlgorithms(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.MacAlgorithms); i++ {
-
-		if err := m.MacAlgorithms[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *SvmSSHServer) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -286,6 +253,60 @@ func (m *SvmSSHServer) contextValidateSvm(ctx context.Context, formats strfmt.Re
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SvmSSHServer) contextValidateSvmSSHServerInlineCiphers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SvmSSHServerInlineCiphers); i++ {
+
+		if m.SvmSSHServerInlineCiphers[i] != nil {
+			if err := m.SvmSSHServerInlineCiphers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SvmSSHServer) contextValidateSvmSSHServerInlineKeyExchangeAlgorithms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SvmSSHServerInlineKeyExchangeAlgorithms); i++ {
+
+		if m.SvmSSHServerInlineKeyExchangeAlgorithms[i] != nil {
+			if err := m.SvmSSHServerInlineKeyExchangeAlgorithms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SvmSSHServer) contextValidateSvmSSHServerInlineMacAlgorithms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SvmSSHServerInlineMacAlgorithms); i++ {
+
+		if m.SvmSSHServerInlineMacAlgorithms[i] != nil {
+			if err := m.SvmSSHServerInlineMacAlgorithms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -309,17 +330,17 @@ func (m *SvmSSHServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmSSHServerLinks svm SSH server links
+// SvmSSHServerInlineLinks svm ssh server inline links
 //
-// swagger:model SvmSSHServerLinks
-type SvmSSHServerLinks struct {
+// swagger:model svm_ssh_server_inline__links
+type SvmSSHServerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm SSH server links
-func (m *SvmSSHServerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm ssh server inline links
+func (m *SvmSSHServerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -332,7 +353,7 @@ func (m *SvmSSHServerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmSSHServerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -349,8 +370,8 @@ func (m *SvmSSHServerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm SSH server links based on the context it is used
-func (m *SvmSSHServerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm ssh server inline links based on the context it is used
+func (m *SvmSSHServerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -363,7 +384,7 @@ func (m *SvmSSHServerLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *SvmSSHServerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -378,7 +399,7 @@ func (m *SvmSSHServerLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *SvmSSHServerLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmSSHServerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -386,8 +407,8 @@ func (m *SvmSSHServerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmSSHServerLinks) UnmarshalBinary(b []byte) error {
-	var res SvmSSHServerLinks
+func (m *SvmSSHServerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmSSHServerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -395,27 +416,27 @@ func (m *SvmSSHServerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmSSHServerSvm SVM name and UUID for which the SSH server is configured.
+// SvmSSHServerInlineSvm SVM name and UUID for which the SSH server is configured.
 //
-// swagger:model SvmSSHServerSvm
-type SvmSSHServerSvm struct {
+// swagger:model svm_ssh_server_inline_svm
+type SvmSSHServerInlineSvm struct {
 
 	// links
-	Links *SvmSSHServerSvmLinks `json:"_links,omitempty"`
+	Links *SvmSSHServerInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm SSH server svm
-func (m *SvmSSHServerSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this svm ssh server inline svm
+func (m *SvmSSHServerInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -428,7 +449,7 @@ func (m *SvmSSHServerSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmSSHServerSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -445,8 +466,8 @@ func (m *SvmSSHServerSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm SSH server svm based on the context it is used
-func (m *SvmSSHServerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm ssh server inline svm based on the context it is used
+func (m *SvmSSHServerInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -459,7 +480,7 @@ func (m *SvmSSHServerSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *SvmSSHServerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -474,7 +495,7 @@ func (m *SvmSSHServerSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *SvmSSHServerSvm) MarshalBinary() ([]byte, error) {
+func (m *SvmSSHServerInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -482,8 +503,8 @@ func (m *SvmSSHServerSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmSSHServerSvm) UnmarshalBinary(b []byte) error {
-	var res SvmSSHServerSvm
+func (m *SvmSSHServerInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SvmSSHServerInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -491,17 +512,17 @@ func (m *SvmSSHServerSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmSSHServerSvmLinks svm SSH server svm links
+// SvmSSHServerInlineSvmInlineLinks svm ssh server inline svm inline links
 //
-// swagger:model SvmSSHServerSvmLinks
-type SvmSSHServerSvmLinks struct {
+// swagger:model svm_ssh_server_inline_svm_inline__links
+type SvmSSHServerInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm SSH server svm links
-func (m *SvmSSHServerSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm ssh server inline svm inline links
+func (m *SvmSSHServerInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -514,7 +535,7 @@ func (m *SvmSSHServerSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SvmSSHServerSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -531,8 +552,8 @@ func (m *SvmSSHServerSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this svm SSH server svm links based on the context it is used
-func (m *SvmSSHServerSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm ssh server inline svm inline links based on the context it is used
+func (m *SvmSSHServerInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -545,7 +566,7 @@ func (m *SvmSSHServerSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *SvmSSHServerSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmSSHServerInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -560,7 +581,7 @@ func (m *SvmSSHServerSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SvmSSHServerSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmSSHServerInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -568,8 +589,8 @@ func (m *SvmSSHServerSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmSSHServerSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SvmSSHServerSvmLinks
+func (m *SvmSSHServerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmSSHServerInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

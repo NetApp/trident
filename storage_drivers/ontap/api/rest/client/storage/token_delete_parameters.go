@@ -65,13 +65,13 @@ type TokenDeleteParams struct {
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* UUID.
 
 	   Token UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *TokenDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the token delete params
-func (o *TokenDeleteParams) WithNodeUUIDPathParameter(nodeUUID string) *TokenDeleteParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the token delete params
+func (o *TokenDeleteParams) WithNodeUUID(nodeUUID string) *TokenDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the token delete params
-func (o *TokenDeleteParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the token delete params
+func (o *TokenDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the token delete params
-func (o *TokenDeleteParams) WithUUIDPathParameter(uuid string) *TokenDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the token delete params
+func (o *TokenDeleteParams) WithUUID(uuid string) *TokenDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the token delete params
-func (o *TokenDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the token delete params
+func (o *TokenDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *TokenDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	var res []error
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

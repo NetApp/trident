@@ -66,19 +66,19 @@ type EmsFilterRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter index
 	*/
-	IndexPathParameter string
+	Index string
 
 	/* Name.
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *EmsFilterRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) WithFieldsQueryParameter(fields []string) *EmsFilterRuleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) WithFields(fields []string) *EmsFilterRuleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) WithIndexPathParameter(index string) *EmsFilterRuleGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) WithIndex(index string) *EmsFilterRuleGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) SetIndex(index string) {
+	o.Index = index
 }
 
-// WithNamePathParameter adds the name to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) WithNamePathParameter(name string) *EmsFilterRuleGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) WithName(name string) *EmsFilterRuleGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *EmsFilterRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *EmsFilterRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *EmsFilterRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamEmsFilterRuleGet binds the parameter fields
 func (o *EmsFilterRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

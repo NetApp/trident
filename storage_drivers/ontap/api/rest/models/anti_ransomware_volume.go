@@ -21,13 +21,16 @@ import (
 // swagger:model anti_ransomware_volume
 type AntiRansomwareVolume struct {
 
+	// anti ransomware volume inline attack reports
+	AntiRansomwareVolumeInlineAttackReports []*AntiRansomwareAttackReport `json:"attack_reports,omitempty"`
+
+	// anti ransomware volume inline suspect files
+	AntiRansomwareVolumeInlineSuspectFiles []*AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem `json:"suspect_files,omitempty"`
+
 	// Probability of a ransomware attack.<br>`none` No files are suspected of ransomware activity.<br>`low` A number of files are suspected of ransomware activity.<br>`moderate` A moderate number of files are suspected of ransomware activity.<br>`high` A large number of files are suspected of ransomware activity.
 	// Read Only: true
 	// Enum: [none low moderate high]
-	AttackProbability string `json:"attack_probability,omitempty"`
-
-	// attack reports
-	AttackReports []*AntiRansomwareAttackReport `json:"attack_reports,omitempty"`
+	AttackProbability *string `json:"attack_probability,omitempty"`
 
 	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
 	// Read Only: true
@@ -35,28 +38,29 @@ type AntiRansomwareVolume struct {
 	DryRunStartTime *strfmt.DateTime `json:"dry_run_start_time,omitempty"`
 
 	// space
-	Space *AntiRansomwareVolumeSpace `json:"space,omitempty"`
+	Space *AntiRansomwareVolumeInlineSpace `json:"space,omitempty"`
 
 	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume.  This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
 	// Enum: [disabled disable_in_progress dry_run enabled paused enable_paused dry_run_paused]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Indicates whether or not to set the surge values as historical values.
-	SurgeAsNormal bool `json:"surge_as_normal,omitempty"`
-
-	// suspect files
-	SuspectFiles []*AntiRansomwareVolumeSuspectFilesItems0 `json:"suspect_files,omitempty"`
+	SurgeAsNormal *bool `json:"surge_as_normal,omitempty"`
 }
 
 // Validate validates this anti ransomware volume
 func (m *AntiRansomwareVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAttackProbability(formats); err != nil {
+	if err := m.validateAntiRansomwareVolumeInlineAttackReports(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateAttackReports(formats); err != nil {
+	if err := m.validateAntiRansomwareVolumeInlineSuspectFiles(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAttackProbability(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -72,13 +76,57 @@ func (m *AntiRansomwareVolume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateSuspectFiles(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AntiRansomwareVolume) validateAntiRansomwareVolumeInlineAttackReports(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareVolumeInlineAttackReports) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AntiRansomwareVolumeInlineAttackReports); i++ {
+		if swag.IsZero(m.AntiRansomwareVolumeInlineAttackReports[i]) { // not required
+			continue
+		}
+
+		if m.AntiRansomwareVolumeInlineAttackReports[i] != nil {
+			if err := m.AntiRansomwareVolumeInlineAttackReports[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("attack_reports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolume) validateAntiRansomwareVolumeInlineSuspectFiles(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareVolumeInlineSuspectFiles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AntiRansomwareVolumeInlineSuspectFiles); i++ {
+		if swag.IsZero(m.AntiRansomwareVolumeInlineSuspectFiles[i]) { // not required
+			continue
+		}
+
+		if m.AntiRansomwareVolumeInlineSuspectFiles[i] != nil {
+			if err := m.AntiRansomwareVolumeInlineSuspectFiles[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("suspect_files" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -151,32 +199,8 @@ func (m *AntiRansomwareVolume) validateAttackProbability(formats strfmt.Registry
 	}
 
 	// value enum
-	if err := m.validateAttackProbabilityEnum("attack_probability", "body", m.AttackProbability); err != nil {
+	if err := m.validateAttackProbabilityEnum("attack_probability", "body", *m.AttackProbability); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *AntiRansomwareVolume) validateAttackReports(formats strfmt.Registry) error {
-	if swag.IsZero(m.AttackReports) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.AttackReports); i++ {
-		if swag.IsZero(m.AttackReports[i]) { // not required
-			continue
-		}
-
-		if m.AttackReports[i] != nil {
-			if err := m.AttackReports[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("attack_reports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -310,25 +334,67 @@ func (m *AntiRansomwareVolume) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolume) validateSuspectFiles(formats strfmt.Registry) error {
-	if swag.IsZero(m.SuspectFiles) { // not required
-		return nil
+// ContextValidate validate this anti ransomware volume based on the context it is used
+func (m *AntiRansomwareVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAntiRansomwareVolumeInlineAttackReports(ctx, formats); err != nil {
+		res = append(res, err)
 	}
 
-	for i := 0; i < len(m.SuspectFiles); i++ {
-		if swag.IsZero(m.SuspectFiles[i]) { // not required
-			continue
+	if err := m.contextValidateAntiRansomwareVolumeInlineSuspectFiles(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAttackProbability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDryRunStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolume) contextValidateAntiRansomwareVolumeInlineAttackReports(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AntiRansomwareVolumeInlineAttackReports); i++ {
+
+		if m.AntiRansomwareVolumeInlineAttackReports[i] != nil {
+			if err := m.AntiRansomwareVolumeInlineAttackReports[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("attack_reports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
 		}
 
-		if m.SuspectFiles[i] != nil {
-			if err := m.SuspectFiles[i].Validate(formats); err != nil {
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolume) contextValidateAntiRansomwareVolumeInlineSuspectFiles(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AntiRansomwareVolumeInlineSuspectFiles); i++ {
+
+		if m.AntiRansomwareVolumeInlineSuspectFiles[i] != nil {
+			if err := m.AntiRansomwareVolumeInlineSuspectFiles[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("suspect_files" + "." + strconv.Itoa(i))
 				}
@@ -341,58 +407,10 @@ func (m *AntiRansomwareVolume) validateSuspectFiles(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this anti ransomware volume based on the context it is used
-func (m *AntiRansomwareVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateAttackProbability(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateAttackReports(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateDryRunStartTime(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSpace(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSuspectFiles(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
 func (m *AntiRansomwareVolume) contextValidateAttackProbability(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "attack_probability", "body", string(m.AttackProbability)); err != nil {
+	if err := validate.ReadOnly(ctx, "attack_probability", "body", m.AttackProbability); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *AntiRansomwareVolume) contextValidateAttackReports(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.AttackReports); i++ {
-
-		if m.AttackReports[i] != nil {
-			if err := m.AttackReports[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("attack_reports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -421,24 +439,6 @@ func (m *AntiRansomwareVolume) contextValidateSpace(ctx context.Context, formats
 	return nil
 }
 
-func (m *AntiRansomwareVolume) contextValidateSuspectFiles(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.SuspectFiles); i++ {
-
-		if m.SuspectFiles[i] != nil {
-			if err := m.SuspectFiles[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("suspect_files" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *AntiRansomwareVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -457,35 +457,35 @@ func (m *AntiRansomwareVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareVolumeSpace anti ransomware volume space
+// AntiRansomwareVolumeInlineSpace anti ransomware volume inline space
 //
-// swagger:model AntiRansomwareVolumeSpace
-type AntiRansomwareVolumeSpace struct {
+// swagger:model anti_ransomware_volume_inline_space
+type AntiRansomwareVolumeInlineSpace struct {
 
 	// Total number of Anti-ransomware backup Snapshot copies.
 	// Read Only: true
-	SnapshotCount int64 `json:"snapshot_count,omitempty"`
+	SnapshotCount *int64 `json:"snapshot_count,omitempty"`
 
 	// Total space in bytes used by the Anti-ransomware feature.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// Space in bytes used by the Anti-ransomware analytics logs.
 	// Read Only: true
-	UsedByLogs int64 `json:"used_by_logs,omitempty"`
+	UsedByLogs *int64 `json:"used_by_logs,omitempty"`
 
 	// Space in bytes used by the Anti-ransomware backup Snapshot copies.
 	// Read Only: true
-	UsedBySnapshots int64 `json:"used_by_snapshots,omitempty"`
+	UsedBySnapshots *int64 `json:"used_by_snapshots,omitempty"`
 }
 
-// Validate validates this anti ransomware volume space
-func (m *AntiRansomwareVolumeSpace) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware volume inline space
+func (m *AntiRansomwareVolumeInlineSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this anti ransomware volume space based on the context it is used
-func (m *AntiRansomwareVolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware volume inline space based on the context it is used
+func (m *AntiRansomwareVolumeInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSnapshotCount(ctx, formats); err != nil {
@@ -510,36 +510,36 @@ func (m *AntiRansomwareVolumeSpace) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSpace) contextValidateSnapshotCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSpace) contextValidateSnapshotCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot_count", "body", int64(m.SnapshotCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot_count", "body", m.SnapshotCount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSpace) contextValidateUsedByLogs(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSpace) contextValidateUsedByLogs(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used_by_logs", "body", int64(m.UsedByLogs)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used_by_logs", "body", m.UsedByLogs); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSpace) contextValidateUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSpace) contextValidateUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used_by_snapshots", "body", int64(m.UsedBySnapshots)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used_by_snapshots", "body", m.UsedBySnapshots); err != nil {
 		return err
 	}
 
@@ -547,7 +547,7 @@ func (m *AntiRansomwareVolumeSpace) contextValidateUsedBySnapshots(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareVolumeSpace) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareVolumeInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -555,8 +555,8 @@ func (m *AntiRansomwareVolumeSpace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareVolumeSpace) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareVolumeSpace
+func (m *AntiRansomwareVolumeInlineSpace) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -564,31 +564,31 @@ func (m *AntiRansomwareVolumeSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareVolumeSuspectFilesItems0 anti ransomware volume suspect files items0
+// AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem anti ransomware volume inline suspect files inline array item
 //
-// swagger:model AntiRansomwareVolumeSuspectFilesItems0
-type AntiRansomwareVolumeSuspectFilesItems0 struct {
+// swagger:model anti_ransomware_volume_inline_suspect_files_inline_array_item
+type AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem struct {
 
 	// Total number of `suspect_files.format` files observed by the Anti-ransomware analytics engine on the volume.
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// Indicates the entropy level of this file type.
 	// Read Only: true
-	Entropy string `json:"entropy,omitempty"`
+	Entropy *string `json:"entropy,omitempty"`
 
 	// File formats observed by the Anti-ransomware analytics engine on the volume.
 	// Read Only: true
-	Format string `json:"format,omitempty"`
+	Format *string `json:"format,omitempty"`
 }
 
-// Validate validates this anti ransomware volume suspect files items0
-func (m *AntiRansomwareVolumeSuspectFilesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware volume inline suspect files inline array item
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this anti ransomware volume suspect files items0 based on the context it is used
-func (m *AntiRansomwareVolumeSuspectFilesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware volume inline suspect files inline array item based on the context it is used
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -609,27 +609,27 @@ func (m *AntiRansomwareVolumeSuspectFilesItems0) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateEntropy(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) contextValidateEntropy(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "entropy", "body", string(m.Entropy)); err != nil {
+	if err := validate.ReadOnly(ctx, "entropy", "body", m.Entropy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateFormat(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) contextValidateFormat(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "format", "body", string(m.Format)); err != nil {
+	if err := validate.ReadOnly(ctx, "format", "body", m.Format); err != nil {
 		return err
 	}
 
@@ -637,7 +637,7 @@ func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateFormat(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareVolumeSuspectFilesItems0) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -645,8 +645,8 @@ func (m *AntiRansomwareVolumeSuspectFilesItems0) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareVolumeSuspectFilesItems0) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareVolumeSuspectFilesItems0
+func (m *AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

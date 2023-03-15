@@ -38,7 +38,7 @@ type TimezoneCluster struct {
 	// Examples of the traditional time zones are "EST5EDT" for the United States Eastern Time Zone and "CET" for Central European Time Zone.
 	//
 	// Example: America/New_York
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this timezone cluster

@@ -69,19 +69,19 @@ type ApplicationDeleteParams struct {
 
 	   Default: true
 	*/
-	DeleteDataQueryParameter *bool
+	DeleteData *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Application UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -101,14 +101,14 @@ func (o *ApplicationDeleteParams) WithDefaults() *ApplicationDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *ApplicationDeleteParams) SetDefaults() {
 	var (
-		deleteDataQueryParameterDefault = bool(true)
+		deleteDataDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ApplicationDeleteParams{
-		DeleteDataQueryParameter:    &deleteDataQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		DeleteData:    &deleteDataDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,37 +150,37 @@ func (o *ApplicationDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeleteDataQueryParameter adds the deleteData to the application delete params
-func (o *ApplicationDeleteParams) WithDeleteDataQueryParameter(deleteData *bool) *ApplicationDeleteParams {
-	o.SetDeleteDataQueryParameter(deleteData)
+// WithDeleteData adds the deleteData to the application delete params
+func (o *ApplicationDeleteParams) WithDeleteData(deleteData *bool) *ApplicationDeleteParams {
+	o.SetDeleteData(deleteData)
 	return o
 }
 
-// SetDeleteDataQueryParameter adds the deleteData to the application delete params
-func (o *ApplicationDeleteParams) SetDeleteDataQueryParameter(deleteData *bool) {
-	o.DeleteDataQueryParameter = deleteData
+// SetDeleteData adds the deleteData to the application delete params
+func (o *ApplicationDeleteParams) SetDeleteData(deleteData *bool) {
+	o.DeleteData = deleteData
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application delete params
-func (o *ApplicationDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application delete params
+func (o *ApplicationDeleteParams) WithReturnTimeout(returnTimeout *int64) *ApplicationDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application delete params
-func (o *ApplicationDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application delete params
+func (o *ApplicationDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the application delete params
-func (o *ApplicationDeleteParams) WithUUIDPathParameter(uuid string) *ApplicationDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application delete params
+func (o *ApplicationDeleteParams) WithUUID(uuid string) *ApplicationDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application delete params
-func (o *ApplicationDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application delete params
+func (o *ApplicationDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,13 +191,13 @@ func (o *ApplicationDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.DeleteDataQueryParameter != nil {
+	if o.DeleteData != nil {
 
 		// query param delete_data
 		var qrDeleteData bool
 
-		if o.DeleteDataQueryParameter != nil {
-			qrDeleteData = *o.DeleteDataQueryParameter
+		if o.DeleteData != nil {
+			qrDeleteData = *o.DeleteData
 		}
 		qDeleteData := swag.FormatBool(qrDeleteData)
 		if qDeleteData != "" {
@@ -208,13 +208,13 @@ func (o *ApplicationDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -226,7 +226,7 @@ func (o *ApplicationDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

@@ -66,43 +66,43 @@ type VscanScannerCollectionGetParams struct {
 
 	   Filter by cluster.name
 	*/
-	ClusterNameQueryParameter *string
+	ClusterName *string
 
 	/* ClusterUUID.
 
 	   Filter by cluster.uuid
 	*/
-	ClusterUUIDQueryParameter *string
+	ClusterUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PrivilegedUsers.
 
 	   Filter by privileged_users
 	*/
-	PrivilegedUsersQueryParameter *string
+	PrivilegedUsers *string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type VscanScannerCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,31 +118,31 @@ type VscanScannerCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Role.
 
 	   Filter by role
 	*/
-	RoleQueryParameter *string
+	Role *string
 
 	/* Servers.
 
 	   Filter by servers
 	*/
-	ServersQueryParameter *string
+	Servers *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +162,14 @@ func (o *VscanScannerCollectionGetParams) WithDefaults() *VscanScannerCollection
 // All values with no default are reset to their zero value.
 func (o *VscanScannerCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VscanScannerCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +211,147 @@ func (o *VscanScannerCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClusterNameQueryParameter adds the clusterName to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithClusterNameQueryParameter(clusterName *string) *VscanScannerCollectionGetParams {
-	o.SetClusterNameQueryParameter(clusterName)
+// WithClusterName adds the clusterName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithClusterName(clusterName *string) *VscanScannerCollectionGetParams {
+	o.SetClusterName(clusterName)
 	return o
 }
 
-// SetClusterNameQueryParameter adds the clusterName to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetClusterNameQueryParameter(clusterName *string) {
-	o.ClusterNameQueryParameter = clusterName
+// SetClusterName adds the clusterName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetClusterName(clusterName *string) {
+	o.ClusterName = clusterName
 }
 
-// WithClusterUUIDQueryParameter adds the clusterUUID to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithClusterUUIDQueryParameter(clusterUUID *string) *VscanScannerCollectionGetParams {
-	o.SetClusterUUIDQueryParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithClusterUUID(clusterUUID *string) *VscanScannerCollectionGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDQueryParameter adds the clusterUuid to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetClusterUUIDQueryParameter(clusterUUID *string) {
-	o.ClusterUUIDQueryParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetClusterUUID(clusterUUID *string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithFieldsQueryParameter(fields []string) *VscanScannerCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithFields(fields []string) *VscanScannerCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanScannerCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithMaxRecords(maxRecords *int64) *VscanScannerCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithNameQueryParameter(name *string) *VscanScannerCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithName(name *string) *VscanScannerCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VscanScannerCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithOrderBy(orderBy []string) *VscanScannerCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPrivilegedUsersQueryParameter adds the privilegedUsers to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithPrivilegedUsersQueryParameter(privilegedUsers *string) *VscanScannerCollectionGetParams {
-	o.SetPrivilegedUsersQueryParameter(privilegedUsers)
+// WithPrivilegedUsers adds the privilegedUsers to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithPrivilegedUsers(privilegedUsers *string) *VscanScannerCollectionGetParams {
+	o.SetPrivilegedUsers(privilegedUsers)
 	return o
 }
 
-// SetPrivilegedUsersQueryParameter adds the privilegedUsers to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetPrivilegedUsersQueryParameter(privilegedUsers *string) {
-	o.PrivilegedUsersQueryParameter = privilegedUsers
+// SetPrivilegedUsers adds the privilegedUsers to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetPrivilegedUsers(privilegedUsers *string) {
+	o.PrivilegedUsers = privilegedUsers
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanScannerCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithReturnRecords(returnRecords *bool) *VscanScannerCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanScannerCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VscanScannerCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithRoleQueryParameter adds the role to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithRoleQueryParameter(role *string) *VscanScannerCollectionGetParams {
-	o.SetRoleQueryParameter(role)
+// WithRole adds the role to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithRole(role *string) *VscanScannerCollectionGetParams {
+	o.SetRole(role)
 	return o
 }
 
-// SetRoleQueryParameter adds the role to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetRoleQueryParameter(role *string) {
-	o.RoleQueryParameter = role
+// SetRole adds the role to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetRole(role *string) {
+	o.Role = role
 }
 
-// WithServersQueryParameter adds the servers to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithServersQueryParameter(servers *string) *VscanScannerCollectionGetParams {
-	o.SetServersQueryParameter(servers)
+// WithServers adds the servers to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithServers(servers *string) *VscanScannerCollectionGetParams {
+	o.SetServers(servers)
 	return o
 }
 
-// SetServersQueryParameter adds the servers to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetServersQueryParameter(servers *string) {
-	o.ServersQueryParameter = servers
+// SetServers adds the servers to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetServers(servers *string) {
+	o.Servers = servers
 }
 
-// WithSVMNameQueryParameter adds the svmName to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *VscanScannerCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithSvmName(svmName *string) *VscanScannerCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanScannerCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithSvmUUID(svmUUID string) *VscanScannerCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan scanner collection get params
-func (o *VscanScannerCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,13 +362,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.ClusterNameQueryParameter != nil {
+	if o.ClusterName != nil {
 
 		// query param cluster.name
 		var qrClusterName string
 
-		if o.ClusterNameQueryParameter != nil {
-			qrClusterName = *o.ClusterNameQueryParameter
+		if o.ClusterName != nil {
+			qrClusterName = *o.ClusterName
 		}
 		qClusterName := qrClusterName
 		if qClusterName != "" {
@@ -379,13 +379,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ClusterUUIDQueryParameter != nil {
+	if o.ClusterUUID != nil {
 
 		// query param cluster.uuid
 		var qrClusterUUID string
 
-		if o.ClusterUUIDQueryParameter != nil {
-			qrClusterUUID = *o.ClusterUUIDQueryParameter
+		if o.ClusterUUID != nil {
+			qrClusterUUID = *o.ClusterUUID
 		}
 		qClusterUUID := qrClusterUUID
 		if qClusterUUID != "" {
@@ -396,7 +396,7 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -407,13 +407,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -424,13 +424,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -441,7 +441,7 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -452,13 +452,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PrivilegedUsersQueryParameter != nil {
+	if o.PrivilegedUsers != nil {
 
 		// query param privileged_users
 		var qrPrivilegedUsers string
 
-		if o.PrivilegedUsersQueryParameter != nil {
-			qrPrivilegedUsers = *o.PrivilegedUsersQueryParameter
+		if o.PrivilegedUsers != nil {
+			qrPrivilegedUsers = *o.PrivilegedUsers
 		}
 		qPrivilegedUsers := qrPrivilegedUsers
 		if qPrivilegedUsers != "" {
@@ -469,13 +469,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -486,13 +486,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -503,13 +503,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.RoleQueryParameter != nil {
+	if o.Role != nil {
 
 		// query param role
 		var qrRole string
 
-		if o.RoleQueryParameter != nil {
-			qrRole = *o.RoleQueryParameter
+		if o.Role != nil {
+			qrRole = *o.Role
 		}
 		qRole := qrRole
 		if qRole != "" {
@@ -520,13 +520,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ServersQueryParameter != nil {
+	if o.Servers != nil {
 
 		// query param servers
 		var qrServers string
 
-		if o.ServersQueryParameter != nil {
-			qrServers = *o.ServersQueryParameter
+		if o.Servers != nil {
+			qrServers = *o.Servers
 		}
 		qServers := qrServers
 		if qServers != "" {
@@ -537,13 +537,13 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -555,7 +555,7 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -567,7 +567,7 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamVscanScannerCollectionGet binds the parameter fields
 func (o *VscanScannerCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -584,7 +584,7 @@ func (o *VscanScannerCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamVscanScannerCollectionGet binds the parameter order_by
 func (o *VscanScannerCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

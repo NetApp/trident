@@ -496,7 +496,7 @@ func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo run
 </br>Important note:
 * The **issues** field consists of a list of objects containing details of the node that has a connectivity issue, the issue description, and corrective action you can take to address the issue. When not empty, this indicates a connection issue to the **HTTP/S**, **SMTP**, or **AutoSupport On Demand** server.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `issues`
 ### Related ONTAP commands
 * `system node autosupport show -instance`
@@ -1174,6 +1174,7 @@ func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGet
 ### Recommended optional properties
 * `filters.name` - List of filter names that should direct to this destination.
 * `certificate` - When specifying a rest api destination, a client certificate can be provided.
+* `syslog` - When specifying a syslog destination, a port, transport protocol, message format, timestamp format and hostname format can be provided.
 ### Related ONTAP commands
 * `event notification destination create`
 * `event notification create`
@@ -1259,7 +1260,7 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 	EmsDestinationGet Retrieves event destinations.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter.
 * `connectivity.*`
 ### Related ONTAP commands
 * `event notification destination show`

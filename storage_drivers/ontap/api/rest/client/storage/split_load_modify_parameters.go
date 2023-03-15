@@ -73,7 +73,7 @@ type SplitLoadModifyParams struct {
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *SplitLoadModifyParams) SetInfo(info *models.SplitLoad) {
 	o.Info = info
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the split load modify params
-func (o *SplitLoadModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *SplitLoadModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the split load modify params
+func (o *SplitLoadModifyParams) WithNodeUUID(nodeUUID string) *SplitLoadModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the split load modify params
-func (o *SplitLoadModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the split load modify params
+func (o *SplitLoadModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *SplitLoadModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

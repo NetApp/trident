@@ -27,15 +27,15 @@ type SwitchPort struct {
 	// Administrative Status.
 	// Read Only: true
 	// Enum: [down testing up]
-	Configured string `json:"configured,omitempty"`
+	Configured *string `json:"configured,omitempty"`
 
 	// Duplex Settings.
 	// Read Only: true
 	// Enum: [full_duplex half_duplex unknown]
-	DuplexType string `json:"duplex_type,omitempty"`
+	DuplexType *string `json:"duplex_type,omitempty"`
 
 	// identity
-	Identity *SwitchPortIdentity `json:"identity,omitempty"`
+	Identity *SwitchPortInlineIdentity `json:"identity,omitempty"`
 
 	// Is configured as an ISL link.
 	// Read Only: true
@@ -43,37 +43,37 @@ type SwitchPort struct {
 
 	// MAC Address.
 	// Read Only: true
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// MTU.
 	// Read Only: true
-	Mtu int64 `json:"mtu,omitempty"`
+	Mtu *int64 `json:"mtu,omitempty"`
 
 	// remote port
-	RemotePort *SwitchPortRemotePort `json:"remote_port,omitempty"`
+	RemotePort *SwitchPortInlineRemotePort `json:"remote_port,omitempty"`
 
-	// Interface Speed(Mbps)
+	// Interface Speed(Mbps).
 	// Read Only: true
-	Speed int64 `json:"speed,omitempty"`
+	Speed *int64 `json:"speed,omitempty"`
 
 	// Operational Status.
 	// Read Only: true
 	// Enum: [dormant down lower_layer_down not_present testing unknown up]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *SwitchPortStatistics `json:"statistics,omitempty"`
+	Statistics *SwitchPortInlineStatistics `json:"statistics,omitempty"`
 
 	// switch
-	Switch *SwitchPortSwitch `json:"switch,omitempty"`
+	Switch *SwitchPortInlineSwitch `json:"switch,omitempty"`
+
+	// switch port inline vlan id
+	SwitchPortInlineVlanID []*int64 `json:"vlan_id,omitempty"`
 
 	// Interface Type.
 	// Read Only: true
 	// Enum: [ethernetcsmacd fastetherfx fibrechannel gigabitethernet ieee8023adlag other propvirtual softwareloopback tunnel]
-	Type string `json:"type,omitempty"`
-
-	// vlan id
-	VlanID []int64 `json:"vlan_id,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this switch port
@@ -198,7 +198,7 @@ func (m *SwitchPort) validateConfigured(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateConfiguredEnum("configured", "body", m.Configured); err != nil {
+	if err := m.validateConfiguredEnum("configured", "body", *m.Configured); err != nil {
 		return err
 	}
 
@@ -264,7 +264,7 @@ func (m *SwitchPort) validateDuplexType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDuplexTypeEnum("duplex_type", "body", m.DuplexType); err != nil {
+	if err := m.validateDuplexTypeEnum("duplex_type", "body", *m.DuplexType); err != nil {
 		return err
 	}
 
@@ -404,7 +404,7 @@ func (m *SwitchPort) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -564,7 +564,7 @@ func (m *SwitchPort) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -623,11 +623,11 @@ func (m *SwitchPort) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateType(ctx, formats); err != nil {
+	if err := m.contextValidateSwitchPortInlineVlanID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVlanID(ctx, formats); err != nil {
+	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -653,7 +653,7 @@ func (m *SwitchPort) contextValidateLinks(ctx context.Context, formats strfmt.Re
 
 func (m *SwitchPort) contextValidateConfigured(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "configured", "body", string(m.Configured)); err != nil {
+	if err := validate.ReadOnly(ctx, "configured", "body", m.Configured); err != nil {
 		return err
 	}
 
@@ -662,7 +662,7 @@ func (m *SwitchPort) contextValidateConfigured(ctx context.Context, formats strf
 
 func (m *SwitchPort) contextValidateDuplexType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duplex_type", "body", string(m.DuplexType)); err != nil {
+	if err := validate.ReadOnly(ctx, "duplex_type", "body", m.DuplexType); err != nil {
 		return err
 	}
 
@@ -694,7 +694,7 @@ func (m *SwitchPort) contextValidateIsl(ctx context.Context, formats strfmt.Regi
 
 func (m *SwitchPort) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mac_address", "body", string(m.MacAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "mac_address", "body", m.MacAddress); err != nil {
 		return err
 	}
 
@@ -703,7 +703,7 @@ func (m *SwitchPort) contextValidateMacAddress(ctx context.Context, formats strf
 
 func (m *SwitchPort) contextValidateMtu(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mtu", "body", int64(m.Mtu)); err != nil {
+	if err := validate.ReadOnly(ctx, "mtu", "body", m.Mtu); err != nil {
 		return err
 	}
 
@@ -726,7 +726,7 @@ func (m *SwitchPort) contextValidateRemotePort(ctx context.Context, formats strf
 
 func (m *SwitchPort) contextValidateSpeed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "speed", "body", int64(m.Speed)); err != nil {
+	if err := validate.ReadOnly(ctx, "speed", "body", m.Speed); err != nil {
 		return err
 	}
 
@@ -735,7 +735,7 @@ func (m *SwitchPort) contextValidateSpeed(ctx context.Context, formats strfmt.Re
 
 func (m *SwitchPort) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -770,23 +770,23 @@ func (m *SwitchPort) contextValidateSwitch(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SwitchPort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPort) contextValidateSwitchPortInlineVlanID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
-		return err
+	for i := 0; i < len(m.SwitchPortInlineVlanID); i++ {
+
+		if err := validate.ReadOnly(ctx, "vlan_id"+"."+strconv.Itoa(i), "body", m.SwitchPortInlineVlanID[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
 }
 
-func (m *SwitchPort) contextValidateVlanID(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.VlanID); i++ {
-
-		if err := validate.ReadOnly(ctx, "vlan_id"+"."+strconv.Itoa(i), "body", int64(m.VlanID[i])); err != nil {
-			return err
-		}
-
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -810,31 +810,31 @@ func (m *SwitchPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortIdentity switch port identity
+// SwitchPortInlineIdentity switch port inline identity
 //
-// swagger:model SwitchPortIdentity
-type SwitchPortIdentity struct {
+// swagger:model switch_port_inline_identity
+type SwitchPortInlineIdentity struct {
 
 	// Interface Index.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// Interface Name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Interface Number.
 	// Read Only: true
-	Number int64 `json:"number,omitempty"`
+	Number *int64 `json:"number,omitempty"`
 }
 
-// Validate validates this switch port identity
-func (m *SwitchPortIdentity) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline identity
+func (m *SwitchPortInlineIdentity) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this switch port identity based on the context it is used
-func (m *SwitchPortIdentity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline identity based on the context it is used
+func (m *SwitchPortInlineIdentity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIndex(ctx, formats); err != nil {
@@ -855,27 +855,27 @@ func (m *SwitchPortIdentity) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *SwitchPortIdentity) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineIdentity) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identity"+"."+"index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "identity"+"."+"index", "body", m.Index); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SwitchPortIdentity) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineIdentity) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identity"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "identity"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SwitchPortIdentity) contextValidateNumber(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineIdentity) contextValidateNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identity"+"."+"number", "body", int64(m.Number)); err != nil {
+	if err := validate.ReadOnly(ctx, "identity"+"."+"number", "body", m.Number); err != nil {
 		return err
 	}
 
@@ -883,7 +883,7 @@ func (m *SwitchPortIdentity) contextValidateNumber(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortIdentity) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineIdentity) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -891,8 +891,8 @@ func (m *SwitchPortIdentity) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortIdentity) UnmarshalBinary(b []byte) error {
-	var res SwitchPortIdentity
+func (m *SwitchPortInlineIdentity) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineIdentity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -900,25 +900,25 @@ func (m *SwitchPortIdentity) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePort Remote port
+// SwitchPortInlineRemotePort Remote port.
 //
-// swagger:model SwitchPortRemotePort
-type SwitchPortRemotePort struct {
+// swagger:model switch_port_inline_remote_port
+type SwitchPortInlineRemotePort struct {
 
 	// device
-	Device *SwitchPortRemotePortDevice `json:"device,omitempty"`
+	Device *SwitchPortInlineRemotePortInlineDevice `json:"device,omitempty"`
 
-	// MTU in octets
+	// MTU in octets.
 	// Read Only: true
-	Mtu int64 `json:"mtu,omitempty"`
+	Mtu *int64 `json:"mtu,omitempty"`
 
 	// Port Name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this switch port remote port
-func (m *SwitchPortRemotePort) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port
+func (m *SwitchPortInlineRemotePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDevice(formats); err != nil {
@@ -931,7 +931,7 @@ func (m *SwitchPortRemotePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchPortRemotePort) validateDevice(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePort) validateDevice(formats strfmt.Registry) error {
 	if swag.IsZero(m.Device) { // not required
 		return nil
 	}
@@ -948,8 +948,8 @@ func (m *SwitchPortRemotePort) validateDevice(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this switch port remote port based on the context it is used
-func (m *SwitchPortRemotePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline remote port based on the context it is used
+func (m *SwitchPortInlineRemotePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDevice(ctx, formats); err != nil {
@@ -970,7 +970,7 @@ func (m *SwitchPortRemotePort) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *SwitchPortRemotePort) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePort) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Device != nil {
 		if err := m.Device.ContextValidate(ctx, formats); err != nil {
@@ -984,18 +984,18 @@ func (m *SwitchPortRemotePort) contextValidateDevice(ctx context.Context, format
 	return nil
 }
 
-func (m *SwitchPortRemotePort) contextValidateMtu(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePort) contextValidateMtu(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote_port"+"."+"mtu", "body", int64(m.Mtu)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote_port"+"."+"mtu", "body", m.Mtu); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SwitchPortRemotePort) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePort) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "remote_port"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "remote_port"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1003,7 +1003,7 @@ func (m *SwitchPortRemotePort) contextValidateName(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePort) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1011,8 +1011,8 @@ func (m *SwitchPortRemotePort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePort) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePort
+func (m *SwitchPortInlineRemotePort) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1020,20 +1020,20 @@ func (m *SwitchPortRemotePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePortDevice Device connected to port.
+// SwitchPortInlineRemotePortInlineDevice Device connected to port.
 //
-// swagger:model SwitchPortRemotePortDevice
-type SwitchPortRemotePortDevice struct {
+// swagger:model switch_port_inline_remote_port_inline_device
+type SwitchPortInlineRemotePortInlineDevice struct {
 
 	// node
-	Node *SwitchPortRemotePortDeviceNode `json:"node,omitempty"`
+	Node *SwitchPortInlineRemotePortInlineDeviceInlineNode `json:"node,omitempty"`
 
 	// shelf
-	Shelf *SwitchPortRemotePortDeviceShelf `json:"shelf,omitempty"`
+	Shelf *SwitchPortInlineRemotePortInlineDeviceInlineShelf `json:"shelf,omitempty"`
 }
 
-// Validate validates this switch port remote port device
-func (m *SwitchPortRemotePortDevice) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port inline device
+func (m *SwitchPortInlineRemotePortInlineDevice) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -1050,7 +1050,7 @@ func (m *SwitchPortRemotePortDevice) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchPortRemotePortDevice) validateNode(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDevice) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1067,7 +1067,7 @@ func (m *SwitchPortRemotePortDevice) validateNode(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SwitchPortRemotePortDevice) validateShelf(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDevice) validateShelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Shelf) { // not required
 		return nil
 	}
@@ -1084,8 +1084,8 @@ func (m *SwitchPortRemotePortDevice) validateShelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this switch port remote port device based on the context it is used
-func (m *SwitchPortRemotePortDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline remote port inline device based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -1102,7 +1102,7 @@ func (m *SwitchPortRemotePortDevice) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SwitchPortRemotePortDevice) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDevice) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1116,7 +1116,7 @@ func (m *SwitchPortRemotePortDevice) contextValidateNode(ctx context.Context, fo
 	return nil
 }
 
-func (m *SwitchPortRemotePortDevice) contextValidateShelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDevice) contextValidateShelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Shelf != nil {
 		if err := m.Shelf.ContextValidate(ctx, formats); err != nil {
@@ -1131,7 +1131,7 @@ func (m *SwitchPortRemotePortDevice) contextValidateShelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePortDevice) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePortInlineDevice) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1139,8 +1139,8 @@ func (m *SwitchPortRemotePortDevice) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePortDevice) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePortDevice
+func (m *SwitchPortInlineRemotePortInlineDevice) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDevice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1148,25 +1148,25 @@ func (m *SwitchPortRemotePortDevice) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePortDeviceNode switch port remote port device node
+// SwitchPortInlineRemotePortInlineDeviceInlineNode switch port inline remote port inline device inline node
 //
-// swagger:model SwitchPortRemotePortDeviceNode
-type SwitchPortRemotePortDeviceNode struct {
+// swagger:model switch_port_inline_remote_port_inline_device_inline_node
+type SwitchPortInlineRemotePortInlineDeviceInlineNode struct {
 
 	// links
-	Links *SwitchPortRemotePortDeviceNodeLinks `json:"_links,omitempty"`
+	Links *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this switch port remote port device node
-func (m *SwitchPortRemotePortDeviceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port inline device inline node
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1179,7 +1179,7 @@ func (m *SwitchPortRemotePortDeviceNode) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceNode) validateLinks(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1196,8 +1196,8 @@ func (m *SwitchPortRemotePortDeviceNode) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this switch port remote port device node based on the context it is used
-func (m *SwitchPortRemotePortDeviceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline remote port inline device inline node based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1210,7 +1210,7 @@ func (m *SwitchPortRemotePortDeviceNode) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1225,7 +1225,7 @@ func (m *SwitchPortRemotePortDeviceNode) contextValidateLinks(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceNode) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1233,8 +1233,8 @@ func (m *SwitchPortRemotePortDeviceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceNode) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePortDeviceNode
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNode) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1242,17 +1242,17 @@ func (m *SwitchPortRemotePortDeviceNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePortDeviceNodeLinks switch port remote port device node links
+// SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks switch port inline remote port inline device inline node inline links
 //
-// swagger:model SwitchPortRemotePortDeviceNodeLinks
-type SwitchPortRemotePortDeviceNodeLinks struct {
+// swagger:model switch_port_inline_remote_port_inline_device_inline_node_inline__links
+type SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this switch port remote port device node links
-func (m *SwitchPortRemotePortDeviceNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port inline device inline node inline links
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1265,7 +1265,7 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1282,8 +1282,8 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this switch port remote port device node links based on the context it is used
-func (m *SwitchPortRemotePortDeviceNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline remote port inline device inline node inline links based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1296,7 +1296,7 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1311,7 +1311,7 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1319,8 +1319,8 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceNodeLinks) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePortDeviceNodeLinks
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1328,24 +1328,36 @@ func (m *SwitchPortRemotePortDeviceNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePortDeviceShelf Shelf connected to this port.
+// SwitchPortInlineRemotePortInlineDeviceInlineShelf Shelf connected to this port.
 //
-// swagger:model SwitchPortRemotePortDeviceShelf
-type SwitchPortRemotePortDeviceShelf struct {
+// swagger:model switch_port_inline_remote_port_inline_device_inline_shelf
+type SwitchPortInlineRemotePortInlineDeviceInlineShelf struct {
 
 	// links
-	Links *SwitchPortRemotePortDeviceShelfLinks `json:"_links,omitempty"`
+	Links *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks `json:"_links,omitempty"`
+
+	// Shelf module connected to this port.
+	// Enum: [A B]
+	Module *string `json:"module,omitempty"`
+
+	// name
+	// Example: 1.1
+	Name *string `json:"name,omitempty"`
 
 	// uid
-	// Example: 7777841915827391056
-	UID string `json:"uid,omitempty"`
+	// Example: 12439000444923584512
+	UID *string `json:"uid,omitempty"`
 }
 
-// Validate validates this switch port remote port device shelf
-func (m *SwitchPortRemotePortDeviceShelf) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port inline device inline shelf
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateModule(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1355,7 +1367,7 @@ func (m *SwitchPortRemotePortDeviceShelf) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceShelf) validateLinks(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1372,8 +1384,64 @@ func (m *SwitchPortRemotePortDeviceShelf) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this switch port remote port device shelf based on the context it is used
-func (m *SwitchPortRemotePortDeviceShelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+var switchPortInlineRemotePortInlineDeviceInlineShelfTypeModulePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["A","B"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		switchPortInlineRemotePortInlineDeviceInlineShelfTypeModulePropEnum = append(switchPortInlineRemotePortInlineDeviceInlineShelfTypeModulePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_remote_port_inline_device_inline_shelf
+	// SwitchPortInlineRemotePortInlineDeviceInlineShelf
+	// module
+	// Module
+	// A
+	// END DEBUGGING
+	// SwitchPortInlineRemotePortInlineDeviceInlineShelfModuleA captures enum value "A"
+	SwitchPortInlineRemotePortInlineDeviceInlineShelfModuleA string = "A"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_remote_port_inline_device_inline_shelf
+	// SwitchPortInlineRemotePortInlineDeviceInlineShelf
+	// module
+	// Module
+	// B
+	// END DEBUGGING
+	// SwitchPortInlineRemotePortInlineDeviceInlineShelfModuleB captures enum value "B"
+	SwitchPortInlineRemotePortInlineDeviceInlineShelfModuleB string = "B"
+)
+
+// prop value enum
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) validateModuleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, switchPortInlineRemotePortInlineDeviceInlineShelfTypeModulePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) validateModule(formats strfmt.Registry) error {
+	if swag.IsZero(m.Module) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModuleEnum("remote_port"+"."+"device"+"."+"shelf"+"."+"module", "body", *m.Module); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this switch port inline remote port inline device inline shelf based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1386,7 +1454,7 @@ func (m *SwitchPortRemotePortDeviceShelf) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceShelf) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1401,7 +1469,7 @@ func (m *SwitchPortRemotePortDeviceShelf) contextValidateLinks(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceShelf) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1409,8 +1477,8 @@ func (m *SwitchPortRemotePortDeviceShelf) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceShelf) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePortDeviceShelf
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelf) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineShelf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1418,17 +1486,17 @@ func (m *SwitchPortRemotePortDeviceShelf) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortRemotePortDeviceShelfLinks switch port remote port device shelf links
+// SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks switch port inline remote port inline device inline shelf inline links
 //
-// swagger:model SwitchPortRemotePortDeviceShelfLinks
-type SwitchPortRemotePortDeviceShelfLinks struct {
+// swagger:model switch_port_inline_remote_port_inline_device_inline_shelf_inline__links
+type SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this switch port remote port device shelf links
-func (m *SwitchPortRemotePortDeviceShelfLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline remote port inline device inline shelf inline links
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1441,7 +1509,7 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceShelfLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1458,8 +1526,8 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this switch port remote port device shelf links based on the context it is used
-func (m *SwitchPortRemotePortDeviceShelfLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline remote port inline device inline shelf inline links based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1472,7 +1540,7 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SwitchPortRemotePortDeviceShelfLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1487,7 +1555,7 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceShelfLinks) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1495,8 +1563,8 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortRemotePortDeviceShelfLinks) UnmarshalBinary(b []byte) error {
-	var res SwitchPortRemotePortDeviceShelfLinks
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1504,20 +1572,20 @@ func (m *SwitchPortRemotePortDeviceShelfLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortStatistics These are raw counters for the device associated with the Ethernet port.
+// SwitchPortInlineStatistics These are raw counters for the device associated with the Ethernet port.
 //
-// swagger:model SwitchPortStatistics
-type SwitchPortStatistics struct {
+// swagger:model switch_port_inline_statistics
+type SwitchPortInlineStatistics struct {
 
 	// receive raw
-	ReceiveRaw *SwitchPortStatisticsReceiveRaw `json:"receive_raw,omitempty"`
+	ReceiveRaw *SwitchPortInlineStatisticsInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// transmit raw
-	TransmitRaw *SwitchPortStatisticsTransmitRaw `json:"transmit_raw,omitempty"`
+	TransmitRaw *SwitchPortInlineStatisticsInlineTransmitRaw `json:"transmit_raw,omitempty"`
 }
 
-// Validate validates this switch port statistics
-func (m *SwitchPortStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline statistics
+func (m *SwitchPortInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReceiveRaw(formats); err != nil {
@@ -1534,7 +1602,7 @@ func (m *SwitchPortStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchPortStatistics) validateReceiveRaw(formats strfmt.Registry) error {
+func (m *SwitchPortInlineStatistics) validateReceiveRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ReceiveRaw) { // not required
 		return nil
 	}
@@ -1551,7 +1619,7 @@ func (m *SwitchPortStatistics) validateReceiveRaw(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SwitchPortStatistics) validateTransmitRaw(formats strfmt.Registry) error {
+func (m *SwitchPortInlineStatistics) validateTransmitRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.TransmitRaw) { // not required
 		return nil
 	}
@@ -1568,8 +1636,8 @@ func (m *SwitchPortStatistics) validateTransmitRaw(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this switch port statistics based on the context it is used
-func (m *SwitchPortStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline statistics based on the context it is used
+func (m *SwitchPortInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReceiveRaw(ctx, formats); err != nil {
@@ -1586,7 +1654,7 @@ func (m *SwitchPortStatistics) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *SwitchPortStatistics) contextValidateReceiveRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineStatistics) contextValidateReceiveRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ReceiveRaw != nil {
 		if err := m.ReceiveRaw.ContextValidate(ctx, formats); err != nil {
@@ -1600,7 +1668,7 @@ func (m *SwitchPortStatistics) contextValidateReceiveRaw(ctx context.Context, fo
 	return nil
 }
 
-func (m *SwitchPortStatistics) contextValidateTransmitRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineStatistics) contextValidateTransmitRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TransmitRaw != nil {
 		if err := m.TransmitRaw.ContextValidate(ctx, formats); err != nil {
@@ -1615,7 +1683,7 @@ func (m *SwitchPortStatistics) contextValidateTransmitRaw(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortStatistics) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1623,8 +1691,8 @@ func (m *SwitchPortStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortStatistics) UnmarshalBinary(b []byte) error {
-	var res SwitchPortStatistics
+func (m *SwitchPortInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1632,36 +1700,36 @@ func (m *SwitchPortStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortStatisticsReceiveRaw Packet receive counters for the Ethernet port.
+// SwitchPortInlineStatisticsInlineReceiveRaw Packet receive counters for the Ethernet port.
 //
-// swagger:model SwitchPortStatisticsReceiveRaw
-type SwitchPortStatisticsReceiveRaw struct {
+// swagger:model switch_port_inline_statistics_inline_receive_raw
+type SwitchPortInlineStatisticsInlineReceiveRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this switch port statistics receive raw
-func (m *SwitchPortStatisticsReceiveRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline statistics inline receive raw
+func (m *SwitchPortInlineStatisticsInlineReceiveRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this switch port statistics receive raw based on context it is used
-func (m *SwitchPortStatisticsReceiveRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this switch port inline statistics inline receive raw based on context it is used
+func (m *SwitchPortInlineStatisticsInlineReceiveRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortStatisticsReceiveRaw) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineStatisticsInlineReceiveRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1669,8 +1737,8 @@ func (m *SwitchPortStatisticsReceiveRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortStatisticsReceiveRaw) UnmarshalBinary(b []byte) error {
-	var res SwitchPortStatisticsReceiveRaw
+func (m *SwitchPortInlineStatisticsInlineReceiveRaw) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineStatisticsInlineReceiveRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1678,36 +1746,36 @@ func (m *SwitchPortStatisticsReceiveRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortStatisticsTransmitRaw Packet transmit counters for the Ethernet port.
+// SwitchPortInlineStatisticsInlineTransmitRaw Packet transmit counters for the Ethernet port.
 //
-// swagger:model SwitchPortStatisticsTransmitRaw
-type SwitchPortStatisticsTransmitRaw struct {
+// swagger:model switch_port_inline_statistics_inline_transmit_raw
+type SwitchPortInlineStatisticsInlineTransmitRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this switch port statistics transmit raw
-func (m *SwitchPortStatisticsTransmitRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline statistics inline transmit raw
+func (m *SwitchPortInlineStatisticsInlineTransmitRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this switch port statistics transmit raw based on context it is used
-func (m *SwitchPortStatisticsTransmitRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this switch port inline statistics inline transmit raw based on context it is used
+func (m *SwitchPortInlineStatisticsInlineTransmitRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortStatisticsTransmitRaw) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineStatisticsInlineTransmitRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1715,8 +1783,8 @@ func (m *SwitchPortStatisticsTransmitRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortStatisticsTransmitRaw) UnmarshalBinary(b []byte) error {
-	var res SwitchPortStatisticsTransmitRaw
+func (m *SwitchPortInlineStatisticsInlineTransmitRaw) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineStatisticsInlineTransmitRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1724,21 +1792,21 @@ func (m *SwitchPortStatisticsTransmitRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SwitchPortSwitch The name of the specified cluster or storage switch.
+// SwitchPortInlineSwitch The name of the specified cluster or storage switch.
 //
-// swagger:model SwitchPortSwitch
-type SwitchPortSwitch struct {
+// swagger:model switch_port_inline_switch
+type SwitchPortInlineSwitch struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// name
 	// Example: RTP-SS01-510R03(FOC223443KQ)
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this switch port switch
-func (m *SwitchPortSwitch) Validate(formats strfmt.Registry) error {
+// Validate validates this switch port inline switch
+func (m *SwitchPortInlineSwitch) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1751,7 +1819,7 @@ func (m *SwitchPortSwitch) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchPortSwitch) validateLinks(formats strfmt.Registry) error {
+func (m *SwitchPortInlineSwitch) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1768,8 +1836,8 @@ func (m *SwitchPortSwitch) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this switch port switch based on the context it is used
-func (m *SwitchPortSwitch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this switch port inline switch based on the context it is used
+func (m *SwitchPortInlineSwitch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1782,7 +1850,7 @@ func (m *SwitchPortSwitch) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SwitchPortSwitch) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortInlineSwitch) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1797,7 +1865,7 @@ func (m *SwitchPortSwitch) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *SwitchPortSwitch) MarshalBinary() ([]byte, error) {
+func (m *SwitchPortInlineSwitch) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1805,8 +1873,8 @@ func (m *SwitchPortSwitch) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SwitchPortSwitch) UnmarshalBinary(b []byte) error {
-	var res SwitchPortSwitch
+func (m *SwitchPortInlineSwitch) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineSwitch
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

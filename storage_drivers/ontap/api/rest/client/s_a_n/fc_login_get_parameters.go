@@ -66,21 +66,21 @@ type FcLoginGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InitiatorWwpn.
 
 	   The world wide port name (WWPN) of the initiator.
 
 	*/
-	InitiatorWwpnPathParameter string
+	InitiatorWwpn string
 
 	/* InterfaceUUID.
 
 	   The unique identifier of the FC interface through which the initiator logged in.
 
 	*/
-	InterfaceUUIDPathParameter string
+	InterfaceUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *FcLoginGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fc login get params
-func (o *FcLoginGetParams) WithFieldsQueryParameter(fields []string) *FcLoginGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc login get params
+func (o *FcLoginGetParams) WithFields(fields []string) *FcLoginGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc login get params
-func (o *FcLoginGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc login get params
+func (o *FcLoginGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInitiatorWwpnPathParameter adds the initiatorWwpn to the fc login get params
-func (o *FcLoginGetParams) WithInitiatorWwpnPathParameter(initiatorWwpn string) *FcLoginGetParams {
-	o.SetInitiatorWwpnPathParameter(initiatorWwpn)
+// WithInitiatorWwpn adds the initiatorWwpn to the fc login get params
+func (o *FcLoginGetParams) WithInitiatorWwpn(initiatorWwpn string) *FcLoginGetParams {
+	o.SetInitiatorWwpn(initiatorWwpn)
 	return o
 }
 
-// SetInitiatorWwpnPathParameter adds the initiatorWwpn to the fc login get params
-func (o *FcLoginGetParams) SetInitiatorWwpnPathParameter(initiatorWwpn string) {
-	o.InitiatorWwpnPathParameter = initiatorWwpn
+// SetInitiatorWwpn adds the initiatorWwpn to the fc login get params
+func (o *FcLoginGetParams) SetInitiatorWwpn(initiatorWwpn string) {
+	o.InitiatorWwpn = initiatorWwpn
 }
 
-// WithInterfaceUUIDPathParameter adds the interfaceUUID to the fc login get params
-func (o *FcLoginGetParams) WithInterfaceUUIDPathParameter(interfaceUUID string) *FcLoginGetParams {
-	o.SetInterfaceUUIDPathParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the fc login get params
+func (o *FcLoginGetParams) WithInterfaceUUID(interfaceUUID string) *FcLoginGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDPathParameter adds the interfaceUuid to the fc login get params
-func (o *FcLoginGetParams) SetInterfaceUUIDPathParameter(interfaceUUID string) {
-	o.InterfaceUUIDPathParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the fc login get params
+func (o *FcLoginGetParams) SetInterfaceUUID(interfaceUUID string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *FcLoginGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *FcLoginGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param initiator.wwpn
-	if err := r.SetPathParam("initiator.wwpn", o.InitiatorWwpnPathParameter); err != nil {
+	if err := r.SetPathParam("initiator.wwpn", o.InitiatorWwpn); err != nil {
 		return err
 	}
 
 	// path param interface.uuid
-	if err := r.SetPathParam("interface.uuid", o.InterfaceUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("interface.uuid", o.InterfaceUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *FcLoginGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamFcLoginGet binds the parameter fields
 func (o *FcLoginGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

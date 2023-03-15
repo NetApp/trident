@@ -52,6 +52,10 @@ FileMoveCreateCreated describes a response with status code 201, with default he
 Created
 */
 type FileMoveCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this file move create created response has a 2xx status code
@@ -89,6 +93,13 @@ func (o *FileMoveCreateCreated) String() string {
 
 func (o *FileMoveCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	return nil
 }
 
@@ -106,6 +117,9 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 917505 | SVM not found. |
+| 918236 | The specified \"volume.uuid\" and \"volume.name\" do not refer to the same volume. |
+| 2621706 | The specified \"svm.uuid\" and \"svm.name\" do not refer to the same SVM. |
 | 7012352 | File locations are inconsistent. All files must be on the same volume. |
 | 7012353 | Exceeded the file operations supported number of files. |
 | 7012354 | Unable to pair the number of source files to destination files. |
@@ -123,11 +137,41 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 | 7012374 | Source volume and destination volume have different home clusters. |
 | 7012376 | Operation not allowed on a volume that is part of a SnapMirror Synchronous relationship. |
 | 7012377 | Cannot start a file move operation on the volume because an active volume conversion is in progress. |
+| 7013352 | One or more source files must be specified in \"files_to_move.sources\". |
+| 7013353 | One or more destination files or directories must be specified in \"files_to_move.destinations\". |
+| 7013354 | \"path\" must be specified. |
+| 7013355 | Moving files between FlexVol volumes and FlexGroup volumes or constituents is not supported. |
+| 7013356 | Moving files between FlexVol volumes and FlexGroup constituents is not supported. |
+| 7013357 | The specified volume could not be found. |
+| 7013358 | The specified SVM or volume UUID could not be found. |
+| 7013359 | The SVM and volume must both be provided. |
+| 7018877 | Maximum combined total (50) of file and LUN copy and move operations reached. When one or more of the operations has completed, try the command again. |
+| 7018937 | The file is already on the destination constituent. |
+| 13107222 | Internal error. |
+| 13107415 | Failed to lookup a volume property. |
+| 13107431 | Failed to lookup an SVM property. |
+| 13109260 | Failed to enable granular data on the volume. |
+| 144179201 | The file move start operation failed. |
 | 144179206 | Source file does not exist. |
 | 144179207 | Volume capacity balancing requires an effective cluster version of 9.10.1 or later. |
 | 144180200 | Destination constituent not a member of FlexGroup volume. |
 | 144180201 | Destination constituent not properly configured. |
+| 144180203 | Volume capacity rebalancing is not supported on FlexCache volumes. |
+| 144180204 | Volume capacity rebalancing is not supported on object store volumes. |
+| 144180205 | The system is busy. |
 | 144180206 | File movement with automatic destination constituent selection only supported on FlexGroup volumes with more than one constituent. |
+| 144180207 | Volume capacity rebalancing is not supported on inactive MetroCluster configurations. |
+| 144180208 | Disruptive file movement is not supported when granular data is enabled on the volume. Try the operation again using \"disruptive=false\". |
+| 144181200 | Too many source or destination files are specified for a file move within a FlexGroup volume. There must be one source file identifying a file on a FlexGroup volume and either zero or one destination files identifying the destination constituent. |
+| 144181202 | For a file move within a FlexGroup volume, the source volume must be a FlexGroup volume, and the destination volume must be a constituent. |
+| 144181203 | A destination constituent must be provided in \"files_to_move.destinations\" if it is not being selected automatically. Use the \"automatic\" query to enable automatic destination constituent selection. |
+| 144181204 | A destination constituent is provided while automatic destination constituent selection is enabled with the \"automatic\" query. |
+| 144181205 | The destination volume is not a constituent. For a file move within a FlexGroup volume, the destination volume must be a constituent of the source FlexGroup volume. |
+| 144181207 | The destination constituent SVM is not the same as the source SVM. For a file move within a FlexGroup volume, the destination constituent must be a constituent of the source FlexGroup volume. |
+| 144181208 | The destination file path is different from the source file path. For a file move within a FlexGroup volume, the path of the source file does not change. |
+| 144181209 | The specified SVM for the destination constituent differs from the SVM of the source FlexGroup volume. For a file move within a FlexGroup volume, the destination constituent must be a constituent of the source FlexGroup volume. |
+| 144182201 | Volume capacity rebalancing using non-disruptive file move operations and granular data requires an effective cluster version of 9.11.1 or later. |
+| 144182206 | The \"force\" parameter is not supported unless the \"disruptive\" parameter is specified as \"true\". |
 | 196608143 | Cannot start the operation. The volume is undergoing a secure purge operation. |
 */
 type FileMoveCreateDefault struct {

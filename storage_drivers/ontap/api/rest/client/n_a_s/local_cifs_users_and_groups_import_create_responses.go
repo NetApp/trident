@@ -52,6 +52,11 @@ LocalCifsUsersAndGroupsImportCreateAccepted describes a response with status cod
 Accepted
 */
 type LocalCifsUsersAndGroupsImportCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *LocalCifsUsersAndGroupsImportCreateAccepted) GetPayload() *models.JobLi
 }
 
 func (o *LocalCifsUsersAndGroupsImportCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

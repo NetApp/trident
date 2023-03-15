@@ -18,13 +18,13 @@ import (
 type ConsistencyGroupVolumeSpace struct {
 
 	// The available space, in bytes.
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Total provisioned size, in bytes.
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this consistency group volume space

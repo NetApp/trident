@@ -66,25 +66,25 @@ type CifsSessionDeleteParams struct {
 
 	   Unique identifier for the SMB connection.
 	*/
-	ConnectionIDPathParameter int64
+	ConnectionID int64
 
 	/* Identifier.
 
 	   Unique identifier for the SMB session.
 	*/
-	IdentifierPathParameter int64
+	Identifier int64
 
 	/* NodeUUID.
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *CifsSessionDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConnectionIDPathParameter adds the connectionID to the cifs session delete params
-func (o *CifsSessionDeleteParams) WithConnectionIDPathParameter(connectionID int64) *CifsSessionDeleteParams {
-	o.SetConnectionIDPathParameter(connectionID)
+// WithConnectionID adds the connectionID to the cifs session delete params
+func (o *CifsSessionDeleteParams) WithConnectionID(connectionID int64) *CifsSessionDeleteParams {
+	o.SetConnectionID(connectionID)
 	return o
 }
 
-// SetConnectionIDPathParameter adds the connectionId to the cifs session delete params
-func (o *CifsSessionDeleteParams) SetConnectionIDPathParameter(connectionID int64) {
-	o.ConnectionIDPathParameter = connectionID
+// SetConnectionID adds the connectionId to the cifs session delete params
+func (o *CifsSessionDeleteParams) SetConnectionID(connectionID int64) {
+	o.ConnectionID = connectionID
 }
 
-// WithIdentifierPathParameter adds the identifier to the cifs session delete params
-func (o *CifsSessionDeleteParams) WithIdentifierPathParameter(identifier int64) *CifsSessionDeleteParams {
-	o.SetIdentifierPathParameter(identifier)
+// WithIdentifier adds the identifier to the cifs session delete params
+func (o *CifsSessionDeleteParams) WithIdentifier(identifier int64) *CifsSessionDeleteParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierPathParameter adds the identifier to the cifs session delete params
-func (o *CifsSessionDeleteParams) SetIdentifierPathParameter(identifier int64) {
-	o.IdentifierPathParameter = identifier
+// SetIdentifier adds the identifier to the cifs session delete params
+func (o *CifsSessionDeleteParams) SetIdentifier(identifier int64) {
+	o.Identifier = identifier
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the cifs session delete params
-func (o *CifsSessionDeleteParams) WithNodeUUIDPathParameter(nodeUUID string) *CifsSessionDeleteParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs session delete params
+func (o *CifsSessionDeleteParams) WithNodeUUID(nodeUUID string) *CifsSessionDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the cifs session delete params
-func (o *CifsSessionDeleteParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs session delete params
+func (o *CifsSessionDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs session delete params
-func (o *CifsSessionDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSessionDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs session delete params
+func (o *CifsSessionDeleteParams) WithSvmUUID(svmUUID string) *CifsSessionDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs session delete params
-func (o *CifsSessionDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs session delete params
+func (o *CifsSessionDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,22 +192,22 @@ func (o *CifsSessionDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param connection_id
-	if err := r.SetPathParam("connection_id", swag.FormatInt64(o.ConnectionIDPathParameter)); err != nil {
+	if err := r.SetPathParam("connection_id", swag.FormatInt64(o.ConnectionID)); err != nil {
 		return err
 	}
 
 	// path param identifier
-	if err := r.SetPathParam("identifier", swag.FormatInt64(o.IdentifierPathParameter)); err != nil {
+	if err := r.SetPathParam("identifier", swag.FormatInt64(o.Identifier)); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

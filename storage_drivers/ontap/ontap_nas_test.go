@@ -605,7 +605,7 @@ func TestOntapNasStorageDriverValidate_InvalidDataLIF(t *testing.T) {
 func TestOntapNasStorageDriverValidate_InvalidPrefix(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	driver.Config.LUKSEncryption = "false"
-	driver.Config.StoragePrefix = ToStringPointer("B@D")
+	driver.Config.StoragePrefix = utils.Ptr("B@D")
 	dataLIF := make([]string, 0)
 	dataLIF = append(dataLIF, "10.0.201.1")
 
@@ -1258,7 +1258,7 @@ func TestOntapNasStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
-	driver.Config.StoragePrefix = ToStringPointer("storagePrefix_")
+	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
 
 	volName := driver.GetInternalVolumeName(ctx, "vol1")
 

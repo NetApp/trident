@@ -20,13 +20,14 @@ import (
 type HostsSettingsResponse struct {
 
 	// links
-	Links *HostsSettingsResponseLinks `json:"_links,omitempty"`
+	Links *HostsSettingsResponseInlineLinks `json:"_links,omitempty"`
+
+	// hosts settings response inline records
+	HostsSettingsResponseInlineRecords []*HostsSettings `json:"records,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*HostsSettings `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this hosts settings response
@@ -37,7 +38,7 @@ func (m *HostsSettingsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateHostsSettingsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *HostsSettingsResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HostsSettingsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *HostsSettingsResponse) validateHostsSettingsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.HostsSettingsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.HostsSettingsResponseInlineRecords); i++ {
+		if swag.IsZero(m.HostsSettingsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.HostsSettingsResponseInlineRecords[i] != nil {
+			if err := m.HostsSettingsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *HostsSettingsResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateHostsSettingsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *HostsSettingsResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *HostsSettingsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsResponse) contextValidateHostsSettingsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.HostsSettingsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.HostsSettingsResponseInlineRecords[i] != nil {
+			if err := m.HostsSettingsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *HostsSettingsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HostsSettingsResponseLinks hosts settings response links
+// HostsSettingsResponseInlineLinks hosts settings response inline links
 //
-// swagger:model HostsSettingsResponseLinks
-type HostsSettingsResponseLinks struct {
+// swagger:model hosts_settings_response_inline__links
+type HostsSettingsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type HostsSettingsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this hosts settings response links
-func (m *HostsSettingsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this hosts settings response inline links
+func (m *HostsSettingsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *HostsSettingsResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HostsSettingsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *HostsSettingsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *HostsSettingsResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *HostsSettingsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *HostsSettingsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *HostsSettingsResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this hosts settings response links based on the context it is used
-func (m *HostsSettingsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this hosts settings response inline links based on the context it is used
+func (m *HostsSettingsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *HostsSettingsResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *HostsSettingsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *HostsSettingsResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *HostsSettingsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *HostsSettingsResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *HostsSettingsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *HostsSettingsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *HostsSettingsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HostsSettingsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res HostsSettingsResponseLinks
+func (m *HostsSettingsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res HostsSettingsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

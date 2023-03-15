@@ -21,7 +21,7 @@ import (
 type Coredump struct {
 
 	// links
-	Links *CoredumpLinks `json:"_links,omitempty"`
+	Links *CoredumpInlineLinks `json:"_links,omitempty"`
 
 	// Specifies whether or not the core is a partial core.  Applicable only to kernel core dump type.
 	// Read Only: true
@@ -34,15 +34,15 @@ type Coredump struct {
 	// MD5 checksum of the compressed data of core.  Applicable only to kernel core dump type.
 	// Example: 5118488cc5065e33a16986001b1ffa48
 	// Read Only: true
-	Md5DataChecksum string `json:"md5_data_checksum,omitempty"`
+	Md5DataChecksum *string `json:"md5_data_checksum,omitempty"`
 
 	// Core name
 	// Example: core.4136886413.2021-03-01.22_09_11.nz
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *CoredumpNode `json:"node,omitempty"`
+	Node *CoredumpInlineNode `json:"node,omitempty"`
 
 	// Time of panic that generated the core.
 	// Example: 2021-03-01T18:09:11-04:00
@@ -53,13 +53,13 @@ type Coredump struct {
 	// Size of core, in bytes.  Applicable only to kernel core dump type.
 	// Example: 1161629804
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Core type, kernel or application
 	// Example: kernel
 	// Read Only: true
 	// Enum: [kernel application]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this coredump
@@ -183,7 +183,7 @@ func (m *Coredump) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -270,7 +270,7 @@ func (m *Coredump) contextValidateIsSaved(ctx context.Context, formats strfmt.Re
 
 func (m *Coredump) contextValidateMd5DataChecksum(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "md5_data_checksum", "body", string(m.Md5DataChecksum)); err != nil {
+	if err := validate.ReadOnly(ctx, "md5_data_checksum", "body", m.Md5DataChecksum); err != nil {
 		return err
 	}
 
@@ -279,7 +279,7 @@ func (m *Coredump) contextValidateMd5DataChecksum(ctx context.Context, formats s
 
 func (m *Coredump) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -311,7 +311,7 @@ func (m *Coredump) contextValidatePanicTime(ctx context.Context, formats strfmt.
 
 func (m *Coredump) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -320,7 +320,7 @@ func (m *Coredump) contextValidateSize(ctx context.Context, formats strfmt.Regis
 
 func (m *Coredump) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -345,17 +345,17 @@ func (m *Coredump) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CoredumpLinks coredump links
+// CoredumpInlineLinks coredump inline links
 //
-// swagger:model CoredumpLinks
-type CoredumpLinks struct {
+// swagger:model coredump_inline__links
+type CoredumpInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this coredump links
-func (m *CoredumpLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this coredump inline links
+func (m *CoredumpInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -368,7 +368,7 @@ func (m *CoredumpLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CoredumpInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -385,8 +385,8 @@ func (m *CoredumpLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this coredump links based on the context it is used
-func (m *CoredumpLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this coredump inline links based on the context it is used
+func (m *CoredumpInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -399,7 +399,7 @@ func (m *CoredumpLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *CoredumpLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -414,7 +414,7 @@ func (m *CoredumpLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *CoredumpLinks) MarshalBinary() ([]byte, error) {
+func (m *CoredumpInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -422,8 +422,8 @@ func (m *CoredumpLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CoredumpLinks) UnmarshalBinary(b []byte) error {
-	var res CoredumpLinks
+func (m *CoredumpInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CoredumpInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -431,25 +431,25 @@ func (m *CoredumpLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CoredumpNode coredump node
+// CoredumpInlineNode coredump inline node
 //
-// swagger:model CoredumpNode
-type CoredumpNode struct {
+// swagger:model coredump_inline_node
+type CoredumpInlineNode struct {
 
 	// links
-	Links *CoredumpNodeLinks `json:"_links,omitempty"`
+	Links *CoredumpInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this coredump node
-func (m *CoredumpNode) Validate(formats strfmt.Registry) error {
+// Validate validates this coredump inline node
+func (m *CoredumpInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -462,7 +462,7 @@ func (m *CoredumpNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpNode) validateLinks(formats strfmt.Registry) error {
+func (m *CoredumpInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -479,8 +479,8 @@ func (m *CoredumpNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this coredump node based on the context it is used
-func (m *CoredumpNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this coredump inline node based on the context it is used
+func (m *CoredumpInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -493,7 +493,7 @@ func (m *CoredumpNode) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *CoredumpNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -508,7 +508,7 @@ func (m *CoredumpNode) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *CoredumpNode) MarshalBinary() ([]byte, error) {
+func (m *CoredumpInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -516,8 +516,8 @@ func (m *CoredumpNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CoredumpNode) UnmarshalBinary(b []byte) error {
-	var res CoredumpNode
+func (m *CoredumpInlineNode) UnmarshalBinary(b []byte) error {
+	var res CoredumpInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -525,17 +525,17 @@ func (m *CoredumpNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CoredumpNodeLinks coredump node links
+// CoredumpInlineNodeInlineLinks coredump inline node inline links
 //
-// swagger:model CoredumpNodeLinks
-type CoredumpNodeLinks struct {
+// swagger:model coredump_inline_node_inline__links
+type CoredumpInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this coredump node links
-func (m *CoredumpNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this coredump inline node inline links
+func (m *CoredumpInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -548,7 +548,7 @@ func (m *CoredumpNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CoredumpNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CoredumpInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -565,8 +565,8 @@ func (m *CoredumpNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this coredump node links based on the context it is used
-func (m *CoredumpNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this coredump inline node inline links based on the context it is used
+func (m *CoredumpInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -579,7 +579,7 @@ func (m *CoredumpNodeLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CoredumpNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CoredumpInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -594,7 +594,7 @@ func (m *CoredumpNodeLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CoredumpNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CoredumpInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -602,8 +602,8 @@ func (m *CoredumpNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CoredumpNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CoredumpNodeLinks
+func (m *CoredumpInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CoredumpInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

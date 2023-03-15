@@ -65,7 +65,7 @@ type SnapshotPolicyDeleteParams struct {
 
 	   Snapshot copy policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SnapshotPolicyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot policy delete params
-func (o *SnapshotPolicyDeleteParams) WithUUIDPathParameter(uuid string) *SnapshotPolicyDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapshot policy delete params
+func (o *SnapshotPolicyDeleteParams) WithUUID(uuid string) *SnapshotPolicyDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapshot policy delete params
-func (o *SnapshotPolicyDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapshot policy delete params
+func (o *SnapshotPolicyDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SnapshotPolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, reg
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

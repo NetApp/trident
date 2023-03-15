@@ -73,13 +73,13 @@ type SecurityKeyManagerKeyServersModifyParams struct {
 
 	   Primary key server configured in the external key manager.
 	*/
-	ServerPathParameter string
+	Server string
 
 	/* UUID.
 
 	   External key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *SecurityKeyManagerKeyServersModifyParams) SetInfo(info *models.KeyServe
 	o.Info = info
 }
 
-// WithServerPathParameter adds the server to the security key manager key servers modify params
-func (o *SecurityKeyManagerKeyServersModifyParams) WithServerPathParameter(server string) *SecurityKeyManagerKeyServersModifyParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the security key manager key servers modify params
+func (o *SecurityKeyManagerKeyServersModifyParams) WithServer(server string) *SecurityKeyManagerKeyServersModifyParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the security key manager key servers modify params
-func (o *SecurityKeyManagerKeyServersModifyParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the security key manager key servers modify params
+func (o *SecurityKeyManagerKeyServersModifyParams) SetServer(server string) {
+	o.Server = server
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager key servers modify params
-func (o *SecurityKeyManagerKeyServersModifyParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerKeyServersModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager key servers modify params
+func (o *SecurityKeyManagerKeyServersModifyParams) WithUUID(uuid string) *SecurityKeyManagerKeyServersModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager key servers modify params
-func (o *SecurityKeyManagerKeyServersModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager key servers modify params
+func (o *SecurityKeyManagerKeyServersModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *SecurityKeyManagerKeyServersModifyParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

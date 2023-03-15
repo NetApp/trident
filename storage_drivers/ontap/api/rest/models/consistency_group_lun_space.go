@@ -20,7 +20,7 @@ import (
 type ConsistencyGroupLunSpace struct {
 
 	// guarantee
-	Guarantee *ConsistencyGroupLunSpaceGuaranteeType `json:"guarantee,omitempty"`
+	Guarantee *ConsistencyGroupLunSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
 	// The total provisioned size of the LUN. The LUN size can be increased but not reduced using the REST interface.
 	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform, and the available space in the containing volume and aggregate.
@@ -29,13 +29,13 @@ type ConsistencyGroupLunSpace struct {
 	// Example: 1073741824
 	// Maximum: 1.40737488355328e+14
 	// Minimum: 4096
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The amount of space consumed by the main data stream of the LUN.<br/>
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this consistency group lun space
@@ -78,11 +78,11 @@ func (m *ConsistencyGroupLunSpace) validateSize(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("size", "body", m.Size, 4096, false); err != nil {
+	if err := validate.MinimumInt("size", "body", *m.Size, 4096, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("size", "body", m.Size, 1.40737488355328e+14, false); err != nil {
+	if err := validate.MaximumInt("size", "body", *m.Size, 1.40737488355328e+14, false); err != nil {
 		return err
 	}
 
@@ -135,10 +135,10 @@ func (m *ConsistencyGroupLunSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupLunSpaceGuaranteeType Properties that request and report the space guarantee for the LUN.
+// ConsistencyGroupLunSpaceInlineGuarantee Properties that request and report the space guarantee for the LUN.
 //
-// swagger:model ConsistencyGroupLunSpaceGuaranteeType
-type ConsistencyGroupLunSpaceGuaranteeType struct {
+// swagger:model consistency_group_lun_space_inline_guarantee
+type ConsistencyGroupLunSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
 	//
@@ -147,21 +147,21 @@ type ConsistencyGroupLunSpaceGuaranteeType struct {
 	// Reports if the LUN is space guaranteed.<br/>
 	// If _true_, a space guarantee is requested and the containing volume and aggregate support the request. If _false_, a space guarantee is not requested or a space guarantee is requested and either the containing volume or aggregate do not support the request.
 	//
-	Reserved bool `json:"reserved,omitempty"`
+	Reserved *bool `json:"reserved,omitempty"`
 }
 
-// Validate validates this consistency group lun space guarantee type
-func (m *ConsistencyGroupLunSpaceGuaranteeType) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group lun space inline guarantee
+func (m *ConsistencyGroupLunSpaceInlineGuarantee) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this consistency group lun space guarantee type based on context it is used
-func (m *ConsistencyGroupLunSpaceGuaranteeType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group lun space inline guarantee based on context it is used
+func (m *ConsistencyGroupLunSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupLunSpaceGuaranteeType) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupLunSpaceInlineGuarantee) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -169,8 +169,8 @@ func (m *ConsistencyGroupLunSpaceGuaranteeType) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupLunSpaceGuaranteeType) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupLunSpaceGuaranteeType
+func (m *ConsistencyGroupLunSpaceInlineGuarantee) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupLunSpaceInlineGuarantee
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

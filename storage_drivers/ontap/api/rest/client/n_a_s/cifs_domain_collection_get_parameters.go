@@ -66,121 +66,133 @@ type CifsDomainCollectionGetParams struct {
 
 	   Filter by discovered_servers.domain
 	*/
-	DiscoveredServersDomainQueryParameter *string
+	DiscoveredServersDomain *string
 
 	/* DiscoveredServersNodeName.
 
 	   Filter by discovered_servers.node.name
 	*/
-	DiscoveredServersNodeNameQueryParameter *string
+	DiscoveredServersNodeName *string
 
 	/* DiscoveredServersNodeUUID.
 
 	   Filter by discovered_servers.node.uuid
 	*/
-	DiscoveredServersNodeUUIDQueryParameter *string
+	DiscoveredServersNodeUUID *string
 
 	/* DiscoveredServersPreference.
 
 	   Filter by discovered_servers.preference
 	*/
-	DiscoveredServersPreferenceQueryParameter *string
+	DiscoveredServersPreference *string
 
 	/* DiscoveredServersServerIP.
 
 	   Filter by discovered_servers.server_ip
 	*/
-	DiscoveredServersServerIPQueryParameter *string
+	DiscoveredServersServerIP *string
 
 	/* DiscoveredServersServerName.
 
 	   Filter by discovered_servers.server_name
 	*/
-	DiscoveredServersServerNameQueryParameter *string
+	DiscoveredServersServerName *string
 
 	/* DiscoveredServersServerType.
 
 	   Filter by discovered_servers.server_type
 	*/
-	DiscoveredServersServerTypeQueryParameter *string
+	DiscoveredServersServerType *string
 
 	/* DiscoveredServersState.
 
 	   Filter by discovered_servers.state
 	*/
-	DiscoveredServersStateQueryParameter *string
+	DiscoveredServersState *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NameMappingTrustedDomains.
 
 	   Filter by name_mapping.trusted_domains
 	*/
-	NameMappingTrustedDomainsQueryParameter *string
+	NameMappingTrustedDomains *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PasswordScheduleScheduleDescription.
 
 	   Filter by password_schedule.schedule_description
 	*/
-	PasswordScheduleScheduleDescriptionQueryParameter *string
+	PasswordScheduleScheduleDescription *string
 
 	/* PasswordScheduleScheduleEnabled.
 
 	   Filter by password_schedule.schedule_enabled
 	*/
-	PasswordScheduleScheduleEnabledQueryParameter *bool
+	PasswordScheduleScheduleEnabled *bool
 
 	/* PasswordScheduleScheduleLastChangedTime.
 
 	   Filter by password_schedule.schedule_last_changed_time
 	*/
-	PasswordScheduleScheduleLastChangedTimeQueryParameter *string
+	PasswordScheduleScheduleLastChangedTime *string
 
 	/* PasswordScheduleScheduleRandomizedMinute.
 
 	   Filter by password_schedule.schedule_randomized_minute
 	*/
-	PasswordScheduleScheduleRandomizedMinuteQueryParameter *int64
+	PasswordScheduleScheduleRandomizedMinute *int64
 
 	/* PasswordScheduleScheduleWarnMessage.
 
 	   Filter by password_schedule.schedule_warn_message
 	*/
-	PasswordScheduleScheduleWarnMessageQueryParameter *string
+	PasswordScheduleScheduleWarnMessage *string
 
 	/* PasswordScheduleScheduleWeeklyInterval.
 
 	   Filter by password_schedule.schedule_weekly_interval
 	*/
-	PasswordScheduleScheduleWeeklyIntervalQueryParameter *int64
+	PasswordScheduleScheduleWeeklyInterval *int64
 
 	/* PreferredDcsFqdn.
 
 	   Filter by preferred_dcs.fqdn
 	*/
-	PreferredDcsFqdnQueryParameter *string
+	PreferredDcsFqdn *string
 
 	/* PreferredDcsServerIP.
 
 	   Filter by preferred_dcs.server_ip
 	*/
-	PreferredDcsServerIPQueryParameter *string
+	PreferredDcsServerIP *string
+
+	/* PreferredDcsStatusDetails.
+
+	   Filter by preferred_dcs.status.details
+	*/
+	PreferredDcsStatusDetails *string
+
+	/* PreferredDcsStatusReachable.
+
+	   Filter by preferred_dcs.status.reachable
+	*/
+	PreferredDcsStatusReachable *bool
 
 	/* ReturnRecords.
 
@@ -188,7 +200,7 @@ type CifsDomainCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -196,43 +208,43 @@ type CifsDomainCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TrustRelationshipsHomeDomain.
 
 	   Filter by trust_relationships.home_domain
 	*/
-	TrustRelationshipsHomeDomainQueryParameter *string
+	TrustRelationshipsHomeDomain *string
 
 	/* TrustRelationshipsNodeName.
 
 	   Filter by trust_relationships.node.name
 	*/
-	TrustRelationshipsNodeNameQueryParameter *string
+	TrustRelationshipsNodeName *string
 
 	/* TrustRelationshipsNodeUUID.
 
 	   Filter by trust_relationships.node.uuid
 	*/
-	TrustRelationshipsNodeUUIDQueryParameter *string
+	TrustRelationshipsNodeUUID *string
 
 	/* TrustRelationshipsTrustedDomains.
 
 	   Filter by trust_relationships.trusted_domains
 	*/
-	TrustRelationshipsTrustedDomainsQueryParameter *string
+	TrustRelationshipsTrustedDomains *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -252,14 +264,14 @@ func (o *CifsDomainCollectionGetParams) WithDefaults() *CifsDomainCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *CifsDomainCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsDomainCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -301,312 +313,334 @@ func (o *CifsDomainCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDiscoveredServersDomainQueryParameter adds the discoveredServersDomain to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersDomainQueryParameter(discoveredServersDomain *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersDomainQueryParameter(discoveredServersDomain)
+// WithDiscoveredServersDomain adds the discoveredServersDomain to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersDomain(discoveredServersDomain *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersDomain(discoveredServersDomain)
 	return o
 }
 
-// SetDiscoveredServersDomainQueryParameter adds the discoveredServersDomain to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersDomainQueryParameter(discoveredServersDomain *string) {
-	o.DiscoveredServersDomainQueryParameter = discoveredServersDomain
+// SetDiscoveredServersDomain adds the discoveredServersDomain to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersDomain(discoveredServersDomain *string) {
+	o.DiscoveredServersDomain = discoveredServersDomain
 }
 
-// WithDiscoveredServersNodeNameQueryParameter adds the discoveredServersNodeName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersNodeNameQueryParameter(discoveredServersNodeName *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersNodeNameQueryParameter(discoveredServersNodeName)
+// WithDiscoveredServersNodeName adds the discoveredServersNodeName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersNodeName(discoveredServersNodeName *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersNodeName(discoveredServersNodeName)
 	return o
 }
 
-// SetDiscoveredServersNodeNameQueryParameter adds the discoveredServersNodeName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersNodeNameQueryParameter(discoveredServersNodeName *string) {
-	o.DiscoveredServersNodeNameQueryParameter = discoveredServersNodeName
+// SetDiscoveredServersNodeName adds the discoveredServersNodeName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersNodeName(discoveredServersNodeName *string) {
+	o.DiscoveredServersNodeName = discoveredServersNodeName
 }
 
-// WithDiscoveredServersNodeUUIDQueryParameter adds the discoveredServersNodeUUID to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersNodeUUIDQueryParameter(discoveredServersNodeUUID *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersNodeUUIDQueryParameter(discoveredServersNodeUUID)
+// WithDiscoveredServersNodeUUID adds the discoveredServersNodeUUID to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersNodeUUID(discoveredServersNodeUUID *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersNodeUUID(discoveredServersNodeUUID)
 	return o
 }
 
-// SetDiscoveredServersNodeUUIDQueryParameter adds the discoveredServersNodeUuid to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersNodeUUIDQueryParameter(discoveredServersNodeUUID *string) {
-	o.DiscoveredServersNodeUUIDQueryParameter = discoveredServersNodeUUID
+// SetDiscoveredServersNodeUUID adds the discoveredServersNodeUuid to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersNodeUUID(discoveredServersNodeUUID *string) {
+	o.DiscoveredServersNodeUUID = discoveredServersNodeUUID
 }
 
-// WithDiscoveredServersPreferenceQueryParameter adds the discoveredServersPreference to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersPreferenceQueryParameter(discoveredServersPreference *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersPreferenceQueryParameter(discoveredServersPreference)
+// WithDiscoveredServersPreference adds the discoveredServersPreference to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersPreference(discoveredServersPreference *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersPreference(discoveredServersPreference)
 	return o
 }
 
-// SetDiscoveredServersPreferenceQueryParameter adds the discoveredServersPreference to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersPreferenceQueryParameter(discoveredServersPreference *string) {
-	o.DiscoveredServersPreferenceQueryParameter = discoveredServersPreference
+// SetDiscoveredServersPreference adds the discoveredServersPreference to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersPreference(discoveredServersPreference *string) {
+	o.DiscoveredServersPreference = discoveredServersPreference
 }
 
-// WithDiscoveredServersServerIPQueryParameter adds the discoveredServersServerIP to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerIPQueryParameter(discoveredServersServerIP *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersServerIPQueryParameter(discoveredServersServerIP)
+// WithDiscoveredServersServerIP adds the discoveredServersServerIP to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerIP(discoveredServersServerIP *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersServerIP(discoveredServersServerIP)
 	return o
 }
 
-// SetDiscoveredServersServerIPQueryParameter adds the discoveredServersServerIp to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerIPQueryParameter(discoveredServersServerIP *string) {
-	o.DiscoveredServersServerIPQueryParameter = discoveredServersServerIP
+// SetDiscoveredServersServerIP adds the discoveredServersServerIp to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerIP(discoveredServersServerIP *string) {
+	o.DiscoveredServersServerIP = discoveredServersServerIP
 }
 
-// WithDiscoveredServersServerNameQueryParameter adds the discoveredServersServerName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerNameQueryParameter(discoveredServersServerName *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersServerNameQueryParameter(discoveredServersServerName)
+// WithDiscoveredServersServerName adds the discoveredServersServerName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerName(discoveredServersServerName *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersServerName(discoveredServersServerName)
 	return o
 }
 
-// SetDiscoveredServersServerNameQueryParameter adds the discoveredServersServerName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerNameQueryParameter(discoveredServersServerName *string) {
-	o.DiscoveredServersServerNameQueryParameter = discoveredServersServerName
+// SetDiscoveredServersServerName adds the discoveredServersServerName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerName(discoveredServersServerName *string) {
+	o.DiscoveredServersServerName = discoveredServersServerName
 }
 
-// WithDiscoveredServersServerTypeQueryParameter adds the discoveredServersServerType to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerTypeQueryParameter(discoveredServersServerType *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersServerTypeQueryParameter(discoveredServersServerType)
+// WithDiscoveredServersServerType adds the discoveredServersServerType to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersServerType(discoveredServersServerType *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersServerType(discoveredServersServerType)
 	return o
 }
 
-// SetDiscoveredServersServerTypeQueryParameter adds the discoveredServersServerType to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerTypeQueryParameter(discoveredServersServerType *string) {
-	o.DiscoveredServersServerTypeQueryParameter = discoveredServersServerType
+// SetDiscoveredServersServerType adds the discoveredServersServerType to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersServerType(discoveredServersServerType *string) {
+	o.DiscoveredServersServerType = discoveredServersServerType
 }
 
-// WithDiscoveredServersStateQueryParameter adds the discoveredServersState to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithDiscoveredServersStateQueryParameter(discoveredServersState *string) *CifsDomainCollectionGetParams {
-	o.SetDiscoveredServersStateQueryParameter(discoveredServersState)
+// WithDiscoveredServersState adds the discoveredServersState to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithDiscoveredServersState(discoveredServersState *string) *CifsDomainCollectionGetParams {
+	o.SetDiscoveredServersState(discoveredServersState)
 	return o
 }
 
-// SetDiscoveredServersStateQueryParameter adds the discoveredServersState to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetDiscoveredServersStateQueryParameter(discoveredServersState *string) {
-	o.DiscoveredServersStateQueryParameter = discoveredServersState
+// SetDiscoveredServersState adds the discoveredServersState to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetDiscoveredServersState(discoveredServersState *string) {
+	o.DiscoveredServersState = discoveredServersState
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsDomainCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithFields(fields []string) *CifsDomainCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsDomainCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsDomainCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameMappingTrustedDomainsQueryParameter adds the nameMappingTrustedDomains to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithNameMappingTrustedDomainsQueryParameter(nameMappingTrustedDomains *string) *CifsDomainCollectionGetParams {
-	o.SetNameMappingTrustedDomainsQueryParameter(nameMappingTrustedDomains)
+// WithNameMappingTrustedDomains adds the nameMappingTrustedDomains to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithNameMappingTrustedDomains(nameMappingTrustedDomains *string) *CifsDomainCollectionGetParams {
+	o.SetNameMappingTrustedDomains(nameMappingTrustedDomains)
 	return o
 }
 
-// SetNameMappingTrustedDomainsQueryParameter adds the nameMappingTrustedDomains to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetNameMappingTrustedDomainsQueryParameter(nameMappingTrustedDomains *string) {
-	o.NameMappingTrustedDomainsQueryParameter = nameMappingTrustedDomains
+// SetNameMappingTrustedDomains adds the nameMappingTrustedDomains to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetNameMappingTrustedDomains(nameMappingTrustedDomains *string) {
+	o.NameMappingTrustedDomains = nameMappingTrustedDomains
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsDomainCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithOrderBy(orderBy []string) *CifsDomainCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPasswordScheduleScheduleDescriptionQueryParameter adds the passwordScheduleScheduleDescription to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleDescriptionQueryParameter(passwordScheduleScheduleDescription *string) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleDescriptionQueryParameter(passwordScheduleScheduleDescription)
+// WithPasswordScheduleScheduleDescription adds the passwordScheduleScheduleDescription to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleDescription(passwordScheduleScheduleDescription *string) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleDescription(passwordScheduleScheduleDescription)
 	return o
 }
 
-// SetPasswordScheduleScheduleDescriptionQueryParameter adds the passwordScheduleScheduleDescription to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleDescriptionQueryParameter(passwordScheduleScheduleDescription *string) {
-	o.PasswordScheduleScheduleDescriptionQueryParameter = passwordScheduleScheduleDescription
+// SetPasswordScheduleScheduleDescription adds the passwordScheduleScheduleDescription to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleDescription(passwordScheduleScheduleDescription *string) {
+	o.PasswordScheduleScheduleDescription = passwordScheduleScheduleDescription
 }
 
-// WithPasswordScheduleScheduleEnabledQueryParameter adds the passwordScheduleScheduleEnabled to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleEnabledQueryParameter(passwordScheduleScheduleEnabled *bool) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleEnabledQueryParameter(passwordScheduleScheduleEnabled)
+// WithPasswordScheduleScheduleEnabled adds the passwordScheduleScheduleEnabled to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleEnabled(passwordScheduleScheduleEnabled *bool) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleEnabled(passwordScheduleScheduleEnabled)
 	return o
 }
 
-// SetPasswordScheduleScheduleEnabledQueryParameter adds the passwordScheduleScheduleEnabled to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleEnabledQueryParameter(passwordScheduleScheduleEnabled *bool) {
-	o.PasswordScheduleScheduleEnabledQueryParameter = passwordScheduleScheduleEnabled
+// SetPasswordScheduleScheduleEnabled adds the passwordScheduleScheduleEnabled to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleEnabled(passwordScheduleScheduleEnabled *bool) {
+	o.PasswordScheduleScheduleEnabled = passwordScheduleScheduleEnabled
 }
 
-// WithPasswordScheduleScheduleLastChangedTimeQueryParameter adds the passwordScheduleScheduleLastChangedTime to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleLastChangedTimeQueryParameter(passwordScheduleScheduleLastChangedTime *string) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleLastChangedTimeQueryParameter(passwordScheduleScheduleLastChangedTime)
+// WithPasswordScheduleScheduleLastChangedTime adds the passwordScheduleScheduleLastChangedTime to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleLastChangedTime(passwordScheduleScheduleLastChangedTime *string) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleLastChangedTime(passwordScheduleScheduleLastChangedTime)
 	return o
 }
 
-// SetPasswordScheduleScheduleLastChangedTimeQueryParameter adds the passwordScheduleScheduleLastChangedTime to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleLastChangedTimeQueryParameter(passwordScheduleScheduleLastChangedTime *string) {
-	o.PasswordScheduleScheduleLastChangedTimeQueryParameter = passwordScheduleScheduleLastChangedTime
+// SetPasswordScheduleScheduleLastChangedTime adds the passwordScheduleScheduleLastChangedTime to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleLastChangedTime(passwordScheduleScheduleLastChangedTime *string) {
+	o.PasswordScheduleScheduleLastChangedTime = passwordScheduleScheduleLastChangedTime
 }
 
-// WithPasswordScheduleScheduleRandomizedMinuteQueryParameter adds the passwordScheduleScheduleRandomizedMinute to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleRandomizedMinuteQueryParameter(passwordScheduleScheduleRandomizedMinute *int64) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleRandomizedMinuteQueryParameter(passwordScheduleScheduleRandomizedMinute)
+// WithPasswordScheduleScheduleRandomizedMinute adds the passwordScheduleScheduleRandomizedMinute to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleRandomizedMinute(passwordScheduleScheduleRandomizedMinute *int64) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleRandomizedMinute(passwordScheduleScheduleRandomizedMinute)
 	return o
 }
 
-// SetPasswordScheduleScheduleRandomizedMinuteQueryParameter adds the passwordScheduleScheduleRandomizedMinute to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleRandomizedMinuteQueryParameter(passwordScheduleScheduleRandomizedMinute *int64) {
-	o.PasswordScheduleScheduleRandomizedMinuteQueryParameter = passwordScheduleScheduleRandomizedMinute
+// SetPasswordScheduleScheduleRandomizedMinute adds the passwordScheduleScheduleRandomizedMinute to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleRandomizedMinute(passwordScheduleScheduleRandomizedMinute *int64) {
+	o.PasswordScheduleScheduleRandomizedMinute = passwordScheduleScheduleRandomizedMinute
 }
 
-// WithPasswordScheduleScheduleWarnMessageQueryParameter adds the passwordScheduleScheduleWarnMessage to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleWarnMessageQueryParameter(passwordScheduleScheduleWarnMessage *string) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleWarnMessageQueryParameter(passwordScheduleScheduleWarnMessage)
+// WithPasswordScheduleScheduleWarnMessage adds the passwordScheduleScheduleWarnMessage to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleWarnMessage(passwordScheduleScheduleWarnMessage *string) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleWarnMessage(passwordScheduleScheduleWarnMessage)
 	return o
 }
 
-// SetPasswordScheduleScheduleWarnMessageQueryParameter adds the passwordScheduleScheduleWarnMessage to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleWarnMessageQueryParameter(passwordScheduleScheduleWarnMessage *string) {
-	o.PasswordScheduleScheduleWarnMessageQueryParameter = passwordScheduleScheduleWarnMessage
+// SetPasswordScheduleScheduleWarnMessage adds the passwordScheduleScheduleWarnMessage to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleWarnMessage(passwordScheduleScheduleWarnMessage *string) {
+	o.PasswordScheduleScheduleWarnMessage = passwordScheduleScheduleWarnMessage
 }
 
-// WithPasswordScheduleScheduleWeeklyIntervalQueryParameter adds the passwordScheduleScheduleWeeklyInterval to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleWeeklyIntervalQueryParameter(passwordScheduleScheduleWeeklyInterval *int64) *CifsDomainCollectionGetParams {
-	o.SetPasswordScheduleScheduleWeeklyIntervalQueryParameter(passwordScheduleScheduleWeeklyInterval)
+// WithPasswordScheduleScheduleWeeklyInterval adds the passwordScheduleScheduleWeeklyInterval to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPasswordScheduleScheduleWeeklyInterval(passwordScheduleScheduleWeeklyInterval *int64) *CifsDomainCollectionGetParams {
+	o.SetPasswordScheduleScheduleWeeklyInterval(passwordScheduleScheduleWeeklyInterval)
 	return o
 }
 
-// SetPasswordScheduleScheduleWeeklyIntervalQueryParameter adds the passwordScheduleScheduleWeeklyInterval to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleWeeklyIntervalQueryParameter(passwordScheduleScheduleWeeklyInterval *int64) {
-	o.PasswordScheduleScheduleWeeklyIntervalQueryParameter = passwordScheduleScheduleWeeklyInterval
+// SetPasswordScheduleScheduleWeeklyInterval adds the passwordScheduleScheduleWeeklyInterval to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPasswordScheduleScheduleWeeklyInterval(passwordScheduleScheduleWeeklyInterval *int64) {
+	o.PasswordScheduleScheduleWeeklyInterval = passwordScheduleScheduleWeeklyInterval
 }
 
-// WithPreferredDcsFqdnQueryParameter adds the preferredDcsFqdn to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPreferredDcsFqdnQueryParameter(preferredDcsFqdn *string) *CifsDomainCollectionGetParams {
-	o.SetPreferredDcsFqdnQueryParameter(preferredDcsFqdn)
+// WithPreferredDcsFqdn adds the preferredDcsFqdn to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPreferredDcsFqdn(preferredDcsFqdn *string) *CifsDomainCollectionGetParams {
+	o.SetPreferredDcsFqdn(preferredDcsFqdn)
 	return o
 }
 
-// SetPreferredDcsFqdnQueryParameter adds the preferredDcsFqdn to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPreferredDcsFqdnQueryParameter(preferredDcsFqdn *string) {
-	o.PreferredDcsFqdnQueryParameter = preferredDcsFqdn
+// SetPreferredDcsFqdn adds the preferredDcsFqdn to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPreferredDcsFqdn(preferredDcsFqdn *string) {
+	o.PreferredDcsFqdn = preferredDcsFqdn
 }
 
-// WithPreferredDcsServerIPQueryParameter adds the preferredDcsServerIP to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithPreferredDcsServerIPQueryParameter(preferredDcsServerIP *string) *CifsDomainCollectionGetParams {
-	o.SetPreferredDcsServerIPQueryParameter(preferredDcsServerIP)
+// WithPreferredDcsServerIP adds the preferredDcsServerIP to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPreferredDcsServerIP(preferredDcsServerIP *string) *CifsDomainCollectionGetParams {
+	o.SetPreferredDcsServerIP(preferredDcsServerIP)
 	return o
 }
 
-// SetPreferredDcsServerIPQueryParameter adds the preferredDcsServerIp to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetPreferredDcsServerIPQueryParameter(preferredDcsServerIP *string) {
-	o.PreferredDcsServerIPQueryParameter = preferredDcsServerIP
+// SetPreferredDcsServerIP adds the preferredDcsServerIp to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPreferredDcsServerIP(preferredDcsServerIP *string) {
+	o.PreferredDcsServerIP = preferredDcsServerIP
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsDomainCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithPreferredDcsStatusDetails adds the preferredDcsStatusDetails to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPreferredDcsStatusDetails(preferredDcsStatusDetails *string) *CifsDomainCollectionGetParams {
+	o.SetPreferredDcsStatusDetails(preferredDcsStatusDetails)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetPreferredDcsStatusDetails adds the preferredDcsStatusDetails to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPreferredDcsStatusDetails(preferredDcsStatusDetails *string) {
+	o.PreferredDcsStatusDetails = preferredDcsStatusDetails
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsDomainCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithPreferredDcsStatusReachable adds the preferredDcsStatusReachable to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithPreferredDcsStatusReachable(preferredDcsStatusReachable *bool) *CifsDomainCollectionGetParams {
+	o.SetPreferredDcsStatusReachable(preferredDcsStatusReachable)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetPreferredDcsStatusReachable adds the preferredDcsStatusReachable to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetPreferredDcsStatusReachable(preferredDcsStatusReachable *bool) {
+	o.PreferredDcsStatusReachable = preferredDcsStatusReachable
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsDomainCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithReturnRecords adds the returnRecords to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsDomainCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetReturnRecords adds the returnRecords to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsDomainCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithReturnTimeout adds the returnTimeout to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsDomainCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetReturnTimeout adds the returnTimeout to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithTrustRelationshipsHomeDomainQueryParameter adds the trustRelationshipsHomeDomain to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsHomeDomainQueryParameter(trustRelationshipsHomeDomain *string) *CifsDomainCollectionGetParams {
-	o.SetTrustRelationshipsHomeDomainQueryParameter(trustRelationshipsHomeDomain)
+// WithSvmName adds the svmName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithSvmName(svmName *string) *CifsDomainCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetTrustRelationshipsHomeDomainQueryParameter adds the trustRelationshipsHomeDomain to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsHomeDomainQueryParameter(trustRelationshipsHomeDomain *string) {
-	o.TrustRelationshipsHomeDomainQueryParameter = trustRelationshipsHomeDomain
+// SetSvmName adds the svmName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithTrustRelationshipsNodeNameQueryParameter adds the trustRelationshipsNodeName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsNodeNameQueryParameter(trustRelationshipsNodeName *string) *CifsDomainCollectionGetParams {
-	o.SetTrustRelationshipsNodeNameQueryParameter(trustRelationshipsNodeName)
+// WithSvmUUID adds the svmUUID to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsDomainCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetTrustRelationshipsNodeNameQueryParameter adds the trustRelationshipsNodeName to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsNodeNameQueryParameter(trustRelationshipsNodeName *string) {
-	o.TrustRelationshipsNodeNameQueryParameter = trustRelationshipsNodeName
+// SetSvmUUID adds the svmUuid to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTrustRelationshipsNodeUUIDQueryParameter adds the trustRelationshipsNodeUUID to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsNodeUUIDQueryParameter(trustRelationshipsNodeUUID *string) *CifsDomainCollectionGetParams {
-	o.SetTrustRelationshipsNodeUUIDQueryParameter(trustRelationshipsNodeUUID)
+// WithTrustRelationshipsHomeDomain adds the trustRelationshipsHomeDomain to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsHomeDomain(trustRelationshipsHomeDomain *string) *CifsDomainCollectionGetParams {
+	o.SetTrustRelationshipsHomeDomain(trustRelationshipsHomeDomain)
 	return o
 }
 
-// SetTrustRelationshipsNodeUUIDQueryParameter adds the trustRelationshipsNodeUuid to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsNodeUUIDQueryParameter(trustRelationshipsNodeUUID *string) {
-	o.TrustRelationshipsNodeUUIDQueryParameter = trustRelationshipsNodeUUID
+// SetTrustRelationshipsHomeDomain adds the trustRelationshipsHomeDomain to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsHomeDomain(trustRelationshipsHomeDomain *string) {
+	o.TrustRelationshipsHomeDomain = trustRelationshipsHomeDomain
 }
 
-// WithTrustRelationshipsTrustedDomainsQueryParameter adds the trustRelationshipsTrustedDomains to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsTrustedDomainsQueryParameter(trustRelationshipsTrustedDomains *string) *CifsDomainCollectionGetParams {
-	o.SetTrustRelationshipsTrustedDomainsQueryParameter(trustRelationshipsTrustedDomains)
+// WithTrustRelationshipsNodeName adds the trustRelationshipsNodeName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsNodeName(trustRelationshipsNodeName *string) *CifsDomainCollectionGetParams {
+	o.SetTrustRelationshipsNodeName(trustRelationshipsNodeName)
 	return o
 }
 
-// SetTrustRelationshipsTrustedDomainsQueryParameter adds the trustRelationshipsTrustedDomains to the cifs domain collection get params
-func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsTrustedDomainsQueryParameter(trustRelationshipsTrustedDomains *string) {
-	o.TrustRelationshipsTrustedDomainsQueryParameter = trustRelationshipsTrustedDomains
+// SetTrustRelationshipsNodeName adds the trustRelationshipsNodeName to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsNodeName(trustRelationshipsNodeName *string) {
+	o.TrustRelationshipsNodeName = trustRelationshipsNodeName
+}
+
+// WithTrustRelationshipsNodeUUID adds the trustRelationshipsNodeUUID to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsNodeUUID(trustRelationshipsNodeUUID *string) *CifsDomainCollectionGetParams {
+	o.SetTrustRelationshipsNodeUUID(trustRelationshipsNodeUUID)
+	return o
+}
+
+// SetTrustRelationshipsNodeUUID adds the trustRelationshipsNodeUuid to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsNodeUUID(trustRelationshipsNodeUUID *string) {
+	o.TrustRelationshipsNodeUUID = trustRelationshipsNodeUUID
+}
+
+// WithTrustRelationshipsTrustedDomains adds the trustRelationshipsTrustedDomains to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) WithTrustRelationshipsTrustedDomains(trustRelationshipsTrustedDomains *string) *CifsDomainCollectionGetParams {
+	o.SetTrustRelationshipsTrustedDomains(trustRelationshipsTrustedDomains)
+	return o
+}
+
+// SetTrustRelationshipsTrustedDomains adds the trustRelationshipsTrustedDomains to the cifs domain collection get params
+func (o *CifsDomainCollectionGetParams) SetTrustRelationshipsTrustedDomains(trustRelationshipsTrustedDomains *string) {
+	o.TrustRelationshipsTrustedDomains = trustRelationshipsTrustedDomains
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -617,13 +651,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.DiscoveredServersDomainQueryParameter != nil {
+	if o.DiscoveredServersDomain != nil {
 
 		// query param discovered_servers.domain
 		var qrDiscoveredServersDomain string
 
-		if o.DiscoveredServersDomainQueryParameter != nil {
-			qrDiscoveredServersDomain = *o.DiscoveredServersDomainQueryParameter
+		if o.DiscoveredServersDomain != nil {
+			qrDiscoveredServersDomain = *o.DiscoveredServersDomain
 		}
 		qDiscoveredServersDomain := qrDiscoveredServersDomain
 		if qDiscoveredServersDomain != "" {
@@ -634,13 +668,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersNodeNameQueryParameter != nil {
+	if o.DiscoveredServersNodeName != nil {
 
 		// query param discovered_servers.node.name
 		var qrDiscoveredServersNodeName string
 
-		if o.DiscoveredServersNodeNameQueryParameter != nil {
-			qrDiscoveredServersNodeName = *o.DiscoveredServersNodeNameQueryParameter
+		if o.DiscoveredServersNodeName != nil {
+			qrDiscoveredServersNodeName = *o.DiscoveredServersNodeName
 		}
 		qDiscoveredServersNodeName := qrDiscoveredServersNodeName
 		if qDiscoveredServersNodeName != "" {
@@ -651,13 +685,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersNodeUUIDQueryParameter != nil {
+	if o.DiscoveredServersNodeUUID != nil {
 
 		// query param discovered_servers.node.uuid
 		var qrDiscoveredServersNodeUUID string
 
-		if o.DiscoveredServersNodeUUIDQueryParameter != nil {
-			qrDiscoveredServersNodeUUID = *o.DiscoveredServersNodeUUIDQueryParameter
+		if o.DiscoveredServersNodeUUID != nil {
+			qrDiscoveredServersNodeUUID = *o.DiscoveredServersNodeUUID
 		}
 		qDiscoveredServersNodeUUID := qrDiscoveredServersNodeUUID
 		if qDiscoveredServersNodeUUID != "" {
@@ -668,13 +702,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersPreferenceQueryParameter != nil {
+	if o.DiscoveredServersPreference != nil {
 
 		// query param discovered_servers.preference
 		var qrDiscoveredServersPreference string
 
-		if o.DiscoveredServersPreferenceQueryParameter != nil {
-			qrDiscoveredServersPreference = *o.DiscoveredServersPreferenceQueryParameter
+		if o.DiscoveredServersPreference != nil {
+			qrDiscoveredServersPreference = *o.DiscoveredServersPreference
 		}
 		qDiscoveredServersPreference := qrDiscoveredServersPreference
 		if qDiscoveredServersPreference != "" {
@@ -685,13 +719,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersServerIPQueryParameter != nil {
+	if o.DiscoveredServersServerIP != nil {
 
 		// query param discovered_servers.server_ip
 		var qrDiscoveredServersServerIP string
 
-		if o.DiscoveredServersServerIPQueryParameter != nil {
-			qrDiscoveredServersServerIP = *o.DiscoveredServersServerIPQueryParameter
+		if o.DiscoveredServersServerIP != nil {
+			qrDiscoveredServersServerIP = *o.DiscoveredServersServerIP
 		}
 		qDiscoveredServersServerIP := qrDiscoveredServersServerIP
 		if qDiscoveredServersServerIP != "" {
@@ -702,13 +736,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersServerNameQueryParameter != nil {
+	if o.DiscoveredServersServerName != nil {
 
 		// query param discovered_servers.server_name
 		var qrDiscoveredServersServerName string
 
-		if o.DiscoveredServersServerNameQueryParameter != nil {
-			qrDiscoveredServersServerName = *o.DiscoveredServersServerNameQueryParameter
+		if o.DiscoveredServersServerName != nil {
+			qrDiscoveredServersServerName = *o.DiscoveredServersServerName
 		}
 		qDiscoveredServersServerName := qrDiscoveredServersServerName
 		if qDiscoveredServersServerName != "" {
@@ -719,13 +753,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersServerTypeQueryParameter != nil {
+	if o.DiscoveredServersServerType != nil {
 
 		// query param discovered_servers.server_type
 		var qrDiscoveredServersServerType string
 
-		if o.DiscoveredServersServerTypeQueryParameter != nil {
-			qrDiscoveredServersServerType = *o.DiscoveredServersServerTypeQueryParameter
+		if o.DiscoveredServersServerType != nil {
+			qrDiscoveredServersServerType = *o.DiscoveredServersServerType
 		}
 		qDiscoveredServersServerType := qrDiscoveredServersServerType
 		if qDiscoveredServersServerType != "" {
@@ -736,13 +770,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DiscoveredServersStateQueryParameter != nil {
+	if o.DiscoveredServersState != nil {
 
 		// query param discovered_servers.state
 		var qrDiscoveredServersState string
 
-		if o.DiscoveredServersStateQueryParameter != nil {
-			qrDiscoveredServersState = *o.DiscoveredServersStateQueryParameter
+		if o.DiscoveredServersState != nil {
+			qrDiscoveredServersState = *o.DiscoveredServersState
 		}
 		qDiscoveredServersState := qrDiscoveredServersState
 		if qDiscoveredServersState != "" {
@@ -753,7 +787,7 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -764,13 +798,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -781,13 +815,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NameMappingTrustedDomainsQueryParameter != nil {
+	if o.NameMappingTrustedDomains != nil {
 
 		// query param name_mapping.trusted_domains
 		var qrNameMappingTrustedDomains string
 
-		if o.NameMappingTrustedDomainsQueryParameter != nil {
-			qrNameMappingTrustedDomains = *o.NameMappingTrustedDomainsQueryParameter
+		if o.NameMappingTrustedDomains != nil {
+			qrNameMappingTrustedDomains = *o.NameMappingTrustedDomains
 		}
 		qNameMappingTrustedDomains := qrNameMappingTrustedDomains
 		if qNameMappingTrustedDomains != "" {
@@ -798,7 +832,7 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -809,13 +843,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleDescriptionQueryParameter != nil {
+	if o.PasswordScheduleScheduleDescription != nil {
 
 		// query param password_schedule.schedule_description
 		var qrPasswordScheduleScheduleDescription string
 
-		if o.PasswordScheduleScheduleDescriptionQueryParameter != nil {
-			qrPasswordScheduleScheduleDescription = *o.PasswordScheduleScheduleDescriptionQueryParameter
+		if o.PasswordScheduleScheduleDescription != nil {
+			qrPasswordScheduleScheduleDescription = *o.PasswordScheduleScheduleDescription
 		}
 		qPasswordScheduleScheduleDescription := qrPasswordScheduleScheduleDescription
 		if qPasswordScheduleScheduleDescription != "" {
@@ -826,13 +860,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleEnabledQueryParameter != nil {
+	if o.PasswordScheduleScheduleEnabled != nil {
 
 		// query param password_schedule.schedule_enabled
 		var qrPasswordScheduleScheduleEnabled bool
 
-		if o.PasswordScheduleScheduleEnabledQueryParameter != nil {
-			qrPasswordScheduleScheduleEnabled = *o.PasswordScheduleScheduleEnabledQueryParameter
+		if o.PasswordScheduleScheduleEnabled != nil {
+			qrPasswordScheduleScheduleEnabled = *o.PasswordScheduleScheduleEnabled
 		}
 		qPasswordScheduleScheduleEnabled := swag.FormatBool(qrPasswordScheduleScheduleEnabled)
 		if qPasswordScheduleScheduleEnabled != "" {
@@ -843,13 +877,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleLastChangedTimeQueryParameter != nil {
+	if o.PasswordScheduleScheduleLastChangedTime != nil {
 
 		// query param password_schedule.schedule_last_changed_time
 		var qrPasswordScheduleScheduleLastChangedTime string
 
-		if o.PasswordScheduleScheduleLastChangedTimeQueryParameter != nil {
-			qrPasswordScheduleScheduleLastChangedTime = *o.PasswordScheduleScheduleLastChangedTimeQueryParameter
+		if o.PasswordScheduleScheduleLastChangedTime != nil {
+			qrPasswordScheduleScheduleLastChangedTime = *o.PasswordScheduleScheduleLastChangedTime
 		}
 		qPasswordScheduleScheduleLastChangedTime := qrPasswordScheduleScheduleLastChangedTime
 		if qPasswordScheduleScheduleLastChangedTime != "" {
@@ -860,13 +894,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleRandomizedMinuteQueryParameter != nil {
+	if o.PasswordScheduleScheduleRandomizedMinute != nil {
 
 		// query param password_schedule.schedule_randomized_minute
 		var qrPasswordScheduleScheduleRandomizedMinute int64
 
-		if o.PasswordScheduleScheduleRandomizedMinuteQueryParameter != nil {
-			qrPasswordScheduleScheduleRandomizedMinute = *o.PasswordScheduleScheduleRandomizedMinuteQueryParameter
+		if o.PasswordScheduleScheduleRandomizedMinute != nil {
+			qrPasswordScheduleScheduleRandomizedMinute = *o.PasswordScheduleScheduleRandomizedMinute
 		}
 		qPasswordScheduleScheduleRandomizedMinute := swag.FormatInt64(qrPasswordScheduleScheduleRandomizedMinute)
 		if qPasswordScheduleScheduleRandomizedMinute != "" {
@@ -877,13 +911,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleWarnMessageQueryParameter != nil {
+	if o.PasswordScheduleScheduleWarnMessage != nil {
 
 		// query param password_schedule.schedule_warn_message
 		var qrPasswordScheduleScheduleWarnMessage string
 
-		if o.PasswordScheduleScheduleWarnMessageQueryParameter != nil {
-			qrPasswordScheduleScheduleWarnMessage = *o.PasswordScheduleScheduleWarnMessageQueryParameter
+		if o.PasswordScheduleScheduleWarnMessage != nil {
+			qrPasswordScheduleScheduleWarnMessage = *o.PasswordScheduleScheduleWarnMessage
 		}
 		qPasswordScheduleScheduleWarnMessage := qrPasswordScheduleScheduleWarnMessage
 		if qPasswordScheduleScheduleWarnMessage != "" {
@@ -894,13 +928,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PasswordScheduleScheduleWeeklyIntervalQueryParameter != nil {
+	if o.PasswordScheduleScheduleWeeklyInterval != nil {
 
 		// query param password_schedule.schedule_weekly_interval
 		var qrPasswordScheduleScheduleWeeklyInterval int64
 
-		if o.PasswordScheduleScheduleWeeklyIntervalQueryParameter != nil {
-			qrPasswordScheduleScheduleWeeklyInterval = *o.PasswordScheduleScheduleWeeklyIntervalQueryParameter
+		if o.PasswordScheduleScheduleWeeklyInterval != nil {
+			qrPasswordScheduleScheduleWeeklyInterval = *o.PasswordScheduleScheduleWeeklyInterval
 		}
 		qPasswordScheduleScheduleWeeklyInterval := swag.FormatInt64(qrPasswordScheduleScheduleWeeklyInterval)
 		if qPasswordScheduleScheduleWeeklyInterval != "" {
@@ -911,13 +945,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PreferredDcsFqdnQueryParameter != nil {
+	if o.PreferredDcsFqdn != nil {
 
 		// query param preferred_dcs.fqdn
 		var qrPreferredDcsFqdn string
 
-		if o.PreferredDcsFqdnQueryParameter != nil {
-			qrPreferredDcsFqdn = *o.PreferredDcsFqdnQueryParameter
+		if o.PreferredDcsFqdn != nil {
+			qrPreferredDcsFqdn = *o.PreferredDcsFqdn
 		}
 		qPreferredDcsFqdn := qrPreferredDcsFqdn
 		if qPreferredDcsFqdn != "" {
@@ -928,13 +962,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PreferredDcsServerIPQueryParameter != nil {
+	if o.PreferredDcsServerIP != nil {
 
 		// query param preferred_dcs.server_ip
 		var qrPreferredDcsServerIP string
 
-		if o.PreferredDcsServerIPQueryParameter != nil {
-			qrPreferredDcsServerIP = *o.PreferredDcsServerIPQueryParameter
+		if o.PreferredDcsServerIP != nil {
+			qrPreferredDcsServerIP = *o.PreferredDcsServerIP
 		}
 		qPreferredDcsServerIP := qrPreferredDcsServerIP
 		if qPreferredDcsServerIP != "" {
@@ -945,13 +979,47 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.PreferredDcsStatusDetails != nil {
+
+		// query param preferred_dcs.status.details
+		var qrPreferredDcsStatusDetails string
+
+		if o.PreferredDcsStatusDetails != nil {
+			qrPreferredDcsStatusDetails = *o.PreferredDcsStatusDetails
+		}
+		qPreferredDcsStatusDetails := qrPreferredDcsStatusDetails
+		if qPreferredDcsStatusDetails != "" {
+
+			if err := r.SetQueryParam("preferred_dcs.status.details", qPreferredDcsStatusDetails); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PreferredDcsStatusReachable != nil {
+
+		// query param preferred_dcs.status.reachable
+		var qrPreferredDcsStatusReachable bool
+
+		if o.PreferredDcsStatusReachable != nil {
+			qrPreferredDcsStatusReachable = *o.PreferredDcsStatusReachable
+		}
+		qPreferredDcsStatusReachable := swag.FormatBool(qrPreferredDcsStatusReachable)
+		if qPreferredDcsStatusReachable != "" {
+
+			if err := r.SetQueryParam("preferred_dcs.status.reachable", qPreferredDcsStatusReachable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -962,13 +1030,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -979,13 +1047,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -996,13 +1064,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1013,13 +1081,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TrustRelationshipsHomeDomainQueryParameter != nil {
+	if o.TrustRelationshipsHomeDomain != nil {
 
 		// query param trust_relationships.home_domain
 		var qrTrustRelationshipsHomeDomain string
 
-		if o.TrustRelationshipsHomeDomainQueryParameter != nil {
-			qrTrustRelationshipsHomeDomain = *o.TrustRelationshipsHomeDomainQueryParameter
+		if o.TrustRelationshipsHomeDomain != nil {
+			qrTrustRelationshipsHomeDomain = *o.TrustRelationshipsHomeDomain
 		}
 		qTrustRelationshipsHomeDomain := qrTrustRelationshipsHomeDomain
 		if qTrustRelationshipsHomeDomain != "" {
@@ -1030,13 +1098,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TrustRelationshipsNodeNameQueryParameter != nil {
+	if o.TrustRelationshipsNodeName != nil {
 
 		// query param trust_relationships.node.name
 		var qrTrustRelationshipsNodeName string
 
-		if o.TrustRelationshipsNodeNameQueryParameter != nil {
-			qrTrustRelationshipsNodeName = *o.TrustRelationshipsNodeNameQueryParameter
+		if o.TrustRelationshipsNodeName != nil {
+			qrTrustRelationshipsNodeName = *o.TrustRelationshipsNodeName
 		}
 		qTrustRelationshipsNodeName := qrTrustRelationshipsNodeName
 		if qTrustRelationshipsNodeName != "" {
@@ -1047,13 +1115,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TrustRelationshipsNodeUUIDQueryParameter != nil {
+	if o.TrustRelationshipsNodeUUID != nil {
 
 		// query param trust_relationships.node.uuid
 		var qrTrustRelationshipsNodeUUID string
 
-		if o.TrustRelationshipsNodeUUIDQueryParameter != nil {
-			qrTrustRelationshipsNodeUUID = *o.TrustRelationshipsNodeUUIDQueryParameter
+		if o.TrustRelationshipsNodeUUID != nil {
+			qrTrustRelationshipsNodeUUID = *o.TrustRelationshipsNodeUUID
 		}
 		qTrustRelationshipsNodeUUID := qrTrustRelationshipsNodeUUID
 		if qTrustRelationshipsNodeUUID != "" {
@@ -1064,13 +1132,13 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TrustRelationshipsTrustedDomainsQueryParameter != nil {
+	if o.TrustRelationshipsTrustedDomains != nil {
 
 		// query param trust_relationships.trusted_domains
 		var qrTrustRelationshipsTrustedDomains string
 
-		if o.TrustRelationshipsTrustedDomainsQueryParameter != nil {
-			qrTrustRelationshipsTrustedDomains = *o.TrustRelationshipsTrustedDomainsQueryParameter
+		if o.TrustRelationshipsTrustedDomains != nil {
+			qrTrustRelationshipsTrustedDomains = *o.TrustRelationshipsTrustedDomains
 		}
 		qTrustRelationshipsTrustedDomains := qrTrustRelationshipsTrustedDomains
 		if qTrustRelationshipsTrustedDomains != "" {
@@ -1089,7 +1157,7 @@ func (o *CifsDomainCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamCifsDomainCollectionGet binds the parameter fields
 func (o *CifsDomainCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1106,7 +1174,7 @@ func (o *CifsDomainCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamCifsDomainCollectionGet binds the parameter order_by
 func (o *CifsDomainCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

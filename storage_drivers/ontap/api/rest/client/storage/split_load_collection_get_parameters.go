@@ -66,55 +66,55 @@ type SplitLoadCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LoadAllowable.
 
 	   Filter by load.allowable
 	*/
-	LoadAllowableQueryParameter *int64
+	LoadAllowable *int64
 
 	/* LoadCurrent.
 
 	   Filter by load.current
 	*/
-	LoadCurrentQueryParameter *int64
+	LoadCurrent *int64
 
 	/* LoadMaximum.
 
 	   Filter by load.maximum
 	*/
-	LoadMaximumQueryParameter *int64
+	LoadMaximum *int64
 
 	/* LoadTokenReserved.
 
 	   Filter by load.token_reserved
 	*/
-	LoadTokenReservedQueryParameter *int64
+	LoadTokenReserved *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type SplitLoadCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,7 +130,7 @@ type SplitLoadCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *SplitLoadCollectionGetParams) WithDefaults() *SplitLoadCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *SplitLoadCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SplitLoadCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *SplitLoadCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithFieldsQueryParameter(fields []string) *SplitLoadCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithFields(fields []string) *SplitLoadCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLoadAllowableQueryParameter adds the loadAllowable to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithLoadAllowableQueryParameter(loadAllowable *int64) *SplitLoadCollectionGetParams {
-	o.SetLoadAllowableQueryParameter(loadAllowable)
+// WithLoadAllowable adds the loadAllowable to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithLoadAllowable(loadAllowable *int64) *SplitLoadCollectionGetParams {
+	o.SetLoadAllowable(loadAllowable)
 	return o
 }
 
-// SetLoadAllowableQueryParameter adds the loadAllowable to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetLoadAllowableQueryParameter(loadAllowable *int64) {
-	o.LoadAllowableQueryParameter = loadAllowable
+// SetLoadAllowable adds the loadAllowable to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetLoadAllowable(loadAllowable *int64) {
+	o.LoadAllowable = loadAllowable
 }
 
-// WithLoadCurrentQueryParameter adds the loadCurrent to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithLoadCurrentQueryParameter(loadCurrent *int64) *SplitLoadCollectionGetParams {
-	o.SetLoadCurrentQueryParameter(loadCurrent)
+// WithLoadCurrent adds the loadCurrent to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithLoadCurrent(loadCurrent *int64) *SplitLoadCollectionGetParams {
+	o.SetLoadCurrent(loadCurrent)
 	return o
 }
 
-// SetLoadCurrentQueryParameter adds the loadCurrent to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetLoadCurrentQueryParameter(loadCurrent *int64) {
-	o.LoadCurrentQueryParameter = loadCurrent
+// SetLoadCurrent adds the loadCurrent to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetLoadCurrent(loadCurrent *int64) {
+	o.LoadCurrent = loadCurrent
 }
 
-// WithLoadMaximumQueryParameter adds the loadMaximum to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithLoadMaximumQueryParameter(loadMaximum *int64) *SplitLoadCollectionGetParams {
-	o.SetLoadMaximumQueryParameter(loadMaximum)
+// WithLoadMaximum adds the loadMaximum to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithLoadMaximum(loadMaximum *int64) *SplitLoadCollectionGetParams {
+	o.SetLoadMaximum(loadMaximum)
 	return o
 }
 
-// SetLoadMaximumQueryParameter adds the loadMaximum to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetLoadMaximumQueryParameter(loadMaximum *int64) {
-	o.LoadMaximumQueryParameter = loadMaximum
+// SetLoadMaximum adds the loadMaximum to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetLoadMaximum(loadMaximum *int64) {
+	o.LoadMaximum = loadMaximum
 }
 
-// WithLoadTokenReservedQueryParameter adds the loadTokenReserved to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithLoadTokenReservedQueryParameter(loadTokenReserved *int64) *SplitLoadCollectionGetParams {
-	o.SetLoadTokenReservedQueryParameter(loadTokenReserved)
+// WithLoadTokenReserved adds the loadTokenReserved to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithLoadTokenReserved(loadTokenReserved *int64) *SplitLoadCollectionGetParams {
+	o.SetLoadTokenReserved(loadTokenReserved)
 	return o
 }
 
-// SetLoadTokenReservedQueryParameter adds the loadTokenReserved to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetLoadTokenReservedQueryParameter(loadTokenReserved *int64) {
-	o.LoadTokenReservedQueryParameter = loadTokenReserved
+// SetLoadTokenReserved adds the loadTokenReserved to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetLoadTokenReserved(loadTokenReserved *int64) {
+	o.LoadTokenReserved = loadTokenReserved
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SplitLoadCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithMaxRecords(maxRecords *int64) *SplitLoadCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *SplitLoadCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithNodeName(nodeName *string) *SplitLoadCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SplitLoadCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithNodeUUID(nodeUUID *string) *SplitLoadCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SplitLoadCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithOrderBy(orderBy []string) *SplitLoadCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SplitLoadCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithReturnRecords(returnRecords *bool) *SplitLoadCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the split load collection get params
-func (o *SplitLoadCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SplitLoadCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the split load collection get params
+func (o *SplitLoadCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SplitLoadCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the split load collection get params
-func (o *SplitLoadCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the split load collection get params
+func (o *SplitLoadCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,7 +328,7 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -339,13 +339,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LoadAllowableQueryParameter != nil {
+	if o.LoadAllowable != nil {
 
 		// query param load.allowable
 		var qrLoadAllowable int64
 
-		if o.LoadAllowableQueryParameter != nil {
-			qrLoadAllowable = *o.LoadAllowableQueryParameter
+		if o.LoadAllowable != nil {
+			qrLoadAllowable = *o.LoadAllowable
 		}
 		qLoadAllowable := swag.FormatInt64(qrLoadAllowable)
 		if qLoadAllowable != "" {
@@ -356,13 +356,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LoadCurrentQueryParameter != nil {
+	if o.LoadCurrent != nil {
 
 		// query param load.current
 		var qrLoadCurrent int64
 
-		if o.LoadCurrentQueryParameter != nil {
-			qrLoadCurrent = *o.LoadCurrentQueryParameter
+		if o.LoadCurrent != nil {
+			qrLoadCurrent = *o.LoadCurrent
 		}
 		qLoadCurrent := swag.FormatInt64(qrLoadCurrent)
 		if qLoadCurrent != "" {
@@ -373,13 +373,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LoadMaximumQueryParameter != nil {
+	if o.LoadMaximum != nil {
 
 		// query param load.maximum
 		var qrLoadMaximum int64
 
-		if o.LoadMaximumQueryParameter != nil {
-			qrLoadMaximum = *o.LoadMaximumQueryParameter
+		if o.LoadMaximum != nil {
+			qrLoadMaximum = *o.LoadMaximum
 		}
 		qLoadMaximum := swag.FormatInt64(qrLoadMaximum)
 		if qLoadMaximum != "" {
@@ -390,13 +390,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.LoadTokenReservedQueryParameter != nil {
+	if o.LoadTokenReserved != nil {
 
 		// query param load.token_reserved
 		var qrLoadTokenReserved int64
 
-		if o.LoadTokenReservedQueryParameter != nil {
-			qrLoadTokenReserved = *o.LoadTokenReservedQueryParameter
+		if o.LoadTokenReserved != nil {
+			qrLoadTokenReserved = *o.LoadTokenReserved
 		}
 		qLoadTokenReserved := swag.FormatInt64(qrLoadTokenReserved)
 		if qLoadTokenReserved != "" {
@@ -407,13 +407,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -424,13 +424,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -441,13 +441,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -458,7 +458,7 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +469,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -486,13 +486,13 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -511,7 +511,7 @@ func (o *SplitLoadCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamSplitLoadCollectionGet binds the parameter fields
 func (o *SplitLoadCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *SplitLoadCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamSplitLoadCollectionGet binds the parameter order_by
 func (o *SplitLoadCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

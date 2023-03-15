@@ -27,43 +27,43 @@ type MetroclusterInterconnect struct {
 	// Adapter
 	// Required: true
 	// Read Only: true
-	Adapter string `json:"adapter"`
+	Adapter *string `json:"adapter"`
 
 	// List of objects which contain interface information such as its IP address, netmask and gateway.
-	Interfaces []*MetroclusterInterconnectInterfacesItems0 `json:"interfaces,omitempty"`
+	MetroclusterInterconnectInlineInterfaces []*MetroclusterInterconnectInlineInterfacesInlineArrayItem `json:"interfaces,omitempty"`
 
 	// mirror
-	Mirror *MetroclusterInterconnectMirror `json:"mirror,omitempty"`
+	Mirror *MetroclusterInterconnectInlineMirror `json:"mirror,omitempty"`
 
 	// Displays the NVRAM mirror multipath policy for the nodes configured in a MetroCluster.
 	// Read Only: true
 	// Enum: [no_mp static_map dynamic_map round_robin]
-	MultipathPolicy string `json:"multipath_policy,omitempty"`
+	MultipathPolicy *string `json:"multipath_policy,omitempty"`
 
 	// node
-	Node *MetroclusterInterconnectNode `json:"node,omitempty"`
+	Node *MetroclusterInterconnectInlineNode `json:"node,omitempty"`
 
 	// Partner type
 	// Required: true
 	// Read Only: true
 	// Enum: [aux dr ha]
-	PartnerType string `json:"partner_type"`
+	PartnerType *string `json:"partner_type"`
 
 	// Adapter status
 	// Read Only: true
 	// Enum: [down up]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Adapter type
 	// Read Only: true
 	// Enum: [roce iwarp unknown]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// VLAN ID
 	// Read Only: true
 	// Maximum: 4095
 	// Minimum: 10
-	VlanID int64 `json:"vlan_id,omitempty"`
+	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
 // Validate validates this metrocluster interconnect
@@ -78,7 +78,7 @@ func (m *MetroclusterInterconnect) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateInterfaces(formats); err != nil {
+	if err := m.validateMetroclusterInterconnectInlineInterfaces(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -135,25 +135,25 @@ func (m *MetroclusterInterconnect) validateLinks(formats strfmt.Registry) error 
 
 func (m *MetroclusterInterconnect) validateAdapter(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("adapter", "body", m.Adapter); err != nil {
+	if err := validate.Required("adapter", "body", m.Adapter); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterInterconnect) validateInterfaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.Interfaces) { // not required
+func (m *MetroclusterInterconnect) validateMetroclusterInterconnectInlineInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterInterconnectInlineInterfaces) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Interfaces); i++ {
-		if swag.IsZero(m.Interfaces[i]) { // not required
+	for i := 0; i < len(m.MetroclusterInterconnectInlineInterfaces); i++ {
+		if swag.IsZero(m.MetroclusterInterconnectInlineInterfaces[i]) { // not required
 			continue
 		}
 
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].Validate(formats); err != nil {
+		if m.MetroclusterInterconnectInlineInterfaces[i] != nil {
+			if err := m.MetroclusterInterconnectInlineInterfaces[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
 				}
@@ -252,7 +252,7 @@ func (m *MetroclusterInterconnect) validateMultipathPolicy(formats strfmt.Regist
 	}
 
 	// value enum
-	if err := m.validateMultipathPolicyEnum("multipath_policy", "body", m.MultipathPolicy); err != nil {
+	if err := m.validateMultipathPolicyEnum("multipath_policy", "body", *m.MultipathPolicy); err != nil {
 		return err
 	}
 
@@ -331,12 +331,12 @@ func (m *MetroclusterInterconnect) validatePartnerTypeEnum(path, location string
 
 func (m *MetroclusterInterconnect) validatePartnerType(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("partner_type", "body", m.PartnerType); err != nil {
+	if err := validate.Required("partner_type", "body", m.PartnerType); err != nil {
 		return err
 	}
 
 	// value enum
-	if err := m.validatePartnerTypeEnum("partner_type", "body", m.PartnerType); err != nil {
+	if err := m.validatePartnerTypeEnum("partner_type", "body", *m.PartnerType); err != nil {
 		return err
 	}
 
@@ -392,7 +392,7 @@ func (m *MetroclusterInterconnect) validateState(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -458,7 +458,7 @@ func (m *MetroclusterInterconnect) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -470,11 +470,11 @@ func (m *MetroclusterInterconnect) validateVlanID(formats strfmt.Registry) error
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("vlan_id", "body", m.VlanID, 4095, false); err != nil {
+	if err := validate.MaximumInt("vlan_id", "body", *m.VlanID, 4095, false); err != nil {
 		return err
 	}
 
@@ -493,7 +493,7 @@ func (m *MetroclusterInterconnect) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterInterconnectInlineInterfaces(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -547,19 +547,19 @@ func (m *MetroclusterInterconnect) contextValidateLinks(ctx context.Context, for
 
 func (m *MetroclusterInterconnect) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "adapter", "body", string(m.Adapter)); err != nil {
+	if err := validate.ReadOnly(ctx, "adapter", "body", m.Adapter); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterInterconnect) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInterconnect) contextValidateMetroclusterInterconnectInlineInterfaces(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Interfaces); i++ {
+	for i := 0; i < len(m.MetroclusterInterconnectInlineInterfaces); i++ {
 
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].ContextValidate(ctx, formats); err != nil {
+		if m.MetroclusterInterconnectInlineInterfaces[i] != nil {
+			if err := m.MetroclusterInterconnectInlineInterfaces[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
 				}
@@ -588,7 +588,7 @@ func (m *MetroclusterInterconnect) contextValidateMirror(ctx context.Context, fo
 
 func (m *MetroclusterInterconnect) contextValidateMultipathPolicy(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "multipath_policy", "body", string(m.MultipathPolicy)); err != nil {
+	if err := validate.ReadOnly(ctx, "multipath_policy", "body", m.MultipathPolicy); err != nil {
 		return err
 	}
 
@@ -611,7 +611,7 @@ func (m *MetroclusterInterconnect) contextValidateNode(ctx context.Context, form
 
 func (m *MetroclusterInterconnect) contextValidatePartnerType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "partner_type", "body", string(m.PartnerType)); err != nil {
+	if err := validate.ReadOnly(ctx, "partner_type", "body", m.PartnerType); err != nil {
 		return err
 	}
 
@@ -620,7 +620,7 @@ func (m *MetroclusterInterconnect) contextValidatePartnerType(ctx context.Contex
 
 func (m *MetroclusterInterconnect) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -629,7 +629,7 @@ func (m *MetroclusterInterconnect) contextValidateState(ctx context.Context, for
 
 func (m *MetroclusterInterconnect) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -638,7 +638,7 @@ func (m *MetroclusterInterconnect) contextValidateType(ctx context.Context, form
 
 func (m *MetroclusterInterconnect) contextValidateVlanID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "vlan_id", "body", int64(m.VlanID)); err != nil {
+	if err := validate.ReadOnly(ctx, "vlan_id", "body", m.VlanID); err != nil {
 		return err
 	}
 
@@ -663,25 +663,25 @@ func (m *MetroclusterInterconnect) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterInterconnectInterfacesItems0 Object to setup an interface along with its default router.
+// MetroclusterInterconnectInlineInterfacesInlineArrayItem Object to setup an interface along with its default router.
 //
-// swagger:model MetroclusterInterconnectInterfacesItems0
-type MetroclusterInterconnectInterfacesItems0 struct {
+// swagger:model metrocluster_interconnect_inline_interfaces_inline_array_item
+type MetroclusterInterconnectInlineInterfacesInlineArrayItem struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this metrocluster interconnect interfaces items0
-func (m *MetroclusterInterconnectInterfacesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster interconnect inline interfaces inline array item
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNetmask(formats); err != nil {
@@ -694,23 +694,25 @@ func (m *MetroclusterInterconnectInterfacesItems0) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *MetroclusterInterconnectInterfacesItems0) validateNetmask(formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster interconnect interfaces items0 based on the context it is used
-func (m *MetroclusterInterconnectInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster interconnect inline interfaces inline array item based on the context it is used
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNetmask(ctx, formats); err != nil {
@@ -723,20 +725,22 @@ func (m *MetroclusterInterconnectInterfacesItems0) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *MetroclusterInterconnectInterfacesItems0) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterInterconnectInterfacesItems0) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -744,8 +748,8 @@ func (m *MetroclusterInterconnectInterfacesItems0) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterInterconnectInterfacesItems0) UnmarshalBinary(b []byte) error {
-	var res MetroclusterInterconnectInterfacesItems0
+func (m *MetroclusterInterconnectInlineInterfacesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInterconnectInlineInterfacesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -753,22 +757,22 @@ func (m *MetroclusterInterconnectInterfacesItems0) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// MetroclusterInterconnectMirror metrocluster interconnect mirror
+// MetroclusterInterconnectInlineMirror metrocluster interconnect inline mirror
 //
-// swagger:model MetroclusterInterconnectMirror
-type MetroclusterInterconnectMirror struct {
+// swagger:model metrocluster_interconnect_inline_mirror
+type MetroclusterInterconnectInlineMirror struct {
 
 	// Specifies the administrative state of the NVRAM mirror between partner nodes.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Specifies the operational state of the NVRAM mirror between partner nodes.
 	// Read Only: true
 	// Enum: [online offline unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this metrocluster interconnect mirror
-func (m *MetroclusterInterconnectMirror) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster interconnect inline mirror
+func (m *MetroclusterInterconnectInlineMirror) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -781,7 +785,7 @@ func (m *MetroclusterInterconnectMirror) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-var metroclusterInterconnectMirrorTypeStatePropEnum []interface{}
+var metroclusterInterconnectInlineMirrorTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -789,66 +793,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterInterconnectMirrorTypeStatePropEnum = append(metroclusterInterconnectMirrorTypeStatePropEnum, v)
+		metroclusterInterconnectInlineMirrorTypeStatePropEnum = append(metroclusterInterconnectInlineMirrorTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterInterconnectMirror
-	// MetroclusterInterconnectMirror
+	// metrocluster_interconnect_inline_mirror
+	// MetroclusterInterconnectInlineMirror
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// MetroclusterInterconnectMirrorStateOnline captures enum value "online"
-	MetroclusterInterconnectMirrorStateOnline string = "online"
+	// MetroclusterInterconnectInlineMirrorStateOnline captures enum value "online"
+	MetroclusterInterconnectInlineMirrorStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// MetroclusterInterconnectMirror
-	// MetroclusterInterconnectMirror
+	// metrocluster_interconnect_inline_mirror
+	// MetroclusterInterconnectInlineMirror
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// MetroclusterInterconnectMirrorStateOffline captures enum value "offline"
-	MetroclusterInterconnectMirrorStateOffline string = "offline"
+	// MetroclusterInterconnectInlineMirrorStateOffline captures enum value "offline"
+	MetroclusterInterconnectInlineMirrorStateOffline string = "offline"
 
 	// BEGIN DEBUGGING
-	// MetroclusterInterconnectMirror
-	// MetroclusterInterconnectMirror
+	// metrocluster_interconnect_inline_mirror
+	// MetroclusterInterconnectInlineMirror
 	// state
 	// State
 	// unknown
 	// END DEBUGGING
-	// MetroclusterInterconnectMirrorStateUnknown captures enum value "unknown"
-	MetroclusterInterconnectMirrorStateUnknown string = "unknown"
+	// MetroclusterInterconnectInlineMirrorStateUnknown captures enum value "unknown"
+	MetroclusterInterconnectInlineMirrorStateUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *MetroclusterInterconnectMirror) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterInterconnectMirrorTypeStatePropEnum, true); err != nil {
+func (m *MetroclusterInterconnectInlineMirror) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInterconnectInlineMirrorTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterInterconnectMirror) validateState(formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineMirror) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("mirror"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("mirror"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster interconnect mirror based on the context it is used
-func (m *MetroclusterInterconnectMirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster interconnect inline mirror based on the context it is used
+func (m *MetroclusterInterconnectInlineMirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -861,9 +865,9 @@ func (m *MetroclusterInterconnectMirror) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MetroclusterInterconnectMirror) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineMirror) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mirror"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "mirror"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -871,7 +875,7 @@ func (m *MetroclusterInterconnectMirror) contextValidateState(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterInterconnectMirror) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInterconnectInlineMirror) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -879,8 +883,8 @@ func (m *MetroclusterInterconnectMirror) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterInterconnectMirror) UnmarshalBinary(b []byte) error {
-	var res MetroclusterInterconnectMirror
+func (m *MetroclusterInterconnectInlineMirror) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInterconnectInlineMirror
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -888,25 +892,25 @@ func (m *MetroclusterInterconnectMirror) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterInterconnectNode metrocluster interconnect node
+// MetroclusterInterconnectInlineNode metrocluster interconnect inline node
 //
-// swagger:model MetroclusterInterconnectNode
-type MetroclusterInterconnectNode struct {
+// swagger:model metrocluster_interconnect_inline_node
+type MetroclusterInterconnectInlineNode struct {
 
 	// links
-	Links *MetroclusterInterconnectNodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterInterconnectInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster interconnect node
-func (m *MetroclusterInterconnectNode) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster interconnect inline node
+func (m *MetroclusterInterconnectInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -919,7 +923,7 @@ func (m *MetroclusterInterconnectNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterInterconnectNode) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -936,8 +940,8 @@ func (m *MetroclusterInterconnectNode) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this metrocluster interconnect node based on the context it is used
-func (m *MetroclusterInterconnectNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster interconnect inline node based on the context it is used
+func (m *MetroclusterInterconnectInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -950,7 +954,7 @@ func (m *MetroclusterInterconnectNode) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *MetroclusterInterconnectNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -965,7 +969,7 @@ func (m *MetroclusterInterconnectNode) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterInterconnectNode) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInterconnectInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -973,8 +977,8 @@ func (m *MetroclusterInterconnectNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterInterconnectNode) UnmarshalBinary(b []byte) error {
-	var res MetroclusterInterconnectNode
+func (m *MetroclusterInterconnectInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInterconnectInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -982,17 +986,17 @@ func (m *MetroclusterInterconnectNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterInterconnectNodeLinks metrocluster interconnect node links
+// MetroclusterInterconnectInlineNodeInlineLinks metrocluster interconnect inline node inline links
 //
-// swagger:model MetroclusterInterconnectNodeLinks
-type MetroclusterInterconnectNodeLinks struct {
+// swagger:model metrocluster_interconnect_inline_node_inline__links
+type MetroclusterInterconnectInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster interconnect node links
-func (m *MetroclusterInterconnectNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster interconnect inline node inline links
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1005,7 +1009,7 @@ func (m *MetroclusterInterconnectNodeLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *MetroclusterInterconnectNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1022,8 +1026,8 @@ func (m *MetroclusterInterconnectNodeLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this metrocluster interconnect node links based on the context it is used
-func (m *MetroclusterInterconnectNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster interconnect inline node inline links based on the context it is used
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1036,7 +1040,7 @@ func (m *MetroclusterInterconnectNodeLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *MetroclusterInterconnectNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1051,7 +1055,7 @@ func (m *MetroclusterInterconnectNodeLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterInterconnectNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1059,8 +1063,8 @@ func (m *MetroclusterInterconnectNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterInterconnectNodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterInterconnectNodeLinks
+func (m *MetroclusterInterconnectInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInterconnectInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

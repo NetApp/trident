@@ -22,7 +22,7 @@ type FirmwareDqp struct {
 	// Firmware file name
 	// Example: qual_devices_v3
 	// Read Only: true
-	FileName string `json:"file_name,omitempty"`
+	FileName *string `json:"file_name,omitempty"`
 
 	// record count
 	// Read Only: true
@@ -31,12 +31,12 @@ type FirmwareDqp struct {
 	// Firmware revision
 	// Example: 20200117
 	// Read Only: true
-	Revision string `json:"revision,omitempty"`
+	Revision *string `json:"revision,omitempty"`
 
 	// Firmware version
 	// Example: 3.18
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this firmware dqp
@@ -98,7 +98,7 @@ func (m *FirmwareDqp) ContextValidate(ctx context.Context, formats strfmt.Regist
 
 func (m *FirmwareDqp) contextValidateFileName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "file_name", "body", string(m.FileName)); err != nil {
+	if err := validate.ReadOnly(ctx, "file_name", "body", m.FileName); err != nil {
 		return err
 	}
 
@@ -121,7 +121,7 @@ func (m *FirmwareDqp) contextValidateRecordCount(ctx context.Context, formats st
 
 func (m *FirmwareDqp) contextValidateRevision(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "revision", "body", string(m.Revision)); err != nil {
+	if err := validate.ReadOnly(ctx, "revision", "body", m.Revision); err != nil {
 		return err
 	}
 
@@ -130,7 +130,7 @@ func (m *FirmwareDqp) contextValidateRevision(ctx context.Context, formats strfm
 
 func (m *FirmwareDqp) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "version", "body", m.Version); err != nil {
 		return err
 	}
 

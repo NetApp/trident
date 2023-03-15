@@ -19,19 +19,19 @@ import (
 type GroupMembershipSettings struct {
 
 	// links
-	Links *GroupMembershipSettingsLinks `json:"_links,omitempty"`
+	Links *GroupMembershipSettingsInlineLinks `json:"_links,omitempty"`
 
 	// Specifies whether or not the cache is enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// svm
-	Svm *GroupMembershipSettingsSvm `json:"svm,omitempty"`
+	Svm *GroupMembershipSettingsInlineSvm `json:"svm,omitempty"`
 
 	// Specifies Time to Live for list of group members, in ISO 8601 format.
 	//
 	// Example: PT2H30M
-	TTL string `json:"ttl,omitempty"`
+	TTL *string `json:"ttl,omitempty"`
 }
 
 // Validate validates this group membership settings
@@ -150,17 +150,17 @@ func (m *GroupMembershipSettings) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GroupMembershipSettingsLinks group membership settings links
+// GroupMembershipSettingsInlineLinks group membership settings inline links
 //
-// swagger:model GroupMembershipSettingsLinks
-type GroupMembershipSettingsLinks struct {
+// swagger:model group_membership_settings_inline__links
+type GroupMembershipSettingsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this group membership settings links
-func (m *GroupMembershipSettingsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this group membership settings inline links
+func (m *GroupMembershipSettingsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -173,7 +173,7 @@ func (m *GroupMembershipSettingsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GroupMembershipSettingsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -190,8 +190,8 @@ func (m *GroupMembershipSettingsLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this group membership settings links based on the context it is used
-func (m *GroupMembershipSettingsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this group membership settings inline links based on the context it is used
+func (m *GroupMembershipSettingsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -204,7 +204,7 @@ func (m *GroupMembershipSettingsLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *GroupMembershipSettingsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -219,7 +219,7 @@ func (m *GroupMembershipSettingsLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *GroupMembershipSettingsLinks) MarshalBinary() ([]byte, error) {
+func (m *GroupMembershipSettingsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -227,8 +227,8 @@ func (m *GroupMembershipSettingsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GroupMembershipSettingsLinks) UnmarshalBinary(b []byte) error {
-	var res GroupMembershipSettingsLinks
+func (m *GroupMembershipSettingsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GroupMembershipSettingsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -236,27 +236,27 @@ func (m *GroupMembershipSettingsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GroupMembershipSettingsSvm group membership settings svm
+// GroupMembershipSettingsInlineSvm group membership settings inline svm
 //
-// swagger:model GroupMembershipSettingsSvm
-type GroupMembershipSettingsSvm struct {
+// swagger:model group_membership_settings_inline_svm
+type GroupMembershipSettingsInlineSvm struct {
 
 	// links
-	Links *GroupMembershipSettingsSvmLinks `json:"_links,omitempty"`
+	Links *GroupMembershipSettingsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this group membership settings svm
-func (m *GroupMembershipSettingsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this group membership settings inline svm
+func (m *GroupMembershipSettingsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -269,7 +269,7 @@ func (m *GroupMembershipSettingsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GroupMembershipSettingsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -286,8 +286,8 @@ func (m *GroupMembershipSettingsSvm) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this group membership settings svm based on the context it is used
-func (m *GroupMembershipSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this group membership settings inline svm based on the context it is used
+func (m *GroupMembershipSettingsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -300,7 +300,7 @@ func (m *GroupMembershipSettingsSvm) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *GroupMembershipSettingsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -315,7 +315,7 @@ func (m *GroupMembershipSettingsSvm) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *GroupMembershipSettingsSvm) MarshalBinary() ([]byte, error) {
+func (m *GroupMembershipSettingsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -323,8 +323,8 @@ func (m *GroupMembershipSettingsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GroupMembershipSettingsSvm) UnmarshalBinary(b []byte) error {
-	var res GroupMembershipSettingsSvm
+func (m *GroupMembershipSettingsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res GroupMembershipSettingsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -332,17 +332,17 @@ func (m *GroupMembershipSettingsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GroupMembershipSettingsSvmLinks group membership settings svm links
+// GroupMembershipSettingsInlineSvmInlineLinks group membership settings inline svm inline links
 //
-// swagger:model GroupMembershipSettingsSvmLinks
-type GroupMembershipSettingsSvmLinks struct {
+// swagger:model group_membership_settings_inline_svm_inline__links
+type GroupMembershipSettingsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this group membership settings svm links
-func (m *GroupMembershipSettingsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this group membership settings inline svm inline links
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -355,7 +355,7 @@ func (m *GroupMembershipSettingsSvmLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *GroupMembershipSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -372,8 +372,8 @@ func (m *GroupMembershipSettingsSvmLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this group membership settings svm links based on the context it is used
-func (m *GroupMembershipSettingsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this group membership settings inline svm inline links based on the context it is used
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -386,7 +386,7 @@ func (m *GroupMembershipSettingsSvmLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *GroupMembershipSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -401,7 +401,7 @@ func (m *GroupMembershipSettingsSvmLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *GroupMembershipSettingsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -409,8 +409,8 @@ func (m *GroupMembershipSettingsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GroupMembershipSettingsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res GroupMembershipSettingsSvmLinks
+func (m *GroupMembershipSettingsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GroupMembershipSettingsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

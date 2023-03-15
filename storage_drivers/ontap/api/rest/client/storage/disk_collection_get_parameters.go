@@ -66,313 +66,313 @@ type DiskCollectionGetParams struct {
 
 	   Filter by aggregates.name
 	*/
-	AggregatesNameQueryParameter *string
+	AggregatesName *string
 
 	/* AggregatesUUID.
 
 	   Filter by aggregates.uuid
 	*/
-	AggregatesUUIDQueryParameter *string
+	AggregatesUUID *string
 
 	/* Bay.
 
 	   Filter by bay
 	*/
-	BayQueryParameter *int64
+	Bay *int64
 
 	/* BytesPerSector.
 
 	   Filter by bytes_per_sector
 	*/
-	BytesPerSectorQueryParameter *int64
+	BytesPerSector *int64
 
 	/* Class.
 
 	   Filter by class
 	*/
-	ClassQueryParameter *string
+	Class *string
 
 	/* ComplianceStandard.
 
 	   Filter by compliance_standard
 	*/
-	ComplianceStandardQueryParameter *string
+	ComplianceStandard *string
 
 	/* ContainerType.
 
 	   Filter by container_type
 	*/
-	ContainerTypeQueryParameter *string
+	ContainerType *string
 
 	/* ControlStandard.
 
 	   Filter by control_standard
 	*/
-	ControlStandardQueryParameter *string
+	ControlStandard *string
 
 	/* DrNodeName.
 
 	   Filter by dr_node.name
 	*/
-	DrNodeNameQueryParameter *string
+	DrNodeName *string
 
 	/* DrNodeUUID.
 
 	   Filter by dr_node.uuid
 	*/
-	DrNodeUUIDQueryParameter *string
+	DrNodeUUID *string
 
 	/* DrawerID.
 
 	   Filter by drawer.id
 	*/
-	DrawerIDQueryParameter *int64
+	DrawerID *int64
 
 	/* DrawerSlot.
 
 	   Filter by drawer.slot
 	*/
-	DrawerSlotQueryParameter *int64
+	DrawerSlot *int64
 
 	/* EffectiveType.
 
 	   Filter by effective_type
 	*/
-	EffectiveTypeQueryParameter *string
+	EffectiveType *string
 
 	/* ErrorReasonArgumentsCode.
 
 	   Filter by error.reason.arguments.code
 	*/
-	ErrorReasonArgumentsCodeQueryParameter *string
+	ErrorReasonArgumentsCode *string
 
 	/* ErrorReasonArgumentsMessage.
 
 	   Filter by error.reason.arguments.message
 	*/
-	ErrorReasonArgumentsMessageQueryParameter *string
+	ErrorReasonArgumentsMessage *string
 
 	/* ErrorReasonCode.
 
 	   Filter by error.reason.code
 	*/
-	ErrorReasonCodeQueryParameter *string
+	ErrorReasonCode *string
 
 	/* ErrorReasonMessage.
 
 	   Filter by error.reason.message
 	*/
-	ErrorReasonMessageQueryParameter *string
+	ErrorReasonMessage *string
 
 	/* ErrorReasonTarget.
 
 	   Filter by error.reason.target
 	*/
-	ErrorReasonTargetQueryParameter *string
+	ErrorReasonTarget *string
 
 	/* ErrorType.
 
 	   Filter by error.type
 	*/
-	ErrorTypeQueryParameter *string
+	ErrorType *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FipsCertified.
 
 	   Filter by fips_certified
 	*/
-	FipsCertifiedQueryParameter *bool
+	FipsCertified *bool
 
 	/* FirmwareVersion.
 
 	   Filter by firmware_version
 	*/
-	FirmwareVersionQueryParameter *string
+	FirmwareVersion *string
 
 	/* HomeNodeName.
 
 	   Filter by home_node.name
 	*/
-	HomeNodeNameQueryParameter *string
+	HomeNodeName *string
 
 	/* HomeNodeUUID.
 
 	   Filter by home_node.uuid
 	*/
-	HomeNodeUUIDQueryParameter *string
+	HomeNodeUUID *string
 
 	/* KeyIDData.
 
 	   Filter by key_id.data
 	*/
-	KeyIDDataQueryParameter *string
+	KeyIDData *string
 
 	/* KeyIDFips.
 
 	   Filter by key_id.fips
 	*/
-	KeyIDFipsQueryParameter *string
+	KeyIDFips *string
 
 	/* Local.
 
 	   Filter by local
 	*/
-	LocalQueryParameter *bool
+	Local *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Model.
 
 	   Filter by model
 	*/
-	ModelQueryParameter *string
+	Model *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OutagePersistentlyFailed.
 
 	   Filter by outage.persistently_failed
 	*/
-	OutagePersistentlyFailedQueryParameter *bool
+	OutagePersistentlyFailed *bool
 
 	/* OutageReasonArgumentsCode.
 
 	   Filter by outage.reason.arguments.code
 	*/
-	OutageReasonArgumentsCodeQueryParameter *string
+	OutageReasonArgumentsCode *string
 
 	/* OutageReasonArgumentsMessage.
 
 	   Filter by outage.reason.arguments.message
 	*/
-	OutageReasonArgumentsMessageQueryParameter *string
+	OutageReasonArgumentsMessage *string
 
 	/* OutageReasonCode.
 
 	   Filter by outage.reason.code
 	*/
-	OutageReasonCodeQueryParameter *string
+	OutageReasonCode *string
 
 	/* OutageReasonMessage.
 
 	   Filter by outage.reason.message
 	*/
-	OutageReasonMessageQueryParameter *string
+	OutageReasonMessage *string
 
 	/* OutageReasonTarget.
 
 	   Filter by outage.reason.target
 	*/
-	OutageReasonTargetQueryParameter *string
+	OutageReasonTarget *string
 
 	/* OverallSecurity.
 
 	   Filter by overall_security
 	*/
-	OverallSecurityQueryParameter *string
+	OverallSecurity *string
 
 	/* PathsInitiator.
 
 	   Filter by paths.initiator
 	*/
-	PathsInitiatorQueryParameter *string
+	PathsInitiator *string
 
 	/* PathsNodeName.
 
 	   Filter by paths.node.name
 	*/
-	PathsNodeNameQueryParameter *string
+	PathsNodeName *string
 
 	/* PathsNodeUUID.
 
 	   Filter by paths.node.uuid
 	*/
-	PathsNodeUUIDQueryParameter *string
+	PathsNodeUUID *string
 
 	/* PathsPortName.
 
 	   Filter by paths.port_name
 	*/
-	PathsPortNameQueryParameter *string
+	PathsPortName *string
 
 	/* PathsPortType.
 
 	   Filter by paths.port_type
 	*/
-	PathsPortTypeQueryParameter *string
+	PathsPortType *string
 
 	/* PathsVmdiskHypervisorFileName.
 
 	   Filter by paths.vmdisk_hypervisor_file_name
 	*/
-	PathsVMdiskHypervisorFileNameQueryParameter *string
+	PathsVmdiskHypervisorFileName *string
 
 	/* PathsWwnn.
 
 	   Filter by paths.wwnn
 	*/
-	PathsWwnnQueryParameter *string
+	PathsWwnn *string
 
 	/* PathsWwpn.
 
 	   Filter by paths.wwpn
 	*/
-	PathsWwpnQueryParameter *string
+	PathsWwpn *string
 
 	/* PhysicalSize.
 
 	   Filter by physical_size
 	*/
-	PhysicalSizeQueryParameter *int64
+	PhysicalSize *int64
 
 	/* Pool.
 
 	   Filter by pool
 	*/
-	PoolQueryParameter *string
+	Pool *string
 
 	/* ProtectionMode.
 
 	   Filter by protection_mode
 	*/
-	ProtectionModeQueryParameter *string
+	ProtectionMode *string
 
 	/* RatedLifeUsedPercent.
 
 	   Filter by rated_life_used_percent
 	*/
-	RatedLifeUsedPercentQueryParameter *int64
+	RatedLifeUsedPercent *int64
 
 	/* ReturnRecords.
 
@@ -380,7 +380,7 @@ type DiskCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -388,133 +388,133 @@ type DiskCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* RightSizeSectorCount.
 
 	   Filter by right_size_sector_count
 	*/
-	RightSizeSectorCountQueryParameter *int64
+	RightSizeSectorCount *int64
 
 	/* Rpm.
 
 	   Filter by rpm
 	*/
-	RpmQueryParameter *int64
+	Rpm *int64
 
 	/* SectorCount.
 
 	   Filter by sector_count
 	*/
-	SectorCountQueryParameter *int64
+	SectorCount *int64
 
 	/* SelfEncrypting.
 
 	   Filter by self_encrypting
 	*/
-	SelfEncryptingQueryParameter *bool
+	SelfEncrypting *bool
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* ShelfUID.
 
 	   Filter by shelf.uid
 	*/
-	ShelfUIDQueryParameter *string
+	ShelfUID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatsAverageLatency.
 
 	   Filter by stats.average_latency
 	*/
-	StatsAverageLatencyQueryParameter *int64
+	StatsAverageLatency *int64
 
 	/* StatsIopsTotal.
 
 	   Filter by stats.iops_total
 	*/
-	StatsIopsTotalQueryParameter *int64
+	StatsIopsTotal *int64
 
 	/* StatsPathErrorCount.
 
 	   Filter by stats.path_error_count
 	*/
-	StatsPathErrorCountQueryParameter *int64
+	StatsPathErrorCount *int64
 
 	/* StatsPowerOnHours.
 
 	   Filter by stats.power_on_hours
 	*/
-	StatsPowerOnHoursQueryParameter *int64
+	StatsPowerOnHours *int64
 
 	/* StatsThroughput.
 
 	   Filter by stats.throughput
 	*/
-	StatsThroughputQueryParameter *int64
+	StatsThroughput *int64
 
 	/* StoragePoolName.
 
 	   Filter by storage_pool.name
 	*/
-	StoragePoolNameQueryParameter *string
+	StoragePoolName *string
 
 	/* StoragePoolUUID.
 
 	   Filter by storage_pool.uuid
 	*/
-	StoragePoolUUIDQueryParameter *string
+	StoragePoolUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UID.
 
 	   Filter by uid
 	*/
-	UIDQueryParameter *string
+	UID *string
 
 	/* UsableSize.
 
 	   Filter by usable_size
 	*/
-	UsableSizeQueryParameter *int64
+	UsableSize *int64
 
 	/* Vendor.
 
 	   Filter by vendor
 	*/
-	VendorQueryParameter *string
+	Vendor *string
 
 	/* VirtualContainer.
 
 	   Filter by virtual.container
 	*/
-	VirtualContainerQueryParameter *string
+	VirtualContainer *string
 
 	/* VirtualObject.
 
 	   Filter by virtual.object
 	*/
-	VirtualObjectQueryParameter *string
+	VirtualObject *string
 
 	/* VirtualStorageAccount.
 
 	   Filter by virtual.storage_account
 	*/
-	VirtualStorageAccountQueryParameter *string
+	VirtualStorageAccount *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -534,14 +534,14 @@ func (o *DiskCollectionGetParams) WithDefaults() *DiskCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *DiskCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := DiskCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -583,829 +583,829 @@ func (o *DiskCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregatesNameQueryParameter adds the aggregatesName to the disk collection get params
-func (o *DiskCollectionGetParams) WithAggregatesNameQueryParameter(aggregatesName *string) *DiskCollectionGetParams {
-	o.SetAggregatesNameQueryParameter(aggregatesName)
+// WithAggregatesName adds the aggregatesName to the disk collection get params
+func (o *DiskCollectionGetParams) WithAggregatesName(aggregatesName *string) *DiskCollectionGetParams {
+	o.SetAggregatesName(aggregatesName)
 	return o
 }
 
-// SetAggregatesNameQueryParameter adds the aggregatesName to the disk collection get params
-func (o *DiskCollectionGetParams) SetAggregatesNameQueryParameter(aggregatesName *string) {
-	o.AggregatesNameQueryParameter = aggregatesName
+// SetAggregatesName adds the aggregatesName to the disk collection get params
+func (o *DiskCollectionGetParams) SetAggregatesName(aggregatesName *string) {
+	o.AggregatesName = aggregatesName
 }
 
-// WithAggregatesUUIDQueryParameter adds the aggregatesUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithAggregatesUUIDQueryParameter(aggregatesUUID *string) *DiskCollectionGetParams {
-	o.SetAggregatesUUIDQueryParameter(aggregatesUUID)
+// WithAggregatesUUID adds the aggregatesUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithAggregatesUUID(aggregatesUUID *string) *DiskCollectionGetParams {
+	o.SetAggregatesUUID(aggregatesUUID)
 	return o
 }
 
-// SetAggregatesUUIDQueryParameter adds the aggregatesUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetAggregatesUUIDQueryParameter(aggregatesUUID *string) {
-	o.AggregatesUUIDQueryParameter = aggregatesUUID
+// SetAggregatesUUID adds the aggregatesUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetAggregatesUUID(aggregatesUUID *string) {
+	o.AggregatesUUID = aggregatesUUID
 }
 
-// WithBayQueryParameter adds the bay to the disk collection get params
-func (o *DiskCollectionGetParams) WithBayQueryParameter(bay *int64) *DiskCollectionGetParams {
-	o.SetBayQueryParameter(bay)
+// WithBay adds the bay to the disk collection get params
+func (o *DiskCollectionGetParams) WithBay(bay *int64) *DiskCollectionGetParams {
+	o.SetBay(bay)
 	return o
 }
 
-// SetBayQueryParameter adds the bay to the disk collection get params
-func (o *DiskCollectionGetParams) SetBayQueryParameter(bay *int64) {
-	o.BayQueryParameter = bay
+// SetBay adds the bay to the disk collection get params
+func (o *DiskCollectionGetParams) SetBay(bay *int64) {
+	o.Bay = bay
 }
 
-// WithBytesPerSectorQueryParameter adds the bytesPerSector to the disk collection get params
-func (o *DiskCollectionGetParams) WithBytesPerSectorQueryParameter(bytesPerSector *int64) *DiskCollectionGetParams {
-	o.SetBytesPerSectorQueryParameter(bytesPerSector)
+// WithBytesPerSector adds the bytesPerSector to the disk collection get params
+func (o *DiskCollectionGetParams) WithBytesPerSector(bytesPerSector *int64) *DiskCollectionGetParams {
+	o.SetBytesPerSector(bytesPerSector)
 	return o
 }
 
-// SetBytesPerSectorQueryParameter adds the bytesPerSector to the disk collection get params
-func (o *DiskCollectionGetParams) SetBytesPerSectorQueryParameter(bytesPerSector *int64) {
-	o.BytesPerSectorQueryParameter = bytesPerSector
+// SetBytesPerSector adds the bytesPerSector to the disk collection get params
+func (o *DiskCollectionGetParams) SetBytesPerSector(bytesPerSector *int64) {
+	o.BytesPerSector = bytesPerSector
 }
 
-// WithClassQueryParameter adds the class to the disk collection get params
-func (o *DiskCollectionGetParams) WithClassQueryParameter(class *string) *DiskCollectionGetParams {
-	o.SetClassQueryParameter(class)
+// WithClass adds the class to the disk collection get params
+func (o *DiskCollectionGetParams) WithClass(class *string) *DiskCollectionGetParams {
+	o.SetClass(class)
 	return o
 }
 
-// SetClassQueryParameter adds the class to the disk collection get params
-func (o *DiskCollectionGetParams) SetClassQueryParameter(class *string) {
-	o.ClassQueryParameter = class
+// SetClass adds the class to the disk collection get params
+func (o *DiskCollectionGetParams) SetClass(class *string) {
+	o.Class = class
 }
 
-// WithComplianceStandardQueryParameter adds the complianceStandard to the disk collection get params
-func (o *DiskCollectionGetParams) WithComplianceStandardQueryParameter(complianceStandard *string) *DiskCollectionGetParams {
-	o.SetComplianceStandardQueryParameter(complianceStandard)
+// WithComplianceStandard adds the complianceStandard to the disk collection get params
+func (o *DiskCollectionGetParams) WithComplianceStandard(complianceStandard *string) *DiskCollectionGetParams {
+	o.SetComplianceStandard(complianceStandard)
 	return o
 }
 
-// SetComplianceStandardQueryParameter adds the complianceStandard to the disk collection get params
-func (o *DiskCollectionGetParams) SetComplianceStandardQueryParameter(complianceStandard *string) {
-	o.ComplianceStandardQueryParameter = complianceStandard
+// SetComplianceStandard adds the complianceStandard to the disk collection get params
+func (o *DiskCollectionGetParams) SetComplianceStandard(complianceStandard *string) {
+	o.ComplianceStandard = complianceStandard
 }
 
-// WithContainerTypeQueryParameter adds the containerType to the disk collection get params
-func (o *DiskCollectionGetParams) WithContainerTypeQueryParameter(containerType *string) *DiskCollectionGetParams {
-	o.SetContainerTypeQueryParameter(containerType)
+// WithContainerType adds the containerType to the disk collection get params
+func (o *DiskCollectionGetParams) WithContainerType(containerType *string) *DiskCollectionGetParams {
+	o.SetContainerType(containerType)
 	return o
 }
 
-// SetContainerTypeQueryParameter adds the containerType to the disk collection get params
-func (o *DiskCollectionGetParams) SetContainerTypeQueryParameter(containerType *string) {
-	o.ContainerTypeQueryParameter = containerType
+// SetContainerType adds the containerType to the disk collection get params
+func (o *DiskCollectionGetParams) SetContainerType(containerType *string) {
+	o.ContainerType = containerType
 }
 
-// WithControlStandardQueryParameter adds the controlStandard to the disk collection get params
-func (o *DiskCollectionGetParams) WithControlStandardQueryParameter(controlStandard *string) *DiskCollectionGetParams {
-	o.SetControlStandardQueryParameter(controlStandard)
+// WithControlStandard adds the controlStandard to the disk collection get params
+func (o *DiskCollectionGetParams) WithControlStandard(controlStandard *string) *DiskCollectionGetParams {
+	o.SetControlStandard(controlStandard)
 	return o
 }
 
-// SetControlStandardQueryParameter adds the controlStandard to the disk collection get params
-func (o *DiskCollectionGetParams) SetControlStandardQueryParameter(controlStandard *string) {
-	o.ControlStandardQueryParameter = controlStandard
+// SetControlStandard adds the controlStandard to the disk collection get params
+func (o *DiskCollectionGetParams) SetControlStandard(controlStandard *string) {
+	o.ControlStandard = controlStandard
 }
 
-// WithDrNodeNameQueryParameter adds the drNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) WithDrNodeNameQueryParameter(drNodeName *string) *DiskCollectionGetParams {
-	o.SetDrNodeNameQueryParameter(drNodeName)
+// WithDrNodeName adds the drNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) WithDrNodeName(drNodeName *string) *DiskCollectionGetParams {
+	o.SetDrNodeName(drNodeName)
 	return o
 }
 
-// SetDrNodeNameQueryParameter adds the drNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) SetDrNodeNameQueryParameter(drNodeName *string) {
-	o.DrNodeNameQueryParameter = drNodeName
+// SetDrNodeName adds the drNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) SetDrNodeName(drNodeName *string) {
+	o.DrNodeName = drNodeName
 }
 
-// WithDrNodeUUIDQueryParameter adds the drNodeUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithDrNodeUUIDQueryParameter(drNodeUUID *string) *DiskCollectionGetParams {
-	o.SetDrNodeUUIDQueryParameter(drNodeUUID)
+// WithDrNodeUUID adds the drNodeUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithDrNodeUUID(drNodeUUID *string) *DiskCollectionGetParams {
+	o.SetDrNodeUUID(drNodeUUID)
 	return o
 }
 
-// SetDrNodeUUIDQueryParameter adds the drNodeUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetDrNodeUUIDQueryParameter(drNodeUUID *string) {
-	o.DrNodeUUIDQueryParameter = drNodeUUID
+// SetDrNodeUUID adds the drNodeUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetDrNodeUUID(drNodeUUID *string) {
+	o.DrNodeUUID = drNodeUUID
 }
 
-// WithDrawerIDQueryParameter adds the drawerID to the disk collection get params
-func (o *DiskCollectionGetParams) WithDrawerIDQueryParameter(drawerID *int64) *DiskCollectionGetParams {
-	o.SetDrawerIDQueryParameter(drawerID)
+// WithDrawerID adds the drawerID to the disk collection get params
+func (o *DiskCollectionGetParams) WithDrawerID(drawerID *int64) *DiskCollectionGetParams {
+	o.SetDrawerID(drawerID)
 	return o
 }
 
-// SetDrawerIDQueryParameter adds the drawerId to the disk collection get params
-func (o *DiskCollectionGetParams) SetDrawerIDQueryParameter(drawerID *int64) {
-	o.DrawerIDQueryParameter = drawerID
+// SetDrawerID adds the drawerId to the disk collection get params
+func (o *DiskCollectionGetParams) SetDrawerID(drawerID *int64) {
+	o.DrawerID = drawerID
 }
 
-// WithDrawerSlotQueryParameter adds the drawerSlot to the disk collection get params
-func (o *DiskCollectionGetParams) WithDrawerSlotQueryParameter(drawerSlot *int64) *DiskCollectionGetParams {
-	o.SetDrawerSlotQueryParameter(drawerSlot)
+// WithDrawerSlot adds the drawerSlot to the disk collection get params
+func (o *DiskCollectionGetParams) WithDrawerSlot(drawerSlot *int64) *DiskCollectionGetParams {
+	o.SetDrawerSlot(drawerSlot)
 	return o
 }
 
-// SetDrawerSlotQueryParameter adds the drawerSlot to the disk collection get params
-func (o *DiskCollectionGetParams) SetDrawerSlotQueryParameter(drawerSlot *int64) {
-	o.DrawerSlotQueryParameter = drawerSlot
+// SetDrawerSlot adds the drawerSlot to the disk collection get params
+func (o *DiskCollectionGetParams) SetDrawerSlot(drawerSlot *int64) {
+	o.DrawerSlot = drawerSlot
 }
 
-// WithEffectiveTypeQueryParameter adds the effectiveType to the disk collection get params
-func (o *DiskCollectionGetParams) WithEffectiveTypeQueryParameter(effectiveType *string) *DiskCollectionGetParams {
-	o.SetEffectiveTypeQueryParameter(effectiveType)
+// WithEffectiveType adds the effectiveType to the disk collection get params
+func (o *DiskCollectionGetParams) WithEffectiveType(effectiveType *string) *DiskCollectionGetParams {
+	o.SetEffectiveType(effectiveType)
 	return o
 }
 
-// SetEffectiveTypeQueryParameter adds the effectiveType to the disk collection get params
-func (o *DiskCollectionGetParams) SetEffectiveTypeQueryParameter(effectiveType *string) {
-	o.EffectiveTypeQueryParameter = effectiveType
+// SetEffectiveType adds the effectiveType to the disk collection get params
+func (o *DiskCollectionGetParams) SetEffectiveType(effectiveType *string) {
+	o.EffectiveType = effectiveType
 }
 
-// WithErrorReasonArgumentsCodeQueryParameter adds the errorReasonArgumentsCode to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode *string) *DiskCollectionGetParams {
-	o.SetErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode)
+// WithErrorReasonArgumentsCode adds the errorReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonArgumentsCode(errorReasonArgumentsCode *string) *DiskCollectionGetParams {
+	o.SetErrorReasonArgumentsCode(errorReasonArgumentsCode)
 	return o
 }
 
-// SetErrorReasonArgumentsCodeQueryParameter adds the errorReasonArgumentsCode to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode *string) {
-	o.ErrorReasonArgumentsCodeQueryParameter = errorReasonArgumentsCode
+// SetErrorReasonArgumentsCode adds the errorReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonArgumentsCode(errorReasonArgumentsCode *string) {
+	o.ErrorReasonArgumentsCode = errorReasonArgumentsCode
 }
 
-// WithErrorReasonArgumentsMessageQueryParameter adds the errorReasonArgumentsMessage to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage *string) *DiskCollectionGetParams {
-	o.SetErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage)
+// WithErrorReasonArgumentsMessage adds the errorReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonArgumentsMessage(errorReasonArgumentsMessage *string) *DiskCollectionGetParams {
+	o.SetErrorReasonArgumentsMessage(errorReasonArgumentsMessage)
 	return o
 }
 
-// SetErrorReasonArgumentsMessageQueryParameter adds the errorReasonArgumentsMessage to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage *string) {
-	o.ErrorReasonArgumentsMessageQueryParameter = errorReasonArgumentsMessage
+// SetErrorReasonArgumentsMessage adds the errorReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonArgumentsMessage(errorReasonArgumentsMessage *string) {
+	o.ErrorReasonArgumentsMessage = errorReasonArgumentsMessage
 }
 
-// WithErrorReasonCodeQueryParameter adds the errorReasonCode to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonCodeQueryParameter(errorReasonCode *string) *DiskCollectionGetParams {
-	o.SetErrorReasonCodeQueryParameter(errorReasonCode)
+// WithErrorReasonCode adds the errorReasonCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonCode(errorReasonCode *string) *DiskCollectionGetParams {
+	o.SetErrorReasonCode(errorReasonCode)
 	return o
 }
 
-// SetErrorReasonCodeQueryParameter adds the errorReasonCode to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonCodeQueryParameter(errorReasonCode *string) {
-	o.ErrorReasonCodeQueryParameter = errorReasonCode
+// SetErrorReasonCode adds the errorReasonCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonCode(errorReasonCode *string) {
+	o.ErrorReasonCode = errorReasonCode
 }
 
-// WithErrorReasonMessageQueryParameter adds the errorReasonMessage to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonMessageQueryParameter(errorReasonMessage *string) *DiskCollectionGetParams {
-	o.SetErrorReasonMessageQueryParameter(errorReasonMessage)
+// WithErrorReasonMessage adds the errorReasonMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonMessage(errorReasonMessage *string) *DiskCollectionGetParams {
+	o.SetErrorReasonMessage(errorReasonMessage)
 	return o
 }
 
-// SetErrorReasonMessageQueryParameter adds the errorReasonMessage to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonMessageQueryParameter(errorReasonMessage *string) {
-	o.ErrorReasonMessageQueryParameter = errorReasonMessage
+// SetErrorReasonMessage adds the errorReasonMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonMessage(errorReasonMessage *string) {
+	o.ErrorReasonMessage = errorReasonMessage
 }
 
-// WithErrorReasonTargetQueryParameter adds the errorReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorReasonTargetQueryParameter(errorReasonTarget *string) *DiskCollectionGetParams {
-	o.SetErrorReasonTargetQueryParameter(errorReasonTarget)
+// WithErrorReasonTarget adds the errorReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonTarget(errorReasonTarget *string) *DiskCollectionGetParams {
+	o.SetErrorReasonTarget(errorReasonTarget)
 	return o
 }
 
-// SetErrorReasonTargetQueryParameter adds the errorReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorReasonTargetQueryParameter(errorReasonTarget *string) {
-	o.ErrorReasonTargetQueryParameter = errorReasonTarget
+// SetErrorReasonTarget adds the errorReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonTarget(errorReasonTarget *string) {
+	o.ErrorReasonTarget = errorReasonTarget
 }
 
-// WithErrorTypeQueryParameter adds the errorType to the disk collection get params
-func (o *DiskCollectionGetParams) WithErrorTypeQueryParameter(errorType *string) *DiskCollectionGetParams {
-	o.SetErrorTypeQueryParameter(errorType)
+// WithErrorType adds the errorType to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorType(errorType *string) *DiskCollectionGetParams {
+	o.SetErrorType(errorType)
 	return o
 }
 
-// SetErrorTypeQueryParameter adds the errorType to the disk collection get params
-func (o *DiskCollectionGetParams) SetErrorTypeQueryParameter(errorType *string) {
-	o.ErrorTypeQueryParameter = errorType
+// SetErrorType adds the errorType to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorType(errorType *string) {
+	o.ErrorType = errorType
 }
 
-// WithFieldsQueryParameter adds the fields to the disk collection get params
-func (o *DiskCollectionGetParams) WithFieldsQueryParameter(fields []string) *DiskCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the disk collection get params
+func (o *DiskCollectionGetParams) WithFields(fields []string) *DiskCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the disk collection get params
-func (o *DiskCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the disk collection get params
+func (o *DiskCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFipsCertifiedQueryParameter adds the fipsCertified to the disk collection get params
-func (o *DiskCollectionGetParams) WithFipsCertifiedQueryParameter(fipsCertified *bool) *DiskCollectionGetParams {
-	o.SetFipsCertifiedQueryParameter(fipsCertified)
+// WithFipsCertified adds the fipsCertified to the disk collection get params
+func (o *DiskCollectionGetParams) WithFipsCertified(fipsCertified *bool) *DiskCollectionGetParams {
+	o.SetFipsCertified(fipsCertified)
 	return o
 }
 
-// SetFipsCertifiedQueryParameter adds the fipsCertified to the disk collection get params
-func (o *DiskCollectionGetParams) SetFipsCertifiedQueryParameter(fipsCertified *bool) {
-	o.FipsCertifiedQueryParameter = fipsCertified
+// SetFipsCertified adds the fipsCertified to the disk collection get params
+func (o *DiskCollectionGetParams) SetFipsCertified(fipsCertified *bool) {
+	o.FipsCertified = fipsCertified
 }
 
-// WithFirmwareVersionQueryParameter adds the firmwareVersion to the disk collection get params
-func (o *DiskCollectionGetParams) WithFirmwareVersionQueryParameter(firmwareVersion *string) *DiskCollectionGetParams {
-	o.SetFirmwareVersionQueryParameter(firmwareVersion)
+// WithFirmwareVersion adds the firmwareVersion to the disk collection get params
+func (o *DiskCollectionGetParams) WithFirmwareVersion(firmwareVersion *string) *DiskCollectionGetParams {
+	o.SetFirmwareVersion(firmwareVersion)
 	return o
 }
 
-// SetFirmwareVersionQueryParameter adds the firmwareVersion to the disk collection get params
-func (o *DiskCollectionGetParams) SetFirmwareVersionQueryParameter(firmwareVersion *string) {
-	o.FirmwareVersionQueryParameter = firmwareVersion
+// SetFirmwareVersion adds the firmwareVersion to the disk collection get params
+func (o *DiskCollectionGetParams) SetFirmwareVersion(firmwareVersion *string) {
+	o.FirmwareVersion = firmwareVersion
 }
 
-// WithHomeNodeNameQueryParameter adds the homeNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) WithHomeNodeNameQueryParameter(homeNodeName *string) *DiskCollectionGetParams {
-	o.SetHomeNodeNameQueryParameter(homeNodeName)
+// WithHomeNodeName adds the homeNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) WithHomeNodeName(homeNodeName *string) *DiskCollectionGetParams {
+	o.SetHomeNodeName(homeNodeName)
 	return o
 }
 
-// SetHomeNodeNameQueryParameter adds the homeNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) SetHomeNodeNameQueryParameter(homeNodeName *string) {
-	o.HomeNodeNameQueryParameter = homeNodeName
+// SetHomeNodeName adds the homeNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) SetHomeNodeName(homeNodeName *string) {
+	o.HomeNodeName = homeNodeName
 }
 
-// WithHomeNodeUUIDQueryParameter adds the homeNodeUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithHomeNodeUUIDQueryParameter(homeNodeUUID *string) *DiskCollectionGetParams {
-	o.SetHomeNodeUUIDQueryParameter(homeNodeUUID)
+// WithHomeNodeUUID adds the homeNodeUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithHomeNodeUUID(homeNodeUUID *string) *DiskCollectionGetParams {
+	o.SetHomeNodeUUID(homeNodeUUID)
 	return o
 }
 
-// SetHomeNodeUUIDQueryParameter adds the homeNodeUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetHomeNodeUUIDQueryParameter(homeNodeUUID *string) {
-	o.HomeNodeUUIDQueryParameter = homeNodeUUID
+// SetHomeNodeUUID adds the homeNodeUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetHomeNodeUUID(homeNodeUUID *string) {
+	o.HomeNodeUUID = homeNodeUUID
 }
 
-// WithKeyIDDataQueryParameter adds the keyIDData to the disk collection get params
-func (o *DiskCollectionGetParams) WithKeyIDDataQueryParameter(keyIDData *string) *DiskCollectionGetParams {
-	o.SetKeyIDDataQueryParameter(keyIDData)
+// WithKeyIDData adds the keyIDData to the disk collection get params
+func (o *DiskCollectionGetParams) WithKeyIDData(keyIDData *string) *DiskCollectionGetParams {
+	o.SetKeyIDData(keyIDData)
 	return o
 }
 
-// SetKeyIDDataQueryParameter adds the keyIdData to the disk collection get params
-func (o *DiskCollectionGetParams) SetKeyIDDataQueryParameter(keyIDData *string) {
-	o.KeyIDDataQueryParameter = keyIDData
+// SetKeyIDData adds the keyIdData to the disk collection get params
+func (o *DiskCollectionGetParams) SetKeyIDData(keyIDData *string) {
+	o.KeyIDData = keyIDData
 }
 
-// WithKeyIDFipsQueryParameter adds the keyIDFips to the disk collection get params
-func (o *DiskCollectionGetParams) WithKeyIDFipsQueryParameter(keyIDFips *string) *DiskCollectionGetParams {
-	o.SetKeyIDFipsQueryParameter(keyIDFips)
+// WithKeyIDFips adds the keyIDFips to the disk collection get params
+func (o *DiskCollectionGetParams) WithKeyIDFips(keyIDFips *string) *DiskCollectionGetParams {
+	o.SetKeyIDFips(keyIDFips)
 	return o
 }
 
-// SetKeyIDFipsQueryParameter adds the keyIdFips to the disk collection get params
-func (o *DiskCollectionGetParams) SetKeyIDFipsQueryParameter(keyIDFips *string) {
-	o.KeyIDFipsQueryParameter = keyIDFips
+// SetKeyIDFips adds the keyIdFips to the disk collection get params
+func (o *DiskCollectionGetParams) SetKeyIDFips(keyIDFips *string) {
+	o.KeyIDFips = keyIDFips
 }
 
-// WithLocalQueryParameter adds the local to the disk collection get params
-func (o *DiskCollectionGetParams) WithLocalQueryParameter(local *bool) *DiskCollectionGetParams {
-	o.SetLocalQueryParameter(local)
+// WithLocal adds the local to the disk collection get params
+func (o *DiskCollectionGetParams) WithLocal(local *bool) *DiskCollectionGetParams {
+	o.SetLocal(local)
 	return o
 }
 
-// SetLocalQueryParameter adds the local to the disk collection get params
-func (o *DiskCollectionGetParams) SetLocalQueryParameter(local *bool) {
-	o.LocalQueryParameter = local
+// SetLocal adds the local to the disk collection get params
+func (o *DiskCollectionGetParams) SetLocal(local *bool) {
+	o.Local = local
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the disk collection get params
-func (o *DiskCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *DiskCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the disk collection get params
+func (o *DiskCollectionGetParams) WithMaxRecords(maxRecords *int64) *DiskCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the disk collection get params
-func (o *DiskCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the disk collection get params
+func (o *DiskCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithModelQueryParameter adds the model to the disk collection get params
-func (o *DiskCollectionGetParams) WithModelQueryParameter(model *string) *DiskCollectionGetParams {
-	o.SetModelQueryParameter(model)
+// WithModel adds the model to the disk collection get params
+func (o *DiskCollectionGetParams) WithModel(model *string) *DiskCollectionGetParams {
+	o.SetModel(model)
 	return o
 }
 
-// SetModelQueryParameter adds the model to the disk collection get params
-func (o *DiskCollectionGetParams) SetModelQueryParameter(model *string) {
-	o.ModelQueryParameter = model
+// SetModel adds the model to the disk collection get params
+func (o *DiskCollectionGetParams) SetModel(model *string) {
+	o.Model = model
 }
 
-// WithNameQueryParameter adds the name to the disk collection get params
-func (o *DiskCollectionGetParams) WithNameQueryParameter(name *string) *DiskCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the disk collection get params
+func (o *DiskCollectionGetParams) WithName(name *string) *DiskCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the disk collection get params
-func (o *DiskCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the disk collection get params
+func (o *DiskCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the disk collection get params
-func (o *DiskCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *DiskCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the disk collection get params
+func (o *DiskCollectionGetParams) WithNodeName(nodeName *string) *DiskCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the disk collection get params
-func (o *DiskCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the disk collection get params
+func (o *DiskCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *DiskCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithNodeUUID(nodeUUID *string) *DiskCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the disk collection get params
-func (o *DiskCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *DiskCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the disk collection get params
+func (o *DiskCollectionGetParams) WithOrderBy(orderBy []string) *DiskCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the disk collection get params
-func (o *DiskCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the disk collection get params
+func (o *DiskCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOutagePersistentlyFailedQueryParameter adds the outagePersistentlyFailed to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutagePersistentlyFailedQueryParameter(outagePersistentlyFailed *bool) *DiskCollectionGetParams {
-	o.SetOutagePersistentlyFailedQueryParameter(outagePersistentlyFailed)
+// WithOutagePersistentlyFailed adds the outagePersistentlyFailed to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutagePersistentlyFailed(outagePersistentlyFailed *bool) *DiskCollectionGetParams {
+	o.SetOutagePersistentlyFailed(outagePersistentlyFailed)
 	return o
 }
 
-// SetOutagePersistentlyFailedQueryParameter adds the outagePersistentlyFailed to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutagePersistentlyFailedQueryParameter(outagePersistentlyFailed *bool) {
-	o.OutagePersistentlyFailedQueryParameter = outagePersistentlyFailed
+// SetOutagePersistentlyFailed adds the outagePersistentlyFailed to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutagePersistentlyFailed(outagePersistentlyFailed *bool) {
+	o.OutagePersistentlyFailed = outagePersistentlyFailed
 }
 
-// WithOutageReasonArgumentsCodeQueryParameter adds the outageReasonArgumentsCode to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode *string) *DiskCollectionGetParams {
-	o.SetOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode)
+// WithOutageReasonArgumentsCode adds the outageReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonArgumentsCode(outageReasonArgumentsCode *string) *DiskCollectionGetParams {
+	o.SetOutageReasonArgumentsCode(outageReasonArgumentsCode)
 	return o
 }
 
-// SetOutageReasonArgumentsCodeQueryParameter adds the outageReasonArgumentsCode to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode *string) {
-	o.OutageReasonArgumentsCodeQueryParameter = outageReasonArgumentsCode
+// SetOutageReasonArgumentsCode adds the outageReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonArgumentsCode(outageReasonArgumentsCode *string) {
+	o.OutageReasonArgumentsCode = outageReasonArgumentsCode
 }
 
-// WithOutageReasonArgumentsMessageQueryParameter adds the outageReasonArgumentsMessage to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage *string) *DiskCollectionGetParams {
-	o.SetOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage)
+// WithOutageReasonArgumentsMessage adds the outageReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonArgumentsMessage(outageReasonArgumentsMessage *string) *DiskCollectionGetParams {
+	o.SetOutageReasonArgumentsMessage(outageReasonArgumentsMessage)
 	return o
 }
 
-// SetOutageReasonArgumentsMessageQueryParameter adds the outageReasonArgumentsMessage to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage *string) {
-	o.OutageReasonArgumentsMessageQueryParameter = outageReasonArgumentsMessage
+// SetOutageReasonArgumentsMessage adds the outageReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonArgumentsMessage(outageReasonArgumentsMessage *string) {
+	o.OutageReasonArgumentsMessage = outageReasonArgumentsMessage
 }
 
-// WithOutageReasonCodeQueryParameter adds the outageReasonCode to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonCodeQueryParameter(outageReasonCode *string) *DiskCollectionGetParams {
-	o.SetOutageReasonCodeQueryParameter(outageReasonCode)
+// WithOutageReasonCode adds the outageReasonCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonCode(outageReasonCode *string) *DiskCollectionGetParams {
+	o.SetOutageReasonCode(outageReasonCode)
 	return o
 }
 
-// SetOutageReasonCodeQueryParameter adds the outageReasonCode to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonCodeQueryParameter(outageReasonCode *string) {
-	o.OutageReasonCodeQueryParameter = outageReasonCode
+// SetOutageReasonCode adds the outageReasonCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonCode(outageReasonCode *string) {
+	o.OutageReasonCode = outageReasonCode
 }
 
-// WithOutageReasonMessageQueryParameter adds the outageReasonMessage to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonMessageQueryParameter(outageReasonMessage *string) *DiskCollectionGetParams {
-	o.SetOutageReasonMessageQueryParameter(outageReasonMessage)
+// WithOutageReasonMessage adds the outageReasonMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonMessage(outageReasonMessage *string) *DiskCollectionGetParams {
+	o.SetOutageReasonMessage(outageReasonMessage)
 	return o
 }
 
-// SetOutageReasonMessageQueryParameter adds the outageReasonMessage to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonMessageQueryParameter(outageReasonMessage *string) {
-	o.OutageReasonMessageQueryParameter = outageReasonMessage
+// SetOutageReasonMessage adds the outageReasonMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonMessage(outageReasonMessage *string) {
+	o.OutageReasonMessage = outageReasonMessage
 }
 
-// WithOutageReasonTargetQueryParameter adds the outageReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) WithOutageReasonTargetQueryParameter(outageReasonTarget *string) *DiskCollectionGetParams {
-	o.SetOutageReasonTargetQueryParameter(outageReasonTarget)
+// WithOutageReasonTarget adds the outageReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonTarget(outageReasonTarget *string) *DiskCollectionGetParams {
+	o.SetOutageReasonTarget(outageReasonTarget)
 	return o
 }
 
-// SetOutageReasonTargetQueryParameter adds the outageReasonTarget to the disk collection get params
-func (o *DiskCollectionGetParams) SetOutageReasonTargetQueryParameter(outageReasonTarget *string) {
-	o.OutageReasonTargetQueryParameter = outageReasonTarget
+// SetOutageReasonTarget adds the outageReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonTarget(outageReasonTarget *string) {
+	o.OutageReasonTarget = outageReasonTarget
 }
 
-// WithOverallSecurityQueryParameter adds the overallSecurity to the disk collection get params
-func (o *DiskCollectionGetParams) WithOverallSecurityQueryParameter(overallSecurity *string) *DiskCollectionGetParams {
-	o.SetOverallSecurityQueryParameter(overallSecurity)
+// WithOverallSecurity adds the overallSecurity to the disk collection get params
+func (o *DiskCollectionGetParams) WithOverallSecurity(overallSecurity *string) *DiskCollectionGetParams {
+	o.SetOverallSecurity(overallSecurity)
 	return o
 }
 
-// SetOverallSecurityQueryParameter adds the overallSecurity to the disk collection get params
-func (o *DiskCollectionGetParams) SetOverallSecurityQueryParameter(overallSecurity *string) {
-	o.OverallSecurityQueryParameter = overallSecurity
+// SetOverallSecurity adds the overallSecurity to the disk collection get params
+func (o *DiskCollectionGetParams) SetOverallSecurity(overallSecurity *string) {
+	o.OverallSecurity = overallSecurity
 }
 
-// WithPathsInitiatorQueryParameter adds the pathsInitiator to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsInitiatorQueryParameter(pathsInitiator *string) *DiskCollectionGetParams {
-	o.SetPathsInitiatorQueryParameter(pathsInitiator)
+// WithPathsInitiator adds the pathsInitiator to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsInitiator(pathsInitiator *string) *DiskCollectionGetParams {
+	o.SetPathsInitiator(pathsInitiator)
 	return o
 }
 
-// SetPathsInitiatorQueryParameter adds the pathsInitiator to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsInitiatorQueryParameter(pathsInitiator *string) {
-	o.PathsInitiatorQueryParameter = pathsInitiator
+// SetPathsInitiator adds the pathsInitiator to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsInitiator(pathsInitiator *string) {
+	o.PathsInitiator = pathsInitiator
 }
 
-// WithPathsNodeNameQueryParameter adds the pathsNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsNodeNameQueryParameter(pathsNodeName *string) *DiskCollectionGetParams {
-	o.SetPathsNodeNameQueryParameter(pathsNodeName)
+// WithPathsNodeName adds the pathsNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsNodeName(pathsNodeName *string) *DiskCollectionGetParams {
+	o.SetPathsNodeName(pathsNodeName)
 	return o
 }
 
-// SetPathsNodeNameQueryParameter adds the pathsNodeName to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsNodeNameQueryParameter(pathsNodeName *string) {
-	o.PathsNodeNameQueryParameter = pathsNodeName
+// SetPathsNodeName adds the pathsNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsNodeName(pathsNodeName *string) {
+	o.PathsNodeName = pathsNodeName
 }
 
-// WithPathsNodeUUIDQueryParameter adds the pathsNodeUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsNodeUUIDQueryParameter(pathsNodeUUID *string) *DiskCollectionGetParams {
-	o.SetPathsNodeUUIDQueryParameter(pathsNodeUUID)
+// WithPathsNodeUUID adds the pathsNodeUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsNodeUUID(pathsNodeUUID *string) *DiskCollectionGetParams {
+	o.SetPathsNodeUUID(pathsNodeUUID)
 	return o
 }
 
-// SetPathsNodeUUIDQueryParameter adds the pathsNodeUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsNodeUUIDQueryParameter(pathsNodeUUID *string) {
-	o.PathsNodeUUIDQueryParameter = pathsNodeUUID
+// SetPathsNodeUUID adds the pathsNodeUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsNodeUUID(pathsNodeUUID *string) {
+	o.PathsNodeUUID = pathsNodeUUID
 }
 
-// WithPathsPortNameQueryParameter adds the pathsPortName to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsPortNameQueryParameter(pathsPortName *string) *DiskCollectionGetParams {
-	o.SetPathsPortNameQueryParameter(pathsPortName)
+// WithPathsPortName adds the pathsPortName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsPortName(pathsPortName *string) *DiskCollectionGetParams {
+	o.SetPathsPortName(pathsPortName)
 	return o
 }
 
-// SetPathsPortNameQueryParameter adds the pathsPortName to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsPortNameQueryParameter(pathsPortName *string) {
-	o.PathsPortNameQueryParameter = pathsPortName
+// SetPathsPortName adds the pathsPortName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsPortName(pathsPortName *string) {
+	o.PathsPortName = pathsPortName
 }
 
-// WithPathsPortTypeQueryParameter adds the pathsPortType to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsPortTypeQueryParameter(pathsPortType *string) *DiskCollectionGetParams {
-	o.SetPathsPortTypeQueryParameter(pathsPortType)
+// WithPathsPortType adds the pathsPortType to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsPortType(pathsPortType *string) *DiskCollectionGetParams {
+	o.SetPathsPortType(pathsPortType)
 	return o
 }
 
-// SetPathsPortTypeQueryParameter adds the pathsPortType to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsPortTypeQueryParameter(pathsPortType *string) {
-	o.PathsPortTypeQueryParameter = pathsPortType
+// SetPathsPortType adds the pathsPortType to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsPortType(pathsPortType *string) {
+	o.PathsPortType = pathsPortType
 }
 
-// WithPathsVMdiskHypervisorFileNameQueryParameter adds the pathsVmdiskHypervisorFileName to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName *string) *DiskCollectionGetParams {
-	o.SetPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName)
+// WithPathsVmdiskHypervisorFileName adds the pathsVmdiskHypervisorFileName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsVmdiskHypervisorFileName(pathsVmdiskHypervisorFileName *string) *DiskCollectionGetParams {
+	o.SetPathsVmdiskHypervisorFileName(pathsVmdiskHypervisorFileName)
 	return o
 }
 
-// SetPathsVMdiskHypervisorFileNameQueryParameter adds the pathsVmdiskHypervisorFileName to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName *string) {
-	o.PathsVMdiskHypervisorFileNameQueryParameter = pathsVmdiskHypervisorFileName
+// SetPathsVmdiskHypervisorFileName adds the pathsVmdiskHypervisorFileName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsVmdiskHypervisorFileName(pathsVmdiskHypervisorFileName *string) {
+	o.PathsVmdiskHypervisorFileName = pathsVmdiskHypervisorFileName
 }
 
-// WithPathsWwnnQueryParameter adds the pathsWwnn to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsWwnnQueryParameter(pathsWwnn *string) *DiskCollectionGetParams {
-	o.SetPathsWwnnQueryParameter(pathsWwnn)
+// WithPathsWwnn adds the pathsWwnn to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsWwnn(pathsWwnn *string) *DiskCollectionGetParams {
+	o.SetPathsWwnn(pathsWwnn)
 	return o
 }
 
-// SetPathsWwnnQueryParameter adds the pathsWwnn to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsWwnnQueryParameter(pathsWwnn *string) {
-	o.PathsWwnnQueryParameter = pathsWwnn
+// SetPathsWwnn adds the pathsWwnn to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsWwnn(pathsWwnn *string) {
+	o.PathsWwnn = pathsWwnn
 }
 
-// WithPathsWwpnQueryParameter adds the pathsWwpn to the disk collection get params
-func (o *DiskCollectionGetParams) WithPathsWwpnQueryParameter(pathsWwpn *string) *DiskCollectionGetParams {
-	o.SetPathsWwpnQueryParameter(pathsWwpn)
+// WithPathsWwpn adds the pathsWwpn to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsWwpn(pathsWwpn *string) *DiskCollectionGetParams {
+	o.SetPathsWwpn(pathsWwpn)
 	return o
 }
 
-// SetPathsWwpnQueryParameter adds the pathsWwpn to the disk collection get params
-func (o *DiskCollectionGetParams) SetPathsWwpnQueryParameter(pathsWwpn *string) {
-	o.PathsWwpnQueryParameter = pathsWwpn
+// SetPathsWwpn adds the pathsWwpn to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsWwpn(pathsWwpn *string) {
+	o.PathsWwpn = pathsWwpn
 }
 
-// WithPhysicalSizeQueryParameter adds the physicalSize to the disk collection get params
-func (o *DiskCollectionGetParams) WithPhysicalSizeQueryParameter(physicalSize *int64) *DiskCollectionGetParams {
-	o.SetPhysicalSizeQueryParameter(physicalSize)
+// WithPhysicalSize adds the physicalSize to the disk collection get params
+func (o *DiskCollectionGetParams) WithPhysicalSize(physicalSize *int64) *DiskCollectionGetParams {
+	o.SetPhysicalSize(physicalSize)
 	return o
 }
 
-// SetPhysicalSizeQueryParameter adds the physicalSize to the disk collection get params
-func (o *DiskCollectionGetParams) SetPhysicalSizeQueryParameter(physicalSize *int64) {
-	o.PhysicalSizeQueryParameter = physicalSize
+// SetPhysicalSize adds the physicalSize to the disk collection get params
+func (o *DiskCollectionGetParams) SetPhysicalSize(physicalSize *int64) {
+	o.PhysicalSize = physicalSize
 }
 
-// WithPoolQueryParameter adds the pool to the disk collection get params
-func (o *DiskCollectionGetParams) WithPoolQueryParameter(pool *string) *DiskCollectionGetParams {
-	o.SetPoolQueryParameter(pool)
+// WithPool adds the pool to the disk collection get params
+func (o *DiskCollectionGetParams) WithPool(pool *string) *DiskCollectionGetParams {
+	o.SetPool(pool)
 	return o
 }
 
-// SetPoolQueryParameter adds the pool to the disk collection get params
-func (o *DiskCollectionGetParams) SetPoolQueryParameter(pool *string) {
-	o.PoolQueryParameter = pool
+// SetPool adds the pool to the disk collection get params
+func (o *DiskCollectionGetParams) SetPool(pool *string) {
+	o.Pool = pool
 }
 
-// WithProtectionModeQueryParameter adds the protectionMode to the disk collection get params
-func (o *DiskCollectionGetParams) WithProtectionModeQueryParameter(protectionMode *string) *DiskCollectionGetParams {
-	o.SetProtectionModeQueryParameter(protectionMode)
+// WithProtectionMode adds the protectionMode to the disk collection get params
+func (o *DiskCollectionGetParams) WithProtectionMode(protectionMode *string) *DiskCollectionGetParams {
+	o.SetProtectionMode(protectionMode)
 	return o
 }
 
-// SetProtectionModeQueryParameter adds the protectionMode to the disk collection get params
-func (o *DiskCollectionGetParams) SetProtectionModeQueryParameter(protectionMode *string) {
-	o.ProtectionModeQueryParameter = protectionMode
+// SetProtectionMode adds the protectionMode to the disk collection get params
+func (o *DiskCollectionGetParams) SetProtectionMode(protectionMode *string) {
+	o.ProtectionMode = protectionMode
 }
 
-// WithRatedLifeUsedPercentQueryParameter adds the ratedLifeUsedPercent to the disk collection get params
-func (o *DiskCollectionGetParams) WithRatedLifeUsedPercentQueryParameter(ratedLifeUsedPercent *int64) *DiskCollectionGetParams {
-	o.SetRatedLifeUsedPercentQueryParameter(ratedLifeUsedPercent)
+// WithRatedLifeUsedPercent adds the ratedLifeUsedPercent to the disk collection get params
+func (o *DiskCollectionGetParams) WithRatedLifeUsedPercent(ratedLifeUsedPercent *int64) *DiskCollectionGetParams {
+	o.SetRatedLifeUsedPercent(ratedLifeUsedPercent)
 	return o
 }
 
-// SetRatedLifeUsedPercentQueryParameter adds the ratedLifeUsedPercent to the disk collection get params
-func (o *DiskCollectionGetParams) SetRatedLifeUsedPercentQueryParameter(ratedLifeUsedPercent *int64) {
-	o.RatedLifeUsedPercentQueryParameter = ratedLifeUsedPercent
+// SetRatedLifeUsedPercent adds the ratedLifeUsedPercent to the disk collection get params
+func (o *DiskCollectionGetParams) SetRatedLifeUsedPercent(ratedLifeUsedPercent *int64) {
+	o.RatedLifeUsedPercent = ratedLifeUsedPercent
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the disk collection get params
-func (o *DiskCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *DiskCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the disk collection get params
+func (o *DiskCollectionGetParams) WithReturnRecords(returnRecords *bool) *DiskCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the disk collection get params
-func (o *DiskCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the disk collection get params
+func (o *DiskCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the disk collection get params
-func (o *DiskCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *DiskCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the disk collection get params
+func (o *DiskCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *DiskCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the disk collection get params
-func (o *DiskCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the disk collection get params
+func (o *DiskCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithRightSizeSectorCountQueryParameter adds the rightSizeSectorCount to the disk collection get params
-func (o *DiskCollectionGetParams) WithRightSizeSectorCountQueryParameter(rightSizeSectorCount *int64) *DiskCollectionGetParams {
-	o.SetRightSizeSectorCountQueryParameter(rightSizeSectorCount)
+// WithRightSizeSectorCount adds the rightSizeSectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) WithRightSizeSectorCount(rightSizeSectorCount *int64) *DiskCollectionGetParams {
+	o.SetRightSizeSectorCount(rightSizeSectorCount)
 	return o
 }
 
-// SetRightSizeSectorCountQueryParameter adds the rightSizeSectorCount to the disk collection get params
-func (o *DiskCollectionGetParams) SetRightSizeSectorCountQueryParameter(rightSizeSectorCount *int64) {
-	o.RightSizeSectorCountQueryParameter = rightSizeSectorCount
+// SetRightSizeSectorCount adds the rightSizeSectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) SetRightSizeSectorCount(rightSizeSectorCount *int64) {
+	o.RightSizeSectorCount = rightSizeSectorCount
 }
 
-// WithRpmQueryParameter adds the rpm to the disk collection get params
-func (o *DiskCollectionGetParams) WithRpmQueryParameter(rpm *int64) *DiskCollectionGetParams {
-	o.SetRpmQueryParameter(rpm)
+// WithRpm adds the rpm to the disk collection get params
+func (o *DiskCollectionGetParams) WithRpm(rpm *int64) *DiskCollectionGetParams {
+	o.SetRpm(rpm)
 	return o
 }
 
-// SetRpmQueryParameter adds the rpm to the disk collection get params
-func (o *DiskCollectionGetParams) SetRpmQueryParameter(rpm *int64) {
-	o.RpmQueryParameter = rpm
+// SetRpm adds the rpm to the disk collection get params
+func (o *DiskCollectionGetParams) SetRpm(rpm *int64) {
+	o.Rpm = rpm
 }
 
-// WithSectorCountQueryParameter adds the sectorCount to the disk collection get params
-func (o *DiskCollectionGetParams) WithSectorCountQueryParameter(sectorCount *int64) *DiskCollectionGetParams {
-	o.SetSectorCountQueryParameter(sectorCount)
+// WithSectorCount adds the sectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) WithSectorCount(sectorCount *int64) *DiskCollectionGetParams {
+	o.SetSectorCount(sectorCount)
 	return o
 }
 
-// SetSectorCountQueryParameter adds the sectorCount to the disk collection get params
-func (o *DiskCollectionGetParams) SetSectorCountQueryParameter(sectorCount *int64) {
-	o.SectorCountQueryParameter = sectorCount
+// SetSectorCount adds the sectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) SetSectorCount(sectorCount *int64) {
+	o.SectorCount = sectorCount
 }
 
-// WithSelfEncryptingQueryParameter adds the selfEncrypting to the disk collection get params
-func (o *DiskCollectionGetParams) WithSelfEncryptingQueryParameter(selfEncrypting *bool) *DiskCollectionGetParams {
-	o.SetSelfEncryptingQueryParameter(selfEncrypting)
+// WithSelfEncrypting adds the selfEncrypting to the disk collection get params
+func (o *DiskCollectionGetParams) WithSelfEncrypting(selfEncrypting *bool) *DiskCollectionGetParams {
+	o.SetSelfEncrypting(selfEncrypting)
 	return o
 }
 
-// SetSelfEncryptingQueryParameter adds the selfEncrypting to the disk collection get params
-func (o *DiskCollectionGetParams) SetSelfEncryptingQueryParameter(selfEncrypting *bool) {
-	o.SelfEncryptingQueryParameter = selfEncrypting
+// SetSelfEncrypting adds the selfEncrypting to the disk collection get params
+func (o *DiskCollectionGetParams) SetSelfEncrypting(selfEncrypting *bool) {
+	o.SelfEncrypting = selfEncrypting
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the disk collection get params
-func (o *DiskCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *DiskCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the disk collection get params
+func (o *DiskCollectionGetParams) WithSerialNumber(serialNumber *string) *DiskCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the disk collection get params
-func (o *DiskCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the disk collection get params
+func (o *DiskCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithShelfUIDQueryParameter adds the shelfUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithShelfUIDQueryParameter(shelfUID *string) *DiskCollectionGetParams {
-	o.SetShelfUIDQueryParameter(shelfUID)
+// WithShelfUID adds the shelfUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithShelfUID(shelfUID *string) *DiskCollectionGetParams {
+	o.SetShelfUID(shelfUID)
 	return o
 }
 
-// SetShelfUIDQueryParameter adds the shelfUid to the disk collection get params
-func (o *DiskCollectionGetParams) SetShelfUIDQueryParameter(shelfUID *string) {
-	o.ShelfUIDQueryParameter = shelfUID
+// SetShelfUID adds the shelfUid to the disk collection get params
+func (o *DiskCollectionGetParams) SetShelfUID(shelfUID *string) {
+	o.ShelfUID = shelfUID
 }
 
-// WithStateQueryParameter adds the state to the disk collection get params
-func (o *DiskCollectionGetParams) WithStateQueryParameter(state *string) *DiskCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the disk collection get params
+func (o *DiskCollectionGetParams) WithState(state *string) *DiskCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the disk collection get params
-func (o *DiskCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the disk collection get params
+func (o *DiskCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatsAverageLatencyQueryParameter adds the statsAverageLatency to the disk collection get params
-func (o *DiskCollectionGetParams) WithStatsAverageLatencyQueryParameter(statsAverageLatency *int64) *DiskCollectionGetParams {
-	o.SetStatsAverageLatencyQueryParameter(statsAverageLatency)
+// WithStatsAverageLatency adds the statsAverageLatency to the disk collection get params
+func (o *DiskCollectionGetParams) WithStatsAverageLatency(statsAverageLatency *int64) *DiskCollectionGetParams {
+	o.SetStatsAverageLatency(statsAverageLatency)
 	return o
 }
 
-// SetStatsAverageLatencyQueryParameter adds the statsAverageLatency to the disk collection get params
-func (o *DiskCollectionGetParams) SetStatsAverageLatencyQueryParameter(statsAverageLatency *int64) {
-	o.StatsAverageLatencyQueryParameter = statsAverageLatency
+// SetStatsAverageLatency adds the statsAverageLatency to the disk collection get params
+func (o *DiskCollectionGetParams) SetStatsAverageLatency(statsAverageLatency *int64) {
+	o.StatsAverageLatency = statsAverageLatency
 }
 
-// WithStatsIopsTotalQueryParameter adds the statsIopsTotal to the disk collection get params
-func (o *DiskCollectionGetParams) WithStatsIopsTotalQueryParameter(statsIopsTotal *int64) *DiskCollectionGetParams {
-	o.SetStatsIopsTotalQueryParameter(statsIopsTotal)
+// WithStatsIopsTotal adds the statsIopsTotal to the disk collection get params
+func (o *DiskCollectionGetParams) WithStatsIopsTotal(statsIopsTotal *int64) *DiskCollectionGetParams {
+	o.SetStatsIopsTotal(statsIopsTotal)
 	return o
 }
 
-// SetStatsIopsTotalQueryParameter adds the statsIopsTotal to the disk collection get params
-func (o *DiskCollectionGetParams) SetStatsIopsTotalQueryParameter(statsIopsTotal *int64) {
-	o.StatsIopsTotalQueryParameter = statsIopsTotal
+// SetStatsIopsTotal adds the statsIopsTotal to the disk collection get params
+func (o *DiskCollectionGetParams) SetStatsIopsTotal(statsIopsTotal *int64) {
+	o.StatsIopsTotal = statsIopsTotal
 }
 
-// WithStatsPathErrorCountQueryParameter adds the statsPathErrorCount to the disk collection get params
-func (o *DiskCollectionGetParams) WithStatsPathErrorCountQueryParameter(statsPathErrorCount *int64) *DiskCollectionGetParams {
-	o.SetStatsPathErrorCountQueryParameter(statsPathErrorCount)
+// WithStatsPathErrorCount adds the statsPathErrorCount to the disk collection get params
+func (o *DiskCollectionGetParams) WithStatsPathErrorCount(statsPathErrorCount *int64) *DiskCollectionGetParams {
+	o.SetStatsPathErrorCount(statsPathErrorCount)
 	return o
 }
 
-// SetStatsPathErrorCountQueryParameter adds the statsPathErrorCount to the disk collection get params
-func (o *DiskCollectionGetParams) SetStatsPathErrorCountQueryParameter(statsPathErrorCount *int64) {
-	o.StatsPathErrorCountQueryParameter = statsPathErrorCount
+// SetStatsPathErrorCount adds the statsPathErrorCount to the disk collection get params
+func (o *DiskCollectionGetParams) SetStatsPathErrorCount(statsPathErrorCount *int64) {
+	o.StatsPathErrorCount = statsPathErrorCount
 }
 
-// WithStatsPowerOnHoursQueryParameter adds the statsPowerOnHours to the disk collection get params
-func (o *DiskCollectionGetParams) WithStatsPowerOnHoursQueryParameter(statsPowerOnHours *int64) *DiskCollectionGetParams {
-	o.SetStatsPowerOnHoursQueryParameter(statsPowerOnHours)
+// WithStatsPowerOnHours adds the statsPowerOnHours to the disk collection get params
+func (o *DiskCollectionGetParams) WithStatsPowerOnHours(statsPowerOnHours *int64) *DiskCollectionGetParams {
+	o.SetStatsPowerOnHours(statsPowerOnHours)
 	return o
 }
 
-// SetStatsPowerOnHoursQueryParameter adds the statsPowerOnHours to the disk collection get params
-func (o *DiskCollectionGetParams) SetStatsPowerOnHoursQueryParameter(statsPowerOnHours *int64) {
-	o.StatsPowerOnHoursQueryParameter = statsPowerOnHours
+// SetStatsPowerOnHours adds the statsPowerOnHours to the disk collection get params
+func (o *DiskCollectionGetParams) SetStatsPowerOnHours(statsPowerOnHours *int64) {
+	o.StatsPowerOnHours = statsPowerOnHours
 }
 
-// WithStatsThroughputQueryParameter adds the statsThroughput to the disk collection get params
-func (o *DiskCollectionGetParams) WithStatsThroughputQueryParameter(statsThroughput *int64) *DiskCollectionGetParams {
-	o.SetStatsThroughputQueryParameter(statsThroughput)
+// WithStatsThroughput adds the statsThroughput to the disk collection get params
+func (o *DiskCollectionGetParams) WithStatsThroughput(statsThroughput *int64) *DiskCollectionGetParams {
+	o.SetStatsThroughput(statsThroughput)
 	return o
 }
 
-// SetStatsThroughputQueryParameter adds the statsThroughput to the disk collection get params
-func (o *DiskCollectionGetParams) SetStatsThroughputQueryParameter(statsThroughput *int64) {
-	o.StatsThroughputQueryParameter = statsThroughput
+// SetStatsThroughput adds the statsThroughput to the disk collection get params
+func (o *DiskCollectionGetParams) SetStatsThroughput(statsThroughput *int64) {
+	o.StatsThroughput = statsThroughput
 }
 
-// WithStoragePoolNameQueryParameter adds the storagePoolName to the disk collection get params
-func (o *DiskCollectionGetParams) WithStoragePoolNameQueryParameter(storagePoolName *string) *DiskCollectionGetParams {
-	o.SetStoragePoolNameQueryParameter(storagePoolName)
+// WithStoragePoolName adds the storagePoolName to the disk collection get params
+func (o *DiskCollectionGetParams) WithStoragePoolName(storagePoolName *string) *DiskCollectionGetParams {
+	o.SetStoragePoolName(storagePoolName)
 	return o
 }
 
-// SetStoragePoolNameQueryParameter adds the storagePoolName to the disk collection get params
-func (o *DiskCollectionGetParams) SetStoragePoolNameQueryParameter(storagePoolName *string) {
-	o.StoragePoolNameQueryParameter = storagePoolName
+// SetStoragePoolName adds the storagePoolName to the disk collection get params
+func (o *DiskCollectionGetParams) SetStoragePoolName(storagePoolName *string) {
+	o.StoragePoolName = storagePoolName
 }
 
-// WithStoragePoolUUIDQueryParameter adds the storagePoolUUID to the disk collection get params
-func (o *DiskCollectionGetParams) WithStoragePoolUUIDQueryParameter(storagePoolUUID *string) *DiskCollectionGetParams {
-	o.SetStoragePoolUUIDQueryParameter(storagePoolUUID)
+// WithStoragePoolUUID adds the storagePoolUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithStoragePoolUUID(storagePoolUUID *string) *DiskCollectionGetParams {
+	o.SetStoragePoolUUID(storagePoolUUID)
 	return o
 }
 
-// SetStoragePoolUUIDQueryParameter adds the storagePoolUuid to the disk collection get params
-func (o *DiskCollectionGetParams) SetStoragePoolUUIDQueryParameter(storagePoolUUID *string) {
-	o.StoragePoolUUIDQueryParameter = storagePoolUUID
+// SetStoragePoolUUID adds the storagePoolUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetStoragePoolUUID(storagePoolUUID *string) {
+	o.StoragePoolUUID = storagePoolUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the disk collection get params
-func (o *DiskCollectionGetParams) WithTypeQueryParameter(typeVar *string) *DiskCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the disk collection get params
+func (o *DiskCollectionGetParams) WithType(typeVar *string) *DiskCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the disk collection get params
-func (o *DiskCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the disk collection get params
+func (o *DiskCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUIDQueryParameter adds the uid to the disk collection get params
-func (o *DiskCollectionGetParams) WithUIDQueryParameter(uid *string) *DiskCollectionGetParams {
-	o.SetUIDQueryParameter(uid)
+// WithUID adds the uid to the disk collection get params
+func (o *DiskCollectionGetParams) WithUID(uid *string) *DiskCollectionGetParams {
+	o.SetUID(uid)
 	return o
 }
 
-// SetUIDQueryParameter adds the uid to the disk collection get params
-func (o *DiskCollectionGetParams) SetUIDQueryParameter(uid *string) {
-	o.UIDQueryParameter = uid
+// SetUID adds the uid to the disk collection get params
+func (o *DiskCollectionGetParams) SetUID(uid *string) {
+	o.UID = uid
 }
 
-// WithUsableSizeQueryParameter adds the usableSize to the disk collection get params
-func (o *DiskCollectionGetParams) WithUsableSizeQueryParameter(usableSize *int64) *DiskCollectionGetParams {
-	o.SetUsableSizeQueryParameter(usableSize)
+// WithUsableSize adds the usableSize to the disk collection get params
+func (o *DiskCollectionGetParams) WithUsableSize(usableSize *int64) *DiskCollectionGetParams {
+	o.SetUsableSize(usableSize)
 	return o
 }
 
-// SetUsableSizeQueryParameter adds the usableSize to the disk collection get params
-func (o *DiskCollectionGetParams) SetUsableSizeQueryParameter(usableSize *int64) {
-	o.UsableSizeQueryParameter = usableSize
+// SetUsableSize adds the usableSize to the disk collection get params
+func (o *DiskCollectionGetParams) SetUsableSize(usableSize *int64) {
+	o.UsableSize = usableSize
 }
 
-// WithVendorQueryParameter adds the vendor to the disk collection get params
-func (o *DiskCollectionGetParams) WithVendorQueryParameter(vendor *string) *DiskCollectionGetParams {
-	o.SetVendorQueryParameter(vendor)
+// WithVendor adds the vendor to the disk collection get params
+func (o *DiskCollectionGetParams) WithVendor(vendor *string) *DiskCollectionGetParams {
+	o.SetVendor(vendor)
 	return o
 }
 
-// SetVendorQueryParameter adds the vendor to the disk collection get params
-func (o *DiskCollectionGetParams) SetVendorQueryParameter(vendor *string) {
-	o.VendorQueryParameter = vendor
+// SetVendor adds the vendor to the disk collection get params
+func (o *DiskCollectionGetParams) SetVendor(vendor *string) {
+	o.Vendor = vendor
 }
 
-// WithVirtualContainerQueryParameter adds the virtualContainer to the disk collection get params
-func (o *DiskCollectionGetParams) WithVirtualContainerQueryParameter(virtualContainer *string) *DiskCollectionGetParams {
-	o.SetVirtualContainerQueryParameter(virtualContainer)
+// WithVirtualContainer adds the virtualContainer to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualContainer(virtualContainer *string) *DiskCollectionGetParams {
+	o.SetVirtualContainer(virtualContainer)
 	return o
 }
 
-// SetVirtualContainerQueryParameter adds the virtualContainer to the disk collection get params
-func (o *DiskCollectionGetParams) SetVirtualContainerQueryParameter(virtualContainer *string) {
-	o.VirtualContainerQueryParameter = virtualContainer
+// SetVirtualContainer adds the virtualContainer to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualContainer(virtualContainer *string) {
+	o.VirtualContainer = virtualContainer
 }
 
-// WithVirtualObjectQueryParameter adds the virtualObject to the disk collection get params
-func (o *DiskCollectionGetParams) WithVirtualObjectQueryParameter(virtualObject *string) *DiskCollectionGetParams {
-	o.SetVirtualObjectQueryParameter(virtualObject)
+// WithVirtualObject adds the virtualObject to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualObject(virtualObject *string) *DiskCollectionGetParams {
+	o.SetVirtualObject(virtualObject)
 	return o
 }
 
-// SetVirtualObjectQueryParameter adds the virtualObject to the disk collection get params
-func (o *DiskCollectionGetParams) SetVirtualObjectQueryParameter(virtualObject *string) {
-	o.VirtualObjectQueryParameter = virtualObject
+// SetVirtualObject adds the virtualObject to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualObject(virtualObject *string) {
+	o.VirtualObject = virtualObject
 }
 
-// WithVirtualStorageAccountQueryParameter adds the virtualStorageAccount to the disk collection get params
-func (o *DiskCollectionGetParams) WithVirtualStorageAccountQueryParameter(virtualStorageAccount *string) *DiskCollectionGetParams {
-	o.SetVirtualStorageAccountQueryParameter(virtualStorageAccount)
+// WithVirtualStorageAccount adds the virtualStorageAccount to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualStorageAccount(virtualStorageAccount *string) *DiskCollectionGetParams {
+	o.SetVirtualStorageAccount(virtualStorageAccount)
 	return o
 }
 
-// SetVirtualStorageAccountQueryParameter adds the virtualStorageAccount to the disk collection get params
-func (o *DiskCollectionGetParams) SetVirtualStorageAccountQueryParameter(virtualStorageAccount *string) {
-	o.VirtualStorageAccountQueryParameter = virtualStorageAccount
+// SetVirtualStorageAccount adds the virtualStorageAccount to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualStorageAccount(virtualStorageAccount *string) {
+	o.VirtualStorageAccount = virtualStorageAccount
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1416,13 +1416,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.AggregatesNameQueryParameter != nil {
+	if o.AggregatesName != nil {
 
 		// query param aggregates.name
 		var qrAggregatesName string
 
-		if o.AggregatesNameQueryParameter != nil {
-			qrAggregatesName = *o.AggregatesNameQueryParameter
+		if o.AggregatesName != nil {
+			qrAggregatesName = *o.AggregatesName
 		}
 		qAggregatesName := qrAggregatesName
 		if qAggregatesName != "" {
@@ -1433,13 +1433,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.AggregatesUUIDQueryParameter != nil {
+	if o.AggregatesUUID != nil {
 
 		// query param aggregates.uuid
 		var qrAggregatesUUID string
 
-		if o.AggregatesUUIDQueryParameter != nil {
-			qrAggregatesUUID = *o.AggregatesUUIDQueryParameter
+		if o.AggregatesUUID != nil {
+			qrAggregatesUUID = *o.AggregatesUUID
 		}
 		qAggregatesUUID := qrAggregatesUUID
 		if qAggregatesUUID != "" {
@@ -1450,13 +1450,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BayQueryParameter != nil {
+	if o.Bay != nil {
 
 		// query param bay
 		var qrBay int64
 
-		if o.BayQueryParameter != nil {
-			qrBay = *o.BayQueryParameter
+		if o.Bay != nil {
+			qrBay = *o.Bay
 		}
 		qBay := swag.FormatInt64(qrBay)
 		if qBay != "" {
@@ -1467,13 +1467,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BytesPerSectorQueryParameter != nil {
+	if o.BytesPerSector != nil {
 
 		// query param bytes_per_sector
 		var qrBytesPerSector int64
 
-		if o.BytesPerSectorQueryParameter != nil {
-			qrBytesPerSector = *o.BytesPerSectorQueryParameter
+		if o.BytesPerSector != nil {
+			qrBytesPerSector = *o.BytesPerSector
 		}
 		qBytesPerSector := swag.FormatInt64(qrBytesPerSector)
 		if qBytesPerSector != "" {
@@ -1484,13 +1484,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ClassQueryParameter != nil {
+	if o.Class != nil {
 
 		// query param class
 		var qrClass string
 
-		if o.ClassQueryParameter != nil {
-			qrClass = *o.ClassQueryParameter
+		if o.Class != nil {
+			qrClass = *o.Class
 		}
 		qClass := qrClass
 		if qClass != "" {
@@ -1501,13 +1501,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ComplianceStandardQueryParameter != nil {
+	if o.ComplianceStandard != nil {
 
 		// query param compliance_standard
 		var qrComplianceStandard string
 
-		if o.ComplianceStandardQueryParameter != nil {
-			qrComplianceStandard = *o.ComplianceStandardQueryParameter
+		if o.ComplianceStandard != nil {
+			qrComplianceStandard = *o.ComplianceStandard
 		}
 		qComplianceStandard := qrComplianceStandard
 		if qComplianceStandard != "" {
@@ -1518,13 +1518,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ContainerTypeQueryParameter != nil {
+	if o.ContainerType != nil {
 
 		// query param container_type
 		var qrContainerType string
 
-		if o.ContainerTypeQueryParameter != nil {
-			qrContainerType = *o.ContainerTypeQueryParameter
+		if o.ContainerType != nil {
+			qrContainerType = *o.ContainerType
 		}
 		qContainerType := qrContainerType
 		if qContainerType != "" {
@@ -1535,13 +1535,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ControlStandardQueryParameter != nil {
+	if o.ControlStandard != nil {
 
 		// query param control_standard
 		var qrControlStandard string
 
-		if o.ControlStandardQueryParameter != nil {
-			qrControlStandard = *o.ControlStandardQueryParameter
+		if o.ControlStandard != nil {
+			qrControlStandard = *o.ControlStandard
 		}
 		qControlStandard := qrControlStandard
 		if qControlStandard != "" {
@@ -1552,13 +1552,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.DrNodeNameQueryParameter != nil {
+	if o.DrNodeName != nil {
 
 		// query param dr_node.name
 		var qrDrNodeName string
 
-		if o.DrNodeNameQueryParameter != nil {
-			qrDrNodeName = *o.DrNodeNameQueryParameter
+		if o.DrNodeName != nil {
+			qrDrNodeName = *o.DrNodeName
 		}
 		qDrNodeName := qrDrNodeName
 		if qDrNodeName != "" {
@@ -1569,13 +1569,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.DrNodeUUIDQueryParameter != nil {
+	if o.DrNodeUUID != nil {
 
 		// query param dr_node.uuid
 		var qrDrNodeUUID string
 
-		if o.DrNodeUUIDQueryParameter != nil {
-			qrDrNodeUUID = *o.DrNodeUUIDQueryParameter
+		if o.DrNodeUUID != nil {
+			qrDrNodeUUID = *o.DrNodeUUID
 		}
 		qDrNodeUUID := qrDrNodeUUID
 		if qDrNodeUUID != "" {
@@ -1586,13 +1586,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.DrawerIDQueryParameter != nil {
+	if o.DrawerID != nil {
 
 		// query param drawer.id
 		var qrDrawerID int64
 
-		if o.DrawerIDQueryParameter != nil {
-			qrDrawerID = *o.DrawerIDQueryParameter
+		if o.DrawerID != nil {
+			qrDrawerID = *o.DrawerID
 		}
 		qDrawerID := swag.FormatInt64(qrDrawerID)
 		if qDrawerID != "" {
@@ -1603,13 +1603,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.DrawerSlotQueryParameter != nil {
+	if o.DrawerSlot != nil {
 
 		// query param drawer.slot
 		var qrDrawerSlot int64
 
-		if o.DrawerSlotQueryParameter != nil {
-			qrDrawerSlot = *o.DrawerSlotQueryParameter
+		if o.DrawerSlot != nil {
+			qrDrawerSlot = *o.DrawerSlot
 		}
 		qDrawerSlot := swag.FormatInt64(qrDrawerSlot)
 		if qDrawerSlot != "" {
@@ -1620,13 +1620,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.EffectiveTypeQueryParameter != nil {
+	if o.EffectiveType != nil {
 
 		// query param effective_type
 		var qrEffectiveType string
 
-		if o.EffectiveTypeQueryParameter != nil {
-			qrEffectiveType = *o.EffectiveTypeQueryParameter
+		if o.EffectiveType != nil {
+			qrEffectiveType = *o.EffectiveType
 		}
 		qEffectiveType := qrEffectiveType
 		if qEffectiveType != "" {
@@ -1637,13 +1637,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonArgumentsCodeQueryParameter != nil {
+	if o.ErrorReasonArgumentsCode != nil {
 
 		// query param error.reason.arguments.code
 		var qrErrorReasonArgumentsCode string
 
-		if o.ErrorReasonArgumentsCodeQueryParameter != nil {
-			qrErrorReasonArgumentsCode = *o.ErrorReasonArgumentsCodeQueryParameter
+		if o.ErrorReasonArgumentsCode != nil {
+			qrErrorReasonArgumentsCode = *o.ErrorReasonArgumentsCode
 		}
 		qErrorReasonArgumentsCode := qrErrorReasonArgumentsCode
 		if qErrorReasonArgumentsCode != "" {
@@ -1654,13 +1654,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonArgumentsMessageQueryParameter != nil {
+	if o.ErrorReasonArgumentsMessage != nil {
 
 		// query param error.reason.arguments.message
 		var qrErrorReasonArgumentsMessage string
 
-		if o.ErrorReasonArgumentsMessageQueryParameter != nil {
-			qrErrorReasonArgumentsMessage = *o.ErrorReasonArgumentsMessageQueryParameter
+		if o.ErrorReasonArgumentsMessage != nil {
+			qrErrorReasonArgumentsMessage = *o.ErrorReasonArgumentsMessage
 		}
 		qErrorReasonArgumentsMessage := qrErrorReasonArgumentsMessage
 		if qErrorReasonArgumentsMessage != "" {
@@ -1671,13 +1671,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonCodeQueryParameter != nil {
+	if o.ErrorReasonCode != nil {
 
 		// query param error.reason.code
 		var qrErrorReasonCode string
 
-		if o.ErrorReasonCodeQueryParameter != nil {
-			qrErrorReasonCode = *o.ErrorReasonCodeQueryParameter
+		if o.ErrorReasonCode != nil {
+			qrErrorReasonCode = *o.ErrorReasonCode
 		}
 		qErrorReasonCode := qrErrorReasonCode
 		if qErrorReasonCode != "" {
@@ -1688,13 +1688,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonMessageQueryParameter != nil {
+	if o.ErrorReasonMessage != nil {
 
 		// query param error.reason.message
 		var qrErrorReasonMessage string
 
-		if o.ErrorReasonMessageQueryParameter != nil {
-			qrErrorReasonMessage = *o.ErrorReasonMessageQueryParameter
+		if o.ErrorReasonMessage != nil {
+			qrErrorReasonMessage = *o.ErrorReasonMessage
 		}
 		qErrorReasonMessage := qrErrorReasonMessage
 		if qErrorReasonMessage != "" {
@@ -1705,13 +1705,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorReasonTargetQueryParameter != nil {
+	if o.ErrorReasonTarget != nil {
 
 		// query param error.reason.target
 		var qrErrorReasonTarget string
 
-		if o.ErrorReasonTargetQueryParameter != nil {
-			qrErrorReasonTarget = *o.ErrorReasonTargetQueryParameter
+		if o.ErrorReasonTarget != nil {
+			qrErrorReasonTarget = *o.ErrorReasonTarget
 		}
 		qErrorReasonTarget := qrErrorReasonTarget
 		if qErrorReasonTarget != "" {
@@ -1722,13 +1722,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ErrorTypeQueryParameter != nil {
+	if o.ErrorType != nil {
 
 		// query param error.type
 		var qrErrorType string
 
-		if o.ErrorTypeQueryParameter != nil {
-			qrErrorType = *o.ErrorTypeQueryParameter
+		if o.ErrorType != nil {
+			qrErrorType = *o.ErrorType
 		}
 		qErrorType := qrErrorType
 		if qErrorType != "" {
@@ -1739,7 +1739,7 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1750,13 +1750,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FipsCertifiedQueryParameter != nil {
+	if o.FipsCertified != nil {
 
 		// query param fips_certified
 		var qrFipsCertified bool
 
-		if o.FipsCertifiedQueryParameter != nil {
-			qrFipsCertified = *o.FipsCertifiedQueryParameter
+		if o.FipsCertified != nil {
+			qrFipsCertified = *o.FipsCertified
 		}
 		qFipsCertified := swag.FormatBool(qrFipsCertified)
 		if qFipsCertified != "" {
@@ -1767,13 +1767,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FirmwareVersionQueryParameter != nil {
+	if o.FirmwareVersion != nil {
 
 		// query param firmware_version
 		var qrFirmwareVersion string
 
-		if o.FirmwareVersionQueryParameter != nil {
-			qrFirmwareVersion = *o.FirmwareVersionQueryParameter
+		if o.FirmwareVersion != nil {
+			qrFirmwareVersion = *o.FirmwareVersion
 		}
 		qFirmwareVersion := qrFirmwareVersion
 		if qFirmwareVersion != "" {
@@ -1784,13 +1784,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.HomeNodeNameQueryParameter != nil {
+	if o.HomeNodeName != nil {
 
 		// query param home_node.name
 		var qrHomeNodeName string
 
-		if o.HomeNodeNameQueryParameter != nil {
-			qrHomeNodeName = *o.HomeNodeNameQueryParameter
+		if o.HomeNodeName != nil {
+			qrHomeNodeName = *o.HomeNodeName
 		}
 		qHomeNodeName := qrHomeNodeName
 		if qHomeNodeName != "" {
@@ -1801,13 +1801,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.HomeNodeUUIDQueryParameter != nil {
+	if o.HomeNodeUUID != nil {
 
 		// query param home_node.uuid
 		var qrHomeNodeUUID string
 
-		if o.HomeNodeUUIDQueryParameter != nil {
-			qrHomeNodeUUID = *o.HomeNodeUUIDQueryParameter
+		if o.HomeNodeUUID != nil {
+			qrHomeNodeUUID = *o.HomeNodeUUID
 		}
 		qHomeNodeUUID := qrHomeNodeUUID
 		if qHomeNodeUUID != "" {
@@ -1818,13 +1818,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.KeyIDDataQueryParameter != nil {
+	if o.KeyIDData != nil {
 
 		// query param key_id.data
 		var qrKeyIDData string
 
-		if o.KeyIDDataQueryParameter != nil {
-			qrKeyIDData = *o.KeyIDDataQueryParameter
+		if o.KeyIDData != nil {
+			qrKeyIDData = *o.KeyIDData
 		}
 		qKeyIDData := qrKeyIDData
 		if qKeyIDData != "" {
@@ -1835,13 +1835,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.KeyIDFipsQueryParameter != nil {
+	if o.KeyIDFips != nil {
 
 		// query param key_id.fips
 		var qrKeyIDFips string
 
-		if o.KeyIDFipsQueryParameter != nil {
-			qrKeyIDFips = *o.KeyIDFipsQueryParameter
+		if o.KeyIDFips != nil {
+			qrKeyIDFips = *o.KeyIDFips
 		}
 		qKeyIDFips := qrKeyIDFips
 		if qKeyIDFips != "" {
@@ -1852,13 +1852,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.LocalQueryParameter != nil {
+	if o.Local != nil {
 
 		// query param local
 		var qrLocal bool
 
-		if o.LocalQueryParameter != nil {
-			qrLocal = *o.LocalQueryParameter
+		if o.Local != nil {
+			qrLocal = *o.Local
 		}
 		qLocal := swag.FormatBool(qrLocal)
 		if qLocal != "" {
@@ -1869,13 +1869,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1886,13 +1886,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ModelQueryParameter != nil {
+	if o.Model != nil {
 
 		// query param model
 		var qrModel string
 
-		if o.ModelQueryParameter != nil {
-			qrModel = *o.ModelQueryParameter
+		if o.Model != nil {
+			qrModel = *o.Model
 		}
 		qModel := qrModel
 		if qModel != "" {
@@ -1903,13 +1903,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1920,13 +1920,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -1937,13 +1937,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1954,7 +1954,7 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1965,13 +1965,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutagePersistentlyFailedQueryParameter != nil {
+	if o.OutagePersistentlyFailed != nil {
 
 		// query param outage.persistently_failed
 		var qrOutagePersistentlyFailed bool
 
-		if o.OutagePersistentlyFailedQueryParameter != nil {
-			qrOutagePersistentlyFailed = *o.OutagePersistentlyFailedQueryParameter
+		if o.OutagePersistentlyFailed != nil {
+			qrOutagePersistentlyFailed = *o.OutagePersistentlyFailed
 		}
 		qOutagePersistentlyFailed := swag.FormatBool(qrOutagePersistentlyFailed)
 		if qOutagePersistentlyFailed != "" {
@@ -1982,13 +1982,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonArgumentsCodeQueryParameter != nil {
+	if o.OutageReasonArgumentsCode != nil {
 
 		// query param outage.reason.arguments.code
 		var qrOutageReasonArgumentsCode string
 
-		if o.OutageReasonArgumentsCodeQueryParameter != nil {
-			qrOutageReasonArgumentsCode = *o.OutageReasonArgumentsCodeQueryParameter
+		if o.OutageReasonArgumentsCode != nil {
+			qrOutageReasonArgumentsCode = *o.OutageReasonArgumentsCode
 		}
 		qOutageReasonArgumentsCode := qrOutageReasonArgumentsCode
 		if qOutageReasonArgumentsCode != "" {
@@ -1999,13 +1999,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonArgumentsMessageQueryParameter != nil {
+	if o.OutageReasonArgumentsMessage != nil {
 
 		// query param outage.reason.arguments.message
 		var qrOutageReasonArgumentsMessage string
 
-		if o.OutageReasonArgumentsMessageQueryParameter != nil {
-			qrOutageReasonArgumentsMessage = *o.OutageReasonArgumentsMessageQueryParameter
+		if o.OutageReasonArgumentsMessage != nil {
+			qrOutageReasonArgumentsMessage = *o.OutageReasonArgumentsMessage
 		}
 		qOutageReasonArgumentsMessage := qrOutageReasonArgumentsMessage
 		if qOutageReasonArgumentsMessage != "" {
@@ -2016,13 +2016,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonCodeQueryParameter != nil {
+	if o.OutageReasonCode != nil {
 
 		// query param outage.reason.code
 		var qrOutageReasonCode string
 
-		if o.OutageReasonCodeQueryParameter != nil {
-			qrOutageReasonCode = *o.OutageReasonCodeQueryParameter
+		if o.OutageReasonCode != nil {
+			qrOutageReasonCode = *o.OutageReasonCode
 		}
 		qOutageReasonCode := qrOutageReasonCode
 		if qOutageReasonCode != "" {
@@ -2033,13 +2033,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonMessageQueryParameter != nil {
+	if o.OutageReasonMessage != nil {
 
 		// query param outage.reason.message
 		var qrOutageReasonMessage string
 
-		if o.OutageReasonMessageQueryParameter != nil {
-			qrOutageReasonMessage = *o.OutageReasonMessageQueryParameter
+		if o.OutageReasonMessage != nil {
+			qrOutageReasonMessage = *o.OutageReasonMessage
 		}
 		qOutageReasonMessage := qrOutageReasonMessage
 		if qOutageReasonMessage != "" {
@@ -2050,13 +2050,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OutageReasonTargetQueryParameter != nil {
+	if o.OutageReasonTarget != nil {
 
 		// query param outage.reason.target
 		var qrOutageReasonTarget string
 
-		if o.OutageReasonTargetQueryParameter != nil {
-			qrOutageReasonTarget = *o.OutageReasonTargetQueryParameter
+		if o.OutageReasonTarget != nil {
+			qrOutageReasonTarget = *o.OutageReasonTarget
 		}
 		qOutageReasonTarget := qrOutageReasonTarget
 		if qOutageReasonTarget != "" {
@@ -2067,13 +2067,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OverallSecurityQueryParameter != nil {
+	if o.OverallSecurity != nil {
 
 		// query param overall_security
 		var qrOverallSecurity string
 
-		if o.OverallSecurityQueryParameter != nil {
-			qrOverallSecurity = *o.OverallSecurityQueryParameter
+		if o.OverallSecurity != nil {
+			qrOverallSecurity = *o.OverallSecurity
 		}
 		qOverallSecurity := qrOverallSecurity
 		if qOverallSecurity != "" {
@@ -2084,13 +2084,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsInitiatorQueryParameter != nil {
+	if o.PathsInitiator != nil {
 
 		// query param paths.initiator
 		var qrPathsInitiator string
 
-		if o.PathsInitiatorQueryParameter != nil {
-			qrPathsInitiator = *o.PathsInitiatorQueryParameter
+		if o.PathsInitiator != nil {
+			qrPathsInitiator = *o.PathsInitiator
 		}
 		qPathsInitiator := qrPathsInitiator
 		if qPathsInitiator != "" {
@@ -2101,13 +2101,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsNodeNameQueryParameter != nil {
+	if o.PathsNodeName != nil {
 
 		// query param paths.node.name
 		var qrPathsNodeName string
 
-		if o.PathsNodeNameQueryParameter != nil {
-			qrPathsNodeName = *o.PathsNodeNameQueryParameter
+		if o.PathsNodeName != nil {
+			qrPathsNodeName = *o.PathsNodeName
 		}
 		qPathsNodeName := qrPathsNodeName
 		if qPathsNodeName != "" {
@@ -2118,13 +2118,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsNodeUUIDQueryParameter != nil {
+	if o.PathsNodeUUID != nil {
 
 		// query param paths.node.uuid
 		var qrPathsNodeUUID string
 
-		if o.PathsNodeUUIDQueryParameter != nil {
-			qrPathsNodeUUID = *o.PathsNodeUUIDQueryParameter
+		if o.PathsNodeUUID != nil {
+			qrPathsNodeUUID = *o.PathsNodeUUID
 		}
 		qPathsNodeUUID := qrPathsNodeUUID
 		if qPathsNodeUUID != "" {
@@ -2135,13 +2135,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsPortNameQueryParameter != nil {
+	if o.PathsPortName != nil {
 
 		// query param paths.port_name
 		var qrPathsPortName string
 
-		if o.PathsPortNameQueryParameter != nil {
-			qrPathsPortName = *o.PathsPortNameQueryParameter
+		if o.PathsPortName != nil {
+			qrPathsPortName = *o.PathsPortName
 		}
 		qPathsPortName := qrPathsPortName
 		if qPathsPortName != "" {
@@ -2152,13 +2152,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsPortTypeQueryParameter != nil {
+	if o.PathsPortType != nil {
 
 		// query param paths.port_type
 		var qrPathsPortType string
 
-		if o.PathsPortTypeQueryParameter != nil {
-			qrPathsPortType = *o.PathsPortTypeQueryParameter
+		if o.PathsPortType != nil {
+			qrPathsPortType = *o.PathsPortType
 		}
 		qPathsPortType := qrPathsPortType
 		if qPathsPortType != "" {
@@ -2169,13 +2169,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsVMdiskHypervisorFileNameQueryParameter != nil {
+	if o.PathsVmdiskHypervisorFileName != nil {
 
 		// query param paths.vmdisk_hypervisor_file_name
 		var qrPathsVmdiskHypervisorFileName string
 
-		if o.PathsVMdiskHypervisorFileNameQueryParameter != nil {
-			qrPathsVmdiskHypervisorFileName = *o.PathsVMdiskHypervisorFileNameQueryParameter
+		if o.PathsVmdiskHypervisorFileName != nil {
+			qrPathsVmdiskHypervisorFileName = *o.PathsVmdiskHypervisorFileName
 		}
 		qPathsVmdiskHypervisorFileName := qrPathsVmdiskHypervisorFileName
 		if qPathsVmdiskHypervisorFileName != "" {
@@ -2186,13 +2186,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsWwnnQueryParameter != nil {
+	if o.PathsWwnn != nil {
 
 		// query param paths.wwnn
 		var qrPathsWwnn string
 
-		if o.PathsWwnnQueryParameter != nil {
-			qrPathsWwnn = *o.PathsWwnnQueryParameter
+		if o.PathsWwnn != nil {
+			qrPathsWwnn = *o.PathsWwnn
 		}
 		qPathsWwnn := qrPathsWwnn
 		if qPathsWwnn != "" {
@@ -2203,13 +2203,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PathsWwpnQueryParameter != nil {
+	if o.PathsWwpn != nil {
 
 		// query param paths.wwpn
 		var qrPathsWwpn string
 
-		if o.PathsWwpnQueryParameter != nil {
-			qrPathsWwpn = *o.PathsWwpnQueryParameter
+		if o.PathsWwpn != nil {
+			qrPathsWwpn = *o.PathsWwpn
 		}
 		qPathsWwpn := qrPathsWwpn
 		if qPathsWwpn != "" {
@@ -2220,13 +2220,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PhysicalSizeQueryParameter != nil {
+	if o.PhysicalSize != nil {
 
 		// query param physical_size
 		var qrPhysicalSize int64
 
-		if o.PhysicalSizeQueryParameter != nil {
-			qrPhysicalSize = *o.PhysicalSizeQueryParameter
+		if o.PhysicalSize != nil {
+			qrPhysicalSize = *o.PhysicalSize
 		}
 		qPhysicalSize := swag.FormatInt64(qrPhysicalSize)
 		if qPhysicalSize != "" {
@@ -2237,13 +2237,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PoolQueryParameter != nil {
+	if o.Pool != nil {
 
 		// query param pool
 		var qrPool string
 
-		if o.PoolQueryParameter != nil {
-			qrPool = *o.PoolQueryParameter
+		if o.Pool != nil {
+			qrPool = *o.Pool
 		}
 		qPool := qrPool
 		if qPool != "" {
@@ -2254,13 +2254,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ProtectionModeQueryParameter != nil {
+	if o.ProtectionMode != nil {
 
 		// query param protection_mode
 		var qrProtectionMode string
 
-		if o.ProtectionModeQueryParameter != nil {
-			qrProtectionMode = *o.ProtectionModeQueryParameter
+		if o.ProtectionMode != nil {
+			qrProtectionMode = *o.ProtectionMode
 		}
 		qProtectionMode := qrProtectionMode
 		if qProtectionMode != "" {
@@ -2271,13 +2271,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RatedLifeUsedPercentQueryParameter != nil {
+	if o.RatedLifeUsedPercent != nil {
 
 		// query param rated_life_used_percent
 		var qrRatedLifeUsedPercent int64
 
-		if o.RatedLifeUsedPercentQueryParameter != nil {
-			qrRatedLifeUsedPercent = *o.RatedLifeUsedPercentQueryParameter
+		if o.RatedLifeUsedPercent != nil {
+			qrRatedLifeUsedPercent = *o.RatedLifeUsedPercent
 		}
 		qRatedLifeUsedPercent := swag.FormatInt64(qrRatedLifeUsedPercent)
 		if qRatedLifeUsedPercent != "" {
@@ -2288,13 +2288,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2305,13 +2305,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2322,13 +2322,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RightSizeSectorCountQueryParameter != nil {
+	if o.RightSizeSectorCount != nil {
 
 		// query param right_size_sector_count
 		var qrRightSizeSectorCount int64
 
-		if o.RightSizeSectorCountQueryParameter != nil {
-			qrRightSizeSectorCount = *o.RightSizeSectorCountQueryParameter
+		if o.RightSizeSectorCount != nil {
+			qrRightSizeSectorCount = *o.RightSizeSectorCount
 		}
 		qRightSizeSectorCount := swag.FormatInt64(qrRightSizeSectorCount)
 		if qRightSizeSectorCount != "" {
@@ -2339,13 +2339,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.RpmQueryParameter != nil {
+	if o.Rpm != nil {
 
 		// query param rpm
 		var qrRpm int64
 
-		if o.RpmQueryParameter != nil {
-			qrRpm = *o.RpmQueryParameter
+		if o.Rpm != nil {
+			qrRpm = *o.Rpm
 		}
 		qRpm := swag.FormatInt64(qrRpm)
 		if qRpm != "" {
@@ -2356,13 +2356,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SectorCountQueryParameter != nil {
+	if o.SectorCount != nil {
 
 		// query param sector_count
 		var qrSectorCount int64
 
-		if o.SectorCountQueryParameter != nil {
-			qrSectorCount = *o.SectorCountQueryParameter
+		if o.SectorCount != nil {
+			qrSectorCount = *o.SectorCount
 		}
 		qSectorCount := swag.FormatInt64(qrSectorCount)
 		if qSectorCount != "" {
@@ -2373,13 +2373,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SelfEncryptingQueryParameter != nil {
+	if o.SelfEncrypting != nil {
 
 		// query param self_encrypting
 		var qrSelfEncrypting bool
 
-		if o.SelfEncryptingQueryParameter != nil {
-			qrSelfEncrypting = *o.SelfEncryptingQueryParameter
+		if o.SelfEncrypting != nil {
+			qrSelfEncrypting = *o.SelfEncrypting
 		}
 		qSelfEncrypting := swag.FormatBool(qrSelfEncrypting)
 		if qSelfEncrypting != "" {
@@ -2390,13 +2390,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -2407,13 +2407,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ShelfUIDQueryParameter != nil {
+	if o.ShelfUID != nil {
 
 		// query param shelf.uid
 		var qrShelfUID string
 
-		if o.ShelfUIDQueryParameter != nil {
-			qrShelfUID = *o.ShelfUIDQueryParameter
+		if o.ShelfUID != nil {
+			qrShelfUID = *o.ShelfUID
 		}
 		qShelfUID := qrShelfUID
 		if qShelfUID != "" {
@@ -2424,13 +2424,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -2441,13 +2441,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatsAverageLatencyQueryParameter != nil {
+	if o.StatsAverageLatency != nil {
 
 		// query param stats.average_latency
 		var qrStatsAverageLatency int64
 
-		if o.StatsAverageLatencyQueryParameter != nil {
-			qrStatsAverageLatency = *o.StatsAverageLatencyQueryParameter
+		if o.StatsAverageLatency != nil {
+			qrStatsAverageLatency = *o.StatsAverageLatency
 		}
 		qStatsAverageLatency := swag.FormatInt64(qrStatsAverageLatency)
 		if qStatsAverageLatency != "" {
@@ -2458,13 +2458,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatsIopsTotalQueryParameter != nil {
+	if o.StatsIopsTotal != nil {
 
 		// query param stats.iops_total
 		var qrStatsIopsTotal int64
 
-		if o.StatsIopsTotalQueryParameter != nil {
-			qrStatsIopsTotal = *o.StatsIopsTotalQueryParameter
+		if o.StatsIopsTotal != nil {
+			qrStatsIopsTotal = *o.StatsIopsTotal
 		}
 		qStatsIopsTotal := swag.FormatInt64(qrStatsIopsTotal)
 		if qStatsIopsTotal != "" {
@@ -2475,13 +2475,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatsPathErrorCountQueryParameter != nil {
+	if o.StatsPathErrorCount != nil {
 
 		// query param stats.path_error_count
 		var qrStatsPathErrorCount int64
 
-		if o.StatsPathErrorCountQueryParameter != nil {
-			qrStatsPathErrorCount = *o.StatsPathErrorCountQueryParameter
+		if o.StatsPathErrorCount != nil {
+			qrStatsPathErrorCount = *o.StatsPathErrorCount
 		}
 		qStatsPathErrorCount := swag.FormatInt64(qrStatsPathErrorCount)
 		if qStatsPathErrorCount != "" {
@@ -2492,13 +2492,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatsPowerOnHoursQueryParameter != nil {
+	if o.StatsPowerOnHours != nil {
 
 		// query param stats.power_on_hours
 		var qrStatsPowerOnHours int64
 
-		if o.StatsPowerOnHoursQueryParameter != nil {
-			qrStatsPowerOnHours = *o.StatsPowerOnHoursQueryParameter
+		if o.StatsPowerOnHours != nil {
+			qrStatsPowerOnHours = *o.StatsPowerOnHours
 		}
 		qStatsPowerOnHours := swag.FormatInt64(qrStatsPowerOnHours)
 		if qStatsPowerOnHours != "" {
@@ -2509,13 +2509,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatsThroughputQueryParameter != nil {
+	if o.StatsThroughput != nil {
 
 		// query param stats.throughput
 		var qrStatsThroughput int64
 
-		if o.StatsThroughputQueryParameter != nil {
-			qrStatsThroughput = *o.StatsThroughputQueryParameter
+		if o.StatsThroughput != nil {
+			qrStatsThroughput = *o.StatsThroughput
 		}
 		qStatsThroughput := swag.FormatInt64(qrStatsThroughput)
 		if qStatsThroughput != "" {
@@ -2526,13 +2526,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StoragePoolNameQueryParameter != nil {
+	if o.StoragePoolName != nil {
 
 		// query param storage_pool.name
 		var qrStoragePoolName string
 
-		if o.StoragePoolNameQueryParameter != nil {
-			qrStoragePoolName = *o.StoragePoolNameQueryParameter
+		if o.StoragePoolName != nil {
+			qrStoragePoolName = *o.StoragePoolName
 		}
 		qStoragePoolName := qrStoragePoolName
 		if qStoragePoolName != "" {
@@ -2543,13 +2543,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StoragePoolUUIDQueryParameter != nil {
+	if o.StoragePoolUUID != nil {
 
 		// query param storage_pool.uuid
 		var qrStoragePoolUUID string
 
-		if o.StoragePoolUUIDQueryParameter != nil {
-			qrStoragePoolUUID = *o.StoragePoolUUIDQueryParameter
+		if o.StoragePoolUUID != nil {
+			qrStoragePoolUUID = *o.StoragePoolUUID
 		}
 		qStoragePoolUUID := qrStoragePoolUUID
 		if qStoragePoolUUID != "" {
@@ -2560,13 +2560,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -2577,13 +2577,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.UIDQueryParameter != nil {
+	if o.UID != nil {
 
 		// query param uid
 		var qrUID string
 
-		if o.UIDQueryParameter != nil {
-			qrUID = *o.UIDQueryParameter
+		if o.UID != nil {
+			qrUID = *o.UID
 		}
 		qUID := qrUID
 		if qUID != "" {
@@ -2594,13 +2594,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.UsableSizeQueryParameter != nil {
+	if o.UsableSize != nil {
 
 		// query param usable_size
 		var qrUsableSize int64
 
-		if o.UsableSizeQueryParameter != nil {
-			qrUsableSize = *o.UsableSizeQueryParameter
+		if o.UsableSize != nil {
+			qrUsableSize = *o.UsableSize
 		}
 		qUsableSize := swag.FormatInt64(qrUsableSize)
 		if qUsableSize != "" {
@@ -2611,13 +2611,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.VendorQueryParameter != nil {
+	if o.Vendor != nil {
 
 		// query param vendor
 		var qrVendor string
 
-		if o.VendorQueryParameter != nil {
-			qrVendor = *o.VendorQueryParameter
+		if o.Vendor != nil {
+			qrVendor = *o.Vendor
 		}
 		qVendor := qrVendor
 		if qVendor != "" {
@@ -2628,13 +2628,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.VirtualContainerQueryParameter != nil {
+	if o.VirtualContainer != nil {
 
 		// query param virtual.container
 		var qrVirtualContainer string
 
-		if o.VirtualContainerQueryParameter != nil {
-			qrVirtualContainer = *o.VirtualContainerQueryParameter
+		if o.VirtualContainer != nil {
+			qrVirtualContainer = *o.VirtualContainer
 		}
 		qVirtualContainer := qrVirtualContainer
 		if qVirtualContainer != "" {
@@ -2645,13 +2645,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.VirtualObjectQueryParameter != nil {
+	if o.VirtualObject != nil {
 
 		// query param virtual.object
 		var qrVirtualObject string
 
-		if o.VirtualObjectQueryParameter != nil {
-			qrVirtualObject = *o.VirtualObjectQueryParameter
+		if o.VirtualObject != nil {
+			qrVirtualObject = *o.VirtualObject
 		}
 		qVirtualObject := qrVirtualObject
 		if qVirtualObject != "" {
@@ -2662,13 +2662,13 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.VirtualStorageAccountQueryParameter != nil {
+	if o.VirtualStorageAccount != nil {
 
 		// query param virtual.storage_account
 		var qrVirtualStorageAccount string
 
-		if o.VirtualStorageAccountQueryParameter != nil {
-			qrVirtualStorageAccount = *o.VirtualStorageAccountQueryParameter
+		if o.VirtualStorageAccount != nil {
+			qrVirtualStorageAccount = *o.VirtualStorageAccount
 		}
 		qVirtualStorageAccount := qrVirtualStorageAccount
 		if qVirtualStorageAccount != "" {
@@ -2687,7 +2687,7 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamDiskCollectionGet binds the parameter fields
 func (o *DiskCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2704,7 +2704,7 @@ func (o *DiskCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamDiskCollectionGet binds the parameter order_by
 func (o *DiskCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

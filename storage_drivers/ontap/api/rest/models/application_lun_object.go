@@ -26,15 +26,15 @@ type ApplicationLunObject struct {
 
 	// LUN path
 	// Read Only: true
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// LUN size
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// LUN UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application lun object
@@ -100,7 +100,7 @@ func (m *ApplicationLunObject) contextValidateCreationTimestamp(ctx context.Cont
 
 func (m *ApplicationLunObject) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (m *ApplicationLunObject) contextValidatePath(ctx context.Context, formats 
 
 func (m *ApplicationLunObject) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func (m *ApplicationLunObject) contextValidateSize(ctx context.Context, formats 
 
 func (m *ApplicationLunObject) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 

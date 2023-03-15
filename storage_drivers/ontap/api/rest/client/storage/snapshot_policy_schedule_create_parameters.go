@@ -74,13 +74,13 @@ type SnapshotPolicyScheduleCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SnapshotPolicyUUID.
 
 	   Snapshot copy policy UUID
 	*/
-	SnapshotPolicyUUIDPathParameter string
+	SnapshotPolicyUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *SnapshotPolicyScheduleCreateParams) WithDefaults() *SnapshotPolicySched
 // All values with no default are reset to their zero value.
 func (o *SnapshotPolicyScheduleCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SnapshotPolicyScheduleCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *SnapshotPolicyScheduleCreateParams) SetInfo(info *models.SnapshotPolicy
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapshotPolicyScheduleCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) WithReturnRecords(returnRecords *bool) *SnapshotPolicyScheduleCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) WithSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) *SnapshotPolicyScheduleCreateParams {
-	o.SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID)
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) WithSnapshotPolicyUUID(snapshotPolicyUUID string) *SnapshotPolicyScheduleCreateParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
 	return o
 }
 
-// SetSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUuid to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) {
-	o.SnapshotPolicyUUIDPathParameter = snapshotPolicyUUID
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) SetSnapshotPolicyUUID(snapshotPolicyUUID string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,13 +192,13 @@ func (o *SnapshotPolicyScheduleCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -210,7 +210,7 @@ func (o *SnapshotPolicyScheduleCreateParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param snapshot_policy.uuid
-	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUID); err != nil {
 		return err
 	}
 

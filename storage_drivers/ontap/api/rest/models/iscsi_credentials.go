@@ -22,26 +22,26 @@ import (
 type IscsiCredentials struct {
 
 	// links
-	Links *IscsiCredentialsLinks `json:"_links,omitempty"`
+	Links *IscsiCredentialsInlineLinks `json:"_links,omitempty"`
 
 	// The iSCSI authentication type. Required in POST; optional in PATCH.
 	//
 	// Enum: [chap none deny]
-	AuthenticationType string `json:"authentication_type,omitempty"`
+	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// chap
-	Chap *IscsiCredentialsChap `json:"chap,omitempty"`
+	Chap *IscsiCredentialsInlineChap `json:"chap,omitempty"`
 
 	// The iSCSI initiator to which the credentials apply. Required in POST.
 	//
 	// Example: iqn.1998-01.com.corp.iscsi:name1
-	Initiator string `json:"initiator,omitempty"`
+	Initiator *string `json:"initiator,omitempty"`
 
 	// initiator address
-	InitiatorAddress *IscsiCredentialsInitiatorAddress `json:"initiator_address,omitempty"`
+	InitiatorAddress *IscsiCredentialsInlineInitiatorAddress `json:"initiator_address,omitempty"`
 
 	// svm
-	Svm *IscsiCredentialsSvm `json:"svm,omitempty"`
+	Svm *IscsiCredentialsInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this iscsi credentials
@@ -150,7 +150,7 @@ func (m *IscsiCredentials) validateAuthenticationType(formats strfmt.Registry) e
 	}
 
 	// value enum
-	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", m.AuthenticationType); err != nil {
+	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", *m.AuthenticationType); err != nil {
 		return err
 	}
 
@@ -308,20 +308,20 @@ func (m *IscsiCredentials) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsChap Challenge-Handshake Authentication Protocol (CHAP) credentials.
+// IscsiCredentialsInlineChap Challenge-Handshake Authentication Protocol (CHAP) credentials.
 //
-// swagger:model IscsiCredentialsChap
-type IscsiCredentialsChap struct {
+// swagger:model iscsi_credentials_inline_chap
+type IscsiCredentialsInlineChap struct {
 
 	// inbound
-	Inbound *IscsiCredentialsChapInbound `json:"inbound,omitempty"`
+	Inbound *IscsiCredentialsInlineChapInlineInbound `json:"inbound,omitempty"`
 
 	// outbound
-	Outbound *IscsiCredentialsChapOutbound `json:"outbound,omitempty"`
+	Outbound *IscsiCredentialsInlineChapInlineOutbound `json:"outbound,omitempty"`
 }
 
-// Validate validates this iscsi credentials chap
-func (m *IscsiCredentialsChap) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline chap
+func (m *IscsiCredentialsInlineChap) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateInbound(formats); err != nil {
@@ -338,7 +338,7 @@ func (m *IscsiCredentialsChap) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsChap) validateInbound(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChap) validateInbound(formats strfmt.Registry) error {
 	if swag.IsZero(m.Inbound) { // not required
 		return nil
 	}
@@ -355,7 +355,7 @@ func (m *IscsiCredentialsChap) validateInbound(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsChap) validateOutbound(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChap) validateOutbound(formats strfmt.Registry) error {
 	if swag.IsZero(m.Outbound) { // not required
 		return nil
 	}
@@ -372,8 +372,8 @@ func (m *IscsiCredentialsChap) validateOutbound(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi credentials chap based on the context it is used
-func (m *IscsiCredentialsChap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi credentials inline chap based on the context it is used
+func (m *IscsiCredentialsInlineChap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInbound(ctx, formats); err != nil {
@@ -390,7 +390,7 @@ func (m *IscsiCredentialsChap) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IscsiCredentialsChap) contextValidateInbound(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChap) contextValidateInbound(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Inbound != nil {
 		if err := m.Inbound.ContextValidate(ctx, formats); err != nil {
@@ -404,7 +404,7 @@ func (m *IscsiCredentialsChap) contextValidateInbound(ctx context.Context, forma
 	return nil
 }
 
-func (m *IscsiCredentialsChap) contextValidateOutbound(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChap) contextValidateOutbound(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Outbound != nil {
 		if err := m.Outbound.ContextValidate(ctx, formats); err != nil {
@@ -419,7 +419,7 @@ func (m *IscsiCredentialsChap) contextValidateOutbound(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsChap) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineChap) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -427,8 +427,8 @@ func (m *IscsiCredentialsChap) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsChap) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsChap
+func (m *IscsiCredentialsInlineChap) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineChap
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -436,25 +436,25 @@ func (m *IscsiCredentialsChap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsChapInbound Inbound CHAP credentials.
+// IscsiCredentialsInlineChapInlineInbound Inbound CHAP credentials.
 //
-// swagger:model IscsiCredentialsChapInbound
-type IscsiCredentialsChapInbound struct {
+// swagger:model iscsi_credentials_inline_chap_inline_inbound
+type IscsiCredentialsInlineChapInlineInbound struct {
 
 	// The inbound CHAP password. Write-only; optional in POST and PATCH.
 	//
 	// Min Length: 1
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// The inbound CHAP user name. Optional in POST and PATCH.
 	//
 	// Max Length: 128
 	// Min Length: 1
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
-// Validate validates this iscsi credentials chap inbound
-func (m *IscsiCredentialsChapInbound) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline chap inline inbound
+func (m *IscsiCredentialsInlineChapInlineInbound) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePassword(formats); err != nil {
@@ -471,41 +471,41 @@ func (m *IscsiCredentialsChapInbound) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsChapInbound) validatePassword(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChapInlineInbound) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("chap"+"."+"inbound"+"."+"password", "body", m.Password, 1); err != nil {
+	if err := validate.MinLength("chap"+"."+"inbound"+"."+"password", "body", *m.Password, 1); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiCredentialsChapInbound) validateUser(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChapInlineInbound) validateUser(formats strfmt.Registry) error {
 	if swag.IsZero(m.User) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("chap"+"."+"inbound"+"."+"user", "body", m.User, 1); err != nil {
+	if err := validate.MinLength("chap"+"."+"inbound"+"."+"user", "body", *m.User, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("chap"+"."+"inbound"+"."+"user", "body", m.User, 128); err != nil {
+	if err := validate.MaxLength("chap"+"."+"inbound"+"."+"user", "body", *m.User, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this iscsi credentials chap inbound based on context it is used
-func (m *IscsiCredentialsChapInbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this iscsi credentials inline chap inline inbound based on context it is used
+func (m *IscsiCredentialsInlineChapInlineInbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsChapInbound) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineChapInlineInbound) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -513,8 +513,8 @@ func (m *IscsiCredentialsChapInbound) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsChapInbound) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsChapInbound
+func (m *IscsiCredentialsInlineChapInlineInbound) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineChapInlineInbound
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -522,27 +522,27 @@ func (m *IscsiCredentialsChapInbound) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsChapOutbound Output CHAP credentials.</br>
+// IscsiCredentialsInlineChapInlineOutbound Output CHAP credentials.</br>
 // To clear previously set outbound CHAP credentials, set property `chap.outbound.user` to an empty string in PATCH.
 //
-// swagger:model IscsiCredentialsChapOutbound
-type IscsiCredentialsChapOutbound struct {
+// swagger:model iscsi_credentials_inline_chap_inline_outbound
+type IscsiCredentialsInlineChapInlineOutbound struct {
 
 	// The outbound CHAP password. Write-only; optional in POST and PATCH.
 	//
 	// Min Length: 1
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// The outbound CHAP user name. Optional in POST and PATCH.</br>
 	// To clear previously set outbound CHAP credentials, set this property to an empty string in PATCH.
 	//
 	// Max Length: 128
 	// Min Length: 1
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
-// Validate validates this iscsi credentials chap outbound
-func (m *IscsiCredentialsChapOutbound) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline chap inline outbound
+func (m *IscsiCredentialsInlineChapInlineOutbound) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePassword(formats); err != nil {
@@ -559,41 +559,41 @@ func (m *IscsiCredentialsChapOutbound) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsChapOutbound) validatePassword(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChapInlineOutbound) validatePassword(formats strfmt.Registry) error {
 	if swag.IsZero(m.Password) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("chap"+"."+"outbound"+"."+"password", "body", m.Password, 1); err != nil {
+	if err := validate.MinLength("chap"+"."+"outbound"+"."+"password", "body", *m.Password, 1); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiCredentialsChapOutbound) validateUser(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineChapInlineOutbound) validateUser(formats strfmt.Registry) error {
 	if swag.IsZero(m.User) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("chap"+"."+"outbound"+"."+"user", "body", m.User, 1); err != nil {
+	if err := validate.MinLength("chap"+"."+"outbound"+"."+"user", "body", *m.User, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("chap"+"."+"outbound"+"."+"user", "body", m.User, 128); err != nil {
+	if err := validate.MaxLength("chap"+"."+"outbound"+"."+"user", "body", *m.User, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this iscsi credentials chap outbound based on context it is used
-func (m *IscsiCredentialsChapOutbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this iscsi credentials inline chap inline outbound based on context it is used
+func (m *IscsiCredentialsInlineChapInlineOutbound) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsChapOutbound) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineChapInlineOutbound) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -601,8 +601,8 @@ func (m *IscsiCredentialsChapOutbound) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsChapOutbound) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsChapOutbound
+func (m *IscsiCredentialsInlineChapInlineOutbound) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineChapInlineOutbound
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -610,10 +610,10 @@ func (m *IscsiCredentialsChapOutbound) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsInitiatorAddress Initiator address ranges.
+// IscsiCredentialsInlineInitiatorAddress Initiator address ranges.
 //
-// swagger:model IscsiCredentialsInitiatorAddress
-type IscsiCredentialsInitiatorAddress struct {
+// swagger:model iscsi_credentials_inline_initiator_address
+type IscsiCredentialsInlineInitiatorAddress struct {
 
 	// masks
 	Masks []*IPInfo `json:"masks,omitempty"`
@@ -622,8 +622,8 @@ type IscsiCredentialsInitiatorAddress struct {
 	Ranges []*IPAddressRange `json:"ranges,omitempty"`
 }
 
-// Validate validates this iscsi credentials initiator address
-func (m *IscsiCredentialsInitiatorAddress) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline initiator address
+func (m *IscsiCredentialsInlineInitiatorAddress) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMasks(formats); err != nil {
@@ -640,7 +640,7 @@ func (m *IscsiCredentialsInitiatorAddress) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IscsiCredentialsInitiatorAddress) validateMasks(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineInitiatorAddress) validateMasks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Masks) { // not required
 		return nil
 	}
@@ -664,7 +664,7 @@ func (m *IscsiCredentialsInitiatorAddress) validateMasks(formats strfmt.Registry
 	return nil
 }
 
-func (m *IscsiCredentialsInitiatorAddress) validateRanges(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineInitiatorAddress) validateRanges(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ranges) { // not required
 		return nil
 	}
@@ -688,8 +688,8 @@ func (m *IscsiCredentialsInitiatorAddress) validateRanges(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this iscsi credentials initiator address based on the context it is used
-func (m *IscsiCredentialsInitiatorAddress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi credentials inline initiator address based on the context it is used
+func (m *IscsiCredentialsInlineInitiatorAddress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMasks(ctx, formats); err != nil {
@@ -706,7 +706,7 @@ func (m *IscsiCredentialsInitiatorAddress) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *IscsiCredentialsInitiatorAddress) contextValidateMasks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineInitiatorAddress) contextValidateMasks(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Masks); i++ {
 
@@ -724,7 +724,7 @@ func (m *IscsiCredentialsInitiatorAddress) contextValidateMasks(ctx context.Cont
 	return nil
 }
 
-func (m *IscsiCredentialsInitiatorAddress) contextValidateRanges(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineInitiatorAddress) contextValidateRanges(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Ranges); i++ {
 
@@ -743,7 +743,7 @@ func (m *IscsiCredentialsInitiatorAddress) contextValidateRanges(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsInitiatorAddress) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineInitiatorAddress) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -751,8 +751,8 @@ func (m *IscsiCredentialsInitiatorAddress) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsInitiatorAddress) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsInitiatorAddress
+func (m *IscsiCredentialsInlineInitiatorAddress) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineInitiatorAddress
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -760,17 +760,17 @@ func (m *IscsiCredentialsInitiatorAddress) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsLinks iscsi credentials links
+// IscsiCredentialsInlineLinks iscsi credentials inline links
 //
-// swagger:model IscsiCredentialsLinks
-type IscsiCredentialsLinks struct {
+// swagger:model iscsi_credentials_inline__links
+type IscsiCredentialsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi credentials links
-func (m *IscsiCredentialsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline links
+func (m *IscsiCredentialsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -783,7 +783,7 @@ func (m *IscsiCredentialsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -800,8 +800,8 @@ func (m *IscsiCredentialsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi credentials links based on the context it is used
-func (m *IscsiCredentialsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi credentials inline links based on the context it is used
+func (m *IscsiCredentialsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -814,7 +814,7 @@ func (m *IscsiCredentialsLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *IscsiCredentialsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -829,7 +829,7 @@ func (m *IscsiCredentialsLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -837,8 +837,8 @@ func (m *IscsiCredentialsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsLinks
+func (m *IscsiCredentialsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -846,27 +846,27 @@ func (m *IscsiCredentialsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsSvm iscsi credentials svm
+// IscsiCredentialsInlineSvm iscsi credentials inline svm
 //
-// swagger:model IscsiCredentialsSvm
-type IscsiCredentialsSvm struct {
+// swagger:model iscsi_credentials_inline_svm
+type IscsiCredentialsInlineSvm struct {
 
 	// links
-	Links *IscsiCredentialsSvmLinks `json:"_links,omitempty"`
+	Links *IscsiCredentialsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this iscsi credentials svm
-func (m *IscsiCredentialsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline svm
+func (m *IscsiCredentialsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -879,7 +879,7 @@ func (m *IscsiCredentialsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -896,8 +896,8 @@ func (m *IscsiCredentialsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi credentials svm based on the context it is used
-func (m *IscsiCredentialsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi credentials inline svm based on the context it is used
+func (m *IscsiCredentialsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -910,7 +910,7 @@ func (m *IscsiCredentialsSvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *IscsiCredentialsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -925,7 +925,7 @@ func (m *IscsiCredentialsSvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsSvm) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -933,8 +933,8 @@ func (m *IscsiCredentialsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsSvm) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsSvm
+func (m *IscsiCredentialsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -942,17 +942,17 @@ func (m *IscsiCredentialsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsSvmLinks iscsi credentials svm links
+// IscsiCredentialsInlineSvmInlineLinks iscsi credentials inline svm inline links
 //
-// swagger:model IscsiCredentialsSvmLinks
-type IscsiCredentialsSvmLinks struct {
+// swagger:model iscsi_credentials_inline_svm_inline__links
+type IscsiCredentialsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi credentials svm links
-func (m *IscsiCredentialsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi credentials inline svm inline links
+func (m *IscsiCredentialsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -965,7 +965,7 @@ func (m *IscsiCredentialsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiCredentialsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -982,8 +982,8 @@ func (m *IscsiCredentialsSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi credentials svm links based on the context it is used
-func (m *IscsiCredentialsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi credentials inline svm inline links based on the context it is used
+func (m *IscsiCredentialsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -996,7 +996,7 @@ func (m *IscsiCredentialsSvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IscsiCredentialsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiCredentialsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1011,7 +1011,7 @@ func (m *IscsiCredentialsSvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiCredentialsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiCredentialsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1019,8 +1019,8 @@ func (m *IscsiCredentialsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiCredentialsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiCredentialsSvmLinks
+func (m *IscsiCredentialsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiCredentialsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

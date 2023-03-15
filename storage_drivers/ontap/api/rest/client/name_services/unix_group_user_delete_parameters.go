@@ -65,19 +65,19 @@ type UnixGroupUserDeleteParams struct {
 
 	   UNIX user to be deleted from the group.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixGroupName.
 
 	   UNIX group name.
 	*/
-	UnixGroupNamePathParameter string
+	UnixGroupName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,37 +132,37 @@ func (o *UnixGroupUserDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) WithNamePathParameter(name string) *UnixGroupUserDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) WithName(name string) *UnixGroupUserDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *UnixGroupUserDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) WithSvmUUID(svmUUID string) *UnixGroupUserDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixGroupNamePathParameter adds the unixGroupName to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) WithUnixGroupNamePathParameter(unixGroupName string) *UnixGroupUserDeleteParams {
-	o.SetUnixGroupNamePathParameter(unixGroupName)
+// WithUnixGroupName adds the unixGroupName to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) WithUnixGroupName(unixGroupName string) *UnixGroupUserDeleteParams {
+	o.SetUnixGroupName(unixGroupName)
 	return o
 }
 
-// SetUnixGroupNamePathParameter adds the unixGroupName to the unix group user delete params
-func (o *UnixGroupUserDeleteParams) SetUnixGroupNamePathParameter(unixGroupName string) {
-	o.UnixGroupNamePathParameter = unixGroupName
+// SetUnixGroupName adds the unixGroupName to the unix group user delete params
+func (o *UnixGroupUserDeleteParams) SetUnixGroupName(unixGroupName string) {
+	o.UnixGroupName = unixGroupName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,17 +174,17 @@ func (o *UnixGroupUserDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_group.name
-	if err := r.SetPathParam("unix_group.name", o.UnixGroupNamePathParameter); err != nil {
+	if err := r.SetPathParam("unix_group.name", o.UnixGroupName); err != nil {
 		return err
 	}
 

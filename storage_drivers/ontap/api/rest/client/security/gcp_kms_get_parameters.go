@@ -66,13 +66,13 @@ type GcpKmsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Google Cloud KMS UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *GcpKmsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the gcp kms get params
-func (o *GcpKmsGetParams) WithFieldsQueryParameter(fields []string) *GcpKmsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the gcp kms get params
+func (o *GcpKmsGetParams) WithFields(fields []string) *GcpKmsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the gcp kms get params
-func (o *GcpKmsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the gcp kms get params
+func (o *GcpKmsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the gcp kms get params
-func (o *GcpKmsGetParams) WithUUIDPathParameter(uuid string) *GcpKmsGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the gcp kms get params
+func (o *GcpKmsGetParams) WithUUID(uuid string) *GcpKmsGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the gcp kms get params
-func (o *GcpKmsGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the gcp kms get params
+func (o *GcpKmsGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *GcpKmsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *GcpKmsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *GcpKmsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamGcpKmsGet binds the parameter fields
 func (o *GcpKmsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,19 +66,19 @@ type SnapmirrorRelationshipTransferGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* RelationshipUUID.
 
 	   Relationship UUID
 	*/
-	RelationshIPUUIDPathParameter string
+	RelationshipUUID string
 
 	/* UUID.
 
 	   Transfer UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SnapmirrorRelationshipTransferGetParams) SetHTTPClient(client *http.Cli
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipTransferGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) WithFields(fields []string) *SnapmirrorRelationshipTransferGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithRelationshIPUUIDPathParameter adds the relationshipUUID to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) WithRelationshIPUUIDPathParameter(relationshipUUID string) *SnapmirrorRelationshipTransferGetParams {
-	o.SetRelationshIPUUIDPathParameter(relationshipUUID)
+// WithRelationshipUUID adds the relationshipUUID to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) WithRelationshipUUID(relationshipUUID string) *SnapmirrorRelationshipTransferGetParams {
+	o.SetRelationshipUUID(relationshipUUID)
 	return o
 }
 
-// SetRelationshIPUUIDPathParameter adds the relationshipUuid to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) SetRelationshIPUUIDPathParameter(relationshipUUID string) {
-	o.RelationshIPUUIDPathParameter = relationshipUUID
+// SetRelationshipUUID adds the relationshipUuid to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) SetRelationshipUUID(relationshipUUID string) {
+	o.RelationshipUUID = relationshipUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) WithUUIDPathParameter(uuid string) *SnapmirrorRelationshipTransferGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) WithUUID(uuid string) *SnapmirrorRelationshipTransferGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapmirror relationship transfer get params
-func (o *SnapmirrorRelationshipTransferGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationship transfer get params
+func (o *SnapmirrorRelationshipTransferGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SnapmirrorRelationshipTransferGetParams) WriteToRequest(r runtime.Clien
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SnapmirrorRelationshipTransferGetParams) WriteToRequest(r runtime.Clien
 	}
 
 	// path param relationship.uuid
-	if err := r.SetPathParam("relationship.uuid", o.RelationshIPUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("relationship.uuid", o.RelationshipUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SnapmirrorRelationshipTransferGetParams) WriteToRequest(r runtime.Clien
 
 // bindParamSnapmirrorRelationshipTransferGet binds the parameter fields
 func (o *SnapmirrorRelationshipTransferGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

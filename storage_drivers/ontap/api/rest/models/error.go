@@ -20,31 +20,31 @@ import (
 // swagger:model error
 type Error struct {
 
-	// Message arguments
-	// Read Only: true
-	Arguments []*ErrorArguments `json:"arguments,omitempty"`
-
 	// Error code
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
+
+	// Message arguments
+	// Read Only: true
+	ErrorInlineArguments []*ErrorArguments `json:"arguments,omitempty"`
 
 	// Error message
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// The target parameter that caused the error.
 	// Example: uuid
 	// Read Only: true
-	Target string `json:"target,omitempty"`
+	Target *string `json:"target,omitempty"`
 }
 
 // Validate validates this error
 func (m *Error) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateArguments(formats); err != nil {
+	if err := m.validateErrorInlineArguments(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -54,18 +54,18 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Error) validateArguments(formats strfmt.Registry) error {
-	if swag.IsZero(m.Arguments) { // not required
+func (m *Error) validateErrorInlineArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.ErrorInlineArguments) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
-		if swag.IsZero(m.Arguments[i]) { // not required
+	for i := 0; i < len(m.ErrorInlineArguments); i++ {
+		if swag.IsZero(m.ErrorInlineArguments[i]) { // not required
 			continue
 		}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].Validate(formats); err != nil {
+		if m.ErrorInlineArguments[i] != nil {
+			if err := m.ErrorInlineArguments[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -82,11 +82,11 @@ func (m *Error) validateArguments(formats strfmt.Registry) error {
 func (m *Error) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateArguments(ctx, formats); err != nil {
+	if err := m.contextValidateCode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCode(ctx, formats); err != nil {
+	if err := m.contextValidateErrorInlineArguments(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -104,16 +104,25 @@ func (m *Error) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 	return nil
 }
 
-func (m *Error) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *Error) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
+	return nil
+}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+func (m *Error) contextValidateErrorInlineArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "arguments", "body", []*ErrorArguments(m.ErrorInlineArguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ErrorInlineArguments); i++ {
+
+		if m.ErrorInlineArguments[i] != nil {
+			if err := m.ErrorInlineArguments[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -126,18 +135,9 @@ func (m *Error) contextValidateArguments(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *Error) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *Error) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -146,7 +146,7 @@ func (m *Error) contextValidateMessage(ctx context.Context, formats strfmt.Regis
 
 func (m *Error) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target", "body", string(m.Target)); err != nil {
+	if err := validate.ReadOnly(ctx, "target", "body", m.Target); err != nil {
 		return err
 	}
 

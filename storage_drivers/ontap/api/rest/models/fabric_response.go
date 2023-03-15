@@ -20,14 +20,14 @@ import (
 type FabricResponse struct {
 
 	// links
-	Links *FabricResponseLinks `json:"_links,omitempty"`
+	Links *FabricResponseInlineLinks `json:"_links,omitempty"`
+
+	// fabric response inline records
+	FabricResponseInlineRecords []*Fabric `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Fabric `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fabric response
@@ -38,7 +38,7 @@ func (m *FabricResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFabricResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *FabricResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FabricResponse) validateFabricResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FabricResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FabricResponseInlineRecords); i++ {
+		if swag.IsZero(m.FabricResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FabricResponseInlineRecords[i] != nil {
+			if err := m.FabricResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *FabricResponse) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFabricResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *FabricResponse) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FabricResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricResponse) contextValidateFabricResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FabricResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FabricResponseInlineRecords[i] != nil {
+			if err := m.FabricResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *FabricResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricResponseLinks fabric response links
+// FabricResponseInlineLinks fabric response inline links
 //
-// swagger:model FabricResponseLinks
-type FabricResponseLinks struct {
+// swagger:model fabric_response_inline__links
+type FabricResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type FabricResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fabric response links
-func (m *FabricResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric response inline links
+func (m *FabricResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *FabricResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FabricResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *FabricResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FabricResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *FabricResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric response links based on the context it is used
-func (m *FabricResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric response inline links based on the context it is used
+func (m *FabricResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *FabricResponseLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FabricResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *FabricResponseLinks) contextValidateNext(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FabricResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *FabricResponseLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FabricResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FabricResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *FabricResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FabricResponseLinks
+func (m *FabricResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FabricResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

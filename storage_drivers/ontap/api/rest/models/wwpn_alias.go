@@ -19,20 +19,20 @@ import (
 type WwpnAlias struct {
 
 	// links
-	Links *WwpnAliasLinks `json:"_links,omitempty"`
+	Links *WwpnAliasInlineLinks `json:"_links,omitempty"`
 
 	// The FC WWPN alias. Required in POST.
 	//
 	// Example: host1
-	Alias string `json:"alias,omitempty"`
+	Alias *string `json:"alias,omitempty"`
 
 	// svm
-	Svm *WwpnAliasSvm `json:"svm,omitempty"`
+	Svm *WwpnAliasInlineSvm `json:"svm,omitempty"`
 
 	// The FC initiator WWPN. Required in POST.
 	//
 	// Example: 2f:a0:00:a0:98:0b:56:13
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this wwpn alias
@@ -151,17 +151,17 @@ func (m *WwpnAlias) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WwpnAliasLinks wwpn alias links
+// WwpnAliasInlineLinks wwpn alias inline links
 //
-// swagger:model WwpnAliasLinks
-type WwpnAliasLinks struct {
+// swagger:model wwpn_alias_inline__links
+type WwpnAliasInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this wwpn alias links
-func (m *WwpnAliasLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this wwpn alias inline links
+func (m *WwpnAliasInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -174,7 +174,7 @@ func (m *WwpnAliasLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WwpnAliasLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WwpnAliasInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -191,8 +191,8 @@ func (m *WwpnAliasLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this wwpn alias links based on the context it is used
-func (m *WwpnAliasLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this wwpn alias inline links based on the context it is used
+func (m *WwpnAliasInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -205,7 +205,7 @@ func (m *WwpnAliasLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *WwpnAliasLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WwpnAliasInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -220,7 +220,7 @@ func (m *WwpnAliasLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *WwpnAliasLinks) MarshalBinary() ([]byte, error) {
+func (m *WwpnAliasInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -228,8 +228,8 @@ func (m *WwpnAliasLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WwpnAliasLinks) UnmarshalBinary(b []byte) error {
-	var res WwpnAliasLinks
+func (m *WwpnAliasInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WwpnAliasInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -237,27 +237,27 @@ func (m *WwpnAliasLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WwpnAliasSvm wwpn alias svm
+// WwpnAliasInlineSvm wwpn alias inline svm
 //
-// swagger:model WwpnAliasSvm
-type WwpnAliasSvm struct {
+// swagger:model wwpn_alias_inline_svm
+type WwpnAliasInlineSvm struct {
 
 	// links
-	Links *WwpnAliasSvmLinks `json:"_links,omitempty"`
+	Links *WwpnAliasInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this wwpn alias svm
-func (m *WwpnAliasSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this wwpn alias inline svm
+func (m *WwpnAliasInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -270,7 +270,7 @@ func (m *WwpnAliasSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WwpnAliasSvm) validateLinks(formats strfmt.Registry) error {
+func (m *WwpnAliasInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -287,8 +287,8 @@ func (m *WwpnAliasSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this wwpn alias svm based on the context it is used
-func (m *WwpnAliasSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this wwpn alias inline svm based on the context it is used
+func (m *WwpnAliasInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -301,7 +301,7 @@ func (m *WwpnAliasSvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *WwpnAliasSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *WwpnAliasInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -316,7 +316,7 @@ func (m *WwpnAliasSvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *WwpnAliasSvm) MarshalBinary() ([]byte, error) {
+func (m *WwpnAliasInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -324,8 +324,8 @@ func (m *WwpnAliasSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WwpnAliasSvm) UnmarshalBinary(b []byte) error {
-	var res WwpnAliasSvm
+func (m *WwpnAliasInlineSvm) UnmarshalBinary(b []byte) error {
+	var res WwpnAliasInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -333,17 +333,17 @@ func (m *WwpnAliasSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WwpnAliasSvmLinks wwpn alias svm links
+// WwpnAliasInlineSvmInlineLinks wwpn alias inline svm inline links
 //
-// swagger:model WwpnAliasSvmLinks
-type WwpnAliasSvmLinks struct {
+// swagger:model wwpn_alias_inline_svm_inline__links
+type WwpnAliasInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this wwpn alias svm links
-func (m *WwpnAliasSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this wwpn alias inline svm inline links
+func (m *WwpnAliasInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -356,7 +356,7 @@ func (m *WwpnAliasSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WwpnAliasSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WwpnAliasInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -373,8 +373,8 @@ func (m *WwpnAliasSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this wwpn alias svm links based on the context it is used
-func (m *WwpnAliasSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this wwpn alias inline svm inline links based on the context it is used
+func (m *WwpnAliasInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -387,7 +387,7 @@ func (m *WwpnAliasSvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *WwpnAliasSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WwpnAliasInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -402,7 +402,7 @@ func (m *WwpnAliasSvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *WwpnAliasSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *WwpnAliasInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -410,8 +410,8 @@ func (m *WwpnAliasSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WwpnAliasSvmLinks) UnmarshalBinary(b []byte) error {
-	var res WwpnAliasSvmLinks
+func (m *WwpnAliasInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WwpnAliasInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

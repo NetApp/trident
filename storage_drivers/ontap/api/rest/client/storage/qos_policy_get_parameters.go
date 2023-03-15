@@ -66,10 +66,10 @@ type QosPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// UUID.
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *QosPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the qos policy get params
-func (o *QosPolicyGetParams) WithFieldsQueryParameter(fields []string) *QosPolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the qos policy get params
+func (o *QosPolicyGetParams) WithFields(fields []string) *QosPolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the qos policy get params
-func (o *QosPolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the qos policy get params
+func (o *QosPolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the qos policy get params
-func (o *QosPolicyGetParams) WithUUIDPathParameter(uuid string) *QosPolicyGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the qos policy get params
+func (o *QosPolicyGetParams) WithUUID(uuid string) *QosPolicyGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the qos policy get params
-func (o *QosPolicyGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the qos policy get params
+func (o *QosPolicyGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *QosPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *QosPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *QosPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamQosPolicyGet binds the parameter fields
 func (o *QosPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

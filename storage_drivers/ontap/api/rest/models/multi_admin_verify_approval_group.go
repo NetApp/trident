@@ -21,23 +21,23 @@ import (
 type MultiAdminVerifyApprovalGroup struct {
 
 	// List of users that can approve a request.
-	Approvers []string `json:"approvers,omitempty"`
+	MultiAdminVerifyApprovalGroupInlineApprovers []*string `json:"approvers,omitempty"`
 
 	// Email addresses that are notified when a request is created, approved, vetoed, or executed.
-	Email []strfmt.Email `json:"email,omitempty"`
+	MultiAdminVerifyApprovalGroupInlineEmail []*strfmt.Email `json:"email,omitempty"`
 
 	// Name of the approval group.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// owner
-	Owner *MultiAdminVerifyApprovalGroupOwner `json:"owner,omitempty"`
+	Owner *MultiAdminVerifyApprovalGroupInlineOwner `json:"owner,omitempty"`
 }
 
 // Validate validates this multi admin verify approval group
 func (m *MultiAdminVerifyApprovalGroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateEmail(formats); err != nil {
+	if err := m.validateMultiAdminVerifyApprovalGroupInlineEmail(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -51,14 +51,17 @@ func (m *MultiAdminVerifyApprovalGroup) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *MultiAdminVerifyApprovalGroup) validateEmail(formats strfmt.Registry) error {
-	if swag.IsZero(m.Email) { // not required
+func (m *MultiAdminVerifyApprovalGroup) validateMultiAdminVerifyApprovalGroupInlineEmail(formats strfmt.Registry) error {
+	if swag.IsZero(m.MultiAdminVerifyApprovalGroupInlineEmail) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Email); i++ {
+	for i := 0; i < len(m.MultiAdminVerifyApprovalGroupInlineEmail); i++ {
+		if swag.IsZero(m.MultiAdminVerifyApprovalGroupInlineEmail[i]) { // not required
+			continue
+		}
 
-		if err := validate.FormatOf("email"+"."+strconv.Itoa(i), "body", "email", m.Email[i].String(), formats); err != nil {
+		if err := validate.FormatOf("email"+"."+strconv.Itoa(i), "body", "email", m.MultiAdminVerifyApprovalGroupInlineEmail[i].String(), formats); err != nil {
 			return err
 		}
 
@@ -130,27 +133,27 @@ func (m *MultiAdminVerifyApprovalGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyApprovalGroupOwner The owner of the approval group. The only valid owner is currently the cluster.
+// MultiAdminVerifyApprovalGroupInlineOwner The owner of the approval group. The only valid owner is currently the cluster.
 //
-// swagger:model MultiAdminVerifyApprovalGroupOwner
-type MultiAdminVerifyApprovalGroupOwner struct {
+// swagger:model multi_admin_verify_approval_group_inline_owner
+type MultiAdminVerifyApprovalGroupInlineOwner struct {
 
 	// links
-	Links *MultiAdminVerifyApprovalGroupOwnerLinks `json:"_links,omitempty"`
+	Links *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this multi admin verify approval group owner
-func (m *MultiAdminVerifyApprovalGroupOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify approval group inline owner
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -163,7 +166,7 @@ func (m *MultiAdminVerifyApprovalGroupOwner) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *MultiAdminVerifyApprovalGroupOwner) validateLinks(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -180,8 +183,8 @@ func (m *MultiAdminVerifyApprovalGroupOwner) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this multi admin verify approval group owner based on the context it is used
-func (m *MultiAdminVerifyApprovalGroupOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify approval group inline owner based on the context it is used
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -194,7 +197,7 @@ func (m *MultiAdminVerifyApprovalGroupOwner) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *MultiAdminVerifyApprovalGroupOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -209,7 +212,7 @@ func (m *MultiAdminVerifyApprovalGroupOwner) contextValidateLinks(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyApprovalGroupOwner) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -217,8 +220,8 @@ func (m *MultiAdminVerifyApprovalGroupOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyApprovalGroupOwner) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyApprovalGroupOwner
+func (m *MultiAdminVerifyApprovalGroupInlineOwner) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyApprovalGroupInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -226,17 +229,17 @@ func (m *MultiAdminVerifyApprovalGroupOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MultiAdminVerifyApprovalGroupOwnerLinks multi admin verify approval group owner links
+// MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks multi admin verify approval group inline owner inline links
 //
-// swagger:model MultiAdminVerifyApprovalGroupOwnerLinks
-type MultiAdminVerifyApprovalGroupOwnerLinks struct {
+// swagger:model multi_admin_verify_approval_group_inline_owner_inline__links
+type MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this multi admin verify approval group owner links
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this multi admin verify approval group inline owner inline links
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -249,7 +252,7 @@ func (m *MultiAdminVerifyApprovalGroupOwnerLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -266,8 +269,8 @@ func (m *MultiAdminVerifyApprovalGroupOwnerLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this multi admin verify approval group owner links based on the context it is used
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this multi admin verify approval group inline owner inline links based on the context it is used
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -280,7 +283,7 @@ func (m *MultiAdminVerifyApprovalGroupOwnerLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -295,7 +298,7 @@ func (m *MultiAdminVerifyApprovalGroupOwnerLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -303,8 +306,8 @@ func (m *MultiAdminVerifyApprovalGroupOwnerLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *MultiAdminVerifyApprovalGroupOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res MultiAdminVerifyApprovalGroupOwnerLinks
+func (m *MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MultiAdminVerifyApprovalGroupInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

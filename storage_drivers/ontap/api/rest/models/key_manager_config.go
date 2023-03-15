@@ -23,20 +23,20 @@ type KeyManagerConfig struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// Indicates whether the Common Criteria Mode configuration is enabled.
-	CcModeEnabled bool `json:"cc_mode_enabled,omitempty"`
+	CcModeEnabled *bool `json:"cc_mode_enabled,omitempty"`
 
 	// Cloud key manager connection retry count. Supported value range of 0-10.
 	// Example: 3
-	CloudKmsRetryCount int64 `json:"cloud_kms_retry_count,omitempty"`
+	CloudKmsRetryCount *int64 `json:"cloud_kms_retry_count,omitempty"`
 
 	// Health Monitor Polling Period, in minutes. Supported value range of 15-30 minutes.
 	// Example: 20
-	HealthMonitorPollingInterval int64 `json:"health_monitor_polling_interval,omitempty"`
+	HealthMonitorPollingInterval *int64 `json:"health_monitor_polling_interval,omitempty"`
 
 	// Current cluster-wide passphrase. This is a required field when setting the cc_mode_enabled field value to true. This is not audited.
 	// Example: The cluster passphrase of length 64-256 ASCII characters.
 	// Format: password
-	Passphrase strfmt.Password `json:"passphrase,omitempty"`
+	Passphrase *strfmt.Password `json:"passphrase,omitempty"`
 }
 
 // Validate validates this key manager config

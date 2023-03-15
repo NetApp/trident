@@ -66,31 +66,31 @@ type GlobalCacheSettingGetParams struct {
 
 	   Filter by eviction_time_interval
 	*/
-	EvictionTimeIntervalQueryParameter *string
+	EvictionTimeInterval *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* RemoteFetchEnabled.
 
 	   Filter by remote_fetch_enabled
 	*/
-	RemoteFetchEnabledQueryParameter *bool
+	RemoteFetchEnabled *bool
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type GlobalCacheSettingGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,7 +106,7 @@ type GlobalCacheSettingGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,14 +126,14 @@ func (o *GlobalCacheSettingGetParams) WithDefaults() *GlobalCacheSettingGetParam
 // All values with no default are reset to their zero value.
 func (o *GlobalCacheSettingGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := GlobalCacheSettingGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -175,81 +175,81 @@ func (o *GlobalCacheSettingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEvictionTimeIntervalQueryParameter adds the evictionTimeInterval to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithEvictionTimeIntervalQueryParameter(evictionTimeInterval *string) *GlobalCacheSettingGetParams {
-	o.SetEvictionTimeIntervalQueryParameter(evictionTimeInterval)
+// WithEvictionTimeInterval adds the evictionTimeInterval to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithEvictionTimeInterval(evictionTimeInterval *string) *GlobalCacheSettingGetParams {
+	o.SetEvictionTimeInterval(evictionTimeInterval)
 	return o
 }
 
-// SetEvictionTimeIntervalQueryParameter adds the evictionTimeInterval to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetEvictionTimeIntervalQueryParameter(evictionTimeInterval *string) {
-	o.EvictionTimeIntervalQueryParameter = evictionTimeInterval
+// SetEvictionTimeInterval adds the evictionTimeInterval to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetEvictionTimeInterval(evictionTimeInterval *string) {
+	o.EvictionTimeInterval = evictionTimeInterval
 }
 
-// WithFieldsQueryParameter adds the fields to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithFieldsQueryParameter(fields []string) *GlobalCacheSettingGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithFields(fields []string) *GlobalCacheSettingGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *GlobalCacheSettingGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithMaxRecords(maxRecords *int64) *GlobalCacheSettingGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithOrderByQueryParameter(orderBy []string) *GlobalCacheSettingGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithOrderBy(orderBy []string) *GlobalCacheSettingGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithRemoteFetchEnabledQueryParameter adds the remoteFetchEnabled to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithRemoteFetchEnabledQueryParameter(remoteFetchEnabled *bool) *GlobalCacheSettingGetParams {
-	o.SetRemoteFetchEnabledQueryParameter(remoteFetchEnabled)
+// WithRemoteFetchEnabled adds the remoteFetchEnabled to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithRemoteFetchEnabled(remoteFetchEnabled *bool) *GlobalCacheSettingGetParams {
+	o.SetRemoteFetchEnabled(remoteFetchEnabled)
 	return o
 }
 
-// SetRemoteFetchEnabledQueryParameter adds the remoteFetchEnabled to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetRemoteFetchEnabledQueryParameter(remoteFetchEnabled *bool) {
-	o.RemoteFetchEnabledQueryParameter = remoteFetchEnabled
+// SetRemoteFetchEnabled adds the remoteFetchEnabled to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetRemoteFetchEnabled(remoteFetchEnabled *bool) {
+	o.RemoteFetchEnabled = remoteFetchEnabled
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *GlobalCacheSettingGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithReturnRecords(returnRecords *bool) *GlobalCacheSettingGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *GlobalCacheSettingGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) WithReturnTimeout(returnTimeout *int64) *GlobalCacheSettingGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the global cache setting get params
-func (o *GlobalCacheSettingGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the global cache setting get params
+func (o *GlobalCacheSettingGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,13 +260,13 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.EvictionTimeIntervalQueryParameter != nil {
+	if o.EvictionTimeInterval != nil {
 
 		// query param eviction_time_interval
 		var qrEvictionTimeInterval string
 
-		if o.EvictionTimeIntervalQueryParameter != nil {
-			qrEvictionTimeInterval = *o.EvictionTimeIntervalQueryParameter
+		if o.EvictionTimeInterval != nil {
+			qrEvictionTimeInterval = *o.EvictionTimeInterval
 		}
 		qEvictionTimeInterval := qrEvictionTimeInterval
 		if qEvictionTimeInterval != "" {
@@ -277,7 +277,7 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -288,13 +288,13 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -305,7 +305,7 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -316,13 +316,13 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.RemoteFetchEnabledQueryParameter != nil {
+	if o.RemoteFetchEnabled != nil {
 
 		// query param remote_fetch_enabled
 		var qrRemoteFetchEnabled bool
 
-		if o.RemoteFetchEnabledQueryParameter != nil {
-			qrRemoteFetchEnabled = *o.RemoteFetchEnabledQueryParameter
+		if o.RemoteFetchEnabled != nil {
+			qrRemoteFetchEnabled = *o.RemoteFetchEnabled
 		}
 		qRemoteFetchEnabled := swag.FormatBool(qrRemoteFetchEnabled)
 		if qRemoteFetchEnabled != "" {
@@ -333,13 +333,13 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -350,13 +350,13 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -375,7 +375,7 @@ func (o *GlobalCacheSettingGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamGlobalCacheSettingGet binds the parameter fields
 func (o *GlobalCacheSettingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -392,7 +392,7 @@ func (o *GlobalCacheSettingGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamGlobalCacheSettingGet binds the parameter order_by
 func (o *GlobalCacheSettingGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

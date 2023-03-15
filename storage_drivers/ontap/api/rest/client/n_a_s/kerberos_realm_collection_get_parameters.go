@@ -66,67 +66,67 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Filter by ad_server.address
 	*/
-	AdServerAddressQueryParameter *string
+	AdServerAddress *string
 
 	/* AdServerName.
 
 	   Filter by ad_server.name
 	*/
-	AdServerNameQueryParameter *string
+	AdServerName *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* EncryptionTypes.
 
 	   Filter by encryption_types
 	*/
-	EncryptionTypesQueryParameter *string
+	EncryptionTypes *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* KdcIP.
 
 	   Filter by kdc.ip
 	*/
-	KdcIPQueryParameter *string
+	KdcIP *string
 
 	/* KdcPort.
 
 	   Filter by kdc.port
 	*/
-	KdcPortQueryParameter *int64
+	KdcPort *int64
 
 	/* KdcVendor.
 
 	   Filter by kdc.vendor
 	*/
-	KdcVendorQueryParameter *string
+	KdcVendor *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,19 +142,19 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *KerberosRealmCollectionGetParams) WithDefaults() *KerberosRealmCollecti
 // All values with no default are reset to their zero value.
 func (o *KerberosRealmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := KerberosRealmCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *KerberosRealmCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAdServerAddressQueryParameter adds the adServerAddress to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithAdServerAddressQueryParameter(adServerAddress *string) *KerberosRealmCollectionGetParams {
-	o.SetAdServerAddressQueryParameter(adServerAddress)
+// WithAdServerAddress adds the adServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithAdServerAddress(adServerAddress *string) *KerberosRealmCollectionGetParams {
+	o.SetAdServerAddress(adServerAddress)
 	return o
 }
 
-// SetAdServerAddressQueryParameter adds the adServerAddress to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetAdServerAddressQueryParameter(adServerAddress *string) {
-	o.AdServerAddressQueryParameter = adServerAddress
+// SetAdServerAddress adds the adServerAddress to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetAdServerAddress(adServerAddress *string) {
+	o.AdServerAddress = adServerAddress
 }
 
-// WithAdServerNameQueryParameter adds the adServerName to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithAdServerNameQueryParameter(adServerName *string) *KerberosRealmCollectionGetParams {
-	o.SetAdServerNameQueryParameter(adServerName)
+// WithAdServerName adds the adServerName to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithAdServerName(adServerName *string) *KerberosRealmCollectionGetParams {
+	o.SetAdServerName(adServerName)
 	return o
 }
 
-// SetAdServerNameQueryParameter adds the adServerName to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetAdServerNameQueryParameter(adServerName *string) {
-	o.AdServerNameQueryParameter = adServerName
+// SetAdServerName adds the adServerName to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetAdServerName(adServerName *string) {
+	o.AdServerName = adServerName
 }
 
-// WithCommentQueryParameter adds the comment to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithCommentQueryParameter(comment *string) *KerberosRealmCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithComment(comment *string) *KerberosRealmCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithEncryptionTypesQueryParameter adds the encryptionTypes to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithEncryptionTypesQueryParameter(encryptionTypes *string) *KerberosRealmCollectionGetParams {
-	o.SetEncryptionTypesQueryParameter(encryptionTypes)
+// WithEncryptionTypes adds the encryptionTypes to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithEncryptionTypes(encryptionTypes *string) *KerberosRealmCollectionGetParams {
+	o.SetEncryptionTypes(encryptionTypes)
 	return o
 }
 
-// SetEncryptionTypesQueryParameter adds the encryptionTypes to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetEncryptionTypesQueryParameter(encryptionTypes *string) {
-	o.EncryptionTypesQueryParameter = encryptionTypes
+// SetEncryptionTypes adds the encryptionTypes to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetEncryptionTypes(encryptionTypes *string) {
+	o.EncryptionTypes = encryptionTypes
 }
 
-// WithFieldsQueryParameter adds the fields to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithFieldsQueryParameter(fields []string) *KerberosRealmCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithFields(fields []string) *KerberosRealmCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithKdcIPQueryParameter adds the kdcIP to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithKdcIPQueryParameter(kdcIP *string) *KerberosRealmCollectionGetParams {
-	o.SetKdcIPQueryParameter(kdcIP)
+// WithKdcIP adds the kdcIP to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithKdcIP(kdcIP *string) *KerberosRealmCollectionGetParams {
+	o.SetKdcIP(kdcIP)
 	return o
 }
 
-// SetKdcIPQueryParameter adds the kdcIp to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetKdcIPQueryParameter(kdcIP *string) {
-	o.KdcIPQueryParameter = kdcIP
+// SetKdcIP adds the kdcIp to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetKdcIP(kdcIP *string) {
+	o.KdcIP = kdcIP
 }
 
-// WithKdcPortQueryParameter adds the kdcPort to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithKdcPortQueryParameter(kdcPort *int64) *KerberosRealmCollectionGetParams {
-	o.SetKdcPortQueryParameter(kdcPort)
+// WithKdcPort adds the kdcPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithKdcPort(kdcPort *int64) *KerberosRealmCollectionGetParams {
+	o.SetKdcPort(kdcPort)
 	return o
 }
 
-// SetKdcPortQueryParameter adds the kdcPort to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetKdcPortQueryParameter(kdcPort *int64) {
-	o.KdcPortQueryParameter = kdcPort
+// SetKdcPort adds the kdcPort to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetKdcPort(kdcPort *int64) {
+	o.KdcPort = kdcPort
 }
 
-// WithKdcVendorQueryParameter adds the kdcVendor to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithKdcVendorQueryParameter(kdcVendor *string) *KerberosRealmCollectionGetParams {
-	o.SetKdcVendorQueryParameter(kdcVendor)
+// WithKdcVendor adds the kdcVendor to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithKdcVendor(kdcVendor *string) *KerberosRealmCollectionGetParams {
+	o.SetKdcVendor(kdcVendor)
 	return o
 }
 
-// SetKdcVendorQueryParameter adds the kdcVendor to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetKdcVendorQueryParameter(kdcVendor *string) {
-	o.KdcVendorQueryParameter = kdcVendor
+// SetKdcVendor adds the kdcVendor to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetKdcVendor(kdcVendor *string) {
+	o.KdcVendor = kdcVendor
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *KerberosRealmCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithMaxRecords(maxRecords *int64) *KerberosRealmCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithNameQueryParameter(name *string) *KerberosRealmCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithName(name *string) *KerberosRealmCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *KerberosRealmCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithOrderBy(orderBy []string) *KerberosRealmCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *KerberosRealmCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithReturnRecords(returnRecords *bool) *KerberosRealmCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *KerberosRealmCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *KerberosRealmCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *KerberosRealmCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithSvmName(svmName *string) *KerberosRealmCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *KerberosRealmCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithSvmUUID(svmUUID *string) *KerberosRealmCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.AdServerAddressQueryParameter != nil {
+	if o.AdServerAddress != nil {
 
 		// query param ad_server.address
 		var qrAdServerAddress string
 
-		if o.AdServerAddressQueryParameter != nil {
-			qrAdServerAddress = *o.AdServerAddressQueryParameter
+		if o.AdServerAddress != nil {
+			qrAdServerAddress = *o.AdServerAddress
 		}
 		qAdServerAddress := qrAdServerAddress
 		if qAdServerAddress != "" {
@@ -413,13 +413,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.AdServerNameQueryParameter != nil {
+	if o.AdServerName != nil {
 
 		// query param ad_server.name
 		var qrAdServerName string
 
-		if o.AdServerNameQueryParameter != nil {
-			qrAdServerName = *o.AdServerNameQueryParameter
+		if o.AdServerName != nil {
+			qrAdServerName = *o.AdServerName
 		}
 		qAdServerName := qrAdServerName
 		if qAdServerName != "" {
@@ -430,13 +430,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -447,13 +447,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EncryptionTypesQueryParameter != nil {
+	if o.EncryptionTypes != nil {
 
 		// query param encryption_types
 		var qrEncryptionTypes string
 
-		if o.EncryptionTypesQueryParameter != nil {
-			qrEncryptionTypes = *o.EncryptionTypesQueryParameter
+		if o.EncryptionTypes != nil {
+			qrEncryptionTypes = *o.EncryptionTypes
 		}
 		qEncryptionTypes := qrEncryptionTypes
 		if qEncryptionTypes != "" {
@@ -464,7 +464,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.KdcIPQueryParameter != nil {
+	if o.KdcIP != nil {
 
 		// query param kdc.ip
 		var qrKdcIP string
 
-		if o.KdcIPQueryParameter != nil {
-			qrKdcIP = *o.KdcIPQueryParameter
+		if o.KdcIP != nil {
+			qrKdcIP = *o.KdcIP
 		}
 		qKdcIP := qrKdcIP
 		if qKdcIP != "" {
@@ -492,13 +492,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.KdcPortQueryParameter != nil {
+	if o.KdcPort != nil {
 
 		// query param kdc.port
 		var qrKdcPort int64
 
-		if o.KdcPortQueryParameter != nil {
-			qrKdcPort = *o.KdcPortQueryParameter
+		if o.KdcPort != nil {
+			qrKdcPort = *o.KdcPort
 		}
 		qKdcPort := swag.FormatInt64(qrKdcPort)
 		if qKdcPort != "" {
@@ -509,13 +509,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.KdcVendorQueryParameter != nil {
+	if o.KdcVendor != nil {
 
 		// query param kdc.vendor
 		var qrKdcVendor string
 
-		if o.KdcVendorQueryParameter != nil {
-			qrKdcVendor = *o.KdcVendorQueryParameter
+		if o.KdcVendor != nil {
+			qrKdcVendor = *o.KdcVendor
 		}
 		qKdcVendor := qrKdcVendor
 		if qKdcVendor != "" {
@@ -526,13 +526,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -543,13 +543,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -560,7 +560,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -571,13 +571,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -588,13 +588,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -605,13 +605,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -622,13 +622,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -647,7 +647,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamKerberosRealmCollectionGet binds the parameter fields
 func (o *KerberosRealmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -664,7 +664,7 @@ func (o *KerberosRealmCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamKerberosRealmCollectionGet binds the parameter order_by
 func (o *KerberosRealmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

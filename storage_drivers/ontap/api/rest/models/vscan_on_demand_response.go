@@ -20,13 +20,14 @@ import (
 type VscanOnDemandResponse struct {
 
 	// links
-	Links *VscanOnDemandResponseLinks `json:"_links,omitempty"`
+	Links *VscanOnDemandResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*VscanOnDemand `json:"records,omitempty"`
+	// vscan on demand response inline records
+	VscanOnDemandResponseInlineRecords []*VscanOnDemand `json:"records,omitempty"`
 }
 
 // Validate validates this vscan on demand response
@@ -37,7 +38,7 @@ func (m *VscanOnDemandResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateVscanOnDemandResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *VscanOnDemandResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *VscanOnDemandResponse) validateVscanOnDemandResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanOnDemandResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.VscanOnDemandResponseInlineRecords); i++ {
+		if swag.IsZero(m.VscanOnDemandResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.VscanOnDemandResponseInlineRecords[i] != nil {
+			if err := m.VscanOnDemandResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *VscanOnDemandResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateVscanOnDemandResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *VscanOnDemandResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanOnDemandResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandResponse) contextValidateVscanOnDemandResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.VscanOnDemandResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.VscanOnDemandResponseInlineRecords[i] != nil {
+			if err := m.VscanOnDemandResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *VscanOnDemandResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandResponseLinks vscan on demand response links
+// VscanOnDemandResponseInlineLinks vscan on demand response inline links
 //
-// swagger:model VscanOnDemandResponseLinks
-type VscanOnDemandResponseLinks struct {
+// swagger:model vscan_on_demand_response_inline__links
+type VscanOnDemandResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type VscanOnDemandResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan on demand response links
-func (m *VscanOnDemandResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand response inline links
+func (m *VscanOnDemandResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *VscanOnDemandResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *VscanOnDemandResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *VscanOnDemandResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *VscanOnDemandResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanOnDemandResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *VscanOnDemandResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this vscan on demand response links based on the context it is used
-func (m *VscanOnDemandResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand response inline links based on the context it is used
+func (m *VscanOnDemandResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *VscanOnDemandResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanOnDemandResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *VscanOnDemandResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *VscanOnDemandResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *VscanOnDemandResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *VscanOnDemandResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandResponseLinks) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandResponseLinks
+func (m *VscanOnDemandResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

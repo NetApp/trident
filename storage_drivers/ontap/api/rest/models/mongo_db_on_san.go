@@ -23,12 +23,17 @@ type MongoDbOnSan struct {
 
 	// dataset
 	// Required: true
-	Dataset *MongoDbOnSanDataset `json:"dataset"`
+	Dataset *MongoDbOnSanInlineDataset `json:"dataset"`
 
 	// The list of initiator groups to create.
 	// Max Items: 20
 	// Min Items: 0
-	NewIgroups []*MongoDbOnSanNewIgroups `json:"new_igroups,omitempty"`
+	MongoDbOnSanInlineNewIgroups []*MongoDbOnSanNewIgroups `json:"new_igroups,omitempty"`
+
+	// mongo db on san inline secondary igroups
+	// Max Items: 19
+	// Min Items: 0
+	MongoDbOnSanInlineSecondaryIgroups []*MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem `json:"secondary_igroups,omitempty"`
 
 	// The name of the host OS running the application.
 	// Enum: [hyper_v linux solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
@@ -41,12 +46,7 @@ type MongoDbOnSan struct {
 	PrimaryIgroupName *string `json:"primary_igroup_name"`
 
 	// protection type
-	ProtectionType *MongoDbOnSanProtectionType `json:"protection_type,omitempty"`
-
-	// secondary igroups
-	// Max Items: 19
-	// Min Items: 0
-	SecondaryIgroups []*MongoDbOnSanSecondaryIgroupsItems0 `json:"secondary_igroups,omitempty"`
+	ProtectionType *MongoDbOnSanInlineProtectionType `json:"protection_type,omitempty"`
 }
 
 // Validate validates this mongo db on san
@@ -57,7 +57,11 @@ func (m *MongoDbOnSan) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNewIgroups(formats); err != nil {
+	if err := m.validateMongoDbOnSanInlineNewIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMongoDbOnSanInlineSecondaryIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -70,10 +74,6 @@ func (m *MongoDbOnSan) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtectionType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSecondaryIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,30 +101,64 @@ func (m *MongoDbOnSan) validateDataset(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MongoDbOnSan) validateNewIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.NewIgroups) { // not required
+func (m *MongoDbOnSan) validateMongoDbOnSanInlineNewIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.MongoDbOnSanInlineNewIgroups) { // not required
 		return nil
 	}
 
-	iNewIgroupsSize := int64(len(m.NewIgroups))
+	iMongoDbOnSanInlineNewIgroupsSize := int64(len(m.MongoDbOnSanInlineNewIgroups))
 
-	if err := validate.MinItems("new_igroups", "body", iNewIgroupsSize, 0); err != nil {
+	if err := validate.MinItems("new_igroups", "body", iMongoDbOnSanInlineNewIgroupsSize, 0); err != nil {
 		return err
 	}
 
-	if err := validate.MaxItems("new_igroups", "body", iNewIgroupsSize, 20); err != nil {
+	if err := validate.MaxItems("new_igroups", "body", iMongoDbOnSanInlineNewIgroupsSize, 20); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.NewIgroups); i++ {
-		if swag.IsZero(m.NewIgroups[i]) { // not required
+	for i := 0; i < len(m.MongoDbOnSanInlineNewIgroups); i++ {
+		if swag.IsZero(m.MongoDbOnSanInlineNewIgroups[i]) { // not required
 			continue
 		}
 
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].Validate(formats); err != nil {
+		if m.MongoDbOnSanInlineNewIgroups[i] != nil {
+			if err := m.MongoDbOnSanInlineNewIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MongoDbOnSan) validateMongoDbOnSanInlineSecondaryIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.MongoDbOnSanInlineSecondaryIgroups) { // not required
+		return nil
+	}
+
+	iMongoDbOnSanInlineSecondaryIgroupsSize := int64(len(m.MongoDbOnSanInlineSecondaryIgroups))
+
+	if err := validate.MinItems("secondary_igroups", "body", iMongoDbOnSanInlineSecondaryIgroupsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("secondary_igroups", "body", iMongoDbOnSanInlineSecondaryIgroupsSize, 19); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.MongoDbOnSanInlineSecondaryIgroups); i++ {
+		if swag.IsZero(m.MongoDbOnSanInlineSecondaryIgroups[i]) { // not required
+			continue
+		}
+
+		if m.MongoDbOnSanInlineSecondaryIgroups[i] != nil {
+			if err := m.MongoDbOnSanInlineSecondaryIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("secondary_igroups" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -295,40 +329,6 @@ func (m *MongoDbOnSan) validateProtectionType(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MongoDbOnSan) validateSecondaryIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.SecondaryIgroups) { // not required
-		return nil
-	}
-
-	iSecondaryIgroupsSize := int64(len(m.SecondaryIgroups))
-
-	if err := validate.MinItems("secondary_igroups", "body", iSecondaryIgroupsSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("secondary_igroups", "body", iSecondaryIgroupsSize, 19); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.SecondaryIgroups); i++ {
-		if swag.IsZero(m.SecondaryIgroups[i]) { // not required
-			continue
-		}
-
-		if m.SecondaryIgroups[i] != nil {
-			if err := m.SecondaryIgroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("secondary_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this mongo db on san based on the context it is used
 func (m *MongoDbOnSan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -337,15 +337,15 @@ func (m *MongoDbOnSan) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateMongoDbOnSanInlineNewIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMongoDbOnSanInlineSecondaryIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSecondaryIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -369,14 +369,32 @@ func (m *MongoDbOnSan) contextValidateDataset(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *MongoDbOnSan) contextValidateNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *MongoDbOnSan) contextValidateMongoDbOnSanInlineNewIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.NewIgroups); i++ {
+	for i := 0; i < len(m.MongoDbOnSanInlineNewIgroups); i++ {
 
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.MongoDbOnSanInlineNewIgroups[i] != nil {
+			if err := m.MongoDbOnSanInlineNewIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MongoDbOnSan) contextValidateMongoDbOnSanInlineSecondaryIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.MongoDbOnSanInlineSecondaryIgroups); i++ {
+
+		if m.MongoDbOnSanInlineSecondaryIgroups[i] != nil {
+			if err := m.MongoDbOnSanInlineSecondaryIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("secondary_igroups" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -401,24 +419,6 @@ func (m *MongoDbOnSan) contextValidateProtectionType(ctx context.Context, format
 	return nil
 }
 
-func (m *MongoDbOnSan) contextValidateSecondaryIgroups(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.SecondaryIgroups); i++ {
-
-		if m.SecondaryIgroups[i] != nil {
-			if err := m.SecondaryIgroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("secondary_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *MongoDbOnSan) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -437,31 +437,31 @@ func (m *MongoDbOnSan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MongoDbOnSanDataset mongo db on san dataset
+// MongoDbOnSanInlineDataset mongo db on san inline dataset
 //
-// swagger:model MongoDbOnSanDataset
-type MongoDbOnSanDataset struct {
+// swagger:model mongo_db_on_san_inline_dataset
+type MongoDbOnSanInlineDataset struct {
 
 	// The number of storage elements (LUNs for SAN) of the database to maintain.  Must be an even number between 2 and 16.  Odd numbers will be rounded up to the next even number within range.
 	// Maximum: 16
 	// Minimum: 2
-	ElementCount int64 `json:"element_count,omitempty"`
+	ElementCount *int64 `json:"element_count,omitempty"`
 
 	// The number of data bearing members of the replicaset, including 1 primary and at least 1 secondary.
 	// Maximum: 20
 	// Minimum: 2
-	ReplicationFactor int64 `json:"replication_factor,omitempty"`
+	ReplicationFactor *int64 `json:"replication_factor,omitempty"`
 
 	// The size of the database. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *MongoDbOnSanDatasetStorageService `json:"storage_service,omitempty"`
+	StorageService *MongoDbOnSanInlineDatasetInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this mongo db on san dataset
-func (m *MongoDbOnSanDataset) Validate(formats strfmt.Registry) error {
+// Validate validates this mongo db on san inline dataset
+func (m *MongoDbOnSanInlineDataset) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateElementCount(formats); err != nil {
@@ -486,39 +486,39 @@ func (m *MongoDbOnSanDataset) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MongoDbOnSanDataset) validateElementCount(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDataset) validateElementCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.ElementCount) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("dataset"+"."+"element_count", "body", m.ElementCount, 2, false); err != nil {
+	if err := validate.MinimumInt("dataset"+"."+"element_count", "body", *m.ElementCount, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("dataset"+"."+"element_count", "body", m.ElementCount, 16, false); err != nil {
+	if err := validate.MaximumInt("dataset"+"."+"element_count", "body", *m.ElementCount, 16, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MongoDbOnSanDataset) validateReplicationFactor(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDataset) validateReplicationFactor(formats strfmt.Registry) error {
 	if swag.IsZero(m.ReplicationFactor) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("dataset"+"."+"replication_factor", "body", m.ReplicationFactor, 2, false); err != nil {
+	if err := validate.MinimumInt("dataset"+"."+"replication_factor", "body", *m.ReplicationFactor, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("dataset"+"."+"replication_factor", "body", m.ReplicationFactor, 20, false); err != nil {
+	if err := validate.MaximumInt("dataset"+"."+"replication_factor", "body", *m.ReplicationFactor, 20, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MongoDbOnSanDataset) validateSize(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDataset) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("dataset"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -527,7 +527,7 @@ func (m *MongoDbOnSanDataset) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MongoDbOnSanDataset) validateStorageService(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDataset) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -544,8 +544,8 @@ func (m *MongoDbOnSanDataset) validateStorageService(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this mongo db on san dataset based on the context it is used
-func (m *MongoDbOnSanDataset) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mongo db on san inline dataset based on the context it is used
+func (m *MongoDbOnSanInlineDataset) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -558,7 +558,7 @@ func (m *MongoDbOnSanDataset) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *MongoDbOnSanDataset) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDataset) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -573,7 +573,7 @@ func (m *MongoDbOnSanDataset) contextValidateStorageService(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *MongoDbOnSanDataset) MarshalBinary() ([]byte, error) {
+func (m *MongoDbOnSanInlineDataset) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -581,8 +581,8 @@ func (m *MongoDbOnSanDataset) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MongoDbOnSanDataset) UnmarshalBinary(b []byte) error {
-	var res MongoDbOnSanDataset
+func (m *MongoDbOnSanInlineDataset) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanInlineDataset
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -590,18 +590,18 @@ func (m *MongoDbOnSanDataset) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MongoDbOnSanDatasetStorageService mongo db on san dataset storage service
+// MongoDbOnSanInlineDatasetInlineStorageService mongo db on san inline dataset inline storage service
 //
-// swagger:model MongoDbOnSanDatasetStorageService
-type MongoDbOnSanDatasetStorageService struct {
+// swagger:model mongo_db_on_san_inline_dataset_inline_storage_service
+type MongoDbOnSanInlineDatasetInlineStorageService struct {
 
 	// The storage service of the database.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this mongo db on san dataset storage service
-func (m *MongoDbOnSanDatasetStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this mongo db on san inline dataset inline storage service
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -614,7 +614,7 @@ func (m *MongoDbOnSanDatasetStorageService) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-var mongoDbOnSanDatasetStorageServiceTypeNamePropEnum []interface{}
+var mongoDbOnSanInlineDatasetInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -622,52 +622,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		mongoDbOnSanDatasetStorageServiceTypeNamePropEnum = append(mongoDbOnSanDatasetStorageServiceTypeNamePropEnum, v)
+		mongoDbOnSanInlineDatasetInlineStorageServiceTypeNamePropEnum = append(mongoDbOnSanInlineDatasetInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanDatasetStorageService
-	// MongoDbOnSanDatasetStorageService
+	// mongo_db_on_san_inline_dataset_inline_storage_service
+	// MongoDbOnSanInlineDatasetInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// MongoDbOnSanDatasetStorageServiceNameExtreme captures enum value "extreme"
-	MongoDbOnSanDatasetStorageServiceNameExtreme string = "extreme"
+	// MongoDbOnSanInlineDatasetInlineStorageServiceNameExtreme captures enum value "extreme"
+	MongoDbOnSanInlineDatasetInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanDatasetStorageService
-	// MongoDbOnSanDatasetStorageService
+	// mongo_db_on_san_inline_dataset_inline_storage_service
+	// MongoDbOnSanInlineDatasetInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// MongoDbOnSanDatasetStorageServiceNamePerformance captures enum value "performance"
-	MongoDbOnSanDatasetStorageServiceNamePerformance string = "performance"
+	// MongoDbOnSanInlineDatasetInlineStorageServiceNamePerformance captures enum value "performance"
+	MongoDbOnSanInlineDatasetInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanDatasetStorageService
-	// MongoDbOnSanDatasetStorageService
+	// mongo_db_on_san_inline_dataset_inline_storage_service
+	// MongoDbOnSanInlineDatasetInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// MongoDbOnSanDatasetStorageServiceNameValue captures enum value "value"
-	MongoDbOnSanDatasetStorageServiceNameValue string = "value"
+	// MongoDbOnSanInlineDatasetInlineStorageServiceNameValue captures enum value "value"
+	MongoDbOnSanInlineDatasetInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *MongoDbOnSanDatasetStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, mongoDbOnSanDatasetStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, mongoDbOnSanInlineDatasetInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MongoDbOnSanDatasetStorageService) validateName(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -680,13 +680,13 @@ func (m *MongoDbOnSanDatasetStorageService) validateName(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validates this mongo db on san dataset storage service based on context it is used
-func (m *MongoDbOnSanDatasetStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this mongo db on san inline dataset inline storage service based on context it is used
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MongoDbOnSanDatasetStorageService) MarshalBinary() ([]byte, error) {
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -694,8 +694,8 @@ func (m *MongoDbOnSanDatasetStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MongoDbOnSanDatasetStorageService) UnmarshalBinary(b []byte) error {
-	var res MongoDbOnSanDatasetStorageService
+func (m *MongoDbOnSanInlineDatasetInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanInlineDatasetInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -703,22 +703,22 @@ func (m *MongoDbOnSanDatasetStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MongoDbOnSanProtectionType mongo db on san protection type
+// MongoDbOnSanInlineProtectionType mongo db on san inline protection type
 //
-// swagger:model MongoDbOnSanProtectionType
-type MongoDbOnSanProtectionType struct {
+// swagger:model mongo_db_on_san_inline_protection_type
+type MongoDbOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this mongo db on san protection type
-func (m *MongoDbOnSanProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this mongo db on san inline protection type
+func (m *MongoDbOnSanInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -735,7 +735,7 @@ func (m *MongoDbOnSanProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var mongoDbOnSanProtectionTypeTypeLocalRpoPropEnum []interface{}
+var mongoDbOnSanInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -743,55 +743,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		mongoDbOnSanProtectionTypeTypeLocalRpoPropEnum = append(mongoDbOnSanProtectionTypeTypeLocalRpoPropEnum, v)
+		mongoDbOnSanInlineProtectionTypeTypeLocalRpoPropEnum = append(mongoDbOnSanInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanProtectionType
-	// MongoDbOnSanProtectionType
+	// mongo_db_on_san_inline_protection_type
+	// MongoDbOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// MongoDbOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
-	MongoDbOnSanProtectionTypeLocalRpoHourly string = "hourly"
+	// MongoDbOnSanInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	MongoDbOnSanInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanProtectionType
-	// MongoDbOnSanProtectionType
+	// mongo_db_on_san_inline_protection_type
+	// MongoDbOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// MongoDbOnSanProtectionTypeLocalRpoNone captures enum value "none"
-	MongoDbOnSanProtectionTypeLocalRpoNone string = "none"
+	// MongoDbOnSanInlineProtectionTypeLocalRpoNone captures enum value "none"
+	MongoDbOnSanInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *MongoDbOnSanProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, mongoDbOnSanProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *MongoDbOnSanInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, mongoDbOnSanInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MongoDbOnSanProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var mongoDbOnSanProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var mongoDbOnSanInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -799,61 +799,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		mongoDbOnSanProtectionTypeTypeRemoteRpoPropEnum = append(mongoDbOnSanProtectionTypeTypeRemoteRpoPropEnum, v)
+		mongoDbOnSanInlineProtectionTypeTypeRemoteRpoPropEnum = append(mongoDbOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanProtectionType
-	// MongoDbOnSanProtectionType
+	// mongo_db_on_san_inline_protection_type
+	// MongoDbOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// MongoDbOnSanProtectionTypeRemoteRpoNone captures enum value "none"
-	MongoDbOnSanProtectionTypeRemoteRpoNone string = "none"
+	// MongoDbOnSanInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	MongoDbOnSanInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// MongoDbOnSanProtectionType
-	// MongoDbOnSanProtectionType
+	// mongo_db_on_san_inline_protection_type
+	// MongoDbOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// MongoDbOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
-	MongoDbOnSanProtectionTypeRemoteRpoZero string = "zero"
+	// MongoDbOnSanInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	MongoDbOnSanInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *MongoDbOnSanProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, mongoDbOnSanProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *MongoDbOnSanInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, mongoDbOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MongoDbOnSanProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this mongo db on san protection type based on context it is used
-func (m *MongoDbOnSanProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this mongo db on san inline protection type based on context it is used
+func (m *MongoDbOnSanInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MongoDbOnSanProtectionType) MarshalBinary() ([]byte, error) {
+func (m *MongoDbOnSanInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -861,8 +861,8 @@ func (m *MongoDbOnSanProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MongoDbOnSanProtectionType) UnmarshalBinary(b []byte) error {
-	var res MongoDbOnSanProtectionType
+func (m *MongoDbOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -870,19 +870,19 @@ func (m *MongoDbOnSanProtectionType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MongoDbOnSanSecondaryIgroupsItems0 mongo db on san secondary igroups items0
+// MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem mongo db on san inline secondary igroups inline array item
 //
-// swagger:model MongoDbOnSanSecondaryIgroupsItems0
-type MongoDbOnSanSecondaryIgroupsItems0 struct {
+// swagger:model mongo_db_on_san_inline_secondary_igroups_inline_array_item
+type MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem struct {
 
 	// The name of the initiator group for each secondary.
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this mongo db on san secondary igroups items0
-func (m *MongoDbOnSanSecondaryIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this mongo db on san inline secondary igroups inline array item
+func (m *MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -895,29 +895,29 @@ func (m *MongoDbOnSanSecondaryIgroupsItems0) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *MongoDbOnSanSecondaryIgroupsItems0) validateName(formats strfmt.Registry) error {
+func (m *MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this mongo db on san secondary igroups items0 based on context it is used
-func (m *MongoDbOnSanSecondaryIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this mongo db on san inline secondary igroups inline array item based on context it is used
+func (m *MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MongoDbOnSanSecondaryIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -925,8 +925,8 @@ func (m *MongoDbOnSanSecondaryIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MongoDbOnSanSecondaryIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res MongoDbOnSanSecondaryIgroupsItems0
+func (m *MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanInlineSecondaryIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -19,18 +19,18 @@ import (
 type PortReference struct {
 
 	// links
-	Links *PortReferenceLinks `json:"_links,omitempty"`
+	Links *PortReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *PortReferenceNode `json:"node,omitempty"`
+	Node *PortReferenceInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this port reference
@@ -149,17 +149,17 @@ func (m *PortReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortReferenceLinks port reference links
+// PortReferenceInlineLinks port reference inline links
 //
-// swagger:model PortReferenceLinks
-type PortReferenceLinks struct {
+// swagger:model port_reference_inline__links
+type PortReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port reference links
-func (m *PortReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port reference inline links
+func (m *PortReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -172,7 +172,7 @@ func (m *PortReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -189,8 +189,8 @@ func (m *PortReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port reference links based on the context it is used
-func (m *PortReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port reference inline links based on the context it is used
+func (m *PortReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -203,7 +203,7 @@ func (m *PortReferenceLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *PortReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *PortReferenceLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *PortReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *PortReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -226,8 +226,8 @@ func (m *PortReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res PortReferenceLinks
+func (m *PortReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -235,28 +235,28 @@ func (m *PortReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortReferenceNode port reference node
+// PortReferenceInlineNode port reference inline node
 //
-// swagger:model PortReferenceNode
-type PortReferenceNode struct {
+// swagger:model port_reference_inline_node
+type PortReferenceInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this port reference node
-func (m *PortReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this port reference inline node
+func (m *PortReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port reference node based on context it is used
-func (m *PortReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port reference inline node based on context it is used
+func (m *PortReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *PortReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -264,8 +264,8 @@ func (m *PortReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortReferenceNode) UnmarshalBinary(b []byte) error {
-	var res PortReferenceNode
+func (m *PortReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res PortReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -24,14 +24,14 @@ type ZappS3Bucket struct {
 	// Required: true
 	// Max Items: 10
 	// Min Items: 1
-	ApplicationComponents []*ZappS3BucketApplicationComponents `json:"application_components"`
+	ZappS3BucketInlineApplicationComponents []*ZappS3BucketApplicationComponents `json:"application_components"`
 }
 
 // Validate validates this zapp s3 bucket
 func (m *ZappS3Bucket) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateApplicationComponents(formats); err != nil {
+	if err := m.validateZappS3BucketInlineApplicationComponents(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -41,29 +41,29 @@ func (m *ZappS3Bucket) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappS3Bucket) validateApplicationComponents(formats strfmt.Registry) error {
+func (m *ZappS3Bucket) validateZappS3BucketInlineApplicationComponents(formats strfmt.Registry) error {
 
-	if err := validate.Required("application_components", "body", m.ApplicationComponents); err != nil {
+	if err := validate.Required("application_components", "body", m.ZappS3BucketInlineApplicationComponents); err != nil {
 		return err
 	}
 
-	iApplicationComponentsSize := int64(len(m.ApplicationComponents))
+	iZappS3BucketInlineApplicationComponentsSize := int64(len(m.ZappS3BucketInlineApplicationComponents))
 
-	if err := validate.MinItems("application_components", "body", iApplicationComponentsSize, 1); err != nil {
+	if err := validate.MinItems("application_components", "body", iZappS3BucketInlineApplicationComponentsSize, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxItems("application_components", "body", iApplicationComponentsSize, 10); err != nil {
+	if err := validate.MaxItems("application_components", "body", iZappS3BucketInlineApplicationComponentsSize, 10); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.ApplicationComponents); i++ {
-		if swag.IsZero(m.ApplicationComponents[i]) { // not required
+	for i := 0; i < len(m.ZappS3BucketInlineApplicationComponents); i++ {
+		if swag.IsZero(m.ZappS3BucketInlineApplicationComponents[i]) { // not required
 			continue
 		}
 
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].Validate(formats); err != nil {
+		if m.ZappS3BucketInlineApplicationComponents[i] != nil {
+			if err := m.ZappS3BucketInlineApplicationComponents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
 				}
@@ -80,7 +80,7 @@ func (m *ZappS3Bucket) validateApplicationComponents(formats strfmt.Registry) er
 func (m *ZappS3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateApplicationComponents(ctx, formats); err != nil {
+	if err := m.contextValidateZappS3BucketInlineApplicationComponents(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,12 +90,12 @@ func (m *ZappS3Bucket) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *ZappS3Bucket) contextValidateApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappS3Bucket) contextValidateZappS3BucketInlineApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ApplicationComponents); i++ {
+	for i := 0; i < len(m.ZappS3BucketInlineApplicationComponents); i++ {
 
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
+		if m.ZappS3BucketInlineApplicationComponents[i] != nil {
+			if err := m.ZappS3BucketInlineApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
 				}

@@ -19,10 +19,10 @@ import (
 type SvmMigrationIPInterfacePort struct {
 
 	// interface
-	Interface *SvmMigrationIPInterfacePortInterface `json:"interface,omitempty"`
+	Interface *SvmMigrationIPInterfacePortInlineInterface `json:"interface,omitempty"`
 
 	// port
-	Port *SvmMigrationIPInterfacePortPort `json:"port,omitempty"`
+	Port *SvmMigrationIPInterfacePortInlinePort `json:"port,omitempty"`
 }
 
 // Validate validates this svm migration ip interface port
@@ -141,30 +141,30 @@ func (m *SvmMigrationIPInterfacePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationIPInterfacePortInterface Network interface on the source SVM.
+// SvmMigrationIPInterfacePortInlineInterface Network interface on the source SVM.
 //
-// swagger:model SvmMigrationIPInterfacePortInterface
-type SvmMigrationIPInterfacePortInterface struct {
+// swagger:model svm_migration_ip_interface_port_inline_interface
+type SvmMigrationIPInterfacePortInlineInterface struct {
 
 	// links
-	Links *SvmMigrationIPInterfacePortInterfaceLinks `json:"_links,omitempty"`
+	Links *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *SvmMigrationIPInterfacePortInterfaceIP `json:"ip,omitempty"`
+	IP *SvmMigrationIPInterfacePortInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port interface
-func (m *SvmMigrationIPInterfacePortInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline interface
+func (m *SvmMigrationIPInterfacePortInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -181,7 +181,7 @@ func (m *SvmMigrationIPInterfacePortInterface) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterface) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -198,7 +198,7 @@ func (m *SvmMigrationIPInterfacePortInterface) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterface) validateIP(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -215,8 +215,8 @@ func (m *SvmMigrationIPInterfacePortInterface) validateIP(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this svm migration IP interface port interface based on the context it is used
-func (m *SvmMigrationIPInterfacePortInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration ip interface port inline interface based on the context it is used
+func (m *SvmMigrationIPInterfacePortInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -233,7 +233,7 @@ func (m *SvmMigrationIPInterfacePortInterface) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -247,7 +247,7 @@ func (m *SvmMigrationIPInterfacePortInterface) contextValidateLinks(ctx context.
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -262,7 +262,7 @@ func (m *SvmMigrationIPInterfacePortInterface) contextValidateIP(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterface) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -270,8 +270,8 @@ func (m *SvmMigrationIPInterfacePortInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterface) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortInterface
+func (m *SvmMigrationIPInterfacePortInlineInterface) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -279,17 +279,17 @@ func (m *SvmMigrationIPInterfacePortInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationIPInterfacePortInterfaceIP IP information
+// SvmMigrationIPInterfacePortInlineInterfaceInlineIP IP information
 //
-// swagger:model SvmMigrationIPInterfacePortInterfaceIP
-type SvmMigrationIPInterfacePortInterfaceIP struct {
+// swagger:model svm_migration_ip_interface_port_inline_interface_inline_ip
+type SvmMigrationIPInterfacePortInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port interface IP
-func (m *SvmMigrationIPInterfacePortInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline interface inline ip
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -302,23 +302,25 @@ func (m *SvmMigrationIPInterfacePortInterfaceIP) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this svm migration IP interface port interface IP based on the context it is used
-func (m *SvmMigrationIPInterfacePortInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration ip interface port inline interface inline ip based on the context it is used
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -331,20 +333,22 @@ func (m *SvmMigrationIPInterfacePortInterfaceIP) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -352,8 +356,8 @@ func (m *SvmMigrationIPInterfacePortInterfaceIP) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortInterfaceIP
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -361,17 +365,17 @@ func (m *SvmMigrationIPInterfacePortInterfaceIP) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// SvmMigrationIPInterfacePortInterfaceLinks svm migration IP interface port interface links
+// SvmMigrationIPInterfacePortInlineInterfaceInlineLinks svm migration ip interface port inline interface inline links
 //
-// swagger:model SvmMigrationIPInterfacePortInterfaceLinks
-type SvmMigrationIPInterfacePortInterfaceLinks struct {
+// swagger:model svm_migration_ip_interface_port_inline_interface_inline__links
+type SvmMigrationIPInterfacePortInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port interface links
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline interface inline links
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -384,7 +388,7 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -401,8 +405,8 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this svm migration IP interface port interface links based on the context it is used
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration ip interface port inline interface inline links based on the context it is used
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -415,7 +419,7 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -430,7 +434,7 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -438,8 +442,8 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortInterfaceLinks
+func (m *SvmMigrationIPInterfacePortInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -447,28 +451,28 @@ func (m *SvmMigrationIPInterfacePortInterfaceLinks) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// SvmMigrationIPInterfacePortPort Port to use for IP interface placement on the destination SVM.
+// SvmMigrationIPInterfacePortInlinePort Port to use for IP interface placement on the destination SVM.
 //
-// swagger:model SvmMigrationIPInterfacePortPort
-type SvmMigrationIPInterfacePortPort struct {
+// swagger:model svm_migration_ip_interface_port_inline_port
+type SvmMigrationIPInterfacePortInlinePort struct {
 
 	// links
-	Links *SvmMigrationIPInterfacePortPortLinks `json:"_links,omitempty"`
+	Links *SvmMigrationIPInterfacePortInlinePortInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *SvmMigrationIPInterfacePortPortNode `json:"node,omitempty"`
+	Node *SvmMigrationIPInterfacePortInlinePortInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port port
-func (m *SvmMigrationIPInterfacePortPort) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline port
+func (m *SvmMigrationIPInterfacePortInlinePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -485,7 +489,7 @@ func (m *SvmMigrationIPInterfacePortPort) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPort) validateLinks(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -502,7 +506,7 @@ func (m *SvmMigrationIPInterfacePortPort) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPort) validateNode(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -519,8 +523,8 @@ func (m *SvmMigrationIPInterfacePortPort) validateNode(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this svm migration IP interface port port based on the context it is used
-func (m *SvmMigrationIPInterfacePortPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration ip interface port inline port based on the context it is used
+func (m *SvmMigrationIPInterfacePortInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -537,7 +541,7 @@ func (m *SvmMigrationIPInterfacePortPort) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -551,7 +555,7 @@ func (m *SvmMigrationIPInterfacePortPort) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -566,7 +570,7 @@ func (m *SvmMigrationIPInterfacePortPort) contextValidateNode(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPort) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -574,8 +578,8 @@ func (m *SvmMigrationIPInterfacePortPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPort) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortPort
+func (m *SvmMigrationIPInterfacePortInlinePort) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -583,17 +587,17 @@ func (m *SvmMigrationIPInterfacePortPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationIPInterfacePortPortLinks svm migration IP interface port port links
+// SvmMigrationIPInterfacePortInlinePortInlineLinks svm migration ip interface port inline port inline links
 //
-// swagger:model SvmMigrationIPInterfacePortPortLinks
-type SvmMigrationIPInterfacePortPortLinks struct {
+// swagger:model svm_migration_ip_interface_port_inline_port_inline__links
+type SvmMigrationIPInterfacePortInlinePortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port port links
-func (m *SvmMigrationIPInterfacePortPortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline port inline links
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -606,7 +610,7 @@ func (m *SvmMigrationIPInterfacePortPortLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -623,8 +627,8 @@ func (m *SvmMigrationIPInterfacePortPortLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this svm migration IP interface port port links based on the context it is used
-func (m *SvmMigrationIPInterfacePortPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration ip interface port inline port inline links based on the context it is used
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -637,7 +641,7 @@ func (m *SvmMigrationIPInterfacePortPortLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SvmMigrationIPInterfacePortPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -652,7 +656,7 @@ func (m *SvmMigrationIPInterfacePortPortLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPortLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -660,8 +664,8 @@ func (m *SvmMigrationIPInterfacePortPortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPortLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortPortLinks
+func (m *SvmMigrationIPInterfacePortInlinePortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlinePortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -669,28 +673,28 @@ func (m *SvmMigrationIPInterfacePortPortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationIPInterfacePortPortNode svm migration IP interface port port node
+// SvmMigrationIPInterfacePortInlinePortInlineNode svm migration ip interface port inline port inline node
 //
-// swagger:model SvmMigrationIPInterfacePortPortNode
-type SvmMigrationIPInterfacePortPortNode struct {
+// swagger:model svm_migration_ip_interface_port_inline_port_inline_node
+type SvmMigrationIPInterfacePortInlinePortInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this svm migration IP interface port port node
-func (m *SvmMigrationIPInterfacePortPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration ip interface port inline port inline node
+func (m *SvmMigrationIPInterfacePortInlinePortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this svm migration IP interface port port node based on context it is used
-func (m *SvmMigrationIPInterfacePortPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this svm migration ip interface port inline port inline node based on context it is used
+func (m *SvmMigrationIPInterfacePortInlinePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPortNode) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationIPInterfacePortInlinePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -698,8 +702,8 @@ func (m *SvmMigrationIPInterfacePortPortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationIPInterfacePortPortNode) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationIPInterfacePortPortNode
+func (m *SvmMigrationIPInterfacePortInlinePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationIPInterfacePortInlinePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

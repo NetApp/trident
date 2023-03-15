@@ -65,19 +65,19 @@ type LocalCifsGroupMembersDeleteParams struct {
 
 	   Local group SID
 	*/
-	LocalCifsGroupSIDPathParameter string
+	LocalCifsGroupSid string
 
 	/* Name.
 
 	   Member name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,37 +132,37 @@ func (o *LocalCifsGroupMembersDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) WithLocalCifsGroupSIDPathParameter(localCifsGroupSid string) *LocalCifsGroupMembersDeleteParams {
-	o.SetLocalCifsGroupSIDPathParameter(localCifsGroupSid)
+// WithLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) WithLocalCifsGroupSid(localCifsGroupSid string) *LocalCifsGroupMembersDeleteParams {
+	o.SetLocalCifsGroupSid(localCifsGroupSid)
 	return o
 }
 
-// SetLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) SetLocalCifsGroupSIDPathParameter(localCifsGroupSid string) {
-	o.LocalCifsGroupSIDPathParameter = localCifsGroupSid
+// SetLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) SetLocalCifsGroupSid(localCifsGroupSid string) {
+	o.LocalCifsGroupSid = localCifsGroupSid
 }
 
-// WithNamePathParameter adds the name to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) WithNamePathParameter(name string) *LocalCifsGroupMembersDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) WithName(name string) *LocalCifsGroupMembersDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupMembersDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) WithSvmUUID(svmUUID string) *LocalCifsGroupMembersDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group members delete params
-func (o *LocalCifsGroupMembersDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group members delete params
+func (o *LocalCifsGroupMembersDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,17 +174,17 @@ func (o *LocalCifsGroupMembersDeleteParams) WriteToRequest(r runtime.ClientReque
 	var res []error
 
 	// path param local_cifs_group.sid
-	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSIDPathParameter); err != nil {
+	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSid); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

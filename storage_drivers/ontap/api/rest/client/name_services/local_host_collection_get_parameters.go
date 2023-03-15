@@ -66,49 +66,49 @@ type LocalHostCollectionGetParams struct {
 
 	   Filter by address
 	*/
-	AddressQueryParameter *string
+	Address *string
 
 	/* Aliases.
 
 	   Filter by aliases
 	*/
-	AliasesQueryParameter *string
+	Aliases *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Hostname.
 
 	   Filter by hostname
 	*/
-	HostnameQueryParameter *string
+	Hostname *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type LocalHostCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,13 +124,13 @@ type LocalHostCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *LocalHostCollectionGetParams) WithDefaults() *LocalHostCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *LocalHostCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LocalHostCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *LocalHostCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressQueryParameter adds the address to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithAddressQueryParameter(address *string) *LocalHostCollectionGetParams {
-	o.SetAddressQueryParameter(address)
+// WithAddress adds the address to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithAddress(address *string) *LocalHostCollectionGetParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressQueryParameter adds the address to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetAddressQueryParameter(address *string) {
-	o.AddressQueryParameter = address
+// SetAddress adds the address to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetAddress(address *string) {
+	o.Address = address
 }
 
-// WithAliasesQueryParameter adds the aliases to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithAliasesQueryParameter(aliases *string) *LocalHostCollectionGetParams {
-	o.SetAliasesQueryParameter(aliases)
+// WithAliases adds the aliases to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithAliases(aliases *string) *LocalHostCollectionGetParams {
+	o.SetAliases(aliases)
 	return o
 }
 
-// SetAliasesQueryParameter adds the aliases to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetAliasesQueryParameter(aliases *string) {
-	o.AliasesQueryParameter = aliases
+// SetAliases adds the aliases to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetAliases(aliases *string) {
+	o.Aliases = aliases
 }
 
-// WithFieldsQueryParameter adds the fields to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithFieldsQueryParameter(fields []string) *LocalHostCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithFields(fields []string) *LocalHostCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHostnameQueryParameter adds the hostname to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithHostnameQueryParameter(hostname *string) *LocalHostCollectionGetParams {
-	o.SetHostnameQueryParameter(hostname)
+// WithHostname adds the hostname to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithHostname(hostname *string) *LocalHostCollectionGetParams {
+	o.SetHostname(hostname)
 	return o
 }
 
-// SetHostnameQueryParameter adds the hostname to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetHostnameQueryParameter(hostname *string) {
-	o.HostnameQueryParameter = hostname
+// SetHostname adds the hostname to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetHostname(hostname *string) {
+	o.Hostname = hostname
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LocalHostCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithMaxRecords(maxRecords *int64) *LocalHostCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LocalHostCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithOrderBy(orderBy []string) *LocalHostCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *LocalHostCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithOwnerName(ownerName *string) *LocalHostCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *LocalHostCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithOwnerUUID(ownerUUID *string) *LocalHostCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LocalHostCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithReturnRecords(returnRecords *bool) *LocalHostCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LocalHostCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LocalHostCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the local host collection get params
-func (o *LocalHostCollectionGetParams) WithScopeQueryParameter(scope *string) *LocalHostCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the local host collection get params
+func (o *LocalHostCollectionGetParams) WithScope(scope *string) *LocalHostCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the local host collection get params
-func (o *LocalHostCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the local host collection get params
+func (o *LocalHostCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,13 +328,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AddressQueryParameter != nil {
+	if o.Address != nil {
 
 		// query param address
 		var qrAddress string
 
-		if o.AddressQueryParameter != nil {
-			qrAddress = *o.AddressQueryParameter
+		if o.Address != nil {
+			qrAddress = *o.Address
 		}
 		qAddress := qrAddress
 		if qAddress != "" {
@@ -345,13 +345,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.AliasesQueryParameter != nil {
+	if o.Aliases != nil {
 
 		// query param aliases
 		var qrAliases string
 
-		if o.AliasesQueryParameter != nil {
-			qrAliases = *o.AliasesQueryParameter
+		if o.Aliases != nil {
+			qrAliases = *o.Aliases
 		}
 		qAliases := qrAliases
 		if qAliases != "" {
@@ -362,7 +362,7 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.HostnameQueryParameter != nil {
+	if o.Hostname != nil {
 
 		// query param hostname
 		var qrHostname string
 
-		if o.HostnameQueryParameter != nil {
-			qrHostname = *o.HostnameQueryParameter
+		if o.Hostname != nil {
+			qrHostname = *o.Hostname
 		}
 		qHostname := qrHostname
 		if qHostname != "" {
@@ -390,13 +390,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -407,7 +407,7 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -435,13 +435,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -452,13 +452,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +469,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +486,13 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -511,7 +511,7 @@ func (o *LocalHostCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamLocalHostCollectionGet binds the parameter fields
 func (o *LocalHostCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *LocalHostCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamLocalHostCollectionGet binds the parameter order_by
 func (o *LocalHostCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

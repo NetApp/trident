@@ -18,16 +18,16 @@ import (
 type SubjectAlternateName struct {
 
 	// A list of DNS names for Subject Alternate name extension.
-	DNS []string `json:"dns,omitempty"`
+	SubjectAlternateNameInlineDNS []*string `json:"dns,omitempty"`
 
 	// A list of email addresses for Subject Alternate name extension
-	Email []string `json:"email,omitempty"`
+	SubjectAlternateNameInlineEmail []*string `json:"email,omitempty"`
 
 	// A list of IP addresses for Subject Alternate name extension.
-	IP []string `json:"ip,omitempty"`
+	SubjectAlternateNameInlineIP []*string `json:"ip,omitempty"`
 
 	// A list of URIs for Subject Alternate name extension.
-	URI []string `json:"uri,omitempty"`
+	SubjectAlternateNameInlineURI []*string `json:"uri,omitempty"`
 }
 
 // Validate validates this subject alternate name

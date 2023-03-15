@@ -20,16 +20,17 @@ import (
 type PlexResponse struct {
 
 	// links
-	Links *PlexResponseLinks `json:"_links,omitempty"`
+	Links *PlexResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Plex `json:"records,omitempty"`
+	// plex response inline records
+	PlexResponseInlineRecords []*Plex `json:"records,omitempty"`
 }
 
 // Validate validates this plex response
@@ -44,7 +45,7 @@ func (m *PlexResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePlexResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,18 +89,18 @@ func (m *PlexResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PlexResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PlexResponse) validatePlexResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PlexResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PlexResponseInlineRecords); i++ {
+		if swag.IsZero(m.PlexResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PlexResponseInlineRecords[i] != nil {
+			if err := m.PlexResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -124,7 +125,7 @@ func (m *PlexResponse) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePlexResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,12 +163,12 @@ func (m *PlexResponse) contextValidateError(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *PlexResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PlexResponse) contextValidatePlexResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PlexResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PlexResponseInlineRecords[i] != nil {
+			if err := m.PlexResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -198,10 +199,10 @@ func (m *PlexResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PlexResponseLinks plex response links
+// PlexResponseInlineLinks plex response inline links
 //
-// swagger:model PlexResponseLinks
-type PlexResponseLinks struct {
+// swagger:model plex_response_inline__links
+type PlexResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -210,8 +211,8 @@ type PlexResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this plex response links
-func (m *PlexResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this plex response inline links
+func (m *PlexResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -228,7 +229,7 @@ func (m *PlexResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PlexResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PlexResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -245,7 +246,7 @@ func (m *PlexResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PlexResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PlexResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -262,8 +263,8 @@ func (m *PlexResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this plex response links based on the context it is used
-func (m *PlexResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this plex response inline links based on the context it is used
+func (m *PlexResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -280,7 +281,7 @@ func (m *PlexResponseLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *PlexResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PlexResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +295,7 @@ func (m *PlexResponseLinks) contextValidateNext(ctx context.Context, formats str
 	return nil
 }
 
-func (m *PlexResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PlexResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -309,7 +310,7 @@ func (m *PlexResponseLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *PlexResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PlexResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -317,8 +318,8 @@ func (m *PlexResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PlexResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PlexResponseLinks
+func (m *PlexResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PlexResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -30,7 +30,7 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	AggregateCollectionGet(params *AggregateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCollectionGetOK, error)
 
-	AggregateCreate(params *AggregateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCreateAccepted, error)
+	AggregateCreate(params *AggregateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCreateCreated, *AggregateCreateAccepted, error)
 
 	AggregateDelete(params *AggregateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateDeleteAccepted, error)
 
@@ -71,6 +71,8 @@ type ClientService interface {
 	FileMoveCollectionGet(params *FileMoveCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCollectionGetOK, error)
 
 	FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateCreated, error)
+
+	FileMoveGet(params *FileMoveGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveGetOK, error)
 
 	FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCollectionGetOK, error)
 
@@ -255,7 +257,7 @@ type ClientService interface {
 	AggregateCollectionGet Retrieves the collection of aggregates for the entire cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
 * `space.block_storage.inactive_user_data`
 * `space.block_storage.inactive_user_data_percent`
@@ -321,7 +323,7 @@ If not specified in POST, the following default values are assigned. The remaini
 POST /api/storage/aggregates {"node": {"name": "node1"}, "name": "test", "block_storage": {"primary": {"disk_count": "10"}}}
 ```
 */
-func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCreateAccepted, error) {
+func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCreateCreated, *AggregateCreateAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAggregateCreateParams()
@@ -345,15 +347,17 @@ func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AggregateCreateAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AggregateCreateCreated:
+		return value, nil, nil
+	case *AggregateCreateAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AggregateCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -401,7 +405,7 @@ func (a *Client) AggregateDelete(params *AggregateDeleteParams, authInfo runtime
 	AggregateGet Retrieves the aggregate specified by the UUID. The recommend query cannot be used for this operation.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
 * `space.block_storage.inactive_user_data`
 * `space.block_storage.inactive_user_data_percent`
@@ -1068,7 +1072,7 @@ func (a *Client) FileDelete(params *FileDeleteParams, authInfo runtime.ClientAut
 	FileInfoCollectionGet Retrieves a list of files and directories for a given directory or returns only the properties of a single given directory or file of a volume.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties.  They are not included by default in GET results and must be explicitly requested using the `fields` query property. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties.  They are not included by default in GET results and must be explicitly requested using the `fields` query property. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
   - `analytics`
   - `qos_policy.name`
   - `qos_policy.uuid`
@@ -1109,7 +1113,7 @@ func (a *Client) FileInfoCollectionGet(params *FileInfoCollectionGetParams, auth
 }
 
 /*
-FileInfoCreate Creates a new file with the supplied data, creates a new directory or creates a new symlink.
+FileInfoCreate Creates a new file with the supplied data, a new directory or a new symlink.
 */
 func (a *Client) FileInfoCreate(params *FileInfoCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1278,10 +1282,53 @@ func (a *Client) FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.C
 }
 
 /*
+	FileMoveGet ## Overview
+
+Retrieve the status of an on-going file move operation.
+### Related ONTAP commands
+* `volume file move show`
+* `volume rebalance file-move show`
+*/
+func (a *Client) FileMoveGet(params *FileMoveGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileMoveGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_move_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/moves/{node.uuid}/{uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileMoveGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileMoveGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileMoveGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	FlexcacheCollectionGet Retrieves FlexCache in the cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `origins.ip_address` - IP address of origin.
 * `origins.size` - Physical size of origin.
 * `origins.state` - State of origin.
@@ -1350,6 +1397,10 @@ If not specified in POST, the following default property values are assigned:
 * `is_disconnected_mode_off_for_locks` - false. This property specifies if the origin will honor the cache side locks when doing the lock checks in the disconnected mode.
 * `dr_cache` - false if FlexCache is not a DR cache. This property is used to create a DR FlexCache.
 * `global_file_locking_enabled` - false. This property specifies whether global file locking is enabled on the FlexCache volume.
+* `writeback.enabled` - false. This property specifies whether writeback is enabled for the FlexCache volume.
+* `writeback.per_inode_dirty_limit` - 2500. This property specifies the amount of data in 4KB blocks that the system can write per inode in a FlexCache volume before a writeback is initiated for that inode.
+* `writeback.transfer_limit` - 200. This property specifies the maximum number of 4KB data blocks the system can transfer, at one time, from the cache to the origin. This process will keep on recurring until all the dirty blocks for the inode are transferred to the origin volume.
+* `writeback.scrub_threshold` - 2000000. This property specifies the threshold value in 4KB data blocks which when hit will trigger a scrub that will initiate writeback for all dirty inodes on the FlexCache volume.
 ### Related ONTAP commands
 * `volume flexcache create`
 * `volume flexcache prepopulate start`
@@ -1438,7 +1489,7 @@ func (a *Client) FlexcacheDelete(params *FlexcacheDeleteParams, authInfo runtime
 	FlexcacheGet Retrieves attributes of the FlexCache in the cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are included by default in GET. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are included by default in GET. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `origins.ip_address` - IP address of origin.
 * `origins.size` - Physical size of origin.
 * `origins.state` - State of origin.
@@ -1541,7 +1592,7 @@ func (a *Client) FlexcacheModify(params *FlexcacheModifyParams, authInfo runtime
 	FlexcacheOriginCollectionGet Retrieves origin of FlexCache in the cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `flexcaches.ip_address` - IP address of FlexCache.
 * `flexcaches.size` - Physical size of FlexCache.
 * `flexcaches.guarantee.type` - Space guarantee style of FlexCache.
@@ -1590,7 +1641,7 @@ func (a *Client) FlexcacheOriginCollectionGet(params *FlexcacheOriginCollectionG
 	FlexcacheOriginGet Retrieves attributes of the origin of a FlexCache in the cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are included by default in GET results. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are included by default in GET results. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `flexcaches.ip_address` - IP address of FlexCache.
 * `flexcaches.size` - Physical size of FlexCache.
 * `flexcaches.guarantee.type` - Space guarantee style of FlexCache.
@@ -2146,7 +2197,7 @@ func (a *Client) QosWorkloadGet(params *QosWorkloadGetParams, authInfo runtime.C
 
 Use the `fields` query parameter to retrieve all properties of the qtree. If the `fields` query parameter is not used, then GET returns the qtree `name` and qtree `id` only.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 ### Related ONTAP commands
 * `qtree show`
@@ -2282,7 +2333,7 @@ func (a *Client) QtreeDelete(params *QtreeDeleteParams, authInfo runtime.ClientA
 	QtreeGet Retrieves properties for a specific qtree identified by the `volume.uuid` and the `id` in the API path.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 ### Related ONTAP commands
 * `qtree show`
@@ -2813,11 +2864,13 @@ func (a *Client) ShelfModify(params *ShelfModifyParams, authInfo runtime.ClientA
 	SnapshotCollectionGet Retrieves a collection of volume Snapshot copies.
 
 ### Expensive properties
-There is an added cost to retrieving the amount of reclaimable space for Snapshot copies, as the calculation is done on demand based on the list of Snapshot copies provided.
+There is an added computational cost to retrieving the amount of reclaimable space for Snapshot copies, as the calculation is done on demand based on the list of Snapshot copies provided.
 * `reclaimable_space`
+* `delta`
 ### Related ONTAP commands
 * `snapshot show`
 * `snapshot compute-reclaimable`
+* `snapshot show-delta`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
 */
@@ -2865,6 +2918,7 @@ func (a *Client) SnapshotCollectionGet(params *SnapshotCollectionGetParams, auth
 * `comment` - Comment associated with the Snapshot copy.
 * `expiry_time` - Snapshot copies with an expiry time set are not allowed to be deleted until the retention time is reached.
 * `snapmirror_label` - Label for SnapMirror operations.
+* `snaplock_expiry_time` - Expiry time for Snapshot copy locking enabled volumes.
 ### Related ONTAP commands
 * `snapshot create`
 ### Learn more
@@ -3088,6 +3142,8 @@ func (a *Client) SnapshotPolicyCollectionGet(params *SnapshotPolicyCollectionGet
 * `copies.count` - Number of Snapshot copies to maintain for this schedule.
 ### Recommended optional properties
 * `copies.prefix` - Prefix to use when creating Snapshot copies at regular intervals.
+* `copies.snapmirror` - Label for SnapMirror operations.
+* `copies.retention` - Retention period for Snapshot copy locking enabled volumes.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `enabled` - _true_
@@ -4963,7 +5019,7 @@ func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGet
 	VolumeCollectionGet Retrieves volumes.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
 * `analytics.*`
 * `anti_ransomware.*`
@@ -5060,6 +5116,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `constituents.space.snapshot.used`
 * `constituents.space.snapshot.reserve_percent`
 * `constituents.space.snapshot.autodelete_enabled`
+* `constituents.space.large_size_enabled`
 * `constituents.aggregates.name`
 * `constituents.aggregates.uuid`
 * `constituents.movement.destination_aggregate.name`
@@ -5069,6 +5126,8 @@ There is an added cost to retrieving values for these properties. They are not i
 * `constituents.movement.cutover_window`
 * `constituents.movement.tiering_policy`
 * `asynchronous_directory_delete.*`
+* `rebalancing.*`
+* `metric.*`
 ### Related ONTAP commands
 * `volume show`
 * `volume clone show`
@@ -5080,6 +5139,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
+* `volume rebalance show`
 * `security anti-ransomware volume show`
 * `security anti-ransomware volume space show`
 * `volume file async-delete client show`
@@ -5177,6 +5237,8 @@ func (a *Client) VolumeCreate(params *VolumeCreateParams, authInfo runtime.Clien
 /*
 	VolumeDelete Deletes a volume. If the UUID belongs to a volume, all of its blocks are freed and returned to its containing aggregate. If a volume is online, it is offlined before deletion. If a volume is mounted, unmount the volume by specifying the nas.path as empty before deleting it using the DELETE operation.
 
+### Optional parameters:
+* `force` - Bypasses the recovery-queue and completely removes the volume from the aggregate making it non-recoverable. By default, this flag is set to "false".
 ### Related ONTAP commands
 * `volume delete`
 * `volume clone delete`
@@ -5451,7 +5513,7 @@ func (a *Client) VolumeEfficiencyPolicyModify(params *VolumeEfficiencyPolicyModi
 	VolumeGet Retrieves a volume. The GET API can be used to retrieve the quota state for a FlexVol or a FlexGroup volume.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
 * `analytics.*`
 * `anti_ransomware.*`
@@ -5502,7 +5564,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.cross_volume_dedupe_metafiles_footprint`
 * `space.cross_volume_dedupe_metafiles_temporary_footprint`
 * `space.auto_adaptive_compression_footprint_data_reduction`
-* `space.effective_total_footprint`
+* `space.effective_total_foorprint`
 * `space.snapshot_reserve_unusable`
 * `space.snapshot_spill`
 * `space.user_data`
@@ -5529,6 +5591,8 @@ There is an added cost to retrieving values for these properties. They are not i
 * `movement.*`
 * `statistics.*`
 * `asynchronous_directory_delete.*`
+* `rebalancing.*`
+* `metric.*`
 ### Related ONTAP commands
 * `volume show`
 * `volume clone show`
@@ -5540,6 +5604,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
+* `volume rebalance show`
 * `security anti-ransomware volume show`
 * `security anti-ransomware volume attack generate-report`
 * `security anti-ransomware volume space show`
@@ -5619,7 +5684,7 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 }
 
 /*
-	VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume.  An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
+	VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume. The PATCH API can also be used to start or stop non-disruptive volume capacity rebalancing for FlexGroup volumes in addition to modifying capacity rebalancing properties. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
 
 <br>A PATCH request for volume encryption performs conversion/rekey operations asynchronously. You can retrieve the conversion/rekey progress details by calling a GET request on the corresponding volume endpoint.
 ### Optional properties
@@ -5638,6 +5703,9 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `volume snaplock modify`
 * `volume encryption conversion start`
 * `volume encryption rekey start`
+* `volume rebalance start`
+* `volume rebalance stop`
+* `volume rebalance modify`
 * `security anti-ransomware volume enable`
 * `security anti-ransomware volume disable`
 * `security anti-ransomware volume dry-run`

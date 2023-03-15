@@ -19,7 +19,7 @@ import (
 type ConsistencyGroupQosReference struct {
 
 	// policy
-	Policy *ConsistencyGroupQosReferencePolicy `json:"policy,omitempty"`
+	Policy *ConsistencyGroupQosReferenceInlinePolicy `json:"policy,omitempty"`
 }
 
 // Validate validates this consistency group qos reference
@@ -99,41 +99,41 @@ func (m *ConsistencyGroupQosReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupQosReferencePolicy The QoS policy
+// ConsistencyGroupQosReferenceInlinePolicy The QoS policy
 //
-// swagger:model ConsistencyGroupQosReferencePolicy
-type ConsistencyGroupQosReferencePolicy struct {
+// swagger:model consistency_group_qos_reference_inline_policy
+type ConsistencyGroupQosReferenceInlinePolicy struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group qos reference policy
-func (m *ConsistencyGroupQosReferencePolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group qos reference inline policy
+func (m *ConsistencyGroupQosReferenceInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -146,7 +146,7 @@ func (m *ConsistencyGroupQosReferencePolicy) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *ConsistencyGroupQosReferencePolicy) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupQosReferenceInlinePolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -163,8 +163,8 @@ func (m *ConsistencyGroupQosReferencePolicy) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this consistency group qos reference policy based on the context it is used
-func (m *ConsistencyGroupQosReferencePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group qos reference inline policy based on the context it is used
+func (m *ConsistencyGroupQosReferenceInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *ConsistencyGroupQosReferencePolicy) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *ConsistencyGroupQosReferencePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupQosReferenceInlinePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -192,7 +192,7 @@ func (m *ConsistencyGroupQosReferencePolicy) contextValidateLinks(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupQosReferencePolicy) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupQosReferenceInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -200,8 +200,8 @@ func (m *ConsistencyGroupQosReferencePolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupQosReferencePolicy) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupQosReferencePolicy
+func (m *ConsistencyGroupQosReferenceInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupQosReferenceInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

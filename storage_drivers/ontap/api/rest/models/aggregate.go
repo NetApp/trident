@@ -22,81 +22,81 @@ import (
 type Aggregate struct {
 
 	// links
-	Links *AggregateLinks `json:"_links,omitempty"`
+	Links *AggregateInlineLinks `json:"_links,omitempty"`
+
+	// Information on the aggregate's remaining hot spare disks.
+	AggregateInlineRecommendationSpares []*AggregateSpare `json:"recommendation_spares,omitempty"`
 
 	// block storage
-	BlockStorage *AggregateBlockStorage `json:"block_storage,omitempty"`
+	BlockStorage *AggregateInlineBlockStorage `json:"block_storage,omitempty"`
 
 	// cloud storage
-	CloudStorage *AggregateCloudStorage `json:"cloud_storage,omitempty"`
+	CloudStorage *AggregateInlineCloudStorage `json:"cloud_storage,omitempty"`
 
 	// Timestamp of aggregate creation.
 	// Example: 2018-01-01T12:00:00-04:00
 	// Read Only: true
-	CreateTime string `json:"create_time,omitempty"`
+	CreateTime *string `json:"create_time,omitempty"`
 
 	// data encryption
-	DataEncryption *AggregateDataEncryption `json:"data_encryption,omitempty"`
+	DataEncryption *AggregateInlineDataEncryption `json:"data_encryption,omitempty"`
 
 	// dr home node
-	DrHomeNode *AggregateDrHomeNode `json:"dr_home_node,omitempty"`
+	DrHomeNode *AggregateInlineDrHomeNode `json:"dr_home_node,omitempty"`
 
 	// home node
-	HomeNode *AggregateHomeNode `json:"home_node,omitempty"`
+	HomeNode *AggregateInlineHomeNode `json:"home_node,omitempty"`
 
 	// inactive data reporting
-	InactiveDataReporting *AggregateInactiveDataReporting `json:"inactive_data_reporting,omitempty"`
+	InactiveDataReporting *AggregateInlineInactiveDataReporting `json:"inactive_data_reporting,omitempty"`
 
 	// inode attributes
-	InodeAttributes *AggregateInodeAttributes `json:"inode_attributes,omitempty"`
+	InodeAttributes *AggregateInlineInodeAttributes `json:"inode_attributes,omitempty"`
 
 	// Specifies whether the aggregate is in a spares low condition on any of the RAID groups.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: false
 	// Read Only: true
 	IsSpareLow *bool `json:"is_spare_low,omitempty"`
 
 	// metric
-	Metric *AggregateMetric `json:"metric,omitempty"`
+	Metric *AggregateInlineMetric `json:"metric,omitempty"`
 
 	// Aggregate name.
 	// Example: node1_aggr_1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *AggregateNode `json:"node,omitempty"`
-
-	// Information on the aggregate's remaining hot spare disks.
-	RecommendationSpares []*AggregateSpare `json:"recommendation_spares,omitempty"`
+	Node *AggregateInlineNode `json:"node,omitempty"`
 
 	// Specifies whether or not SIDL is enabled on the aggregate.
-	SidlEnabled bool `json:"sidl_enabled,omitempty"`
+	SidlEnabled *bool `json:"sidl_enabled,omitempty"`
 
 	// SnapLock type.
 	// Enum: [non_snaplock compliance enterprise]
-	SnaplockType string `json:"snaplock_type,omitempty"`
+	SnaplockType *string `json:"snaplock_type,omitempty"`
 
 	// snapshot
-	Snapshot *AggregateSnapshot `json:"snapshot,omitempty"`
+	Snapshot *AggregateInlineSnapshot `json:"snapshot,omitempty"`
 
 	// space
-	Space *AggregateSpace `json:"space,omitempty"`
+	Space *AggregateInlineSpace `json:"space,omitempty"`
 
 	// Operational state of the aggregate.
 	// Enum: [online onlining offline offlining relocating unmounted restricted inconsistent failed unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *AggregateStatistics `json:"statistics,omitempty"`
+	Statistics *AggregateInlineStatistics `json:"statistics,omitempty"`
 
 	// Aggregate UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// Number of volumes in the aggregate.
 	// Read Only: true
-	VolumeCount int64 `json:"volume-count,omitempty"`
+	VolumeCount *int64 `json:"volume-count,omitempty"`
 }
 
 // Validate validates this aggregate
@@ -104,6 +104,10 @@ func (m *Aggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAggregateInlineRecommendationSpares(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -140,10 +144,6 @@ func (m *Aggregate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRecommendationSpares(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +185,30 @@ func (m *Aggregate) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Aggregate) validateAggregateInlineRecommendationSpares(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateInlineRecommendationSpares) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateInlineRecommendationSpares); i++ {
+		if swag.IsZero(m.AggregateInlineRecommendationSpares[i]) { // not required
+			continue
+		}
+
+		if m.AggregateInlineRecommendationSpares[i] != nil {
+			if err := m.AggregateInlineRecommendationSpares[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -343,30 +367,6 @@ func (m *Aggregate) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Aggregate) validateRecommendationSpares(formats strfmt.Registry) error {
-	if swag.IsZero(m.RecommendationSpares) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.RecommendationSpares); i++ {
-		if swag.IsZero(m.RecommendationSpares[i]) { // not required
-			continue
-		}
-
-		if m.RecommendationSpares[i] != nil {
-			if err := m.RecommendationSpares[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 var aggregateTypeSnaplockTypePropEnum []interface{}
 
 func init() {
@@ -426,7 +426,7 @@ func (m *Aggregate) validateSnaplockType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSnaplockTypeEnum("snaplock_type", "body", m.SnaplockType); err != nil {
+	if err := m.validateSnaplockTypeEnum("snaplock_type", "body", *m.SnaplockType); err != nil {
 		return err
 	}
 
@@ -596,7 +596,7 @@ func (m *Aggregate) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -625,6 +625,10 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAggregateInlineRecommendationSpares(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -672,10 +676,6 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecommendationSpares(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -716,6 +716,24 @@ func (m *Aggregate) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *Aggregate) contextValidateAggregateInlineRecommendationSpares(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AggregateInlineRecommendationSpares); i++ {
+
+		if m.AggregateInlineRecommendationSpares[i] != nil {
+			if err := m.AggregateInlineRecommendationSpares[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Aggregate) contextValidateBlockStorage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BlockStorage != nil {
@@ -746,7 +764,7 @@ func (m *Aggregate) contextValidateCloudStorage(ctx context.Context, formats str
 
 func (m *Aggregate) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "create_time", "body", string(m.CreateTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
 		return err
 	}
 
@@ -860,24 +878,6 @@ func (m *Aggregate) contextValidateNode(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *Aggregate) contextValidateRecommendationSpares(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.RecommendationSpares); i++ {
-
-		if m.RecommendationSpares[i] != nil {
-			if err := m.RecommendationSpares[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("recommendation_spares" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Aggregate) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshot != nil {
@@ -922,7 +922,7 @@ func (m *Aggregate) contextValidateStatistics(ctx context.Context, formats strfm
 
 func (m *Aggregate) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -931,7 +931,7 @@ func (m *Aggregate) contextValidateUUID(ctx context.Context, formats strfmt.Regi
 
 func (m *Aggregate) contextValidateVolumeCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "volume-count", "body", int64(m.VolumeCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "volume-count", "body", m.VolumeCount); err != nil {
 		return err
 	}
 
@@ -956,36 +956,36 @@ func (m *Aggregate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateBlockStorage Configuration information for the locally attached portion of the aggregate. When a cloud store is also used by this aggregate, this is referred to as the performance tier.
+// AggregateInlineBlockStorage Configuration information for the locally attached portion of the aggregate. When a cloud store is also used by this aggregate, this is referred to as the performance tier.
 //
-// swagger:model AggregateBlockStorage
-type AggregateBlockStorage struct {
+// swagger:model aggregate_inline_block_storage
+type AggregateInlineBlockStorage struct {
 
 	// hybrid cache
-	HybridCache *AggregateBlockStorageHybridCache `json:"hybrid_cache,omitempty"`
+	HybridCache *AggregateInlineBlockStorageInlineHybridCache `json:"hybrid_cache,omitempty"`
 
 	// mirror
-	Mirror *AggregateBlockStorageMirror `json:"mirror,omitempty"`
+	Mirror *AggregateInlineBlockStorageInlineMirror `json:"mirror,omitempty"`
 
 	// Plex reference for each plex in the aggregate.
 	// Read Only: true
 	Plexes []*PlexReference `json:"plexes,omitempty"`
 
 	// primary
-	Primary *AggregateBlockStoragePrimary `json:"primary,omitempty"`
+	Primary *AggregateInlineBlockStorageInlinePrimary `json:"primary,omitempty"`
 
 	// Type of aggregate.
 	// Read Only: true
 	// Enum: [hdd hybrid lun ssd vmdisk]
-	StorageType string `json:"storage_type,omitempty"`
+	StorageType *string `json:"storage_type,omitempty"`
 
 	// If true, aggregate is using shared disks.
 	// Read Only: true
 	UsesPartitions *bool `json:"uses_partitions,omitempty"`
 }
 
-// Validate validates this aggregate block storage
-func (m *AggregateBlockStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline block storage
+func (m *AggregateInlineBlockStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateHybridCache(formats); err != nil {
@@ -1014,7 +1014,7 @@ func (m *AggregateBlockStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateBlockStorage) validateHybridCache(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) validateHybridCache(formats strfmt.Registry) error {
 	if swag.IsZero(m.HybridCache) { // not required
 		return nil
 	}
@@ -1031,7 +1031,7 @@ func (m *AggregateBlockStorage) validateHybridCache(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *AggregateBlockStorage) validateMirror(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) validateMirror(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mirror) { // not required
 		return nil
 	}
@@ -1048,7 +1048,7 @@ func (m *AggregateBlockStorage) validateMirror(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateBlockStorage) validatePlexes(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) validatePlexes(formats strfmt.Registry) error {
 	if swag.IsZero(m.Plexes) { // not required
 		return nil
 	}
@@ -1072,7 +1072,7 @@ func (m *AggregateBlockStorage) validatePlexes(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateBlockStorage) validatePrimary(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) validatePrimary(formats strfmt.Registry) error {
 	if swag.IsZero(m.Primary) { // not required
 		return nil
 	}
@@ -1089,7 +1089,7 @@ func (m *AggregateBlockStorage) validatePrimary(formats strfmt.Registry) error {
 	return nil
 }
 
-var aggregateBlockStorageTypeStorageTypePropEnum []interface{}
+var aggregateInlineBlockStorageTypeStorageTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1097,86 +1097,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStorageTypeStorageTypePropEnum = append(aggregateBlockStorageTypeStorageTypePropEnum, v)
+		aggregateInlineBlockStorageTypeStorageTypePropEnum = append(aggregateInlineBlockStorageTypeStorageTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorage
-	// AggregateBlockStorage
+	// aggregate_inline_block_storage
+	// AggregateInlineBlockStorage
 	// storage_type
 	// StorageType
 	// hdd
 	// END DEBUGGING
-	// AggregateBlockStorageStorageTypeHdd captures enum value "hdd"
-	AggregateBlockStorageStorageTypeHdd string = "hdd"
+	// AggregateInlineBlockStorageStorageTypeHdd captures enum value "hdd"
+	AggregateInlineBlockStorageStorageTypeHdd string = "hdd"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorage
-	// AggregateBlockStorage
+	// aggregate_inline_block_storage
+	// AggregateInlineBlockStorage
 	// storage_type
 	// StorageType
 	// hybrid
 	// END DEBUGGING
-	// AggregateBlockStorageStorageTypeHybrid captures enum value "hybrid"
-	AggregateBlockStorageStorageTypeHybrid string = "hybrid"
+	// AggregateInlineBlockStorageStorageTypeHybrid captures enum value "hybrid"
+	AggregateInlineBlockStorageStorageTypeHybrid string = "hybrid"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorage
-	// AggregateBlockStorage
+	// aggregate_inline_block_storage
+	// AggregateInlineBlockStorage
 	// storage_type
 	// StorageType
 	// lun
 	// END DEBUGGING
-	// AggregateBlockStorageStorageTypeLun captures enum value "lun"
-	AggregateBlockStorageStorageTypeLun string = "lun"
+	// AggregateInlineBlockStorageStorageTypeLun captures enum value "lun"
+	AggregateInlineBlockStorageStorageTypeLun string = "lun"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorage
-	// AggregateBlockStorage
+	// aggregate_inline_block_storage
+	// AggregateInlineBlockStorage
 	// storage_type
 	// StorageType
 	// ssd
 	// END DEBUGGING
-	// AggregateBlockStorageStorageTypeSsd captures enum value "ssd"
-	AggregateBlockStorageStorageTypeSsd string = "ssd"
+	// AggregateInlineBlockStorageStorageTypeSsd captures enum value "ssd"
+	AggregateInlineBlockStorageStorageTypeSsd string = "ssd"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorage
-	// AggregateBlockStorage
+	// aggregate_inline_block_storage
+	// AggregateInlineBlockStorage
 	// storage_type
 	// StorageType
 	// vmdisk
 	// END DEBUGGING
-	// AggregateBlockStorageStorageTypeVmdisk captures enum value "vmdisk"
-	AggregateBlockStorageStorageTypeVmdisk string = "vmdisk"
+	// AggregateInlineBlockStorageStorageTypeVmdisk captures enum value "vmdisk"
+	AggregateInlineBlockStorageStorageTypeVmdisk string = "vmdisk"
 )
 
 // prop value enum
-func (m *AggregateBlockStorage) validateStorageTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStorageTypeStorageTypePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorage) validateStorageTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageTypeStorageTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStorage) validateStorageType(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) validateStorageType(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStorageTypeEnum("block_storage"+"."+"storage_type", "body", m.StorageType); err != nil {
+	if err := m.validateStorageTypeEnum("block_storage"+"."+"storage_type", "body", *m.StorageType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this aggregate block storage based on the context it is used
-func (m *AggregateBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline block storage based on the context it is used
+func (m *AggregateInlineBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHybridCache(ctx, formats); err != nil {
@@ -1209,7 +1209,7 @@ func (m *AggregateBlockStorage) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidateHybridCache(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidateHybridCache(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.HybridCache != nil {
 		if err := m.HybridCache.ContextValidate(ctx, formats); err != nil {
@@ -1223,7 +1223,7 @@ func (m *AggregateBlockStorage) contextValidateHybridCache(ctx context.Context, 
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidateMirror(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidateMirror(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Mirror != nil {
 		if err := m.Mirror.ContextValidate(ctx, formats); err != nil {
@@ -1237,7 +1237,7 @@ func (m *AggregateBlockStorage) contextValidateMirror(ctx context.Context, forma
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidatePlexes(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidatePlexes(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "block_storage"+"."+"plexes", "body", []*PlexReference(m.Plexes)); err != nil {
 		return err
@@ -1259,7 +1259,7 @@ func (m *AggregateBlockStorage) contextValidatePlexes(ctx context.Context, forma
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Primary != nil {
 		if err := m.Primary.ContextValidate(ctx, formats); err != nil {
@@ -1273,16 +1273,16 @@ func (m *AggregateBlockStorage) contextValidatePrimary(ctx context.Context, form
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidateStorageType(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidateStorageType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"storage_type", "body", string(m.StorageType)); err != nil {
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"storage_type", "body", m.StorageType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStorage) contextValidateUsesPartitions(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorage) contextValidateUsesPartitions(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "block_storage"+"."+"uses_partitions", "body", m.UsesPartitions); err != nil {
 		return err
@@ -1292,7 +1292,7 @@ func (m *AggregateBlockStorage) contextValidateUsesPartitions(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateBlockStorage) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineBlockStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1300,8 +1300,8 @@ func (m *AggregateBlockStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateBlockStorage) UnmarshalBinary(b []byte) error {
-	var res AggregateBlockStorage
+func (m *AggregateInlineBlockStorage) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineBlockStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1309,29 +1309,39 @@ func (m *AggregateBlockStorage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateBlockStorageHybridCache Contains the configuration for the hybrid cache. The hybrid cache is made up of either whole SSDs or storage pool SSDs.
+// AggregateInlineBlockStorageInlineHybridCache Contains the configuration for the hybrid cache. The hybrid cache is made up of either whole SSDs or storage pool SSDs.
 //
-// swagger:model AggregateBlockStorageHybridCache
-type AggregateBlockStorageHybridCache struct {
+// swagger:model aggregate_inline_block_storage_inline_hybrid_cache
+type AggregateInlineBlockStorageInlineHybridCache struct {
 
 	// Number of disks used in the cache tier of the aggregate. Only provided when hybrid_cache.enabled is 'true'.
 	// Example: 6
+	DiskCount *int64 `json:"disk_count,omitempty"`
+
+	// Type of disk being used by the aggregate's cache tier.
 	// Read Only: true
-	DiskCount int64 `json:"disk_count,omitempty"`
+	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	DiskType *string `json:"disk_type,omitempty"`
 
 	// Specifies whether the aggregate uses HDDs with SSDs as a cache.
 	// Read Only: true
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Option to specify the maximum number of disks that can be included in a RAID group.
+	// Example: 24
+	RaidSize *int64 `json:"raid_size,omitempty"`
+
 	// RAID type for SSD cache of the aggregate. Only provided when hybrid_cache.enabled is 'true'.
-	// Read Only: true
 	// Enum: [raid_dp raid_tec raid4]
-	RaidType string `json:"raid_type,omitempty"`
+	RaidType *string `json:"raid_type,omitempty"`
+
+	// simulated raid groups
+	SimulatedRaidGroups []*AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0 `json:"simulated_raid_groups,omitempty"`
 
 	// Total usable space in bytes of SSD cache. Only provided when hybrid_cache.enabled is 'true'.
 	// Example: 1612709888
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// List of storage pool properties and allocation_units_count for aggregate.
 	StoragePools []*AggregateBlockStorageHybridCacheStoragePoolsItems0 `json:"storage_pools,omitempty"`
@@ -1339,14 +1349,22 @@ type AggregateBlockStorageHybridCache struct {
 	// Space used in bytes of SSD cache. Only provided when hybrid_cache.enabled is 'true'.
 	// Example: 26501122
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this aggregate block storage hybrid cache
-func (m *AggregateBlockStorageHybridCache) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline block storage inline hybrid cache
+func (m *AggregateInlineBlockStorageInlineHybridCache) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDiskType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateRaidType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSimulatedRaidGroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1360,7 +1378,153 @@ func (m *AggregateBlockStorageHybridCache) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-var aggregateBlockStorageHybridCacheTypeRaidTypePropEnum []interface{}
+var aggregateInlineBlockStorageInlineHybridCacheTypeDiskTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		aggregateInlineBlockStorageInlineHybridCacheTypeDiskTypePropEnum = append(aggregateInlineBlockStorageInlineHybridCacheTypeDiskTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// fc
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeFc captures enum value "fc"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeFc string = "fc"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// lun
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeLun captures enum value "lun"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeLun string = "lun"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// nl_sas
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeNlSas captures enum value "nl_sas"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeNlSas string = "nl_sas"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// nvme_ssd
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeNvmeSsd captures enum value "nvme_ssd"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeNvmeSsd string = "nvme_ssd"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// sas
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeSas captures enum value "sas"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeSas string = "sas"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// sata
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeSata captures enum value "sata"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeSata string = "sata"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// scsi
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeScsi captures enum value "scsi"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeScsi string = "scsi"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// ssd
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsd captures enum value "ssd"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsd string = "ssd"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// ssd_cap
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsdCap captures enum value "ssd_cap"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// ssd_zns
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsdZns captures enum value "ssd_zns"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeSsdZns string = "ssd_zns"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
+	// disk_type
+	// DiskType
+	// vm_disk
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlineHybridCacheDiskTypeVMDisk captures enum value "vm_disk"
+	AggregateInlineBlockStorageInlineHybridCacheDiskTypeVMDisk string = "vm_disk"
+)
+
+// prop value enum
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateDiskTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlineHybridCacheTypeDiskTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateDiskType(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDiskTypeEnum("block_storage"+"."+"hybrid_cache"+"."+"disk_type", "body", *m.DiskType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var aggregateInlineBlockStorageInlineHybridCacheTypeRaidTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1368,65 +1532,89 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStorageHybridCacheTypeRaidTypePropEnum = append(aggregateBlockStorageHybridCacheTypeRaidTypePropEnum, v)
+		aggregateInlineBlockStorageInlineHybridCacheTypeRaidTypePropEnum = append(aggregateInlineBlockStorageInlineHybridCacheTypeRaidTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageHybridCache
-	// AggregateBlockStorageHybridCache
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
 	// raid_type
 	// RaidType
 	// raid_dp
 	// END DEBUGGING
-	// AggregateBlockStorageHybridCacheRaidTypeRaidDp captures enum value "raid_dp"
-	AggregateBlockStorageHybridCacheRaidTypeRaidDp string = "raid_dp"
+	// AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaidDp captures enum value "raid_dp"
+	AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaidDp string = "raid_dp"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageHybridCache
-	// AggregateBlockStorageHybridCache
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
 	// raid_type
 	// RaidType
 	// raid_tec
 	// END DEBUGGING
-	// AggregateBlockStorageHybridCacheRaidTypeRaidTec captures enum value "raid_tec"
-	AggregateBlockStorageHybridCacheRaidTypeRaidTec string = "raid_tec"
+	// AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaidTec captures enum value "raid_tec"
+	AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaidTec string = "raid_tec"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageHybridCache
-	// AggregateBlockStorageHybridCache
+	// aggregate_inline_block_storage_inline_hybrid_cache
+	// AggregateInlineBlockStorageInlineHybridCache
 	// raid_type
 	// RaidType
 	// raid4
 	// END DEBUGGING
-	// AggregateBlockStorageHybridCacheRaidTypeRaid4 captures enum value "raid4"
-	AggregateBlockStorageHybridCacheRaidTypeRaid4 string = "raid4"
+	// AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaid4 captures enum value "raid4"
+	AggregateInlineBlockStorageInlineHybridCacheRaidTypeRaid4 string = "raid4"
 )
 
 // prop value enum
-func (m *AggregateBlockStorageHybridCache) validateRaidTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStorageHybridCacheTypeRaidTypePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateRaidTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlineHybridCacheTypeRaidTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) validateRaidType(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateRaidType(formats strfmt.Registry) error {
 	if swag.IsZero(m.RaidType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRaidTypeEnum("block_storage"+"."+"hybrid_cache"+"."+"raid_type", "body", m.RaidType); err != nil {
+	if err := m.validateRaidTypeEnum("block_storage"+"."+"hybrid_cache"+"."+"raid_type", "body", *m.RaidType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) validateStoragePools(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateSimulatedRaidGroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.SimulatedRaidGroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SimulatedRaidGroups); i++ {
+		if swag.IsZero(m.SimulatedRaidGroups[i]) { // not required
+			continue
+		}
+
+		if m.SimulatedRaidGroups[i] != nil {
+			if err := m.SimulatedRaidGroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("block_storage" + "." + "hybrid_cache" + "." + "simulated_raid_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineBlockStorageInlineHybridCache) validateStoragePools(formats strfmt.Registry) error {
 	if swag.IsZero(m.StoragePools) { // not required
 		return nil
 	}
@@ -1450,11 +1638,11 @@ func (m *AggregateBlockStorageHybridCache) validateStoragePools(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this aggregate block storage hybrid cache based on the context it is used
-func (m *AggregateBlockStorageHybridCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline block storage inline hybrid cache based on the context it is used
+func (m *AggregateInlineBlockStorageInlineHybridCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDiskCount(ctx, formats); err != nil {
+	if err := m.contextValidateDiskType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1462,7 +1650,7 @@ func (m *AggregateBlockStorageHybridCache) ContextValidate(ctx context.Context, 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRaidType(ctx, formats); err != nil {
+	if err := m.contextValidateSimulatedRaidGroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1484,16 +1672,16 @@ func (m *AggregateBlockStorageHybridCache) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) contextValidateDiskCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateDiskType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"disk_count", "body", int64(m.DiskCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"disk_type", "body", m.DiskType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"enabled", "body", m.Enabled); err != nil {
 		return err
@@ -1502,25 +1690,34 @@ func (m *AggregateBlockStorageHybridCache) contextValidateEnabled(ctx context.Co
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) contextValidateRaidType(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateSimulatedRaidGroups(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"raid_type", "body", string(m.RaidType)); err != nil {
+	for i := 0; i < len(m.SimulatedRaidGroups); i++ {
+
+		if m.SimulatedRaidGroups[i] != nil {
+			if err := m.SimulatedRaidGroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("block_storage" + "." + "hybrid_cache" + "." + "simulated_raid_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"size", "body", m.Size); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"size", "body", int64(m.Size)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateBlockStorageHybridCache) contextValidateStoragePools(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateStoragePools(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.StoragePools); i++ {
 
@@ -1538,9 +1735,9 @@ func (m *AggregateBlockStorageHybridCache) contextValidateStoragePools(ctx conte
 	return nil
 }
 
-func (m *AggregateBlockStorageHybridCache) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineHybridCache) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -1548,7 +1745,7 @@ func (m *AggregateBlockStorageHybridCache) contextValidateUsed(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateBlockStorageHybridCache) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineBlockStorageInlineHybridCache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1556,8 +1753,63 @@ func (m *AggregateBlockStorageHybridCache) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateBlockStorageHybridCache) UnmarshalBinary(b []byte) error {
-	var res AggregateBlockStorageHybridCache
+func (m *AggregateInlineBlockStorageInlineHybridCache) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineBlockStorageInlineHybridCache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0 aggregate block storage hybrid cache simulated raid groups items0
+//
+// swagger:model AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0
+type AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0 struct {
+
+	// Number of added data disks in RAID group.
+	AddedDataDiskCount *int64 `json:"added_data_disk_count,omitempty"`
+
+	// Number of added parity disks in RAID group.
+	AddedParityDiskCount *int64 `json:"added_parity_disk_count,omitempty"`
+
+	// Number of existing data disks in the RAID group.
+	ExistingDataDiskCount *int64 `json:"existing_data_disk_count,omitempty"`
+
+	// Number of existing parity disks in the RAID group.
+	ExistingParityDiskCount *int64 `json:"existing_parity_disk_count,omitempty"`
+
+	// Indicates whether the disk is partitioned (true) or whole (false).
+	IsPartition *bool `json:"is_partition,omitempty"`
+
+	// Name of the raid group.
+	Name *string `json:"name,omitempty"`
+
+	// Usable size of each disk, in bytes.
+	UsableSize *int64 `json:"usable_size,omitempty"`
+}
+
+// Validate validates this aggregate block storage hybrid cache simulated raid groups items0
+func (m *AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this aggregate block storage hybrid cache simulated raid groups items0 based on context it is used
+func (m *AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0) UnmarshalBinary(b []byte) error {
+	var res AggregateBlockStorageHybridCacheSimulatedRaidGroupsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1571,7 +1823,7 @@ func (m *AggregateBlockStorageHybridCache) UnmarshalBinary(b []byte) error {
 type AggregateBlockStorageHybridCacheStoragePoolsItems0 struct {
 
 	// Allocation count of storage pool.
-	AllocationUnitsCount int32 `json:"allocation_units_count,omitempty"`
+	AllocationUnitsCount *int32 `json:"allocation_units_count,omitempty"`
 
 	// storage pool
 	StoragePool *StoragePoolReference `json:"storage_pool,omitempty"`
@@ -1654,23 +1906,23 @@ func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) UnmarshalBinary(b [
 	return nil
 }
 
-// AggregateBlockStorageMirror aggregate block storage mirror
+// AggregateInlineBlockStorageInlineMirror aggregate inline block storage inline mirror
 //
-// swagger:model AggregateBlockStorageMirror
-type AggregateBlockStorageMirror struct {
+// swagger:model aggregate_inline_block_storage_inline_mirror
+type AggregateInlineBlockStorageInlineMirror struct {
 
 	// Aggregate is SyncMirror protected
 	// Example: false
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// state
 	// Read Only: true
 	// Enum: [unmirrored normal degraded resynchronizing failed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this aggregate block storage mirror
-func (m *AggregateBlockStorageMirror) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline block storage inline mirror
+func (m *AggregateInlineBlockStorageInlineMirror) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -1683,7 +1935,7 @@ func (m *AggregateBlockStorageMirror) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var aggregateBlockStorageMirrorTypeStatePropEnum []interface{}
+var aggregateInlineBlockStorageInlineMirrorTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1691,86 +1943,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStorageMirrorTypeStatePropEnum = append(aggregateBlockStorageMirrorTypeStatePropEnum, v)
+		aggregateInlineBlockStorageInlineMirrorTypeStatePropEnum = append(aggregateInlineBlockStorageInlineMirrorTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageMirror
-	// AggregateBlockStorageMirror
+	// aggregate_inline_block_storage_inline_mirror
+	// AggregateInlineBlockStorageInlineMirror
 	// state
 	// State
 	// unmirrored
 	// END DEBUGGING
-	// AggregateBlockStorageMirrorStateUnmirrored captures enum value "unmirrored"
-	AggregateBlockStorageMirrorStateUnmirrored string = "unmirrored"
+	// AggregateInlineBlockStorageInlineMirrorStateUnmirrored captures enum value "unmirrored"
+	AggregateInlineBlockStorageInlineMirrorStateUnmirrored string = "unmirrored"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageMirror
-	// AggregateBlockStorageMirror
+	// aggregate_inline_block_storage_inline_mirror
+	// AggregateInlineBlockStorageInlineMirror
 	// state
 	// State
 	// normal
 	// END DEBUGGING
-	// AggregateBlockStorageMirrorStateNormal captures enum value "normal"
-	AggregateBlockStorageMirrorStateNormal string = "normal"
+	// AggregateInlineBlockStorageInlineMirrorStateNormal captures enum value "normal"
+	AggregateInlineBlockStorageInlineMirrorStateNormal string = "normal"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageMirror
-	// AggregateBlockStorageMirror
+	// aggregate_inline_block_storage_inline_mirror
+	// AggregateInlineBlockStorageInlineMirror
 	// state
 	// State
 	// degraded
 	// END DEBUGGING
-	// AggregateBlockStorageMirrorStateDegraded captures enum value "degraded"
-	AggregateBlockStorageMirrorStateDegraded string = "degraded"
+	// AggregateInlineBlockStorageInlineMirrorStateDegraded captures enum value "degraded"
+	AggregateInlineBlockStorageInlineMirrorStateDegraded string = "degraded"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageMirror
-	// AggregateBlockStorageMirror
+	// aggregate_inline_block_storage_inline_mirror
+	// AggregateInlineBlockStorageInlineMirror
 	// state
 	// State
 	// resynchronizing
 	// END DEBUGGING
-	// AggregateBlockStorageMirrorStateResynchronizing captures enum value "resynchronizing"
-	AggregateBlockStorageMirrorStateResynchronizing string = "resynchronizing"
+	// AggregateInlineBlockStorageInlineMirrorStateResynchronizing captures enum value "resynchronizing"
+	AggregateInlineBlockStorageInlineMirrorStateResynchronizing string = "resynchronizing"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStorageMirror
-	// AggregateBlockStorageMirror
+	// aggregate_inline_block_storage_inline_mirror
+	// AggregateInlineBlockStorageInlineMirror
 	// state
 	// State
 	// failed
 	// END DEBUGGING
-	// AggregateBlockStorageMirrorStateFailed captures enum value "failed"
-	AggregateBlockStorageMirrorStateFailed string = "failed"
+	// AggregateInlineBlockStorageInlineMirrorStateFailed captures enum value "failed"
+	AggregateInlineBlockStorageInlineMirrorStateFailed string = "failed"
 )
 
 // prop value enum
-func (m *AggregateBlockStorageMirror) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStorageMirrorTypeStatePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlineMirror) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlineMirrorTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStorageMirror) validateState(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineMirror) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("block_storage"+"."+"mirror"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("block_storage"+"."+"mirror"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this aggregate block storage mirror based on the context it is used
-func (m *AggregateBlockStorageMirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline block storage inline mirror based on the context it is used
+func (m *AggregateInlineBlockStorageInlineMirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -1783,9 +2035,9 @@ func (m *AggregateBlockStorageMirror) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *AggregateBlockStorageMirror) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlineMirror) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"mirror"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"mirror"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -1793,7 +2045,7 @@ func (m *AggregateBlockStorageMirror) contextValidateState(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateBlockStorageMirror) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineBlockStorageInlineMirror) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1801,8 +2053,8 @@ func (m *AggregateBlockStorageMirror) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateBlockStorageMirror) UnmarshalBinary(b []byte) error {
-	var res AggregateBlockStorageMirror
+func (m *AggregateInlineBlockStorageInlineMirror) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineBlockStorageInlineMirror
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1810,43 +2062,43 @@ func (m *AggregateBlockStorageMirror) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateBlockStoragePrimary Configuration information for the primary storage portion of the aggregate. This excludes the hybrid cache details.
+// AggregateInlineBlockStorageInlinePrimary Configuration information for the primary storage portion of the aggregate. This excludes the hybrid cache details.
 //
-// swagger:model AggregateBlockStoragePrimary
-type AggregateBlockStoragePrimary struct {
+// swagger:model aggregate_inline_block_storage_inline_primary
+type AggregateInlineBlockStorageInlinePrimary struct {
 
 	// The checksum style used by the aggregate.
 	// Enum: [block advanced_zoned mixed]
-	ChecksumStyle string `json:"checksum_style,omitempty"`
+	ChecksumStyle *string `json:"checksum_style,omitempty"`
 
 	// The class of disks being used by the aggregate.
 	// Example: performance
 	// Enum: [capacity performance archive solid_state array virtual data_center capacity_flash]
-	DiskClass string `json:"disk_class,omitempty"`
+	DiskClass *string `json:"disk_class,omitempty"`
 
 	// Number of disks used in the aggregate. This includes parity disks, but excludes disks in the hybrid cache.
 	// Example: 8
-	DiskCount int64 `json:"disk_count,omitempty"`
+	DiskCount *int64 `json:"disk_count,omitempty"`
 
 	// The type of disk being used by the aggregate.
 	// Read Only: true
 	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
-	DiskType string `json:"disk_type,omitempty"`
+	DiskType *string `json:"disk_type,omitempty"`
 
 	// Option to specify the maximum number of disks that can be included in a RAID group.
 	// Example: 16
-	RaidSize int64 `json:"raid_size,omitempty"`
+	RaidSize *int64 `json:"raid_size,omitempty"`
 
 	// RAID type of the aggregate.
-	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep]
-	RaidType string `json:"raid_type,omitempty"`
+	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep mixed_raid_type]
+	RaidType *string `json:"raid_type,omitempty"`
 
 	// simulated raid groups
 	SimulatedRaidGroups []*AggregateBlockStoragePrimarySimulatedRaidGroupsItems0 `json:"simulated_raid_groups,omitempty"`
 }
 
-// Validate validates this aggregate block storage primary
-func (m *AggregateBlockStoragePrimary) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline block storage inline primary
+func (m *AggregateInlineBlockStorageInlinePrimary) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateChecksumStyle(formats); err != nil {
@@ -1875,7 +2127,7 @@ func (m *AggregateBlockStoragePrimary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var aggregateBlockStoragePrimaryTypeChecksumStylePropEnum []interface{}
+var aggregateInlineBlockStorageInlinePrimaryTypeChecksumStylePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1883,65 +2135,65 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStoragePrimaryTypeChecksumStylePropEnum = append(aggregateBlockStoragePrimaryTypeChecksumStylePropEnum, v)
+		aggregateInlineBlockStorageInlinePrimaryTypeChecksumStylePropEnum = append(aggregateInlineBlockStorageInlinePrimaryTypeChecksumStylePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// checksum_style
 	// ChecksumStyle
 	// block
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryChecksumStyleBlock captures enum value "block"
-	AggregateBlockStoragePrimaryChecksumStyleBlock string = "block"
+	// AggregateInlineBlockStorageInlinePrimaryChecksumStyleBlock captures enum value "block"
+	AggregateInlineBlockStorageInlinePrimaryChecksumStyleBlock string = "block"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// checksum_style
 	// ChecksumStyle
 	// advanced_zoned
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryChecksumStyleAdvancedZoned captures enum value "advanced_zoned"
-	AggregateBlockStoragePrimaryChecksumStyleAdvancedZoned string = "advanced_zoned"
+	// AggregateInlineBlockStorageInlinePrimaryChecksumStyleAdvancedZoned captures enum value "advanced_zoned"
+	AggregateInlineBlockStorageInlinePrimaryChecksumStyleAdvancedZoned string = "advanced_zoned"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// checksum_style
 	// ChecksumStyle
 	// mixed
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryChecksumStyleMixed captures enum value "mixed"
-	AggregateBlockStoragePrimaryChecksumStyleMixed string = "mixed"
+	// AggregateInlineBlockStorageInlinePrimaryChecksumStyleMixed captures enum value "mixed"
+	AggregateInlineBlockStorageInlinePrimaryChecksumStyleMixed string = "mixed"
 )
 
 // prop value enum
-func (m *AggregateBlockStoragePrimary) validateChecksumStyleEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStoragePrimaryTypeChecksumStylePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateChecksumStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlinePrimaryTypeChecksumStylePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) validateChecksumStyle(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateChecksumStyle(formats strfmt.Registry) error {
 	if swag.IsZero(m.ChecksumStyle) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateChecksumStyleEnum("block_storage"+"."+"primary"+"."+"checksum_style", "body", m.ChecksumStyle); err != nil {
+	if err := m.validateChecksumStyleEnum("block_storage"+"."+"primary"+"."+"checksum_style", "body", *m.ChecksumStyle); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var aggregateBlockStoragePrimaryTypeDiskClassPropEnum []interface{}
+var aggregateInlineBlockStorageInlinePrimaryTypeDiskClassPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1949,115 +2201,115 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStoragePrimaryTypeDiskClassPropEnum = append(aggregateBlockStoragePrimaryTypeDiskClassPropEnum, v)
+		aggregateInlineBlockStorageInlinePrimaryTypeDiskClassPropEnum = append(aggregateInlineBlockStorageInlinePrimaryTypeDiskClassPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// capacity
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassCapacity captures enum value "capacity"
-	AggregateBlockStoragePrimaryDiskClassCapacity string = "capacity"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassCapacity captures enum value "capacity"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassCapacity string = "capacity"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// performance
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassPerformance captures enum value "performance"
-	AggregateBlockStoragePrimaryDiskClassPerformance string = "performance"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassPerformance captures enum value "performance"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassPerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// archive
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassArchive captures enum value "archive"
-	AggregateBlockStoragePrimaryDiskClassArchive string = "archive"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassArchive captures enum value "archive"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassArchive string = "archive"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// solid_state
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassSolidState captures enum value "solid_state"
-	AggregateBlockStoragePrimaryDiskClassSolidState string = "solid_state"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassSolidState captures enum value "solid_state"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassSolidState string = "solid_state"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// array
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassArray captures enum value "array"
-	AggregateBlockStoragePrimaryDiskClassArray string = "array"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassArray captures enum value "array"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassArray string = "array"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// virtual
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassVirtual captures enum value "virtual"
-	AggregateBlockStoragePrimaryDiskClassVirtual string = "virtual"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassVirtual captures enum value "virtual"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassVirtual string = "virtual"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// data_center
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassDataCenter captures enum value "data_center"
-	AggregateBlockStoragePrimaryDiskClassDataCenter string = "data_center"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassDataCenter captures enum value "data_center"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassDataCenter string = "data_center"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_class
 	// DiskClass
 	// capacity_flash
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskClassCapacityFlash captures enum value "capacity_flash"
-	AggregateBlockStoragePrimaryDiskClassCapacityFlash string = "capacity_flash"
+	// AggregateInlineBlockStorageInlinePrimaryDiskClassCapacityFlash captures enum value "capacity_flash"
+	AggregateInlineBlockStorageInlinePrimaryDiskClassCapacityFlash string = "capacity_flash"
 )
 
 // prop value enum
-func (m *AggregateBlockStoragePrimary) validateDiskClassEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStoragePrimaryTypeDiskClassPropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateDiskClassEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlinePrimaryTypeDiskClassPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) validateDiskClass(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateDiskClass(formats strfmt.Registry) error {
 	if swag.IsZero(m.DiskClass) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDiskClassEnum("block_storage"+"."+"primary"+"."+"disk_class", "body", m.DiskClass); err != nil {
+	if err := m.validateDiskClassEnum("block_storage"+"."+"primary"+"."+"disk_class", "body", *m.DiskClass); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var aggregateBlockStoragePrimaryTypeDiskTypePropEnum []interface{}
+var aggregateInlineBlockStorageInlinePrimaryTypeDiskTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2065,231 +2317,241 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStoragePrimaryTypeDiskTypePropEnum = append(aggregateBlockStoragePrimaryTypeDiskTypePropEnum, v)
+		aggregateInlineBlockStorageInlinePrimaryTypeDiskTypePropEnum = append(aggregateInlineBlockStorageInlinePrimaryTypeDiskTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// fc
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeFc captures enum value "fc"
-	AggregateBlockStoragePrimaryDiskTypeFc string = "fc"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeFc captures enum value "fc"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeFc string = "fc"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// lun
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeLun captures enum value "lun"
-	AggregateBlockStoragePrimaryDiskTypeLun string = "lun"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeLun captures enum value "lun"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeLun string = "lun"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// nl_sas
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeNlSas captures enum value "nl_sas"
-	AggregateBlockStoragePrimaryDiskTypeNlSas string = "nl_sas"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeNlSas captures enum value "nl_sas"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeNlSas string = "nl_sas"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// nvme_ssd
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeNvmeSsd captures enum value "nvme_ssd"
-	AggregateBlockStoragePrimaryDiskTypeNvmeSsd string = "nvme_ssd"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeNvmeSsd captures enum value "nvme_ssd"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeNvmeSsd string = "nvme_ssd"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// sas
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeSas captures enum value "sas"
-	AggregateBlockStoragePrimaryDiskTypeSas string = "sas"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeSas captures enum value "sas"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeSas string = "sas"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// sata
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeSata captures enum value "sata"
-	AggregateBlockStoragePrimaryDiskTypeSata string = "sata"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeSata captures enum value "sata"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeSata string = "sata"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// scsi
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeScsi captures enum value "scsi"
-	AggregateBlockStoragePrimaryDiskTypeScsi string = "scsi"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeScsi captures enum value "scsi"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeScsi string = "scsi"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// ssd
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeSsd captures enum value "ssd"
-	AggregateBlockStoragePrimaryDiskTypeSsd string = "ssd"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeSsd captures enum value "ssd"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeSsd string = "ssd"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// ssd_cap
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeSsdCap captures enum value "ssd_cap"
-	AggregateBlockStoragePrimaryDiskTypeSsdCap string = "ssd_cap"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeSsdCap captures enum value "ssd_cap"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeSsdCap string = "ssd_cap"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// ssd_zns
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeSsdZns captures enum value "ssd_zns"
-	AggregateBlockStoragePrimaryDiskTypeSsdZns string = "ssd_zns"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeSsdZns captures enum value "ssd_zns"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeSsdZns string = "ssd_zns"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// disk_type
 	// DiskType
 	// vm_disk
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryDiskTypeVMDisk captures enum value "vm_disk"
-	AggregateBlockStoragePrimaryDiskTypeVMDisk string = "vm_disk"
+	// AggregateInlineBlockStorageInlinePrimaryDiskTypeVMDisk captures enum value "vm_disk"
+	AggregateInlineBlockStorageInlinePrimaryDiskTypeVMDisk string = "vm_disk"
 )
 
 // prop value enum
-func (m *AggregateBlockStoragePrimary) validateDiskTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStoragePrimaryTypeDiskTypePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateDiskTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlinePrimaryTypeDiskTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) validateDiskType(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateDiskType(formats strfmt.Registry) error {
 	if swag.IsZero(m.DiskType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDiskTypeEnum("block_storage"+"."+"primary"+"."+"disk_type", "body", m.DiskType); err != nil {
+	if err := m.validateDiskTypeEnum("block_storage"+"."+"primary"+"."+"disk_type", "body", *m.DiskType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var aggregateBlockStoragePrimaryTypeRaidTypePropEnum []interface{}
+var aggregateInlineBlockStorageInlinePrimaryTypeRaidTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","raid_ep"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4","raid_ep","mixed_raid_type"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateBlockStoragePrimaryTypeRaidTypePropEnum = append(aggregateBlockStoragePrimaryTypeRaidTypePropEnum, v)
+		aggregateInlineBlockStorageInlinePrimaryTypeRaidTypePropEnum = append(aggregateInlineBlockStorageInlinePrimaryTypeRaidTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// raid_type
 	// RaidType
 	// raid_dp
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryRaidTypeRaidDp captures enum value "raid_dp"
-	AggregateBlockStoragePrimaryRaidTypeRaidDp string = "raid_dp"
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidDp captures enum value "raid_dp"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidDp string = "raid_dp"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// raid_type
 	// RaidType
 	// raid_tec
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryRaidTypeRaidTec captures enum value "raid_tec"
-	AggregateBlockStoragePrimaryRaidTypeRaidTec string = "raid_tec"
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidTec captures enum value "raid_tec"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidTec string = "raid_tec"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// raid_type
 	// RaidType
 	// raid0
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryRaidTypeRaid0 captures enum value "raid0"
-	AggregateBlockStoragePrimaryRaidTypeRaid0 string = "raid0"
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid0 captures enum value "raid0"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid0 string = "raid0"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// raid_type
 	// RaidType
 	// raid4
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryRaidTypeRaid4 captures enum value "raid4"
-	AggregateBlockStoragePrimaryRaidTypeRaid4 string = "raid4"
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid4 captures enum value "raid4"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaid4 string = "raid4"
 
 	// BEGIN DEBUGGING
-	// AggregateBlockStoragePrimary
-	// AggregateBlockStoragePrimary
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
 	// raid_type
 	// RaidType
 	// raid_ep
 	// END DEBUGGING
-	// AggregateBlockStoragePrimaryRaidTypeRaidEp captures enum value "raid_ep"
-	AggregateBlockStoragePrimaryRaidTypeRaidEp string = "raid_ep"
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidEp captures enum value "raid_ep"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeRaidEp string = "raid_ep"
+
+	// BEGIN DEBUGGING
+	// aggregate_inline_block_storage_inline_primary
+	// AggregateInlineBlockStorageInlinePrimary
+	// raid_type
+	// RaidType
+	// mixed_raid_type
+	// END DEBUGGING
+	// AggregateInlineBlockStorageInlinePrimaryRaidTypeMixedRaidType captures enum value "mixed_raid_type"
+	AggregateInlineBlockStorageInlinePrimaryRaidTypeMixedRaidType string = "mixed_raid_type"
 )
 
 // prop value enum
-func (m *AggregateBlockStoragePrimary) validateRaidTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateBlockStoragePrimaryTypeRaidTypePropEnum, true); err != nil {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateRaidTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineBlockStorageInlinePrimaryTypeRaidTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) validateRaidType(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateRaidType(formats strfmt.Registry) error {
 	if swag.IsZero(m.RaidType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRaidTypeEnum("block_storage"+"."+"primary"+"."+"raid_type", "body", m.RaidType); err != nil {
+	if err := m.validateRaidTypeEnum("block_storage"+"."+"primary"+"."+"raid_type", "body", *m.RaidType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) validateSimulatedRaidGroups(formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) validateSimulatedRaidGroups(formats strfmt.Registry) error {
 	if swag.IsZero(m.SimulatedRaidGroups) { // not required
 		return nil
 	}
@@ -2313,8 +2575,8 @@ func (m *AggregateBlockStoragePrimary) validateSimulatedRaidGroups(formats strfm
 	return nil
 }
 
-// ContextValidate validate this aggregate block storage primary based on the context it is used
-func (m *AggregateBlockStoragePrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline block storage inline primary based on the context it is used
+func (m *AggregateInlineBlockStorageInlinePrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDiskType(ctx, formats); err != nil {
@@ -2331,16 +2593,16 @@ func (m *AggregateBlockStoragePrimary) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) contextValidateDiskType(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) contextValidateDiskType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "block_storage"+"."+"primary"+"."+"disk_type", "body", string(m.DiskType)); err != nil {
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"primary"+"."+"disk_type", "body", m.DiskType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateBlockStoragePrimary) contextValidateSimulatedRaidGroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineBlockStorageInlinePrimary) contextValidateSimulatedRaidGroups(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.SimulatedRaidGroups); i++ {
 
@@ -2359,7 +2621,7 @@ func (m *AggregateBlockStoragePrimary) contextValidateSimulatedRaidGroups(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateBlockStoragePrimary) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineBlockStorageInlinePrimary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2367,8 +2629,8 @@ func (m *AggregateBlockStoragePrimary) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateBlockStoragePrimary) UnmarshalBinary(b []byte) error {
-	var res AggregateBlockStoragePrimary
+func (m *AggregateInlineBlockStorageInlinePrimary) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineBlockStorageInlinePrimary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2382,35 +2644,35 @@ func (m *AggregateBlockStoragePrimary) UnmarshalBinary(b []byte) error {
 type AggregateBlockStoragePrimarySimulatedRaidGroupsItems0 struct {
 
 	// Number of added data disks in RAID group.
-	AddedDataDiskCount int64 `json:"added_data_disk_count,omitempty"`
+	AddedDataDiskCount *int64 `json:"added_data_disk_count,omitempty"`
 
 	// Number of added parity disks in RAID group.
-	AddedParityDiskCount int64 `json:"added_parity_disk_count,omitempty"`
+	AddedParityDiskCount *int64 `json:"added_parity_disk_count,omitempty"`
 
 	// Number of data disks in RAID group.
-	DataDiskCount int64 `json:"data_disk_count,omitempty"`
+	DataDiskCount *int64 `json:"data_disk_count,omitempty"`
 
 	// Number of existing data disks in the RAID group.
-	ExistingDataDiskCount int64 `json:"existing_data_disk_count,omitempty"`
+	ExistingDataDiskCount *int64 `json:"existing_data_disk_count,omitempty"`
 
 	// Number of existing parity disks in the RAID group.
-	ExistingParityDiskCount int64 `json:"existing_parity_disk_count,omitempty"`
+	ExistingParityDiskCount *int64 `json:"existing_parity_disk_count,omitempty"`
 
 	// Indicates whether the disk is partitioned (true) or whole (false).
-	IsPartition bool `json:"is_partition,omitempty"`
+	IsPartition *bool `json:"is_partition,omitempty"`
 
 	// Name of the raid group.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Number of parity disks in RAID group.
-	ParityDiskCount int64 `json:"parity_disk_count,omitempty"`
+	ParityDiskCount *int64 `json:"parity_disk_count,omitempty"`
 
 	// RAID type of the aggregate.
 	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep]
-	RaidType string `json:"raid_type,omitempty"`
+	RaidType *string `json:"raid_type,omitempty"`
 
 	// Usable size of each disk, in bytes.
-	UsableSize int64 `json:"usable_size,omitempty"`
+	UsableSize *int64 `json:"usable_size,omitempty"`
 }
 
 // Validate validates this aggregate block storage primary simulated raid groups items0
@@ -2506,7 +2768,7 @@ func (m *AggregateBlockStoragePrimarySimulatedRaidGroupsItems0) validateRaidType
 	}
 
 	// value enum
-	if err := m.validateRaidTypeEnum("raid_type", "body", m.RaidType); err != nil {
+	if err := m.validateRaidTypeEnum("raid_type", "body", *m.RaidType); err != nil {
 		return err
 	}
 
@@ -2536,25 +2798,28 @@ func (m *AggregateBlockStoragePrimarySimulatedRaidGroupsItems0) UnmarshalBinary(
 	return nil
 }
 
-// AggregateCloudStorage Configuration information for the cloud storage portion of the aggregate. This is referred to as the capacity tier.
+// AggregateInlineCloudStorage Configuration information for the cloud storage portion of the aggregate. This is referred to as the capacity tier.
 //
-// swagger:model AggregateCloudStorage
-type AggregateCloudStorage struct {
+// swagger:model aggregate_inline_cloud_storage
+type AggregateInlineCloudStorage struct {
 
 	// Specifies whether the aggregate is eligible for a cloud store to be attached.
 	// Read Only: true
 	AttachEligible *bool `json:"attach_eligible,omitempty"`
+
+	// Specifies the minimum percentage of performance tier free space that must exist in order for migration of data from the capacity tier to performance tier to be allowed. Only valid for PATCH operations.
+	MigrateThreshold *int64 `json:"migrate_threshold,omitempty"`
 
 	// Configuration information for each cloud storage portion of the aggregate.
 	// Read Only: true
 	Stores []*CloudStorageTier `json:"stores,omitempty"`
 
 	// The percentage of space in the performance tier that must be used before data is tiered out to the cloud store. Only valid for PATCH operations.
-	TieringFullnessThreshold int64 `json:"tiering_fullness_threshold,omitempty"`
+	TieringFullnessThreshold *int64 `json:"tiering_fullness_threshold,omitempty"`
 }
 
-// Validate validates this aggregate cloud storage
-func (m *AggregateCloudStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline cloud storage
+func (m *AggregateInlineCloudStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStores(formats); err != nil {
@@ -2567,7 +2832,7 @@ func (m *AggregateCloudStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateCloudStorage) validateStores(formats strfmt.Registry) error {
+func (m *AggregateInlineCloudStorage) validateStores(formats strfmt.Registry) error {
 	if swag.IsZero(m.Stores) { // not required
 		return nil
 	}
@@ -2591,8 +2856,8 @@ func (m *AggregateCloudStorage) validateStores(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate cloud storage based on the context it is used
-func (m *AggregateCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline cloud storage based on the context it is used
+func (m *AggregateInlineCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAttachEligible(ctx, formats); err != nil {
@@ -2609,7 +2874,7 @@ func (m *AggregateCloudStorage) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *AggregateCloudStorage) contextValidateAttachEligible(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineCloudStorage) contextValidateAttachEligible(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cloud_storage"+"."+"attach_eligible", "body", m.AttachEligible); err != nil {
 		return err
@@ -2618,7 +2883,7 @@ func (m *AggregateCloudStorage) contextValidateAttachEligible(ctx context.Contex
 	return nil
 }
 
-func (m *AggregateCloudStorage) contextValidateStores(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineCloudStorage) contextValidateStores(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cloud_storage"+"."+"stores", "body", []*CloudStorageTier(m.Stores)); err != nil {
 		return err
@@ -2641,7 +2906,7 @@ func (m *AggregateCloudStorage) contextValidateStores(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateCloudStorage) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineCloudStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2649,8 +2914,8 @@ func (m *AggregateCloudStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateCloudStorage) UnmarshalBinary(b []byte) error {
-	var res AggregateCloudStorage
+func (m *AggregateInlineCloudStorage) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineCloudStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2658,26 +2923,26 @@ func (m *AggregateCloudStorage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateDataEncryption aggregate data encryption
+// AggregateInlineDataEncryption aggregate inline data encryption
 //
-// swagger:model AggregateDataEncryption
-type AggregateDataEncryption struct {
+// swagger:model aggregate_inline_data_encryption
+type AggregateInlineDataEncryption struct {
 
 	// Specifies whether the aggregate uses self-encrypting drives with data protection enabled.
 	// Read Only: true
 	DriveProtectionEnabled *bool `json:"drive_protection_enabled,omitempty"`
 
 	// Specifies whether NetApp aggregate encryption is enabled. All data in the aggregate is encrypted.
-	SoftwareEncryptionEnabled bool `json:"software_encryption_enabled,omitempty"`
+	SoftwareEncryptionEnabled *bool `json:"software_encryption_enabled,omitempty"`
 }
 
-// Validate validates this aggregate data encryption
-func (m *AggregateDataEncryption) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline data encryption
+func (m *AggregateInlineDataEncryption) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate data encryption based on the context it is used
-func (m *AggregateDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline data encryption based on the context it is used
+func (m *AggregateInlineDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDriveProtectionEnabled(ctx, formats); err != nil {
@@ -2690,7 +2955,7 @@ func (m *AggregateDataEncryption) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AggregateDataEncryption) contextValidateDriveProtectionEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineDataEncryption) contextValidateDriveProtectionEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "data_encryption"+"."+"drive_protection_enabled", "body", m.DriveProtectionEnabled); err != nil {
 		return err
@@ -2700,7 +2965,7 @@ func (m *AggregateDataEncryption) contextValidateDriveProtectionEnabled(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateDataEncryption) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineDataEncryption) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2708,8 +2973,8 @@ func (m *AggregateDataEncryption) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateDataEncryption) UnmarshalBinary(b []byte) error {
-	var res AggregateDataEncryption
+func (m *AggregateInlineDataEncryption) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineDataEncryption
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2717,27 +2982,27 @@ func (m *AggregateDataEncryption) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateDrHomeNode Node where the aggregate resides after disaster recovery. The value for this field might differ from the 'node' field during switchover.
+// AggregateInlineDrHomeNode Node where the aggregate resides after disaster recovery. The value for this field might differ from the 'node' field during switchover.
 //
-// swagger:model AggregateDrHomeNode
-type AggregateDrHomeNode struct {
+// swagger:model aggregate_inline_dr_home_node
+type AggregateInlineDrHomeNode struct {
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this aggregate dr home node
-func (m *AggregateDrHomeNode) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline dr home node
+func (m *AggregateInlineDrHomeNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate dr home node based on the context it is used
-func (m *AggregateDrHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline dr home node based on the context it is used
+func (m *AggregateInlineDrHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2747,7 +3012,7 @@ func (m *AggregateDrHomeNode) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateDrHomeNode) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineDrHomeNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2755,8 +3020,8 @@ func (m *AggregateDrHomeNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateDrHomeNode) UnmarshalBinary(b []byte) error {
-	var res AggregateDrHomeNode
+func (m *AggregateInlineDrHomeNode) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineDrHomeNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2764,25 +3029,25 @@ func (m *AggregateDrHomeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateHomeNode Node where the aggregate resides after giveback. The value for this field might differ from the value of the 'node' field during takeover.
+// AggregateInlineHomeNode Node where the aggregate resides after giveback. The value for this field might differ from the value of the 'node' field during takeover.
 //
-// swagger:model AggregateHomeNode
-type AggregateHomeNode struct {
+// swagger:model aggregate_inline_home_node
+type AggregateInlineHomeNode struct {
 
 	// links
-	Links *AggregateHomeNodeLinks `json:"_links,omitempty"`
+	Links *AggregateInlineHomeNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this aggregate home node
-func (m *AggregateHomeNode) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline home node
+func (m *AggregateInlineHomeNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2795,7 +3060,7 @@ func (m *AggregateHomeNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateHomeNode) validateLinks(formats strfmt.Registry) error {
+func (m *AggregateInlineHomeNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2812,8 +3077,8 @@ func (m *AggregateHomeNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate home node based on the context it is used
-func (m *AggregateHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline home node based on the context it is used
+func (m *AggregateInlineHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2826,7 +3091,7 @@ func (m *AggregateHomeNode) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *AggregateHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2841,7 +3106,7 @@ func (m *AggregateHomeNode) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateHomeNode) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineHomeNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2849,8 +3114,8 @@ func (m *AggregateHomeNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateHomeNode) UnmarshalBinary(b []byte) error {
-	var res AggregateHomeNode
+func (m *AggregateInlineHomeNode) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineHomeNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2858,17 +3123,17 @@ func (m *AggregateHomeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateHomeNodeLinks aggregate home node links
+// AggregateInlineHomeNodeInlineLinks aggregate inline home node inline links
 //
-// swagger:model AggregateHomeNodeLinks
-type AggregateHomeNodeLinks struct {
+// swagger:model aggregate_inline_home_node_inline__links
+type AggregateInlineHomeNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate home node links
-func (m *AggregateHomeNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline home node inline links
+func (m *AggregateInlineHomeNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2881,7 +3146,7 @@ func (m *AggregateHomeNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateHomeNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateInlineHomeNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2898,8 +3163,8 @@ func (m *AggregateHomeNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate home node links based on the context it is used
-func (m *AggregateHomeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline home node inline links based on the context it is used
+func (m *AggregateInlineHomeNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2912,7 +3177,7 @@ func (m *AggregateHomeNodeLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AggregateHomeNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineHomeNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2927,7 +3192,7 @@ func (m *AggregateHomeNodeLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateHomeNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineHomeNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2935,8 +3200,8 @@ func (m *AggregateHomeNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateHomeNodeLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateHomeNodeLinks
+func (m *AggregateInlineHomeNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineHomeNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2944,13 +3209,13 @@ func (m *AggregateHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateInactiveDataReporting aggregate inactive data reporting
+// AggregateInlineInactiveDataReporting aggregate inline inactive data reporting
 //
-// swagger:model AggregateInactiveDataReporting
-type AggregateInactiveDataReporting struct {
+// swagger:model aggregate_inline_inactive_data_reporting
+type AggregateInlineInactiveDataReporting struct {
 
 	// Specifes whether or not inactive data reporting is enabled on the aggregate.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Timestamp at which inactive data reporting was enabled on the aggregate.
 	// Example: 2019-12-12T12:00:00-04:00
@@ -2959,8 +3224,8 @@ type AggregateInactiveDataReporting struct {
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
 }
 
-// Validate validates this aggregate inactive data reporting
-func (m *AggregateInactiveDataReporting) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline inactive data reporting
+func (m *AggregateInlineInactiveDataReporting) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStartTime(formats); err != nil {
@@ -2973,7 +3238,7 @@ func (m *AggregateInactiveDataReporting) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *AggregateInactiveDataReporting) validateStartTime(formats strfmt.Registry) error {
+func (m *AggregateInlineInactiveDataReporting) validateStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.StartTime) { // not required
 		return nil
 	}
@@ -2985,8 +3250,8 @@ func (m *AggregateInactiveDataReporting) validateStartTime(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this aggregate inactive data reporting based on the context it is used
-func (m *AggregateInactiveDataReporting) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline inactive data reporting based on the context it is used
+func (m *AggregateInlineInactiveDataReporting) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStartTime(ctx, formats); err != nil {
@@ -2999,7 +3264,7 @@ func (m *AggregateInactiveDataReporting) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *AggregateInactiveDataReporting) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineInactiveDataReporting) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "inactive_data_reporting"+"."+"start_time", "body", m.StartTime); err != nil {
 		return err
@@ -3009,7 +3274,7 @@ func (m *AggregateInactiveDataReporting) contextValidateStartTime(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateInactiveDataReporting) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineInactiveDataReporting) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3017,8 +3282,8 @@ func (m *AggregateInactiveDataReporting) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateInactiveDataReporting) UnmarshalBinary(b []byte) error {
-	var res AggregateInactiveDataReporting
+func (m *AggregateInlineInactiveDataReporting) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineInactiveDataReporting
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3026,48 +3291,48 @@ func (m *AggregateInactiveDataReporting) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateInodeAttributes aggregate inode attributes
+// AggregateInlineInodeAttributes aggregate inline inode attributes
 //
-// swagger:model AggregateInodeAttributes
-type AggregateInodeAttributes struct {
+// swagger:model aggregate_inline_inode_attributes
+type AggregateInlineInodeAttributes struct {
 
 	// Number of files that can currently be stored on disk for system metadata files. This number will dynamically increase as more system files are created.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computationl cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 31136
-	FilePrivateCapacity int64 `json:"file_private_capacity,omitempty"`
+	FilePrivateCapacity *int64 `json:"file_private_capacity,omitempty"`
 
 	// Number of files that can currently be stored on disk for user-visible files.  This number will dynamically increase as more user-visible files are created.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 31136
-	FilePublicCapacity int64 `json:"file_public_capacity,omitempty"`
+	FilePublicCapacity *int64 `json:"file_public_capacity,omitempty"`
 
 	// Number of system metadata files used. If the referenced file system is restricted or offline, a value of 0 is returned.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 502
-	FilesPrivateUsed int64 `json:"files_private_used,omitempty"`
+	FilesPrivateUsed *int64 `json:"files_private_used,omitempty"`
 
 	// Maximum number of user-visible files that this referenced file system can currently hold. If the referenced file system is restricted or offline, a value of 0 is returned.
 	// Example: 31136
-	FilesTotal int64 `json:"files_total,omitempty"`
+	FilesTotal *int64 `json:"files_total,omitempty"`
 
 	// Number of user-visible files used in the referenced file system. If the referenced file system is restricted or offline, a value of 0 is returned.
 	// Example: 97
-	FilesUsed int64 `json:"files_used,omitempty"`
+	FilesUsed *int64 `json:"files_used,omitempty"`
 
 	// The count of the maximum number of user-visible files currently allowable on the referenced file system.
 	// Example: 31136
-	MaxFilesAvailable int64 `json:"max_files_available,omitempty"`
+	MaxFilesAvailable *int64 `json:"max_files_available,omitempty"`
 
 	// The largest value to which the maxfiles-available parameter can be increased by reconfiguration, on the referenced file system.
 	// Example: 2844525
-	MaxFilesPossible int64 `json:"max_files_possible,omitempty"`
+	MaxFilesPossible *int64 `json:"max_files_possible,omitempty"`
 
 	// The number of user-visible files currently in use on the referenced file system.
 	// Example: 97
-	MaxFilesUsed int64 `json:"max_files_used,omitempty"`
+	MaxFilesUsed *int64 `json:"max_files_used,omitempty"`
 
 	// The percentage of disk space currently in use based on user-visible file count on the referenced file system.
 	// Example: 5
@@ -3076,14 +3341,14 @@ type AggregateInodeAttributes struct {
 	UsedPercent *int64 `json:"used_percent,omitempty"`
 
 	// The inofile-version of the aggregate. If the referenced file system is restricted or offline, a value of 0 is returned.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 4
-	Version int64 `json:"version,omitempty"`
+	Version *int64 `json:"version,omitempty"`
 }
 
-// Validate validates this aggregate inode attributes
-func (m *AggregateInodeAttributes) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline inode attributes
+func (m *AggregateInlineInodeAttributes) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUsedPercent(formats); err != nil {
@@ -3096,7 +3361,7 @@ func (m *AggregateInodeAttributes) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateInodeAttributes) validateUsedPercent(formats strfmt.Registry) error {
+func (m *AggregateInlineInodeAttributes) validateUsedPercent(formats strfmt.Registry) error {
 	if swag.IsZero(m.UsedPercent) { // not required
 		return nil
 	}
@@ -3112,13 +3377,13 @@ func (m *AggregateInodeAttributes) validateUsedPercent(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validates this aggregate inode attributes based on context it is used
-func (m *AggregateInodeAttributes) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this aggregate inline inode attributes based on context it is used
+func (m *AggregateInlineInodeAttributes) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateInodeAttributes) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineInodeAttributes) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3126,8 +3391,8 @@ func (m *AggregateInodeAttributes) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateInodeAttributes) UnmarshalBinary(b []byte) error {
-	var res AggregateInodeAttributes
+func (m *AggregateInlineInodeAttributes) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineInodeAttributes
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3135,17 +3400,17 @@ func (m *AggregateInodeAttributes) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateLinks aggregate links
+// AggregateInlineLinks aggregate inline links
 //
-// swagger:model AggregateLinks
-type AggregateLinks struct {
+// swagger:model aggregate_inline__links
+type AggregateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate links
-func (m *AggregateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline links
+func (m *AggregateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3158,7 +3423,7 @@ func (m *AggregateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3175,8 +3440,8 @@ func (m *AggregateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate links based on the context it is used
-func (m *AggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline links based on the context it is used
+func (m *AggregateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3189,7 +3454,7 @@ func (m *AggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *AggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3204,7 +3469,7 @@ func (m *AggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3212,8 +3477,8 @@ func (m *AggregateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateLinks
+func (m *AggregateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3221,35 +3486,35 @@ func (m *AggregateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateMetric The most recent sample of I/O metrics for the aggregate.
+// AggregateInlineMetric The most recent sample of I/O metrics for the aggregate.
 //
-// swagger:model AggregateMetric
-type AggregateMetric struct {
+// swagger:model aggregate_inline_metric
+type AggregateInlineMetric struct {
 
 	// links
-	Links *AggregateMetricLinks `json:"_links,omitempty"`
+	Links *AggregateInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *AggregateMetricIops `json:"iops,omitempty"`
+	Iops *AggregateInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *AggregateMetricLatency `json:"latency,omitempty"`
+	Latency *AggregateInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *AggregateMetricThroughput `json:"throughput,omitempty"`
+	Throughput *AggregateInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -3258,8 +3523,8 @@ type AggregateMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this aggregate metric
-func (m *AggregateMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline metric
+func (m *AggregateInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3296,7 +3561,7 @@ func (m *AggregateMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateMetric) validateLinks(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3313,7 +3578,7 @@ func (m *AggregateMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var aggregateMetricTypeDurationPropEnum []interface{}
+var aggregateInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3321,95 +3586,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateMetricTypeDurationPropEnum = append(aggregateMetricTypeDurationPropEnum, v)
+		aggregateInlineMetricTypeDurationPropEnum = append(aggregateInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// AggregateMetricDurationPT15S captures enum value "PT15S"
-	AggregateMetricDurationPT15S string = "PT15S"
+	// AggregateInlineMetricDurationPT15S captures enum value "PT15S"
+	AggregateInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// AggregateMetricDurationPT4M captures enum value "PT4M"
-	AggregateMetricDurationPT4M string = "PT4M"
+	// AggregateInlineMetricDurationPT4M captures enum value "PT4M"
+	AggregateInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// AggregateMetricDurationPT30M captures enum value "PT30M"
-	AggregateMetricDurationPT30M string = "PT30M"
+	// AggregateInlineMetricDurationPT30M captures enum value "PT30M"
+	AggregateInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// AggregateMetricDurationPT2H captures enum value "PT2H"
-	AggregateMetricDurationPT2H string = "PT2H"
+	// AggregateInlineMetricDurationPT2H captures enum value "PT2H"
+	AggregateInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// AggregateMetricDurationP1D captures enum value "P1D"
-	AggregateMetricDurationP1D string = "P1D"
+	// AggregateInlineMetricDurationP1D captures enum value "P1D"
+	AggregateInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// AggregateMetricDurationPT5M captures enum value "PT5M"
-	AggregateMetricDurationPT5M string = "PT5M"
+	// AggregateInlineMetricDurationPT5M captures enum value "PT5M"
+	AggregateInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *AggregateMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateMetricTypeDurationPropEnum, true); err != nil {
+func (m *AggregateInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateMetric) validateDuration(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateMetric) validateIops(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -3426,7 +3691,7 @@ func (m *AggregateMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateMetric) validateLatency(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -3443,7 +3708,7 @@ func (m *AggregateMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var aggregateMetricTypeStatusPropEnum []interface{}
+var aggregateInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3451,145 +3716,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateMetricTypeStatusPropEnum = append(aggregateMetricTypeStatusPropEnum, v)
+		aggregateInlineMetricTypeStatusPropEnum = append(aggregateInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// AggregateMetricStatusOk captures enum value "ok"
-	AggregateMetricStatusOk string = "ok"
+	// AggregateInlineMetricStatusOk captures enum value "ok"
+	AggregateInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// AggregateMetricStatusError captures enum value "error"
-	AggregateMetricStatusError string = "error"
+	// AggregateInlineMetricStatusError captures enum value "error"
+	AggregateInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// AggregateMetricStatusPartialNoData captures enum value "partial_no_data"
-	AggregateMetricStatusPartialNoData string = "partial_no_data"
+	// AggregateInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	AggregateInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// AggregateMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	AggregateMetricStatusPartialNoResponse string = "partial_no_response"
+	// AggregateInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	AggregateInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// AggregateMetricStatusPartialOtherError captures enum value "partial_other_error"
-	AggregateMetricStatusPartialOtherError string = "partial_other_error"
+	// AggregateInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	AggregateInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// AggregateMetricStatusNegativeDelta captures enum value "negative_delta"
-	AggregateMetricStatusNegativeDelta string = "negative_delta"
+	// AggregateInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	AggregateInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// AggregateMetricStatusNotFound captures enum value "not_found"
-	AggregateMetricStatusNotFound string = "not_found"
+	// AggregateInlineMetricStatusNotFound captures enum value "not_found"
+	AggregateInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// AggregateMetricStatusBackfilledData captures enum value "backfilled_data"
-	AggregateMetricStatusBackfilledData string = "backfilled_data"
+	// AggregateInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	AggregateInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// AggregateMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	AggregateMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// AggregateInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	AggregateInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// AggregateMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	AggregateMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// AggregateInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	AggregateInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
+	// aggregate_inline_metric
+	// AggregateInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// AggregateMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	AggregateMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// AggregateInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	AggregateInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *AggregateMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateMetricTypeStatusPropEnum, true); err != nil {
+func (m *AggregateInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateMetric) validateStatus(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -3606,7 +3871,7 @@ func (m *AggregateMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3618,8 +3883,8 @@ func (m *AggregateMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate metric based on the context it is used
-func (m *AggregateMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline metric based on the context it is used
+func (m *AggregateInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3656,7 +3921,7 @@ func (m *AggregateMetric) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3670,16 +3935,16 @@ func (m *AggregateMetric) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -3693,7 +3958,7 @@ func (m *AggregateMetric) contextValidateIops(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -3707,16 +3972,16 @@ func (m *AggregateMetric) contextValidateLatency(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -3730,7 +3995,7 @@ func (m *AggregateMetric) contextValidateThroughput(ctx context.Context, formats
 	return nil
 }
 
-func (m *AggregateMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -3740,7 +4005,7 @@ func (m *AggregateMetric) contextValidateTimestamp(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateMetric) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3748,8 +4013,8 @@ func (m *AggregateMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateMetric) UnmarshalBinary(b []byte) error {
-	var res AggregateMetric
+func (m *AggregateInlineMetric) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3757,34 +4022,34 @@ func (m *AggregateMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateMetricIops The rate of I/O operations observed at the storage object.
+// AggregateInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model AggregateMetricIops
-type AggregateMetricIops struct {
+// swagger:model aggregate_inline_metric_inline_iops
+type AggregateInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate metric iops
-func (m *AggregateMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline metric inline iops
+func (m *AggregateInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate metric iops based on the context it is used
-func (m *AggregateMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline metric inline iops based on the context it is used
+func (m *AggregateInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3794,7 +4059,7 @@ func (m *AggregateMetricIops) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateMetricIops) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3802,8 +4067,8 @@ func (m *AggregateMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateMetricIops) UnmarshalBinary(b []byte) error {
-	var res AggregateMetricIops
+func (m *AggregateInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3811,34 +4076,34 @@ func (m *AggregateMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateMetricLatency The round trip latency in microseconds observed at the storage object.
+// AggregateInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model AggregateMetricLatency
-type AggregateMetricLatency struct {
+// swagger:model aggregate_inline_metric_inline_latency
+type AggregateInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate metric latency
-func (m *AggregateMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline metric inline latency
+func (m *AggregateInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate metric latency based on the context it is used
-func (m *AggregateMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline metric inline latency based on the context it is used
+func (m *AggregateInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3848,7 +4113,7 @@ func (m *AggregateMetricLatency) ContextValidate(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3856,8 +4121,8 @@ func (m *AggregateMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateMetricLatency) UnmarshalBinary(b []byte) error {
-	var res AggregateMetricLatency
+func (m *AggregateInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3865,17 +4130,17 @@ func (m *AggregateMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateMetricLinks aggregate metric links
+// AggregateInlineMetricInlineLinks aggregate inline metric inline links
 //
-// swagger:model AggregateMetricLinks
-type AggregateMetricLinks struct {
+// swagger:model aggregate_inline_metric_inline__links
+type AggregateInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate metric links
-func (m *AggregateMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline metric inline links
+func (m *AggregateInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3888,7 +4153,7 @@ func (m *AggregateMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3905,8 +4170,8 @@ func (m *AggregateMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate metric links based on the context it is used
-func (m *AggregateMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline metric inline links based on the context it is used
+func (m *AggregateInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3919,7 +4184,7 @@ func (m *AggregateMetricLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *AggregateMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3934,7 +4199,7 @@ func (m *AggregateMetricLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3942,8 +4207,8 @@ func (m *AggregateMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateMetricLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateMetricLinks
+func (m *AggregateInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3951,34 +4216,34 @@ func (m *AggregateMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// AggregateInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model AggregateMetricThroughput
-type AggregateMetricThroughput struct {
+// swagger:model aggregate_inline_metric_inline_throughput
+type AggregateInlineMetricInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate metric throughput
-func (m *AggregateMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline metric inline throughput
+func (m *AggregateInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate metric throughput based on the context it is used
-func (m *AggregateMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline metric inline throughput based on the context it is used
+func (m *AggregateInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3988,7 +4253,7 @@ func (m *AggregateMetricThroughput) ContextValidate(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3996,8 +4261,8 @@ func (m *AggregateMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res AggregateMetricThroughput
+func (m *AggregateInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4005,25 +4270,25 @@ func (m *AggregateMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateNode Node where the aggregate currently resides.
+// AggregateInlineNode Node where the aggregate currently resides.
 //
-// swagger:model AggregateNode
-type AggregateNode struct {
+// swagger:model aggregate_inline_node
+type AggregateInlineNode struct {
 
 	// links
-	Links *AggregateNodeLinks `json:"_links,omitempty"`
+	Links *AggregateInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this aggregate node
-func (m *AggregateNode) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline node
+func (m *AggregateInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -4036,7 +4301,7 @@ func (m *AggregateNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateNode) validateLinks(formats strfmt.Registry) error {
+func (m *AggregateInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -4053,8 +4318,8 @@ func (m *AggregateNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate node based on the context it is used
-func (m *AggregateNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline node based on the context it is used
+func (m *AggregateInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -4067,7 +4332,7 @@ func (m *AggregateNode) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *AggregateNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -4082,7 +4347,7 @@ func (m *AggregateNode) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateNode) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4090,8 +4355,8 @@ func (m *AggregateNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateNode) UnmarshalBinary(b []byte) error {
-	var res AggregateNode
+func (m *AggregateInlineNode) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4099,17 +4364,17 @@ func (m *AggregateNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateNodeLinks aggregate node links
+// AggregateInlineNodeInlineLinks aggregate inline node inline links
 //
-// swagger:model AggregateNodeLinks
-type AggregateNodeLinks struct {
+// swagger:model aggregate_inline_node_inline__links
+type AggregateInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate node links
-func (m *AggregateNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline node inline links
+func (m *AggregateInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -4122,7 +4387,7 @@ func (m *AggregateNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -4139,8 +4404,8 @@ func (m *AggregateNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate node links based on the context it is used
-func (m *AggregateNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline node inline links based on the context it is used
+func (m *AggregateInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -4153,7 +4418,7 @@ func (m *AggregateNodeLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *AggregateNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -4168,7 +4433,7 @@ func (m *AggregateNodeLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4176,8 +4441,8 @@ func (m *AggregateNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateNodeLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateNodeLinks
+func (m *AggregateInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4185,39 +4450,39 @@ func (m *AggregateNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSnapshot aggregate snapshot
+// AggregateInlineSnapshot aggregate inline snapshot
 //
-// swagger:model AggregateSnapshot
-type AggregateSnapshot struct {
+// swagger:model aggregate_inline_snapshot
+type AggregateInlineSnapshot struct {
 
 	// Total files allowed in Snapshot copies
 	// Example: 10
 	// Read Only: true
-	FilesTotal int64 `json:"files_total,omitempty"`
+	FilesTotal *int64 `json:"files_total,omitempty"`
 
 	// Total files created in Snapshot copies
 	// Example: 3
 	// Read Only: true
-	FilesUsed int64 `json:"files_used,omitempty"`
+	FilesUsed *int64 `json:"files_used,omitempty"`
 
 	// Maximum files available for Snapshot copies
 	// Example: 5
 	// Read Only: true
-	MaxFilesAvailable int64 `json:"max_files_available,omitempty"`
+	MaxFilesAvailable *int64 `json:"max_files_available,omitempty"`
 
 	// Files in use by Snapshot copies
 	// Example: 50
 	// Read Only: true
-	MaxFilesUsed int64 `json:"max_files_used,omitempty"`
+	MaxFilesUsed *int64 `json:"max_files_used,omitempty"`
 }
 
-// Validate validates this aggregate snapshot
-func (m *AggregateSnapshot) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline snapshot
+func (m *AggregateInlineSnapshot) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate snapshot based on the context it is used
-func (m *AggregateSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline snapshot based on the context it is used
+func (m *AggregateInlineSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFilesTotal(ctx, formats); err != nil {
@@ -4242,36 +4507,36 @@ func (m *AggregateSnapshot) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *AggregateSnapshot) contextValidateFilesTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSnapshot) contextValidateFilesTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"files_total", "body", int64(m.FilesTotal)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"files_total", "body", m.FilesTotal); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSnapshot) contextValidateFilesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSnapshot) contextValidateFilesUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"files_used", "body", int64(m.FilesUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"files_used", "body", m.FilesUsed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSnapshot) contextValidateMaxFilesAvailable(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSnapshot) contextValidateMaxFilesAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"max_files_available", "body", int64(m.MaxFilesAvailable)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"max_files_available", "body", m.MaxFilesAvailable); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSnapshot) contextValidateMaxFilesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSnapshot) contextValidateMaxFilesUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"max_files_used", "body", int64(m.MaxFilesUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"max_files_used", "body", m.MaxFilesUsed); err != nil {
 		return err
 	}
 
@@ -4279,7 +4544,7 @@ func (m *AggregateSnapshot) contextValidateMaxFilesUsed(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSnapshot) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSnapshot) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4287,8 +4552,8 @@ func (m *AggregateSnapshot) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSnapshot) UnmarshalBinary(b []byte) error {
-	var res AggregateSnapshot
+func (m *AggregateInlineSnapshot) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSnapshot
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4296,39 +4561,39 @@ func (m *AggregateSnapshot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpace aggregate space
+// AggregateInlineSpace aggregate inline space
 //
-// swagger:model AggregateSpace
-type AggregateSpace struct {
+// swagger:model aggregate_inline_space
+type AggregateInlineSpace struct {
 
 	// block storage
-	BlockStorage *AggregateSpaceBlockStorage `json:"block_storage,omitempty"`
+	BlockStorage *AggregateInlineSpaceInlineBlockStorage `json:"block_storage,omitempty"`
 
 	// cloud storage
-	CloudStorage *AggregateSpaceCloudStorage `json:"cloud_storage,omitempty"`
+	CloudStorage *AggregateInlineSpaceInlineCloudStorage `json:"cloud_storage,omitempty"`
 
 	// efficiency
-	Efficiency *AggregateSpaceEfficiency `json:"efficiency,omitempty"`
+	Efficiency *AggregateInlineSpaceInlineEfficiency `json:"efficiency,omitempty"`
 
 	// efficiency without snapshots
-	EfficiencyWithoutSnapshots *AggregateSpaceEfficiencyWithoutSnapshots `json:"efficiency_without_snapshots,omitempty"`
+	EfficiencyWithoutSnapshots *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots `json:"efficiency_without_snapshots,omitempty"`
 
 	// efficiency without snapshots flexclones
-	EfficiencyWithoutSnapshotsFlexclones *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
+	EfficiencyWithoutSnapshotsFlexclones *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
 
 	// A summation of volume footprints (including volume guarantees), in bytes. This includes all of the volume footprints in the block_storage tier and the cloud_storage tier.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
 	// Example: 608896
 	// Read Only: true
-	Footprint int64 `json:"footprint,omitempty"`
+	Footprint *int64 `json:"footprint,omitempty"`
 
 	// snapshot
-	Snapshot *AggregateSpaceSnapshot `json:"snapshot,omitempty"`
+	Snapshot *AggregateInlineSpaceInlineSnapshot `json:"snapshot,omitempty"`
 }
 
-// Validate validates this aggregate space
-func (m *AggregateSpace) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space
+func (m *AggregateInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBlockStorage(formats); err != nil {
@@ -4361,7 +4626,7 @@ func (m *AggregateSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpace) validateBlockStorage(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateBlockStorage(formats strfmt.Registry) error {
 	if swag.IsZero(m.BlockStorage) { // not required
 		return nil
 	}
@@ -4378,7 +4643,7 @@ func (m *AggregateSpace) validateBlockStorage(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpace) validateCloudStorage(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateCloudStorage(formats strfmt.Registry) error {
 	if swag.IsZero(m.CloudStorage) { // not required
 		return nil
 	}
@@ -4395,7 +4660,7 @@ func (m *AggregateSpace) validateCloudStorage(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpace) validateEfficiency(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateEfficiency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Efficiency) { // not required
 		return nil
 	}
@@ -4412,7 +4677,7 @@ func (m *AggregateSpace) validateEfficiency(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpace) validateEfficiencyWithoutSnapshots(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateEfficiencyWithoutSnapshots(formats strfmt.Registry) error {
 	if swag.IsZero(m.EfficiencyWithoutSnapshots) { // not required
 		return nil
 	}
@@ -4429,7 +4694,7 @@ func (m *AggregateSpace) validateEfficiencyWithoutSnapshots(formats strfmt.Regis
 	return nil
 }
 
-func (m *AggregateSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats strfmt.Registry) error {
 	if swag.IsZero(m.EfficiencyWithoutSnapshotsFlexclones) { // not required
 		return nil
 	}
@@ -4446,7 +4711,7 @@ func (m *AggregateSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats st
 	return nil
 }
 
-func (m *AggregateSpace) validateSnapshot(formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) validateSnapshot(formats strfmt.Registry) error {
 	if swag.IsZero(m.Snapshot) { // not required
 		return nil
 	}
@@ -4463,8 +4728,8 @@ func (m *AggregateSpace) validateSnapshot(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space based on the context it is used
-func (m *AggregateSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space based on the context it is used
+func (m *AggregateInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBlockStorage(ctx, formats); err != nil {
@@ -4501,7 +4766,7 @@ func (m *AggregateSpace) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateBlockStorage(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateBlockStorage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BlockStorage != nil {
 		if err := m.BlockStorage.ContextValidate(ctx, formats); err != nil {
@@ -4515,7 +4780,7 @@ func (m *AggregateSpace) contextValidateBlockStorage(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateCloudStorage(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateCloudStorage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.CloudStorage != nil {
 		if err := m.CloudStorage.ContextValidate(ctx, formats); err != nil {
@@ -4529,7 +4794,7 @@ func (m *AggregateSpace) contextValidateCloudStorage(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateEfficiency(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateEfficiency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Efficiency != nil {
 		if err := m.Efficiency.ContextValidate(ctx, formats); err != nil {
@@ -4543,7 +4808,7 @@ func (m *AggregateSpace) contextValidateEfficiency(ctx context.Context, formats 
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshots(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateEfficiencyWithoutSnapshots(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.EfficiencyWithoutSnapshots != nil {
 		if err := m.EfficiencyWithoutSnapshots.ContextValidate(ctx, formats); err != nil {
@@ -4557,7 +4822,7 @@ func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshots(ctx context.C
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
 		if err := m.EfficiencyWithoutSnapshotsFlexclones.ContextValidate(ctx, formats); err != nil {
@@ -4571,16 +4836,16 @@ func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateFootprint(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateFootprint(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"footprint", "body", int64(m.Footprint)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"footprint", "body", m.Footprint); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshot != nil {
 		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
@@ -4595,7 +4860,7 @@ func (m *AggregateSpace) contextValidateSnapshot(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpace) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4603,8 +4868,8 @@ func (m *AggregateSpace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpace) UnmarshalBinary(b []byte) error {
-	var res AggregateSpace
+func (m *AggregateInlineSpace) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4612,116 +4877,116 @@ func (m *AggregateSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpaceBlockStorage aggregate space block storage
+// AggregateInlineSpaceInlineBlockStorage aggregate inline space inline block storage
 //
-// swagger:model AggregateSpaceBlockStorage
-type AggregateSpaceBlockStorage struct {
+// swagger:model aggregate_inline_space_inline_block_storage
+type AggregateInlineSpaceInlineBlockStorage struct {
 
 	// Space used by different metafiles and internal operations inside the aggregate, in bytes.
 	// Example: 2655
 	// Read Only: true
-	AggregateMetadata int64 `json:"aggregate_metadata,omitempty"`
+	AggregateMetadata *int64 `json:"aggregate_metadata,omitempty"`
 
 	// Aggregate metadata as a percentage.
 	// Example: 8
 	// Read Only: true
-	AggregateMetadataPercent int64 `json:"aggregate_metadata_percent,omitempty"`
+	AggregateMetadataPercent *int64 `json:"aggregate_metadata_percent,omitempty"`
 
 	// Space available in bytes.
 	// Example: 10156560384
 	// Read Only: true
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Amount of compacted data in bytes.
 	// Example: 1990000
 	// Read Only: true
-	DataCompactedCount int64 `json:"data_compacted_count,omitempty"`
+	DataCompactedCount *int64 `json:"data_compacted_count,omitempty"`
 
 	// Space saved in bytes by compacting the data.
 	// Example: 1996000
 	// Read Only: true
-	DataCompactionSpaceSaved int64 `json:"data_compaction_space_saved,omitempty"`
+	DataCompactionSpaceSaved *int64 `json:"data_compaction_space_saved,omitempty"`
 
 	// Percentage saved by compacting the data.
 	// Example: 27
 	// Read Only: true
-	DataCompactionSpaceSavedPercent int64 `json:"data_compaction_space_saved_percent,omitempty"`
+	DataCompactionSpaceSavedPercent *int64 `json:"data_compaction_space_saved_percent,omitempty"`
 
 	// The aggregate used percentage at which 'monitor.volume.full' EMS is generated.
 	// Read Only: true
-	FullThresholdPercent int64 `json:"full_threshold_percent,omitempty"`
+	FullThresholdPercent *int64 `json:"full_threshold_percent,omitempty"`
 
 	// The size that is physically used in the block storage and has a cold temperature, in bytes. This property is only supported if the aggregate is either attached to a cloud store or can be attached to a cloud store.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either block_storage.inactive_user_data or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either block_storage.inactive_user_data or **.
 	//
 	// Example: 304448
 	// Read Only: true
-	InactiveUserData int64 `json:"inactive_user_data,omitempty"`
+	InactiveUserData *int64 `json:"inactive_user_data,omitempty"`
 
 	// The percentage of inactive user data in the block storage. This property is only supported if the aggregate is either attached to a cloud store or can be attached to a cloud store.
-	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either block_storage.inactive_user_data_percent or **.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either block_storage.inactive_user_data_percent or **.
 	//
 	// Read Only: true
-	InactiveUserDataPercent int64 `json:"inactive_user_data_percent,omitempty"`
+	InactiveUserDataPercent *int64 `json:"inactive_user_data_percent,omitempty"`
 
 	// Total physical used size of an aggregate in bytes.
 	// Example: 2461696
 	// Read Only: true
-	PhysicalUsed int64 `json:"physical_used,omitempty"`
+	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// Physical used percentage.
 	// Example: 50
 	// Read Only: true
-	PhysicalUsedPercent int64 `json:"physical_used_percent,omitempty"`
+	PhysicalUsedPercent *int64 `json:"physical_used_percent,omitempty"`
 
 	// Total usable space in bytes, not including WAFL reserve and aggregate Snapshot copy reserve.
 	// Example: 10156769280
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Space used or reserved in bytes. Includes volume guarantees and aggregate metadata.
 	// Example: 2088960
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// Total used including the Snapshot copy reserve, in bytes.
 	// Example: 674685
 	// Read Only: true
-	UsedIncludingSnapshotReserve int64 `json:"used_including_snapshot_reserve,omitempty"`
+	UsedIncludingSnapshotReserve *int64 `json:"used_including_snapshot_reserve,omitempty"`
 
 	// Total used including the Snapshot reserve as a percentage.
 	// Example: 35
 	// Read Only: true
-	UsedIncludingSnapshotReservePercent int64 `json:"used_including_snapshot_reserve_percent,omitempty"`
+	UsedIncludingSnapshotReservePercent *int64 `json:"used_including_snapshot_reserve_percent,omitempty"`
 
 	// Amount of shared bytes counted by storage efficiency.
 	// Example: 1990000
 	// Read Only: true
-	VolumeDeduplicationSharedCount int64 `json:"volume_deduplication_shared_count,omitempty"`
+	VolumeDeduplicationSharedCount *int64 `json:"volume_deduplication_shared_count,omitempty"`
 
 	// Amount of space saved in bytes by storage efficiency.
 	// Example: 1996000
 	// Read Only: true
-	VolumeDeduplicationSpaceSaved int64 `json:"volume_deduplication_space_saved,omitempty"`
+	VolumeDeduplicationSpaceSaved *int64 `json:"volume_deduplication_space_saved,omitempty"`
 
 	// Percentage of space saved by storage efficiency.
 	// Example: 27
 	// Read Only: true
-	VolumeDeduplicationSpaceSavedPercent int64 `json:"volume_deduplication_space_saved_percent,omitempty"`
+	VolumeDeduplicationSpaceSavedPercent *int64 `json:"volume_deduplication_space_saved_percent,omitempty"`
 
 	// A summation of volume footprints inside the aggregate, as a percentage. A volume's footprint is the amount of space being used for the volume in the aggregate.
 	// Example: 14
 	// Read Only: true
-	VolumeFootprintsPercent int64 `json:"volume_footprints_percent,omitempty"`
+	VolumeFootprintsPercent *int64 `json:"volume_footprints_percent,omitempty"`
 }
 
-// Validate validates this aggregate space block storage
-func (m *AggregateSpaceBlockStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space inline block storage
+func (m *AggregateInlineSpaceInlineBlockStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space block storage based on the context it is used
-func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space inline block storage based on the context it is used
+func (m *AggregateInlineSpaceInlineBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAggregateMetadata(ctx, formats); err != nil {
@@ -4806,171 +5071,171 @@ func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateAggregateMetadata(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateAggregateMetadata(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata", "body", int64(m.AggregateMetadata)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata", "body", m.AggregateMetadata); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateAggregateMetadataPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateAggregateMetadataPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata_percent", "body", int64(m.AggregateMetadataPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata_percent", "body", m.AggregateMetadataPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"available", "body", int64(m.Available)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"available", "body", m.Available); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateDataCompactedCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateDataCompactedCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compacted_count", "body", int64(m.DataCompactedCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compacted_count", "body", m.DataCompactedCount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateDataCompactionSpaceSaved(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateDataCompactionSpaceSaved(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compaction_space_saved", "body", int64(m.DataCompactionSpaceSaved)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compaction_space_saved", "body", m.DataCompactionSpaceSaved); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateDataCompactionSpaceSavedPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateDataCompactionSpaceSavedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compaction_space_saved_percent", "body", int64(m.DataCompactionSpaceSavedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"data_compaction_space_saved_percent", "body", m.DataCompactionSpaceSavedPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateFullThresholdPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateFullThresholdPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"full_threshold_percent", "body", int64(m.FullThresholdPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"full_threshold_percent", "body", m.FullThresholdPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateInactiveUserData(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateInactiveUserData(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"inactive_user_data", "body", int64(m.InactiveUserData)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"inactive_user_data", "body", m.InactiveUserData); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateInactiveUserDataPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateInactiveUserDataPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"inactive_user_data_percent", "body", int64(m.InactiveUserDataPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"inactive_user_data_percent", "body", m.InactiveUserDataPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidatePhysicalUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidatePhysicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"physical_used", "body", int64(m.PhysicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"physical_used", "body", m.PhysicalUsed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidatePhysicalUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidatePhysicalUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"physical_used_percent", "body", int64(m.PhysicalUsedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"physical_used_percent", "body", m.PhysicalUsedPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"size", "body", m.Size); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateUsedIncludingSnapshotReserve(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateUsedIncludingSnapshotReserve(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve", "body", int64(m.UsedIncludingSnapshotReserve)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve", "body", m.UsedIncludingSnapshotReserve); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateUsedIncludingSnapshotReservePercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateUsedIncludingSnapshotReservePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve_percent", "body", int64(m.UsedIncludingSnapshotReservePercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve_percent", "body", m.UsedIncludingSnapshotReservePercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateVolumeDeduplicationSharedCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateVolumeDeduplicationSharedCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_shared_count", "body", int64(m.VolumeDeduplicationSharedCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_shared_count", "body", m.VolumeDeduplicationSharedCount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateVolumeDeduplicationSpaceSaved(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateVolumeDeduplicationSpaceSaved(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_space_saved", "body", int64(m.VolumeDeduplicationSpaceSaved)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_space_saved", "body", m.VolumeDeduplicationSpaceSaved); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateVolumeDeduplicationSpaceSavedPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateVolumeDeduplicationSpaceSavedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_space_saved_percent", "body", int64(m.VolumeDeduplicationSpaceSavedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_space_saved_percent", "body", m.VolumeDeduplicationSpaceSavedPercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceBlockStorage) contextValidateVolumeFootprintsPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineBlockStorage) contextValidateVolumeFootprintsPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_footprints_percent", "body", int64(m.VolumeFootprintsPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_footprints_percent", "body", m.VolumeFootprintsPercent); err != nil {
 		return err
 	}
 
@@ -4978,7 +5243,7 @@ func (m *AggregateSpaceBlockStorage) contextValidateVolumeFootprintsPercent(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpaceBlockStorage) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpaceInlineBlockStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4986,8 +5251,8 @@ func (m *AggregateSpaceBlockStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpaceBlockStorage) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceBlockStorage
+func (m *AggregateInlineSpaceInlineBlockStorage) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineBlockStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4995,24 +5260,24 @@ func (m *AggregateSpaceBlockStorage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpaceCloudStorage aggregate space cloud storage
+// AggregateInlineSpaceInlineCloudStorage aggregate inline space inline cloud storage
 //
-// swagger:model AggregateSpaceCloudStorage
-type AggregateSpaceCloudStorage struct {
+// swagger:model aggregate_inline_space_inline_cloud_storage
+type AggregateInlineSpaceInlineCloudStorage struct {
 
 	// Used space in bytes in the cloud store. Only applicable for aggregates with a cloud store tier.
 	// Example: 402743264
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this aggregate space cloud storage
-func (m *AggregateSpaceCloudStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space inline cloud storage
+func (m *AggregateInlineSpaceInlineCloudStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space cloud storage based on the context it is used
-func (m *AggregateSpaceCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space inline cloud storage based on the context it is used
+func (m *AggregateInlineSpaceInlineCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateUsed(ctx, formats); err != nil {
@@ -5025,9 +5290,9 @@ func (m *AggregateSpaceCloudStorage) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateSpaceCloudStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineCloudStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"cloud_storage"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"cloud_storage"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -5035,7 +5300,7 @@ func (m *AggregateSpaceCloudStorage) contextValidateUsed(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpaceCloudStorage) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpaceInlineCloudStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5043,8 +5308,8 @@ func (m *AggregateSpaceCloudStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpaceCloudStorage) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceCloudStorage
+func (m *AggregateInlineSpaceInlineCloudStorage) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineCloudStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5052,31 +5317,189 @@ func (m *AggregateSpaceCloudStorage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpaceEfficiency Storage efficiency.
+// AggregateInlineSpaceInlineEfficiency Storage efficiency.
 //
-// swagger:model AggregateSpaceEfficiency
-type AggregateSpaceEfficiency struct {
+// swagger:model aggregate_inline_space_inline_efficiency
+type AggregateInlineSpaceInlineEfficiency struct {
+
+	// Indicates whether or not aggregate has auto adaptive compression savings.
+	// Read Only: true
+	AutoAdaptiveCompressionSavings *bool `json:"auto_adaptive_compression_savings,omitempty"`
+
+	// Indicates whether or not cross volume background deduplication is enabled.
+	// Read Only: true
+	CrossVolumeBackgroundDedupe *bool `json:"cross_volume_background_dedupe,omitempty"`
+
+	// Indicates whether or not aggregate has cross volume deduplication savings.
+	// Read Only: true
+	CrossVolumeDedupeSavings *bool `json:"cross_volume_dedupe_savings,omitempty"`
+
+	// Indicates whether or not cross volume inline deduplication is enabled.
+	// Read Only: true
+	CrossVolumeInlineDedupe *bool `json:"cross_volume_inline_dedupe,omitempty"`
 
 	// Logical used
 	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
 
 	// Data reduction ratio (logical_used / used)
 	// Read Only: true
-	Ratio float64 `json:"ratio,omitempty"`
+	Ratio *float64 `json:"ratio,omitempty"`
 
 	// Space saved by storage efficiencies (logical_used - used)
 	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
+	Savings *int64 `json:"savings,omitempty"`
 }
 
-// Validate validates this aggregate space efficiency
-func (m *AggregateSpaceEfficiency) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space inline efficiency
+func (m *AggregateInlineSpaceInlineEfficiency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space efficiency based on the context it is used
-func (m *AggregateSpaceEfficiency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space inline efficiency based on the context it is used
+func (m *AggregateInlineSpaceInlineEfficiency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAutoAdaptiveCompressionSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCrossVolumeBackgroundDedupe(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCrossVolumeDedupeSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCrossVolumeInlineDedupe(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateAutoAdaptiveCompressionSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"auto_adaptive_compression_savings", "body", m.AutoAdaptiveCompressionSavings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateCrossVolumeBackgroundDedupe(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"cross_volume_background_dedupe", "body", m.CrossVolumeBackgroundDedupe); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateCrossVolumeDedupeSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"cross_volume_dedupe_savings", "body", m.CrossVolumeDedupeSavings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateCrossVolumeInlineDedupe(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"cross_volume_inline_dedupe", "body", m.CrossVolumeInlineDedupe); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"ratio", "body", m.Ratio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateInlineSpaceInlineEfficiency) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"savings", "body", m.Savings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateInlineSpaceInlineEfficiency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateInlineSpaceInlineEfficiency) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineEfficiency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AggregateInlineSpaceInlineEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by Snapshot copies.
+//
+// swagger:model aggregate_inline_space_inline_efficiency_without_snapshots
+type AggregateInlineSpaceInlineEfficiencyWithoutSnapshots struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings *int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this aggregate inline space inline efficiency without snapshots
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this aggregate inline space inline efficiency without snapshots based on the context it is used
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
@@ -5097,27 +5520,27 @@ func (m *AggregateSpaceEfficiency) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *AggregateSpaceEfficiency) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceEfficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"ratio", "body", float64(m.Ratio)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"ratio", "body", m.Ratio); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceEfficiency) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency"+"."+"savings", "body", int64(m.Savings)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"savings", "body", m.Savings); err != nil {
 		return err
 	}
 
@@ -5125,7 +5548,7 @@ func (m *AggregateSpaceEfficiency) contextValidateSavings(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpaceEfficiency) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5133,8 +5556,8 @@ func (m *AggregateSpaceEfficiency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpaceEfficiency) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceEfficiency
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineEfficiencyWithoutSnapshots
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5142,31 +5565,31 @@ func (m *AggregateSpaceEfficiency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpaceEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by Snapshot copies.
+// AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by Snapshot copies and Flexclone volumes.
 //
-// swagger:model AggregateSpaceEfficiencyWithoutSnapshots
-type AggregateSpaceEfficiencyWithoutSnapshots struct {
+// swagger:model aggregate_inline_space_inline_efficiency_without_snapshots_flexclones
+type AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones struct {
 
 	// Logical used
 	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
 
 	// Data reduction ratio (logical_used / used)
 	// Read Only: true
-	Ratio float64 `json:"ratio,omitempty"`
+	Ratio *float64 `json:"ratio,omitempty"`
 
 	// Space saved by storage efficiencies (logical_used - used)
 	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
+	Savings *int64 `json:"savings,omitempty"`
 }
 
-// Validate validates this aggregate space efficiency without snapshots
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space inline efficiency without snapshots flexclones
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space efficiency without snapshots based on the context it is used
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space inline efficiency without snapshots flexclones based on the context it is used
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
@@ -5187,117 +5610,27 @@ func (m *AggregateSpaceEfficiencyWithoutSnapshots) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"ratio", "body", float64(m.Ratio)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"ratio", "body", m.Ratio); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots"+"."+"savings", "body", int64(m.Savings)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *AggregateSpaceEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceEfficiencyWithoutSnapshots
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// AggregateSpaceEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by Snapshot copies and Flexclone volumes.
-//
-// swagger:model AggregateSpaceEfficiencyWithoutSnapshotsFlexclones
-type AggregateSpaceEfficiencyWithoutSnapshotsFlexclones struct {
-
-	// Logical used
-	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
-
-	// Data reduction ratio (logical_used / used)
-	// Read Only: true
-	Ratio float64 `json:"ratio,omitempty"`
-
-	// Space saved by storage efficiencies (logical_used - used)
-	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
-}
-
-// Validate validates this aggregate space efficiency without snapshots flexclones
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this aggregate space efficiency without snapshots flexclones based on the context it is used
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRatio(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSavings(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"ratio", "body", float64(m.Ratio)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"savings", "body", int64(m.Savings)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"savings", "body", m.Savings); err != nil {
 		return err
 	}
 
@@ -5305,7 +5638,7 @@ func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateSavi
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5313,8 +5646,8 @@ func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceEfficiencyWithoutSnapshotsFlexclones
+func (m *AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineEfficiencyWithoutSnapshotsFlexclones
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5322,44 +5655,44 @@ func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b [
 	return nil
 }
 
-// AggregateSpaceSnapshot aggregate space snapshot
+// AggregateInlineSpaceInlineSnapshot aggregate inline space inline snapshot
 //
-// swagger:model AggregateSpaceSnapshot
-type AggregateSpaceSnapshot struct {
+// swagger:model aggregate_inline_space_inline_snapshot
+type AggregateInlineSpaceInlineSnapshot struct {
 
 	// Available space for Snapshot copies in bytes
 	// Example: 2000
 	// Read Only: true
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Percentage of space reserved for Snapshot copies
 	// Example: 20
 	// Read Only: true
-	ReservePercent int64 `json:"reserve_percent,omitempty"`
+	ReservePercent *int64 `json:"reserve_percent,omitempty"`
 
 	// Total space for Snapshot copies in bytes
 	// Example: 5000
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Space used by Snapshot copies in bytes
 	// Example: 3000
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// Percentage of disk space used by Snapshot copies
 	// Example: 45
 	// Read Only: true
-	UsedPercent int64 `json:"used_percent,omitempty"`
+	UsedPercent *int64 `json:"used_percent,omitempty"`
 }
 
-// Validate validates this aggregate space snapshot
-func (m *AggregateSpaceSnapshot) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline space inline snapshot
+func (m *AggregateInlineSpaceInlineSnapshot) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate space snapshot based on the context it is used
-func (m *AggregateSpaceSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline space inline snapshot based on the context it is used
+func (m *AggregateInlineSpaceInlineSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAvailable(ctx, formats); err != nil {
@@ -5388,45 +5721,45 @@ func (m *AggregateSpaceSnapshot) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AggregateSpaceSnapshot) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineSnapshot) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"available", "body", int64(m.Available)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"available", "body", m.Available); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceSnapshot) contextValidateReservePercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineSnapshot) contextValidateReservePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"reserve_percent", "body", int64(m.ReservePercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"reserve_percent", "body", m.ReservePercent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceSnapshot) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineSnapshot) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateSpaceSnapshot) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineSpaceInlineSnapshot) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"used_percent", "body", int64(m.UsedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"used_percent", "body", m.UsedPercent); err != nil {
 		return err
 	}
 
@@ -5434,7 +5767,7 @@ func (m *AggregateSpaceSnapshot) contextValidateUsedPercent(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpaceSnapshot) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineSpaceInlineSnapshot) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5442,8 +5775,8 @@ func (m *AggregateSpaceSnapshot) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpaceSnapshot) UnmarshalBinary(b []byte) error {
-	var res AggregateSpaceSnapshot
+func (m *AggregateInlineSpaceInlineSnapshot) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineSpaceInlineSnapshot
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5451,25 +5784,25 @@ func (m *AggregateSpaceSnapshot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateStatistics The real time I/O statistics for the aggregate.
+// AggregateInlineStatistics The real time I/O statistics for the aggregate.
 //
-// swagger:model AggregateStatistics
-type AggregateStatistics struct {
+// swagger:model aggregate_inline_statistics
+type AggregateInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *AggregateStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *AggregateInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *AggregateStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *AggregateInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *AggregateStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *AggregateInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -5478,8 +5811,8 @@ type AggregateStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this aggregate statistics
-func (m *AggregateStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline statistics
+func (m *AggregateInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -5508,7 +5841,7 @@ func (m *AggregateStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -5525,7 +5858,7 @@ func (m *AggregateStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -5542,7 +5875,7 @@ func (m *AggregateStatistics) validateLatencyRaw(formats strfmt.Registry) error 
 	return nil
 }
 
-var aggregateStatisticsTypeStatusPropEnum []interface{}
+var aggregateInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -5550,145 +5883,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		aggregateStatisticsTypeStatusPropEnum = append(aggregateStatisticsTypeStatusPropEnum, v)
+		aggregateInlineStatisticsTypeStatusPropEnum = append(aggregateInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// AggregateStatisticsStatusOk captures enum value "ok"
-	AggregateStatisticsStatusOk string = "ok"
+	// AggregateInlineStatisticsStatusOk captures enum value "ok"
+	AggregateInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// AggregateStatisticsStatusError captures enum value "error"
-	AggregateStatisticsStatusError string = "error"
+	// AggregateInlineStatisticsStatusError captures enum value "error"
+	AggregateInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// AggregateStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	AggregateStatisticsStatusPartialNoData string = "partial_no_data"
+	// AggregateInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	AggregateInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// AggregateStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	AggregateStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// AggregateInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	AggregateInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// AggregateStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	AggregateStatisticsStatusPartialOtherError string = "partial_other_error"
+	// AggregateInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	AggregateInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// AggregateStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	AggregateStatisticsStatusNegativeDelta string = "negative_delta"
+	// AggregateInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	AggregateInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// AggregateStatisticsStatusNotFound captures enum value "not_found"
-	AggregateStatisticsStatusNotFound string = "not_found"
+	// AggregateInlineStatisticsStatusNotFound captures enum value "not_found"
+	AggregateInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// AggregateStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	AggregateStatisticsStatusBackfilledData string = "backfilled_data"
+	// AggregateInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	AggregateInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// AggregateStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	AggregateStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// AggregateInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	AggregateInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// AggregateStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	AggregateStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// AggregateInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	AggregateInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
+	// aggregate_inline_statistics
+	// AggregateInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// AggregateStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	AggregateStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// AggregateInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	AggregateInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *AggregateStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, aggregateStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *AggregateInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *AggregateStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -5705,7 +6038,7 @@ func (m *AggregateStatistics) validateThroughputRaw(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *AggregateStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -5717,8 +6050,8 @@ func (m *AggregateStatistics) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate statistics based on the context it is used
-func (m *AggregateStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline statistics based on the context it is used
+func (m *AggregateInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -5747,7 +6080,7 @@ func (m *AggregateStatistics) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *AggregateStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -5761,7 +6094,7 @@ func (m *AggregateStatistics) contextValidateIopsRaw(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -5775,16 +6108,16 @@ func (m *AggregateStatistics) contextValidateLatencyRaw(ctx context.Context, for
 	return nil
 }
 
-func (m *AggregateStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AggregateStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -5798,7 +6131,7 @@ func (m *AggregateStatistics) contextValidateThroughputRaw(ctx context.Context, 
 	return nil
 }
 
-func (m *AggregateStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -5808,7 +6141,7 @@ func (m *AggregateStatistics) contextValidateTimestamp(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateStatistics) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5816,8 +6149,8 @@ func (m *AggregateStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateStatistics) UnmarshalBinary(b []byte) error {
-	var res AggregateStatistics
+func (m *AggregateInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5825,34 +6158,34 @@ func (m *AggregateStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateStatisticsIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
+// AggregateInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model AggregateStatisticsIopsRaw
-type AggregateStatisticsIopsRaw struct {
+// swagger:model aggregate_inline_statistics_inline_iops_raw
+type AggregateInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate statistics iops raw
-func (m *AggregateStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline statistics inline iops raw
+func (m *AggregateInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate statistics iops raw based on the context it is used
-func (m *AggregateStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline statistics inline iops raw based on the context it is used
+func (m *AggregateInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -5862,7 +6195,7 @@ func (m *AggregateStatisticsIopsRaw) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5870,8 +6203,8 @@ func (m *AggregateStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res AggregateStatisticsIopsRaw
+func (m *AggregateInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5879,34 +6212,34 @@ func (m *AggregateStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// AggregateInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model AggregateStatisticsLatencyRaw
-type AggregateStatisticsLatencyRaw struct {
+// swagger:model aggregate_inline_statistics_inline_latency_raw
+type AggregateInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate statistics latency raw
-func (m *AggregateStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline statistics inline latency raw
+func (m *AggregateInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate statistics latency raw based on the context it is used
-func (m *AggregateStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline statistics inline latency raw based on the context it is used
+func (m *AggregateInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -5916,7 +6249,7 @@ func (m *AggregateStatisticsLatencyRaw) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5924,8 +6257,8 @@ func (m *AggregateStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res AggregateStatisticsLatencyRaw
+func (m *AggregateInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5933,34 +6266,34 @@ func (m *AggregateStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateStatisticsThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// AggregateInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model AggregateStatisticsThroughputRaw
-type AggregateStatisticsThroughputRaw struct {
+// swagger:model aggregate_inline_statistics_inline_throughput_raw
+type AggregateInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this aggregate statistics throughput raw
-func (m *AggregateStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate inline statistics inline throughput raw
+func (m *AggregateInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate statistics throughput raw based on the context it is used
-func (m *AggregateStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate inline statistics inline throughput raw based on the context it is used
+func (m *AggregateInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -5970,7 +6303,7 @@ func (m *AggregateStatisticsThroughputRaw) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *AggregateInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5978,8 +6311,8 @@ func (m *AggregateStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res AggregateStatisticsThroughputRaw
+func (m *AggregateInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res AggregateInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

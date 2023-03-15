@@ -66,13 +66,13 @@ type MultiAdminVerifyRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Operation.
-	OperationPathParameter string
+	Operation string
 
 	// OwnerUUID.
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,37 +127,37 @@ func (o *MultiAdminVerifyRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) WithFieldsQueryParameter(fields []string) *MultiAdminVerifyRuleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) WithFields(fields []string) *MultiAdminVerifyRuleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithOperationPathParameter adds the operation to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) WithOperationPathParameter(operation string) *MultiAdminVerifyRuleGetParams {
-	o.SetOperationPathParameter(operation)
+// WithOperation adds the operation to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) WithOperation(operation string) *MultiAdminVerifyRuleGetParams {
+	o.SetOperation(operation)
 	return o
 }
 
-// SetOperationPathParameter adds the operation to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) SetOperationPathParameter(operation string) {
-	o.OperationPathParameter = operation
+// SetOperation adds the operation to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) SetOperation(operation string) {
+	o.Operation = operation
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *MultiAdminVerifyRuleGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) WithOwnerUUID(ownerUUID string) *MultiAdminVerifyRuleGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the multi admin verify rule get params
-func (o *MultiAdminVerifyRuleGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify rule get params
+func (o *MultiAdminVerifyRuleGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,7 +168,7 @@ func (o *MultiAdminVerifyRuleGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -180,12 +180,12 @@ func (o *MultiAdminVerifyRuleGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param operation
-	if err := r.SetPathParam("operation", o.OperationPathParameter); err != nil {
+	if err := r.SetPathParam("operation", o.Operation); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
@@ -197,7 +197,7 @@ func (o *MultiAdminVerifyRuleGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamMultiAdminVerifyRuleGet binds the parameter fields
 func (o *MultiAdminVerifyRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,19 +66,19 @@ type ApplicationSnapshotDeleteParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *ApplicationSnapshotDeleteParams) WithDefaults() *ApplicationSnapshotDel
 // All values with no default are reset to their zero value.
 func (o *ApplicationSnapshotDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ApplicationSnapshotDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *ApplicationSnapshotDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationSnapshotDeleteParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) WithApplicationUUID(applicationUUID string) *ApplicationSnapshotDeleteParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationSnapshotDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) WithReturnTimeout(returnTimeout *int64) *ApplicationSnapshotDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) WithUUIDPathParameter(uuid string) *ApplicationSnapshotDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) WithUUID(uuid string) *ApplicationSnapshotDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application snapshot delete params
-func (o *ApplicationSnapshotDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application snapshot delete params
+func (o *ApplicationSnapshotDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,17 +186,17 @@ func (o *ApplicationSnapshotDeleteParams) WriteToRequest(r runtime.ClientRequest
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -208,7 +208,7 @@ func (o *ApplicationSnapshotDeleteParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

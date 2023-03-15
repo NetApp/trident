@@ -27,11 +27,7 @@ type VscanScannerPool struct {
 	// Example: scanner-1
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
-
-	// Specifies a list of privileged users. A valid form of privileged user-name is "domain-name\user-name". Privileged user-names are stored and treated as case-insensitive strings. Virus scanners must use one of the registered privileged users for connecting to clustered Data ONTAP for exchanging virus-scanning protocol messages and to access file for scanning, remedying and quarantining operations.
-	// Example: ["cifs\\u1","cifs\\u2"]
-	PrivilegedUsers []string `json:"privileged_users,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the role of the scanner pool. The possible values are:
 	//   * primary   - Always active.
@@ -41,12 +37,16 @@ type VscanScannerPool struct {
 	// Enum: [primary secondary idle]
 	Role *string `json:"role,omitempty"`
 
+	// svm
+	Svm *VscanScannerPoolInlineSvm `json:"svm,omitempty"`
+
+	// Specifies a list of privileged users. A valid form of privileged user-name is "domain-name\user-name". Privileged user-names are stored and treated as case-insensitive strings. Virus scanners must use one of the registered privileged users for connecting to clustered Data ONTAP for exchanging virus-scanning protocol messages and to access file for scanning, remedying and quarantining operations.
+	// Example: ["cifs\\u1","cifs\\u2"]
+	VscanScannerPoolInlinePrivilegedUsers []*string `json:"privileged_users,omitempty"`
+
 	// Specifies a list of IP addresses or FQDN for each Vscan server host names which are allowed to connect to clustered ONTAP.
 	// Example: ["1.1.1.1","10.72.204.27","vmwin204-27.fsct.nb"]
-	Servers []string `json:"servers,omitempty"`
-
-	// svm
-	Svm *VscanScannerPoolSvm `json:"svm,omitempty"`
+	VscanScannerPoolInlineServers []*string `json:"servers,omitempty"`
 }
 
 // Validate validates this vscan scanner pool
@@ -97,11 +97,11 @@ func (m *VscanScannerPool) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 
@@ -255,27 +255,27 @@ func (m *VscanScannerPool) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanScannerPoolSvm vscan scanner pool svm
+// VscanScannerPoolInlineSvm vscan scanner pool inline svm
 //
-// swagger:model VscanScannerPoolSvm
-type VscanScannerPoolSvm struct {
+// swagger:model vscan_scanner_pool_inline_svm
+type VscanScannerPoolInlineSvm struct {
 
 	// links
-	Links *VscanScannerPoolSvmLinks `json:"_links,omitempty"`
+	Links *VscanScannerPoolInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan scanner pool svm
-func (m *VscanScannerPoolSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan scanner pool inline svm
+func (m *VscanScannerPoolInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -288,7 +288,7 @@ func (m *VscanScannerPoolSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanScannerPoolSvm) validateLinks(formats strfmt.Registry) error {
+func (m *VscanScannerPoolInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -305,8 +305,8 @@ func (m *VscanScannerPoolSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan scanner pool svm based on the context it is used
-func (m *VscanScannerPoolSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan scanner pool inline svm based on the context it is used
+func (m *VscanScannerPoolInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -319,7 +319,7 @@ func (m *VscanScannerPoolSvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *VscanScannerPoolSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanScannerPoolInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -334,7 +334,7 @@ func (m *VscanScannerPoolSvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *VscanScannerPoolSvm) MarshalBinary() ([]byte, error) {
+func (m *VscanScannerPoolInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -342,8 +342,8 @@ func (m *VscanScannerPoolSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanScannerPoolSvm) UnmarshalBinary(b []byte) error {
-	var res VscanScannerPoolSvm
+func (m *VscanScannerPoolInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VscanScannerPoolInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -351,17 +351,17 @@ func (m *VscanScannerPoolSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanScannerPoolSvmLinks vscan scanner pool svm links
+// VscanScannerPoolInlineSvmInlineLinks vscan scanner pool inline svm inline links
 //
-// swagger:model VscanScannerPoolSvmLinks
-type VscanScannerPoolSvmLinks struct {
+// swagger:model vscan_scanner_pool_inline_svm_inline__links
+type VscanScannerPoolInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan scanner pool svm links
-func (m *VscanScannerPoolSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan scanner pool inline svm inline links
+func (m *VscanScannerPoolInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -374,7 +374,7 @@ func (m *VscanScannerPoolSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanScannerPoolSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanScannerPoolInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -391,8 +391,8 @@ func (m *VscanScannerPoolSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan scanner pool svm links based on the context it is used
-func (m *VscanScannerPoolSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan scanner pool inline svm inline links based on the context it is used
+func (m *VscanScannerPoolInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -405,7 +405,7 @@ func (m *VscanScannerPoolSvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *VscanScannerPoolSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanScannerPoolInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -420,7 +420,7 @@ func (m *VscanScannerPoolSvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *VscanScannerPoolSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanScannerPoolInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -428,8 +428,8 @@ func (m *VscanScannerPoolSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanScannerPoolSvmLinks) UnmarshalBinary(b []byte) error {
-	var res VscanScannerPoolSvmLinks
+func (m *VscanScannerPoolInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanScannerPoolInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,7 +66,7 @@ type ClusterNisGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *ClusterNisGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster nis get params
-func (o *ClusterNisGetParams) WithFieldsQueryParameter(fields []string) *ClusterNisGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster nis get params
+func (o *ClusterNisGetParams) WithFields(fields []string) *ClusterNisGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster nis get params
-func (o *ClusterNisGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster nis get params
+func (o *ClusterNisGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *ClusterNisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *ClusterNisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamClusterNisGet binds the parameter fields
 func (o *ClusterNisGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

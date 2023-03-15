@@ -20,14 +20,14 @@ import (
 type FcpServiceResponse struct {
 
 	// links
-	Links *FcpServiceResponseLinks `json:"_links,omitempty"`
+	Links *FcpServiceResponseInlineLinks `json:"_links,omitempty"`
+
+	// fcp service response inline records
+	FcpServiceResponseInlineRecords []*FcpService `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*FcpService `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fcp service response
@@ -38,7 +38,7 @@ func (m *FcpServiceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFcpServiceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *FcpServiceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FcpServiceResponse) validateFcpServiceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcpServiceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FcpServiceResponseInlineRecords); i++ {
+		if swag.IsZero(m.FcpServiceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FcpServiceResponseInlineRecords[i] != nil {
+			if err := m.FcpServiceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *FcpServiceResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFcpServiceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *FcpServiceResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcpServiceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceResponse) contextValidateFcpServiceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FcpServiceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcpServiceResponseInlineRecords[i] != nil {
+			if err := m.FcpServiceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *FcpServiceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceResponseLinks fcp service response links
+// FcpServiceResponseInlineLinks fcp service response inline links
 //
-// swagger:model FcpServiceResponseLinks
-type FcpServiceResponseLinks struct {
+// swagger:model fcp_service_response_inline__links
+type FcpServiceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type FcpServiceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fcp service response links
-func (m *FcpServiceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service response inline links
+func (m *FcpServiceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *FcpServiceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcpServiceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *FcpServiceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcpServiceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *FcpServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service response links based on the context it is used
-func (m *FcpServiceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service response inline links based on the context it is used
+func (m *FcpServiceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *FcpServiceResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcpServiceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *FcpServiceResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *FcpServiceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *FcpServiceResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *FcpServiceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FcpServiceResponseLinks
+func (m *FcpServiceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcpServiceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

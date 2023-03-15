@@ -67,7 +67,7 @@ type SvmPeerPermissionModifyParams struct {
 
 	   Peer cluster UUID
 	*/
-	ClusterPeerUUIDPathParameter string
+	ClusterPeerUUID string
 
 	/* Info.
 
@@ -79,7 +79,7 @@ type SvmPeerPermissionModifyParams struct {
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -134,15 +134,15 @@ func (o *SvmPeerPermissionModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClusterPeerUUIDPathParameter adds the clusterPeerUUID to the svm peer permission modify params
-func (o *SvmPeerPermissionModifyParams) WithClusterPeerUUIDPathParameter(clusterPeerUUID string) *SvmPeerPermissionModifyParams {
-	o.SetClusterPeerUUIDPathParameter(clusterPeerUUID)
+// WithClusterPeerUUID adds the clusterPeerUUID to the svm peer permission modify params
+func (o *SvmPeerPermissionModifyParams) WithClusterPeerUUID(clusterPeerUUID string) *SvmPeerPermissionModifyParams {
+	o.SetClusterPeerUUID(clusterPeerUUID)
 	return o
 }
 
-// SetClusterPeerUUIDPathParameter adds the clusterPeerUuid to the svm peer permission modify params
-func (o *SvmPeerPermissionModifyParams) SetClusterPeerUUIDPathParameter(clusterPeerUUID string) {
-	o.ClusterPeerUUIDPathParameter = clusterPeerUUID
+// SetClusterPeerUUID adds the clusterPeerUuid to the svm peer permission modify params
+func (o *SvmPeerPermissionModifyParams) SetClusterPeerUUID(clusterPeerUUID string) {
+	o.ClusterPeerUUID = clusterPeerUUID
 }
 
 // WithInfo adds the info to the svm peer permission modify params
@@ -156,15 +156,15 @@ func (o *SvmPeerPermissionModifyParams) SetInfo(info *models.SvmPeerPermission) 
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the svm peer permission modify params
-func (o *SvmPeerPermissionModifyParams) WithSVMUUIDPathParameter(svmUUID string) *SvmPeerPermissionModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm peer permission modify params
+func (o *SvmPeerPermissionModifyParams) WithSvmUUID(svmUUID string) *SvmPeerPermissionModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the svm peer permission modify params
-func (o *SvmPeerPermissionModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm peer permission modify params
+func (o *SvmPeerPermissionModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *SvmPeerPermissionModifyParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param cluster_peer.uuid
-	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -186,7 +186,7 @@ func (o *SvmPeerPermissionModifyParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

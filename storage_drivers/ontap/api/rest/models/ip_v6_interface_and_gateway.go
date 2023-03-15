@@ -19,15 +19,15 @@ type IPV6InterfaceAndGateway struct {
 
 	// IPv6 address
 	// Example: fd20:8b1e:b255:5011:10:141:4:97
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv6 address of the default router.
 	// Example: fd20:8b1e:b255:5011:10::1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
 	// Example: 64
-	Netmask int64 `json:"netmask,omitempty"`
+	Netmask *int64 `json:"netmask,omitempty"`
 }
 
 // Validate validates this ipv6 interface and gateway

@@ -19,31 +19,31 @@ import (
 type FileClone struct {
 
 	// Mark clone file for auto deletion.
-	Autodelete bool `json:"autodelete,omitempty"`
+	Autodelete *bool `json:"autodelete,omitempty"`
 
 	// Relative path of the clone/destination file in the volume.
 	// Example: dest_file1, dir1/dest_file2
-	DestinationPath string `json:"destination_path,omitempty"`
-
-	// Mark clone file for backup.
-	IsBackup bool `json:"is_backup,omitempty"`
-
-	// Destination file gets overwritten.
-	OverwriteDestination bool `json:"overwrite_destination,omitempty"`
+	DestinationPath *string `json:"destination_path,omitempty"`
 
 	// List of block ranges for sub-file cloning in the format "source-file-block-number:destination-file-block-number:block-count"
 	// Example: ["10:10:5","20:20:10"]
-	Range []string `json:"range,omitempty"`
+	FileCloneInlineRange []*string `json:"range,omitempty"`
+
+	// Mark clone file for backup.
+	IsBackup *bool `json:"is_backup,omitempty"`
+
+	// Destination file gets overwritten.
+	OverwriteDestination *bool `json:"overwrite_destination,omitempty"`
 
 	// Relative path of the source file in the volume.
 	// Example: src_file1, dir1/src_file2, ./.snapshot/snap1/src_file3
-	SourcePath string `json:"source_path,omitempty"`
+	SourcePath *string `json:"source_path,omitempty"`
 
 	// UUID of existing clone token with reserved split load.
-	TokenUUID string `json:"token_uuid,omitempty"`
+	TokenUUID *string `json:"token_uuid,omitempty"`
 
 	// volume
-	Volume *FileCloneVolume `json:"volume,omitempty"`
+	Volume *FileCloneInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this file clone
@@ -123,25 +123,25 @@ func (m *FileClone) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCloneVolume file clone volume
+// FileCloneInlineVolume file clone inline volume
 //
-// swagger:model FileCloneVolume
-type FileCloneVolume struct {
+// swagger:model file_clone_inline_volume
+type FileCloneInlineVolume struct {
 
 	// links
-	Links *FileCloneVolumeLinks `json:"_links,omitempty"`
+	Links *FileCloneInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file clone volume
-func (m *FileCloneVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file clone inline volume
+func (m *FileCloneInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -154,7 +154,7 @@ func (m *FileCloneVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCloneVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileCloneInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -171,8 +171,8 @@ func (m *FileCloneVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file clone volume based on the context it is used
-func (m *FileCloneVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file clone inline volume based on the context it is used
+func (m *FileCloneInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -185,7 +185,7 @@ func (m *FileCloneVolume) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FileCloneVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCloneInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *FileCloneVolume) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FileCloneVolume) MarshalBinary() ([]byte, error) {
+func (m *FileCloneInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *FileCloneVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCloneVolume) UnmarshalBinary(b []byte) error {
-	var res FileCloneVolume
+func (m *FileCloneInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileCloneInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -217,17 +217,17 @@ func (m *FileCloneVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCloneVolumeLinks file clone volume links
+// FileCloneInlineVolumeInlineLinks file clone inline volume inline links
 //
-// swagger:model FileCloneVolumeLinks
-type FileCloneVolumeLinks struct {
+// swagger:model file_clone_inline_volume_inline__links
+type FileCloneInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file clone volume links
-func (m *FileCloneVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file clone inline volume inline links
+func (m *FileCloneInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -240,7 +240,7 @@ func (m *FileCloneVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCloneVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileCloneInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -257,8 +257,8 @@ func (m *FileCloneVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file clone volume links based on the context it is used
-func (m *FileCloneVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file clone inline volume inline links based on the context it is used
+func (m *FileCloneInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -271,7 +271,7 @@ func (m *FileCloneVolumeLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FileCloneVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCloneInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -286,7 +286,7 @@ func (m *FileCloneVolumeLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FileCloneVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileCloneInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -294,8 +294,8 @@ func (m *FileCloneVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCloneVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileCloneVolumeLinks
+func (m *FileCloneInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileCloneInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

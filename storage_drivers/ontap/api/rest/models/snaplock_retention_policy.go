@@ -19,17 +19,17 @@ import (
 type SnaplockRetentionPolicy struct {
 
 	// links
-	Links *SnaplockRetentionPolicyLinks `json:"_links,omitempty"`
+	Links *SnaplockRetentionPolicyInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the EBR policy name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the retention period of an event based retention policy. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours or minutes. A period specified for years, months and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively. For example "P10Y" represents a duration of 10 years. Similarly, a duration in hours, minutes is represented by "PT<num>H", "PT<num>M" respectively. The period string must contain only a single time element i.e. either years, months, days, hours or minutes. A duration which combines different periods is not supported, example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the retention period field also accepts the strings "infinite" and "unspecified".
 	// Example: P30M
 	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// svm
-	Svm *SnaplockRetentionPolicySvm `json:"svm,omitempty"`
+	Svm *SnaplockRetentionPolicyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this snaplock retention policy
@@ -148,17 +148,17 @@ func (m *SnaplockRetentionPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockRetentionPolicyLinks snaplock retention policy links
+// SnaplockRetentionPolicyInlineLinks snaplock retention policy inline links
 //
-// swagger:model SnaplockRetentionPolicyLinks
-type SnaplockRetentionPolicyLinks struct {
+// swagger:model snaplock_retention_policy_inline__links
+type SnaplockRetentionPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock retention policy links
-func (m *SnaplockRetentionPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock retention policy inline links
+func (m *SnaplockRetentionPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -171,7 +171,7 @@ func (m *SnaplockRetentionPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockRetentionPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -188,8 +188,8 @@ func (m *SnaplockRetentionPolicyLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock retention policy links based on the context it is used
-func (m *SnaplockRetentionPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock retention policy inline links based on the context it is used
+func (m *SnaplockRetentionPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -202,7 +202,7 @@ func (m *SnaplockRetentionPolicyLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SnaplockRetentionPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -217,7 +217,7 @@ func (m *SnaplockRetentionPolicyLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockRetentionPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockRetentionPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -225,8 +225,8 @@ func (m *SnaplockRetentionPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockRetentionPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockRetentionPolicyLinks
+func (m *SnaplockRetentionPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockRetentionPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -234,27 +234,27 @@ func (m *SnaplockRetentionPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockRetentionPolicySvm snaplock retention policy svm
+// SnaplockRetentionPolicyInlineSvm snaplock retention policy inline svm
 //
-// swagger:model SnaplockRetentionPolicySvm
-type SnaplockRetentionPolicySvm struct {
+// swagger:model snaplock_retention_policy_inline_svm
+type SnaplockRetentionPolicyInlineSvm struct {
 
 	// links
-	Links *SnaplockRetentionPolicySvmLinks `json:"_links,omitempty"`
+	Links *SnaplockRetentionPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock retention policy svm
-func (m *SnaplockRetentionPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock retention policy inline svm
+func (m *SnaplockRetentionPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -267,7 +267,7 @@ func (m *SnaplockRetentionPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockRetentionPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -284,8 +284,8 @@ func (m *SnaplockRetentionPolicySvm) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this snaplock retention policy svm based on the context it is used
-func (m *SnaplockRetentionPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock retention policy inline svm based on the context it is used
+func (m *SnaplockRetentionPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -298,7 +298,7 @@ func (m *SnaplockRetentionPolicySvm) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockRetentionPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -313,7 +313,7 @@ func (m *SnaplockRetentionPolicySvm) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockRetentionPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *SnaplockRetentionPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -321,8 +321,8 @@ func (m *SnaplockRetentionPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockRetentionPolicySvm) UnmarshalBinary(b []byte) error {
-	var res SnaplockRetentionPolicySvm
+func (m *SnaplockRetentionPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnaplockRetentionPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -330,17 +330,17 @@ func (m *SnaplockRetentionPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockRetentionPolicySvmLinks snaplock retention policy svm links
+// SnaplockRetentionPolicyInlineSvmInlineLinks snaplock retention policy inline svm inline links
 //
-// swagger:model SnaplockRetentionPolicySvmLinks
-type SnaplockRetentionPolicySvmLinks struct {
+// swagger:model snaplock_retention_policy_inline_svm_inline__links
+type SnaplockRetentionPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock retention policy svm links
-func (m *SnaplockRetentionPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock retention policy inline svm inline links
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -353,7 +353,7 @@ func (m *SnaplockRetentionPolicySvmLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SnaplockRetentionPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -370,8 +370,8 @@ func (m *SnaplockRetentionPolicySvmLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this snaplock retention policy svm links based on the context it is used
-func (m *SnaplockRetentionPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock retention policy inline svm inline links based on the context it is used
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -384,7 +384,7 @@ func (m *SnaplockRetentionPolicySvmLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SnaplockRetentionPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -399,7 +399,7 @@ func (m *SnaplockRetentionPolicySvmLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockRetentionPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -407,8 +407,8 @@ func (m *SnaplockRetentionPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockRetentionPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockRetentionPolicySvmLinks
+func (m *SnaplockRetentionPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockRetentionPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -21,17 +21,17 @@ import (
 type MetroclusterDiagCheck struct {
 
 	// additional info
-	AdditionalInfo *MetroclusterDiagCheckAdditionalInfo `json:"additional_info,omitempty"`
+	AdditionalInfo *MetroclusterDiagCheckInlineAdditionalInfo `json:"additional_info,omitempty"`
 
 	// Name of type of diagnostic operation run for the component.
 	// Example: mirrror_status
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Result of the diagnostic operation on this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
-	Result string `json:"result,omitempty"`
+	Result *string `json:"result,omitempty"`
 }
 
 // Validate validates this metrocluster diag check
@@ -138,7 +138,7 @@ func (m *MetroclusterDiagCheck) validateResult(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateResultEnum("result", "body", m.Result); err != nil {
+	if err := m.validateResultEnum("result", "body", *m.Result); err != nil {
 		return err
 	}
 
@@ -183,7 +183,7 @@ func (m *MetroclusterDiagCheck) contextValidateAdditionalInfo(ctx context.Contex
 
 func (m *MetroclusterDiagCheck) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -192,7 +192,7 @@ func (m *MetroclusterDiagCheck) contextValidateName(ctx context.Context, formats
 
 func (m *MetroclusterDiagCheck) contextValidateResult(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "result", "body", string(m.Result)); err != nil {
+	if err := validate.ReadOnly(ctx, "result", "body", m.Result); err != nil {
 		return err
 	}
 
@@ -217,27 +217,27 @@ func (m *MetroclusterDiagCheck) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagCheckAdditionalInfo Additional information or recovery steps to take on this component.
+// MetroclusterDiagCheckInlineAdditionalInfo Additional information or recovery steps to take on this component.
 //
-// swagger:model MetroclusterDiagCheckAdditionalInfo
-type MetroclusterDiagCheckAdditionalInfo struct {
+// swagger:model metrocluster_diag_check_inline_additional_info
+type MetroclusterDiagCheckInlineAdditionalInfo struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this metrocluster diag check additional info
-func (m *MetroclusterDiagCheckAdditionalInfo) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag check inline additional info
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag check additional info based on the context it is used
-func (m *MetroclusterDiagCheckAdditionalInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag check inline additional info based on the context it is used
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -254,18 +254,18 @@ func (m *MetroclusterDiagCheckAdditionalInfo) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *MetroclusterDiagCheckAdditionalInfo) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "additional_info"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "additional_info"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagCheckAdditionalInfo) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "additional_info"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "additional_info"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -273,7 +273,7 @@ func (m *MetroclusterDiagCheckAdditionalInfo) contextValidateMessage(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagCheckAdditionalInfo) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -281,8 +281,8 @@ func (m *MetroclusterDiagCheckAdditionalInfo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagCheckAdditionalInfo) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagCheckAdditionalInfo
+func (m *MetroclusterDiagCheckInlineAdditionalInfo) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagCheckInlineAdditionalInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

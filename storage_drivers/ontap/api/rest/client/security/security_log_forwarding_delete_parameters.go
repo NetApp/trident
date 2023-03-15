@@ -66,13 +66,13 @@ type SecurityLogForwardingDeleteParams struct {
 
 	   IP address of remote syslog/splunk server.
 	*/
-	AddressPathParameter string
+	Address string
 
 	/* Port.
 
 	   Port number of remote syslog/splunk server.
 	*/
-	PortPathParameter int64
+	Port int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SecurityLogForwardingDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressPathParameter adds the address to the security log forwarding delete params
-func (o *SecurityLogForwardingDeleteParams) WithAddressPathParameter(address string) *SecurityLogForwardingDeleteParams {
-	o.SetAddressPathParameter(address)
+// WithAddress adds the address to the security log forwarding delete params
+func (o *SecurityLogForwardingDeleteParams) WithAddress(address string) *SecurityLogForwardingDeleteParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressPathParameter adds the address to the security log forwarding delete params
-func (o *SecurityLogForwardingDeleteParams) SetAddressPathParameter(address string) {
-	o.AddressPathParameter = address
+// SetAddress adds the address to the security log forwarding delete params
+func (o *SecurityLogForwardingDeleteParams) SetAddress(address string) {
+	o.Address = address
 }
 
-// WithPortPathParameter adds the port to the security log forwarding delete params
-func (o *SecurityLogForwardingDeleteParams) WithPortPathParameter(port int64) *SecurityLogForwardingDeleteParams {
-	o.SetPortPathParameter(port)
+// WithPort adds the port to the security log forwarding delete params
+func (o *SecurityLogForwardingDeleteParams) WithPort(port int64) *SecurityLogForwardingDeleteParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortPathParameter adds the port to the security log forwarding delete params
-func (o *SecurityLogForwardingDeleteParams) SetPortPathParameter(port int64) {
-	o.PortPathParameter = port
+// SetPort adds the port to the security log forwarding delete params
+func (o *SecurityLogForwardingDeleteParams) SetPort(port int64) {
+	o.Port = port
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,12 +158,12 @@ func (o *SecurityLogForwardingDeleteParams) WriteToRequest(r runtime.ClientReque
 	var res []error
 
 	// path param address
-	if err := r.SetPathParam("address", o.AddressPathParameter); err != nil {
+	if err := r.SetPathParam("address", o.Address); err != nil {
 		return err
 	}
 
 	// path param port
-	if err := r.SetPathParam("port", swag.FormatInt64(o.PortPathParameter)); err != nil {
+	if err := r.SetPathParam("port", swag.FormatInt64(o.Port)); err != nil {
 		return err
 	}
 

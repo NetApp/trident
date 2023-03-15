@@ -25,17 +25,17 @@ type S3ServiceUserPostResponse struct {
 	// Specifies the access key for the user.
 	// Example: Pz3SB54G2B_6dsXQPrA5HrTPcf478qoAW6_Xx6qyqZ948AgZ_7YfCf_9nO87YoZmskxx3cq41U2JAH2M3_fs321B4rkzS3a_oC5_8u7D8j_45N8OsBCBPWGD_1d_ccfq
 	// Read Only: true
-	AccessKey string `json:"access_key,omitempty"`
+	AccessKey *string `json:"access_key,omitempty"`
 
 	// The name of the user.
 	// Example: user-1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the secret key for the user.
 	// Example: A20_tDhC_cux2C2BmtL45bXB_a_Q65c_96FsAcOdo14Az8V31jBKDTc0uCL62Bh559gPB8s9rrn0868QrF38_1dsV2u1_9H2tSf3qQ5xp9NT259C6z_GiZQ883Qn63X1
 	// Read Only: true
-	SecretKey string `json:"secret_key,omitempty"`
+	SecretKey *string `json:"secret_key,omitempty"`
 }
 
 // Validate validates this s3 service user post response
@@ -111,7 +111,7 @@ func (m *S3ServiceUserPostResponse) contextValidateLinks(ctx context.Context, fo
 
 func (m *S3ServiceUserPostResponse) contextValidateAccessKey(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access_key", "body", string(m.AccessKey)); err != nil {
+	if err := validate.ReadOnly(ctx, "access_key", "body", m.AccessKey); err != nil {
 		return err
 	}
 
@@ -120,7 +120,7 @@ func (m *S3ServiceUserPostResponse) contextValidateAccessKey(ctx context.Context
 
 func (m *S3ServiceUserPostResponse) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -129,7 +129,7 @@ func (m *S3ServiceUserPostResponse) contextValidateName(ctx context.Context, for
 
 func (m *S3ServiceUserPostResponse) contextValidateSecretKey(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "secret_key", "body", string(m.SecretKey)); err != nil {
+	if err := validate.ReadOnly(ctx, "secret_key", "body", m.SecretKey); err != nil {
 		return err
 	}
 

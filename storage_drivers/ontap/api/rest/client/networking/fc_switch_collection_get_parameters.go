@@ -66,13 +66,13 @@ type FcSwitchCollectionGetParams struct {
 
 	   Filter by cache.age
 	*/
-	CacheAgeQueryParameter *string
+	CacheAge *string
 
 	/* CacheIsCurrent.
 
 	   Filter by cache.is_current
 	*/
-	CacheIsCurrentQueryParameter *bool
+	CacheIsCurrent *bool
 
 	/* CacheMaximumAge.
 
@@ -81,92 +81,92 @@ type FcSwitchCollectionGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* CacheUpdateTime.
 
 	   Filter by cache.update_time
 	*/
-	CacheUpdateTimeQueryParameter *string
+	CacheUpdateTime *string
 
 	/* DomainID.
 
 	   Filter by domain_id
 	*/
-	DomainIDQueryParameter *int64
+	DomainID *int64
 
 	/* FabricName.
 
 	   The WWN of the primary switch of the Fibre Channel fabric.
 
 	*/
-	FabricNamePathParameter string
+	FabricName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PortsAttachedDevicePortID.
 
 	   Filter by ports.attached_device.port_id
 	*/
-	PortsAttachedDevicePortIDQueryParameter *string
+	PortsAttachedDevicePortID *string
 
 	/* PortsAttachedDeviceWwpn.
 
 	   Filter by ports.attached_device.wwpn
 	*/
-	PortsAttachedDeviceWwpnQueryParameter *string
+	PortsAttachedDeviceWwpn *string
 
 	/* PortsSlot.
 
 	   Filter by ports.slot
 	*/
-	PortsSlotQueryParameter *string
+	PortsSlot *string
 
 	/* PortsState.
 
 	   Filter by ports.state
 	*/
-	PortsStateQueryParameter *string
+	PortsState *string
 
 	/* PortsType.
 
 	   Filter by ports.type
 	*/
-	PortsTypeQueryParameter *string
+	PortsType *string
 
 	/* PortsWwpn.
 
 	   Filter by ports.wwpn
 	*/
-	PortsWwpnQueryParameter *string
+	PortsWwpn *string
 
 	/* Release.
 
 	   Filter by release
 	*/
-	ReleaseQueryParameter *string
+	Release *string
 
 	/* ReturnRecords.
 
@@ -174,7 +174,7 @@ type FcSwitchCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -182,19 +182,19 @@ type FcSwitchCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Vendor.
 
 	   Filter by vendor
 	*/
-	VendorQueryParameter *string
+	Vendor *string
 
 	/* Wwn.
 
 	   Filter by wwn
 	*/
-	WwnQueryParameter *string
+	Wwn *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -214,17 +214,17 @@ func (o *FcSwitchCollectionGetParams) WithDefaults() *FcSwitchCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *FcSwitchCollectionGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FcSwitchCollectionGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
-		ReturnRecordsQueryParameter:   &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:   &returnTimeoutQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
+		ReturnRecords:   &returnRecordsDefault,
+		ReturnTimeout:   &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -266,235 +266,235 @@ func (o *FcSwitchCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheAgeQueryParameter adds the cacheAge to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithCacheAgeQueryParameter(cacheAge *string) *FcSwitchCollectionGetParams {
-	o.SetCacheAgeQueryParameter(cacheAge)
+// WithCacheAge adds the cacheAge to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithCacheAge(cacheAge *string) *FcSwitchCollectionGetParams {
+	o.SetCacheAge(cacheAge)
 	return o
 }
 
-// SetCacheAgeQueryParameter adds the cacheAge to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetCacheAgeQueryParameter(cacheAge *string) {
-	o.CacheAgeQueryParameter = cacheAge
+// SetCacheAge adds the cacheAge to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetCacheAge(cacheAge *string) {
+	o.CacheAge = cacheAge
 }
 
-// WithCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithCacheIsCurrentQueryParameter(cacheIsCurrent *bool) *FcSwitchCollectionGetParams {
-	o.SetCacheIsCurrentQueryParameter(cacheIsCurrent)
+// WithCacheIsCurrent adds the cacheIsCurrent to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithCacheIsCurrent(cacheIsCurrent *bool) *FcSwitchCollectionGetParams {
+	o.SetCacheIsCurrent(cacheIsCurrent)
 	return o
 }
 
-// SetCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetCacheIsCurrentQueryParameter(cacheIsCurrent *bool) {
-	o.CacheIsCurrentQueryParameter = cacheIsCurrent
+// SetCacheIsCurrent adds the cacheIsCurrent to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetCacheIsCurrent(cacheIsCurrent *bool) {
+	o.CacheIsCurrent = cacheIsCurrent
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FcSwitchCollectionGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FcSwitchCollectionGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithCacheUpdateTimeQueryParameter(cacheUpdateTime *string) *FcSwitchCollectionGetParams {
-	o.SetCacheUpdateTimeQueryParameter(cacheUpdateTime)
+// WithCacheUpdateTime adds the cacheUpdateTime to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithCacheUpdateTime(cacheUpdateTime *string) *FcSwitchCollectionGetParams {
+	o.SetCacheUpdateTime(cacheUpdateTime)
 	return o
 }
 
-// SetCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetCacheUpdateTimeQueryParameter(cacheUpdateTime *string) {
-	o.CacheUpdateTimeQueryParameter = cacheUpdateTime
+// SetCacheUpdateTime adds the cacheUpdateTime to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetCacheUpdateTime(cacheUpdateTime *string) {
+	o.CacheUpdateTime = cacheUpdateTime
 }
 
-// WithDomainIDQueryParameter adds the domainID to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithDomainIDQueryParameter(domainID *int64) *FcSwitchCollectionGetParams {
-	o.SetDomainIDQueryParameter(domainID)
+// WithDomainID adds the domainID to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithDomainID(domainID *int64) *FcSwitchCollectionGetParams {
+	o.SetDomainID(domainID)
 	return o
 }
 
-// SetDomainIDQueryParameter adds the domainId to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetDomainIDQueryParameter(domainID *int64) {
-	o.DomainIDQueryParameter = domainID
+// SetDomainID adds the domainId to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetDomainID(domainID *int64) {
+	o.DomainID = domainID
 }
 
-// WithFabricNamePathParameter adds the fabricName to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithFabricNamePathParameter(fabricName string) *FcSwitchCollectionGetParams {
-	o.SetFabricNamePathParameter(fabricName)
+// WithFabricName adds the fabricName to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithFabricName(fabricName string) *FcSwitchCollectionGetParams {
+	o.SetFabricName(fabricName)
 	return o
 }
 
-// SetFabricNamePathParameter adds the fabricName to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetFabricNamePathParameter(fabricName string) {
-	o.FabricNamePathParameter = fabricName
+// SetFabricName adds the fabricName to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetFabricName(fabricName string) {
+	o.FabricName = fabricName
 }
 
-// WithFieldsQueryParameter adds the fields to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithFieldsQueryParameter(fields []string) *FcSwitchCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithFields(fields []string) *FcSwitchCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FcSwitchCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithMaxRecords(maxRecords *int64) *FcSwitchCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithNameQueryParameter(name *string) *FcSwitchCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithName(name *string) *FcSwitchCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FcSwitchCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithOrderBy(orderBy []string) *FcSwitchCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPortsAttachedDevicePortIDQueryParameter adds the portsAttachedDevicePortID to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsAttachedDevicePortIDQueryParameter(portsAttachedDevicePortID *string) *FcSwitchCollectionGetParams {
-	o.SetPortsAttachedDevicePortIDQueryParameter(portsAttachedDevicePortID)
+// WithPortsAttachedDevicePortID adds the portsAttachedDevicePortID to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsAttachedDevicePortID(portsAttachedDevicePortID *string) *FcSwitchCollectionGetParams {
+	o.SetPortsAttachedDevicePortID(portsAttachedDevicePortID)
 	return o
 }
 
-// SetPortsAttachedDevicePortIDQueryParameter adds the portsAttachedDevicePortId to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsAttachedDevicePortIDQueryParameter(portsAttachedDevicePortID *string) {
-	o.PortsAttachedDevicePortIDQueryParameter = portsAttachedDevicePortID
+// SetPortsAttachedDevicePortID adds the portsAttachedDevicePortId to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsAttachedDevicePortID(portsAttachedDevicePortID *string) {
+	o.PortsAttachedDevicePortID = portsAttachedDevicePortID
 }
 
-// WithPortsAttachedDeviceWwpnQueryParameter adds the portsAttachedDeviceWwpn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsAttachedDeviceWwpnQueryParameter(portsAttachedDeviceWwpn *string) *FcSwitchCollectionGetParams {
-	o.SetPortsAttachedDeviceWwpnQueryParameter(portsAttachedDeviceWwpn)
+// WithPortsAttachedDeviceWwpn adds the portsAttachedDeviceWwpn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsAttachedDeviceWwpn(portsAttachedDeviceWwpn *string) *FcSwitchCollectionGetParams {
+	o.SetPortsAttachedDeviceWwpn(portsAttachedDeviceWwpn)
 	return o
 }
 
-// SetPortsAttachedDeviceWwpnQueryParameter adds the portsAttachedDeviceWwpn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsAttachedDeviceWwpnQueryParameter(portsAttachedDeviceWwpn *string) {
-	o.PortsAttachedDeviceWwpnQueryParameter = portsAttachedDeviceWwpn
+// SetPortsAttachedDeviceWwpn adds the portsAttachedDeviceWwpn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsAttachedDeviceWwpn(portsAttachedDeviceWwpn *string) {
+	o.PortsAttachedDeviceWwpn = portsAttachedDeviceWwpn
 }
 
-// WithPortsSlotQueryParameter adds the portsSlot to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsSlotQueryParameter(portsSlot *string) *FcSwitchCollectionGetParams {
-	o.SetPortsSlotQueryParameter(portsSlot)
+// WithPortsSlot adds the portsSlot to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsSlot(portsSlot *string) *FcSwitchCollectionGetParams {
+	o.SetPortsSlot(portsSlot)
 	return o
 }
 
-// SetPortsSlotQueryParameter adds the portsSlot to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsSlotQueryParameter(portsSlot *string) {
-	o.PortsSlotQueryParameter = portsSlot
+// SetPortsSlot adds the portsSlot to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsSlot(portsSlot *string) {
+	o.PortsSlot = portsSlot
 }
 
-// WithPortsStateQueryParameter adds the portsState to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsStateQueryParameter(portsState *string) *FcSwitchCollectionGetParams {
-	o.SetPortsStateQueryParameter(portsState)
+// WithPortsState adds the portsState to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsState(portsState *string) *FcSwitchCollectionGetParams {
+	o.SetPortsState(portsState)
 	return o
 }
 
-// SetPortsStateQueryParameter adds the portsState to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsStateQueryParameter(portsState *string) {
-	o.PortsStateQueryParameter = portsState
+// SetPortsState adds the portsState to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsState(portsState *string) {
+	o.PortsState = portsState
 }
 
-// WithPortsTypeQueryParameter adds the portsType to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsTypeQueryParameter(portsType *string) *FcSwitchCollectionGetParams {
-	o.SetPortsTypeQueryParameter(portsType)
+// WithPortsType adds the portsType to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsType(portsType *string) *FcSwitchCollectionGetParams {
+	o.SetPortsType(portsType)
 	return o
 }
 
-// SetPortsTypeQueryParameter adds the portsType to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsTypeQueryParameter(portsType *string) {
-	o.PortsTypeQueryParameter = portsType
+// SetPortsType adds the portsType to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsType(portsType *string) {
+	o.PortsType = portsType
 }
 
-// WithPortsWwpnQueryParameter adds the portsWwpn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithPortsWwpnQueryParameter(portsWwpn *string) *FcSwitchCollectionGetParams {
-	o.SetPortsWwpnQueryParameter(portsWwpn)
+// WithPortsWwpn adds the portsWwpn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithPortsWwpn(portsWwpn *string) *FcSwitchCollectionGetParams {
+	o.SetPortsWwpn(portsWwpn)
 	return o
 }
 
-// SetPortsWwpnQueryParameter adds the portsWwpn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetPortsWwpnQueryParameter(portsWwpn *string) {
-	o.PortsWwpnQueryParameter = portsWwpn
+// SetPortsWwpn adds the portsWwpn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetPortsWwpn(portsWwpn *string) {
+	o.PortsWwpn = portsWwpn
 }
 
-// WithReleaseQueryParameter adds the release to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithReleaseQueryParameter(release *string) *FcSwitchCollectionGetParams {
-	o.SetReleaseQueryParameter(release)
+// WithRelease adds the release to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithRelease(release *string) *FcSwitchCollectionGetParams {
+	o.SetRelease(release)
 	return o
 }
 
-// SetReleaseQueryParameter adds the release to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetReleaseQueryParameter(release *string) {
-	o.ReleaseQueryParameter = release
+// SetRelease adds the release to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetRelease(release *string) {
+	o.Release = release
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcSwitchCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithReturnRecords(returnRecords *bool) *FcSwitchCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FcSwitchCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FcSwitchCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVendorQueryParameter adds the vendor to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithVendorQueryParameter(vendor *string) *FcSwitchCollectionGetParams {
-	o.SetVendorQueryParameter(vendor)
+// WithVendor adds the vendor to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithVendor(vendor *string) *FcSwitchCollectionGetParams {
+	o.SetVendor(vendor)
 	return o
 }
 
-// SetVendorQueryParameter adds the vendor to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetVendorQueryParameter(vendor *string) {
-	o.VendorQueryParameter = vendor
+// SetVendor adds the vendor to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetVendor(vendor *string) {
+	o.Vendor = vendor
 }
 
-// WithWwnQueryParameter adds the wwn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) WithWwnQueryParameter(wwn *string) *FcSwitchCollectionGetParams {
-	o.SetWwnQueryParameter(wwn)
+// WithWwn adds the wwn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) WithWwn(wwn *string) *FcSwitchCollectionGetParams {
+	o.SetWwn(wwn)
 	return o
 }
 
-// SetWwnQueryParameter adds the wwn to the fc switch collection get params
-func (o *FcSwitchCollectionGetParams) SetWwnQueryParameter(wwn *string) {
-	o.WwnQueryParameter = wwn
+// SetWwn adds the wwn to the fc switch collection get params
+func (o *FcSwitchCollectionGetParams) SetWwn(wwn *string) {
+	o.Wwn = wwn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -505,13 +505,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.CacheAgeQueryParameter != nil {
+	if o.CacheAge != nil {
 
 		// query param cache.age
 		var qrCacheAge string
 
-		if o.CacheAgeQueryParameter != nil {
-			qrCacheAge = *o.CacheAgeQueryParameter
+		if o.CacheAge != nil {
+			qrCacheAge = *o.CacheAge
 		}
 		qCacheAge := qrCacheAge
 		if qCacheAge != "" {
@@ -522,13 +522,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CacheIsCurrentQueryParameter != nil {
+	if o.CacheIsCurrent != nil {
 
 		// query param cache.is_current
 		var qrCacheIsCurrent bool
 
-		if o.CacheIsCurrentQueryParameter != nil {
-			qrCacheIsCurrent = *o.CacheIsCurrentQueryParameter
+		if o.CacheIsCurrent != nil {
+			qrCacheIsCurrent = *o.CacheIsCurrent
 		}
 		qCacheIsCurrent := swag.FormatBool(qrCacheIsCurrent)
 		if qCacheIsCurrent != "" {
@@ -539,13 +539,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -556,13 +556,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CacheUpdateTimeQueryParameter != nil {
+	if o.CacheUpdateTime != nil {
 
 		// query param cache.update_time
 		var qrCacheUpdateTime string
 
-		if o.CacheUpdateTimeQueryParameter != nil {
-			qrCacheUpdateTime = *o.CacheUpdateTimeQueryParameter
+		if o.CacheUpdateTime != nil {
+			qrCacheUpdateTime = *o.CacheUpdateTime
 		}
 		qCacheUpdateTime := qrCacheUpdateTime
 		if qCacheUpdateTime != "" {
@@ -573,13 +573,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DomainIDQueryParameter != nil {
+	if o.DomainID != nil {
 
 		// query param domain_id
 		var qrDomainID int64
 
-		if o.DomainIDQueryParameter != nil {
-			qrDomainID = *o.DomainIDQueryParameter
+		if o.DomainID != nil {
+			qrDomainID = *o.DomainID
 		}
 		qDomainID := swag.FormatInt64(qrDomainID)
 		if qDomainID != "" {
@@ -591,11 +591,11 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param fabric.name
-	if err := r.SetPathParam("fabric.name", o.FabricNamePathParameter); err != nil {
+	if err := r.SetPathParam("fabric.name", o.FabricName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -606,13 +606,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -623,13 +623,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -640,7 +640,7 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -651,13 +651,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsAttachedDevicePortIDQueryParameter != nil {
+	if o.PortsAttachedDevicePortID != nil {
 
 		// query param ports.attached_device.port_id
 		var qrPortsAttachedDevicePortID string
 
-		if o.PortsAttachedDevicePortIDQueryParameter != nil {
-			qrPortsAttachedDevicePortID = *o.PortsAttachedDevicePortIDQueryParameter
+		if o.PortsAttachedDevicePortID != nil {
+			qrPortsAttachedDevicePortID = *o.PortsAttachedDevicePortID
 		}
 		qPortsAttachedDevicePortID := qrPortsAttachedDevicePortID
 		if qPortsAttachedDevicePortID != "" {
@@ -668,13 +668,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsAttachedDeviceWwpnQueryParameter != nil {
+	if o.PortsAttachedDeviceWwpn != nil {
 
 		// query param ports.attached_device.wwpn
 		var qrPortsAttachedDeviceWwpn string
 
-		if o.PortsAttachedDeviceWwpnQueryParameter != nil {
-			qrPortsAttachedDeviceWwpn = *o.PortsAttachedDeviceWwpnQueryParameter
+		if o.PortsAttachedDeviceWwpn != nil {
+			qrPortsAttachedDeviceWwpn = *o.PortsAttachedDeviceWwpn
 		}
 		qPortsAttachedDeviceWwpn := qrPortsAttachedDeviceWwpn
 		if qPortsAttachedDeviceWwpn != "" {
@@ -685,13 +685,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsSlotQueryParameter != nil {
+	if o.PortsSlot != nil {
 
 		// query param ports.slot
 		var qrPortsSlot string
 
-		if o.PortsSlotQueryParameter != nil {
-			qrPortsSlot = *o.PortsSlotQueryParameter
+		if o.PortsSlot != nil {
+			qrPortsSlot = *o.PortsSlot
 		}
 		qPortsSlot := qrPortsSlot
 		if qPortsSlot != "" {
@@ -702,13 +702,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsStateQueryParameter != nil {
+	if o.PortsState != nil {
 
 		// query param ports.state
 		var qrPortsState string
 
-		if o.PortsStateQueryParameter != nil {
-			qrPortsState = *o.PortsStateQueryParameter
+		if o.PortsState != nil {
+			qrPortsState = *o.PortsState
 		}
 		qPortsState := qrPortsState
 		if qPortsState != "" {
@@ -719,13 +719,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsTypeQueryParameter != nil {
+	if o.PortsType != nil {
 
 		// query param ports.type
 		var qrPortsType string
 
-		if o.PortsTypeQueryParameter != nil {
-			qrPortsType = *o.PortsTypeQueryParameter
+		if o.PortsType != nil {
+			qrPortsType = *o.PortsType
 		}
 		qPortsType := qrPortsType
 		if qPortsType != "" {
@@ -736,13 +736,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortsWwpnQueryParameter != nil {
+	if o.PortsWwpn != nil {
 
 		// query param ports.wwpn
 		var qrPortsWwpn string
 
-		if o.PortsWwpnQueryParameter != nil {
-			qrPortsWwpn = *o.PortsWwpnQueryParameter
+		if o.PortsWwpn != nil {
+			qrPortsWwpn = *o.PortsWwpn
 		}
 		qPortsWwpn := qrPortsWwpn
 		if qPortsWwpn != "" {
@@ -753,13 +753,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReleaseQueryParameter != nil {
+	if o.Release != nil {
 
 		// query param release
 		var qrRelease string
 
-		if o.ReleaseQueryParameter != nil {
-			qrRelease = *o.ReleaseQueryParameter
+		if o.Release != nil {
+			qrRelease = *o.Release
 		}
 		qRelease := qrRelease
 		if qRelease != "" {
@@ -770,13 +770,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -787,13 +787,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -804,13 +804,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VendorQueryParameter != nil {
+	if o.Vendor != nil {
 
 		// query param vendor
 		var qrVendor string
 
-		if o.VendorQueryParameter != nil {
-			qrVendor = *o.VendorQueryParameter
+		if o.Vendor != nil {
+			qrVendor = *o.Vendor
 		}
 		qVendor := qrVendor
 		if qVendor != "" {
@@ -821,13 +821,13 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.WwnQueryParameter != nil {
+	if o.Wwn != nil {
 
 		// query param wwn
 		var qrWwn string
 
-		if o.WwnQueryParameter != nil {
-			qrWwn = *o.WwnQueryParameter
+		if o.Wwn != nil {
+			qrWwn = *o.Wwn
 		}
 		qWwn := qrWwn
 		if qWwn != "" {
@@ -846,7 +846,7 @@ func (o *FcSwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamFcSwitchCollectionGet binds the parameter fields
 func (o *FcSwitchCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -863,7 +863,7 @@ func (o *FcSwitchCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamFcSwitchCollectionGet binds the parameter order_by
 func (o *FcSwitchCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

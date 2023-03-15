@@ -22,23 +22,23 @@ import (
 type FcZone struct {
 
 	// links
-	Links *FcZoneLinks `json:"_links,omitempty"`
+	Links *FcZoneInlineLinks `json:"_links,omitempty"`
 
 	// cache
-	Cache *FcZoneCache `json:"cache,omitempty"`
+	Cache *FcZoneInlineCache `json:"cache,omitempty"`
 
 	// fabric
-	Fabric *FcZoneFabric `json:"fabric,omitempty"`
+	Fabric *FcZoneInlineFabric `json:"fabric,omitempty"`
 
 	// An array of Fibre Channel zone members.
 	//
-	Members []*FcZoneMembersItems0 `json:"members,omitempty"`
+	FcZoneInlineMembers []*FcZoneInlineMembersInlineArrayItem `json:"members,omitempty"`
 
 	// The name of the Fibre Channel zone.
 	//
 	// Example: zone1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this fc zone
@@ -57,7 +57,7 @@ func (m *FcZone) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMembers(formats); err != nil {
+	if err := m.validateFcZoneInlineMembers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -118,18 +118,18 @@ func (m *FcZone) validateFabric(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZone) validateMembers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Members) { // not required
+func (m *FcZone) validateFcZoneInlineMembers(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcZoneInlineMembers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Members); i++ {
-		if swag.IsZero(m.Members[i]) { // not required
+	for i := 0; i < len(m.FcZoneInlineMembers); i++ {
+		if swag.IsZero(m.FcZoneInlineMembers[i]) { // not required
 			continue
 		}
 
-		if m.Members[i] != nil {
-			if err := m.Members[i].Validate(formats); err != nil {
+		if m.FcZoneInlineMembers[i] != nil {
+			if err := m.FcZoneInlineMembers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("members" + "." + strconv.Itoa(i))
 				}
@@ -158,7 +158,7 @@ func (m *FcZone) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMembers(ctx, formats); err != nil {
+	if err := m.contextValidateFcZoneInlineMembers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -214,12 +214,12 @@ func (m *FcZone) contextValidateFabric(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcZone) contextValidateMembers(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZone) contextValidateFcZoneInlineMembers(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Members); i++ {
+	for i := 0; i < len(m.FcZoneInlineMembers); i++ {
 
-		if m.Members[i] != nil {
-			if err := m.Members[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcZoneInlineMembers[i] != nil {
+			if err := m.FcZoneInlineMembers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("members" + "." + strconv.Itoa(i))
 				}
@@ -234,7 +234,7 @@ func (m *FcZone) contextValidateMembers(ctx context.Context, formats strfmt.Regi
 
 func (m *FcZone) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -259,16 +259,16 @@ func (m *FcZone) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneCache Properties of Fibre Chanel fabric cache.
+// FcZoneInlineCache Properties of Fibre Chanel fabric cache.
 //
-// swagger:model FcZoneCache
-type FcZoneCache struct {
+// swagger:model fc_zone_inline_cache
+type FcZoneInlineCache struct {
 
 	// The age of the Fibre Channel fabric data cache retrieved. If the FC fabric data cache has not been fully updated for a newly discovered fabric, or a fabric that has been re-discovered after being purged, a value for this property will not be retrieved. The value is in ISO 8601 duration format.
 	//
 	// Example: PT3M30S
 	// Read Only: true
-	Age string `json:"age,omitempty"`
+	Age *string `json:"age,omitempty"`
 
 	// A boolean that indicates if the retrieved data is current relative to the `cache.maximum_age` value of the request. A value of `true` indicates that the data is no older than the requested maximum age. A value of `false` indicates that the data is older than the requested maximum age; if more current data is required, the caller should wait for some time for the cache update to complete and query the data again.
 	//
@@ -282,8 +282,8 @@ type FcZoneCache struct {
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
 }
 
-// Validate validates this fc zone cache
-func (m *FcZoneCache) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone inline cache
+func (m *FcZoneInlineCache) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUpdateTime(formats); err != nil {
@@ -296,7 +296,7 @@ func (m *FcZoneCache) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneCache) validateUpdateTime(formats strfmt.Registry) error {
+func (m *FcZoneInlineCache) validateUpdateTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.UpdateTime) { // not required
 		return nil
 	}
@@ -308,8 +308,8 @@ func (m *FcZoneCache) validateUpdateTime(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc zone cache based on the context it is used
-func (m *FcZoneCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone inline cache based on the context it is used
+func (m *FcZoneInlineCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAge(ctx, formats); err != nil {
@@ -330,16 +330,16 @@ func (m *FcZoneCache) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FcZoneCache) contextValidateAge(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineCache) contextValidateAge(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cache"+"."+"age", "body", string(m.Age)); err != nil {
+	if err := validate.ReadOnly(ctx, "cache"+"."+"age", "body", m.Age); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcZoneCache) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineCache) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cache"+"."+"is_current", "body", m.IsCurrent); err != nil {
 		return err
@@ -348,7 +348,7 @@ func (m *FcZoneCache) contextValidateIsCurrent(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcZoneCache) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineCache) contextValidateUpdateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cache"+"."+"update_time", "body", m.UpdateTime); err != nil {
 		return err
@@ -358,7 +358,7 @@ func (m *FcZoneCache) contextValidateUpdateTime(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneCache) MarshalBinary() ([]byte, error) {
+func (m *FcZoneInlineCache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -366,8 +366,8 @@ func (m *FcZoneCache) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneCache) UnmarshalBinary(b []byte) error {
-	var res FcZoneCache
+func (m *FcZoneInlineCache) UnmarshalBinary(b []byte) error {
+	var res FcZoneInlineCache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -375,22 +375,22 @@ func (m *FcZoneCache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneFabric A reference to a Fibre Channel fabric.
+// FcZoneInlineFabric A reference to a Fibre Channel fabric.
 //
-// swagger:model FcZoneFabric
-type FcZoneFabric struct {
+// swagger:model fc_zone_inline_fabric
+type FcZoneInlineFabric struct {
 
 	// links
-	Links *FcZoneFabricLinks `json:"_links,omitempty"`
+	Links *FcZoneInlineFabricInlineLinks `json:"_links,omitempty"`
 
 	// The world wide name (WWN) of the primary switch of the Fibre Channel (FC) fabric. This is used as a unique identifier for the FC fabric.
 	//
 	// Example: 10:00:d1:d2:d3:d4:d5:d6
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this fc zone fabric
-func (m *FcZoneFabric) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone inline fabric
+func (m *FcZoneInlineFabric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -403,7 +403,7 @@ func (m *FcZoneFabric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneFabric) validateLinks(formats strfmt.Registry) error {
+func (m *FcZoneInlineFabric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -420,8 +420,8 @@ func (m *FcZoneFabric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc zone fabric based on the context it is used
-func (m *FcZoneFabric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone inline fabric based on the context it is used
+func (m *FcZoneInlineFabric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -434,7 +434,7 @@ func (m *FcZoneFabric) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcZoneFabric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineFabric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -449,7 +449,7 @@ func (m *FcZoneFabric) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneFabric) MarshalBinary() ([]byte, error) {
+func (m *FcZoneInlineFabric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -457,8 +457,8 @@ func (m *FcZoneFabric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneFabric) UnmarshalBinary(b []byte) error {
-	var res FcZoneFabric
+func (m *FcZoneInlineFabric) UnmarshalBinary(b []byte) error {
+	var res FcZoneInlineFabric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -466,17 +466,17 @@ func (m *FcZoneFabric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneFabricLinks fc zone fabric links
+// FcZoneInlineFabricInlineLinks fc zone inline fabric inline links
 //
-// swagger:model FcZoneFabricLinks
-type FcZoneFabricLinks struct {
+// swagger:model fc_zone_inline_fabric_inline__links
+type FcZoneInlineFabricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc zone fabric links
-func (m *FcZoneFabricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone inline fabric inline links
+func (m *FcZoneInlineFabricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -489,7 +489,7 @@ func (m *FcZoneFabricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneFabricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcZoneInlineFabricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -506,8 +506,8 @@ func (m *FcZoneFabricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc zone fabric links based on the context it is used
-func (m *FcZoneFabricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone inline fabric inline links based on the context it is used
+func (m *FcZoneInlineFabricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -520,7 +520,7 @@ func (m *FcZoneFabricLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FcZoneFabricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineFabricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -535,7 +535,7 @@ func (m *FcZoneFabricLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneFabricLinks) MarshalBinary() ([]byte, error) {
+func (m *FcZoneInlineFabricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -543,8 +543,8 @@ func (m *FcZoneFabricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneFabricLinks) UnmarshalBinary(b []byte) error {
-	var res FcZoneFabricLinks
+func (m *FcZoneInlineFabricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcZoneInlineFabricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -552,17 +552,17 @@ func (m *FcZoneFabricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneLinks fc zone links
+// FcZoneInlineLinks fc zone inline links
 //
-// swagger:model FcZoneLinks
-type FcZoneLinks struct {
+// swagger:model fc_zone_inline__links
+type FcZoneInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc zone links
-func (m *FcZoneLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone inline links
+func (m *FcZoneInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -575,7 +575,7 @@ func (m *FcZoneLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcZoneInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -592,8 +592,8 @@ func (m *FcZoneLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc zone links based on the context it is used
-func (m *FcZoneLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone inline links based on the context it is used
+func (m *FcZoneInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -606,7 +606,7 @@ func (m *FcZoneLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FcZoneLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -621,7 +621,7 @@ func (m *FcZoneLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneLinks) MarshalBinary() ([]byte, error) {
+func (m *FcZoneInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -629,8 +629,8 @@ func (m *FcZoneLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneLinks) UnmarshalBinary(b []byte) error {
-	var res FcZoneLinks
+func (m *FcZoneInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcZoneInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -638,10 +638,10 @@ func (m *FcZoneLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneMembersItems0 A Fibre Channel zone member.
+// FcZoneInlineMembersInlineArrayItem A Fibre Channel zone member.
 //
-// swagger:model FcZoneMembersItems0
-type FcZoneMembersItems0 struct {
+// swagger:model fc_zone_inline_members_inline_array_item
+type FcZoneInlineMembersInlineArrayItem struct {
 
 	// The identifying property value of the zone member. The format of this value depends on the member type:
 	//   * `port_id`: A zero-filled 6-digit hexadecimal value with a 0x prefer. Example: 0x0000A0.
@@ -659,18 +659,18 @@ type FcZoneMembersItems0 struct {
 	//
 	// Example: 10:00:12:34:56:78:9a:bc
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The type of Fibre Channel zone member. This value should be used to interpret the contents of the `name` property.
 	//
 	// Example: port_name
 	// Read Only: true
 	// Enum: [port_id port_name domain_id_port node_name fabric_port_name interface domain_interface ip_address symbolic_node_name device_alias]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this fc zone members items0
-func (m *FcZoneMembersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone inline members inline array item
+func (m *FcZoneInlineMembersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -683,7 +683,7 @@ func (m *FcZoneMembersItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcZoneMembersItems0TypeTypePropEnum []interface{}
+var fcZoneInlineMembersInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -691,136 +691,136 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcZoneMembersItems0TypeTypePropEnum = append(fcZoneMembersItems0TypeTypePropEnum, v)
+		fcZoneInlineMembersInlineArrayItemTypeTypePropEnum = append(fcZoneInlineMembersInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// port_id
 	// END DEBUGGING
-	// FcZoneMembersItems0TypePortID captures enum value "port_id"
-	FcZoneMembersItems0TypePortID string = "port_id"
+	// FcZoneInlineMembersInlineArrayItemTypePortID captures enum value "port_id"
+	FcZoneInlineMembersInlineArrayItemTypePortID string = "port_id"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// port_name
 	// END DEBUGGING
-	// FcZoneMembersItems0TypePortName captures enum value "port_name"
-	FcZoneMembersItems0TypePortName string = "port_name"
+	// FcZoneInlineMembersInlineArrayItemTypePortName captures enum value "port_name"
+	FcZoneInlineMembersInlineArrayItemTypePortName string = "port_name"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// domain_id_port
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeDomainIDPort captures enum value "domain_id_port"
-	FcZoneMembersItems0TypeDomainIDPort string = "domain_id_port"
+	// FcZoneInlineMembersInlineArrayItemTypeDomainIDPort captures enum value "domain_id_port"
+	FcZoneInlineMembersInlineArrayItemTypeDomainIDPort string = "domain_id_port"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// node_name
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeNodeName captures enum value "node_name"
-	FcZoneMembersItems0TypeNodeName string = "node_name"
+	// FcZoneInlineMembersInlineArrayItemTypeNodeName captures enum value "node_name"
+	FcZoneInlineMembersInlineArrayItemTypeNodeName string = "node_name"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// fabric_port_name
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeFabricPortName captures enum value "fabric_port_name"
-	FcZoneMembersItems0TypeFabricPortName string = "fabric_port_name"
+	// FcZoneInlineMembersInlineArrayItemTypeFabricPortName captures enum value "fabric_port_name"
+	FcZoneInlineMembersInlineArrayItemTypeFabricPortName string = "fabric_port_name"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// interface
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeInterface captures enum value "interface"
-	FcZoneMembersItems0TypeInterface string = "interface"
+	// FcZoneInlineMembersInlineArrayItemTypeInterface captures enum value "interface"
+	FcZoneInlineMembersInlineArrayItemTypeInterface string = "interface"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// domain_interface
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeDomainInterface captures enum value "domain_interface"
-	FcZoneMembersItems0TypeDomainInterface string = "domain_interface"
+	// FcZoneInlineMembersInlineArrayItemTypeDomainInterface captures enum value "domain_interface"
+	FcZoneInlineMembersInlineArrayItemTypeDomainInterface string = "domain_interface"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// ip_address
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeIPAddress captures enum value "ip_address"
-	FcZoneMembersItems0TypeIPAddress string = "ip_address"
+	// FcZoneInlineMembersInlineArrayItemTypeIPAddress captures enum value "ip_address"
+	FcZoneInlineMembersInlineArrayItemTypeIPAddress string = "ip_address"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// symbolic_node_name
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeSymbolicNodeName captures enum value "symbolic_node_name"
-	FcZoneMembersItems0TypeSymbolicNodeName string = "symbolic_node_name"
+	// FcZoneInlineMembersInlineArrayItemTypeSymbolicNodeName captures enum value "symbolic_node_name"
+	FcZoneInlineMembersInlineArrayItemTypeSymbolicNodeName string = "symbolic_node_name"
 
 	// BEGIN DEBUGGING
-	// FcZoneMembersItems0
-	// FcZoneMembersItems0
+	// fc_zone_inline_members_inline_array_item
+	// FcZoneInlineMembersInlineArrayItem
 	// type
 	// Type
 	// device_alias
 	// END DEBUGGING
-	// FcZoneMembersItems0TypeDeviceAlias captures enum value "device_alias"
-	FcZoneMembersItems0TypeDeviceAlias string = "device_alias"
+	// FcZoneInlineMembersInlineArrayItemTypeDeviceAlias captures enum value "device_alias"
+	FcZoneInlineMembersInlineArrayItemTypeDeviceAlias string = "device_alias"
 )
 
 // prop value enum
-func (m *FcZoneMembersItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcZoneMembersItems0TypeTypePropEnum, true); err != nil {
+func (m *FcZoneInlineMembersInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcZoneInlineMembersInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcZoneMembersItems0) validateType(formats strfmt.Registry) error {
+func (m *FcZoneInlineMembersInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this fc zone members items0 based on the context it is used
-func (m *FcZoneMembersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone inline members inline array item based on the context it is used
+func (m *FcZoneInlineMembersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -837,18 +837,18 @@ func (m *FcZoneMembersItems0) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcZoneMembersItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineMembersInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcZoneMembersItems0) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneInlineMembersInlineArrayItem) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -856,7 +856,7 @@ func (m *FcZoneMembersItems0) contextValidateType(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneMembersItems0) MarshalBinary() ([]byte, error) {
+func (m *FcZoneInlineMembersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -864,8 +864,8 @@ func (m *FcZoneMembersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneMembersItems0) UnmarshalBinary(b []byte) error {
-	var res FcZoneMembersItems0
+func (m *FcZoneInlineMembersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res FcZoneInlineMembersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

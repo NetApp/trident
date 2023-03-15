@@ -66,31 +66,31 @@ type ClusterNtpKeysCollectionGetParams struct {
 
 	   Filter by digest_type
 	*/
-	DigestTypeQueryParameter *string
+	DigestType *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *int64
+	ID *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type ClusterNtpKeysCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,13 +106,13 @@ type ClusterNtpKeysCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Value.
 
 	   Filter by value
 	*/
-	ValueQueryParameter *string
+	Value *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +132,14 @@ func (o *ClusterNtpKeysCollectionGetParams) WithDefaults() *ClusterNtpKeysCollec
 // All values with no default are reset to their zero value.
 func (o *ClusterNtpKeysCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ClusterNtpKeysCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +181,92 @@ func (o *ClusterNtpKeysCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDigestTypeQueryParameter adds the digestType to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithDigestTypeQueryParameter(digestType *string) *ClusterNtpKeysCollectionGetParams {
-	o.SetDigestTypeQueryParameter(digestType)
+// WithDigestType adds the digestType to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithDigestType(digestType *string) *ClusterNtpKeysCollectionGetParams {
+	o.SetDigestType(digestType)
 	return o
 }
 
-// SetDigestTypeQueryParameter adds the digestType to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetDigestTypeQueryParameter(digestType *string) {
-	o.DigestTypeQueryParameter = digestType
+// SetDigestType adds the digestType to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetDigestType(digestType *string) {
+	o.DigestType = digestType
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithFieldsQueryParameter(fields []string) *ClusterNtpKeysCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithFields(fields []string) *ClusterNtpKeysCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDQueryParameter adds the id to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithIDQueryParameter(id *int64) *ClusterNtpKeysCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithID(id *int64) *ClusterNtpKeysCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetIDQueryParameter(id *int64) {
-	o.IDQueryParameter = id
+// SetID adds the id to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetID(id *int64) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ClusterNtpKeysCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithMaxRecords(maxRecords *int64) *ClusterNtpKeysCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ClusterNtpKeysCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithOrderBy(orderBy []string) *ClusterNtpKeysCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterNtpKeysCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithReturnRecords(returnRecords *bool) *ClusterNtpKeysCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClusterNtpKeysCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ClusterNtpKeysCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithValueQueryParameter adds the value to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) WithValueQueryParameter(value *string) *ClusterNtpKeysCollectionGetParams {
-	o.SetValueQueryParameter(value)
+// WithValue adds the value to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) WithValue(value *string) *ClusterNtpKeysCollectionGetParams {
+	o.SetValue(value)
 	return o
 }
 
-// SetValueQueryParameter adds the value to the cluster ntp keys collection get params
-func (o *ClusterNtpKeysCollectionGetParams) SetValueQueryParameter(value *string) {
-	o.ValueQueryParameter = value
+// SetValue adds the value to the cluster ntp keys collection get params
+func (o *ClusterNtpKeysCollectionGetParams) SetValue(value *string) {
+	o.Value = value
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -277,13 +277,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.DigestTypeQueryParameter != nil {
+	if o.DigestType != nil {
 
 		// query param digest_type
 		var qrDigestType string
 
-		if o.DigestTypeQueryParameter != nil {
-			qrDigestType = *o.DigestTypeQueryParameter
+		if o.DigestType != nil {
+			qrDigestType = *o.DigestType
 		}
 		qDigestType := qrDigestType
 		if qDigestType != "" {
@@ -294,7 +294,7 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -305,13 +305,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID int64
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := swag.FormatInt64(qrID)
 		if qID != "" {
@@ -322,13 +322,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ValueQueryParameter != nil {
+	if o.Value != nil {
 
 		// query param value
 		var qrValue string
 
-		if o.ValueQueryParameter != nil {
-			qrValue = *o.ValueQueryParameter
+		if o.Value != nil {
+			qrValue = *o.Value
 		}
 		qValue := qrValue
 		if qValue != "" {
@@ -409,7 +409,7 @@ func (o *ClusterNtpKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamClusterNtpKeysCollectionGet binds the parameter fields
 func (o *ClusterNtpKeysCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -426,7 +426,7 @@ func (o *ClusterNtpKeysCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamClusterNtpKeysCollectionGet binds the parameter order_by
 func (o *ClusterNtpKeysCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

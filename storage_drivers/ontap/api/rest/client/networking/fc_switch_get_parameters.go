@@ -69,27 +69,27 @@ type FcSwitchGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* FabricName.
 
 	   The WWN of the primary switch of the Fibre Channel fabric.
 
 	*/
-	FabricNamePathParameter string
+	FabricName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Wwn.
 
 	   The WWN of the Fibre Channel switch.
 
 	*/
-	WwnPathParameter string
+	Wwn string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -109,11 +109,11 @@ func (o *FcSwitchGetParams) WithDefaults() *FcSwitchGetParams {
 // All values with no default are reset to their zero value.
 func (o *FcSwitchGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 	)
 
 	val := FcSwitchGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,48 +155,48 @@ func (o *FcSwitchGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc switch get params
-func (o *FcSwitchGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FcSwitchGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fc switch get params
+func (o *FcSwitchGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FcSwitchGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc switch get params
-func (o *FcSwitchGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fc switch get params
+func (o *FcSwitchGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithFabricNamePathParameter adds the fabricName to the fc switch get params
-func (o *FcSwitchGetParams) WithFabricNamePathParameter(fabricName string) *FcSwitchGetParams {
-	o.SetFabricNamePathParameter(fabricName)
+// WithFabricName adds the fabricName to the fc switch get params
+func (o *FcSwitchGetParams) WithFabricName(fabricName string) *FcSwitchGetParams {
+	o.SetFabricName(fabricName)
 	return o
 }
 
-// SetFabricNamePathParameter adds the fabricName to the fc switch get params
-func (o *FcSwitchGetParams) SetFabricNamePathParameter(fabricName string) {
-	o.FabricNamePathParameter = fabricName
+// SetFabricName adds the fabricName to the fc switch get params
+func (o *FcSwitchGetParams) SetFabricName(fabricName string) {
+	o.FabricName = fabricName
 }
 
-// WithFieldsQueryParameter adds the fields to the fc switch get params
-func (o *FcSwitchGetParams) WithFieldsQueryParameter(fields []string) *FcSwitchGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc switch get params
+func (o *FcSwitchGetParams) WithFields(fields []string) *FcSwitchGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc switch get params
-func (o *FcSwitchGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc switch get params
+func (o *FcSwitchGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithWwnPathParameter adds the wwn to the fc switch get params
-func (o *FcSwitchGetParams) WithWwnPathParameter(wwn string) *FcSwitchGetParams {
-	o.SetWwnPathParameter(wwn)
+// WithWwn adds the wwn to the fc switch get params
+func (o *FcSwitchGetParams) WithWwn(wwn string) *FcSwitchGetParams {
+	o.SetWwn(wwn)
 	return o
 }
 
-// SetWwnPathParameter adds the wwn to the fc switch get params
-func (o *FcSwitchGetParams) SetWwnPathParameter(wwn string) {
-	o.WwnPathParameter = wwn
+// SetWwn adds the wwn to the fc switch get params
+func (o *FcSwitchGetParams) SetWwn(wwn string) {
+	o.Wwn = wwn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +207,13 @@ func (o *FcSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -225,11 +225,11 @@ func (o *FcSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param fabric.name
-	if err := r.SetPathParam("fabric.name", o.FabricNamePathParameter); err != nil {
+	if err := r.SetPathParam("fabric.name", o.FabricName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -241,7 +241,7 @@ func (o *FcSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param wwn
-	if err := r.SetPathParam("wwn", o.WwnPathParameter); err != nil {
+	if err := r.SetPathParam("wwn", o.Wwn); err != nil {
 		return err
 	}
 
@@ -253,7 +253,7 @@ func (o *FcSwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamFcSwitchGet binds the parameter fields
 func (o *FcSwitchGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

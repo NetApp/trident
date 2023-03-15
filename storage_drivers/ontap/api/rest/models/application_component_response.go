@@ -20,13 +20,14 @@ import (
 type ApplicationComponentResponse struct {
 
 	// links
-	Links *ApplicationComponentResponseLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentResponseInlineLinks `json:"_links,omitempty"`
+
+	// application component response inline records
+	ApplicationComponentResponseInlineRecords []*ApplicationComponent `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ApplicationComponent `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this application component response
@@ -37,7 +38,7 @@ func (m *ApplicationComponentResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateApplicationComponentResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ApplicationComponentResponse) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ApplicationComponentResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ApplicationComponentResponse) validateApplicationComponentResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ApplicationComponentResponseInlineRecords); i++ {
+		if swag.IsZero(m.ApplicationComponentResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ApplicationComponentResponseInlineRecords[i] != nil {
+			if err := m.ApplicationComponentResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ApplicationComponentResponse) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationComponentResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ApplicationComponentResponse) contextValidateLinks(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationComponentResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentResponse) contextValidateApplicationComponentResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ApplicationComponentResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ApplicationComponentResponseInlineRecords[i] != nil {
+			if err := m.ApplicationComponentResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ApplicationComponentResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentResponseLinks application component response links
+// ApplicationComponentResponseInlineLinks application component response inline links
 //
-// swagger:model ApplicationComponentResponseLinks
-type ApplicationComponentResponseLinks struct {
+// swagger:model application_component_response_inline__links
+type ApplicationComponentResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ApplicationComponentResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component response links
-func (m *ApplicationComponentResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component response inline links
+func (m *ApplicationComponentResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ApplicationComponentResponseLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ApplicationComponentResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ApplicationComponentResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ApplicationComponentResponseLinks) validateNext(formats strfmt.Registry
 	return nil
 }
 
-func (m *ApplicationComponentResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ApplicationComponentResponseLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this application component response links based on the context it is used
-func (m *ApplicationComponentResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component response inline links based on the context it is used
+func (m *ApplicationComponentResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ApplicationComponentResponseLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationComponentResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ApplicationComponentResponseLinks) contextValidateNext(ctx context.Cont
 	return nil
 }
 
-func (m *ApplicationComponentResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ApplicationComponentResponseLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ApplicationComponentResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentResponseLinks
+func (m *ApplicationComponentResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

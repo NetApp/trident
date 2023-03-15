@@ -66,67 +66,61 @@ type RoleCollectionGetParams struct {
 
 	   Filter by builtin
 	*/
-	BuiltinQueryParameter *bool
-
-	/* Comment.
-
-	   Filter by comment
-	*/
-	CommentQueryParameter *string
+	Builtin *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* PrivilegesAccess.
 
 	   Filter by privileges.access
 	*/
-	PrivilegesAccessQueryParameter *string
+	PrivilegesAccess *string
 
 	/* PrivilegesPath.
 
 	   Filter by privileges.path
 	*/
-	PrivilegesPathQueryParameter *string
+	PrivilegesPath *string
 
 	/* PrivilegesQuery.
 
 	   Filter by privileges.query
 	*/
-	PrivilegesQueryQueryParameter *string
+	PrivilegesQuery *string
 
 	/* ReturnRecords.
 
@@ -134,7 +128,7 @@ type RoleCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,13 +136,13 @@ type RoleCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +162,14 @@ func (o *RoleCollectionGetParams) WithDefaults() *RoleCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *RoleCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := RoleCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +211,147 @@ func (o *RoleCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBuiltinQueryParameter adds the builtin to the role collection get params
-func (o *RoleCollectionGetParams) WithBuiltinQueryParameter(builtin *bool) *RoleCollectionGetParams {
-	o.SetBuiltinQueryParameter(builtin)
+// WithBuiltin adds the builtin to the role collection get params
+func (o *RoleCollectionGetParams) WithBuiltin(builtin *bool) *RoleCollectionGetParams {
+	o.SetBuiltin(builtin)
 	return o
 }
 
-// SetBuiltinQueryParameter adds the builtin to the role collection get params
-func (o *RoleCollectionGetParams) SetBuiltinQueryParameter(builtin *bool) {
-	o.BuiltinQueryParameter = builtin
+// SetBuiltin adds the builtin to the role collection get params
+func (o *RoleCollectionGetParams) SetBuiltin(builtin *bool) {
+	o.Builtin = builtin
 }
 
-// WithCommentQueryParameter adds the comment to the role collection get params
-func (o *RoleCollectionGetParams) WithCommentQueryParameter(comment *string) *RoleCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithFields adds the fields to the role collection get params
+func (o *RoleCollectionGetParams) WithFields(fields []string) *RoleCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the role collection get params
-func (o *RoleCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetFields adds the fields to the role collection get params
+func (o *RoleCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFieldsQueryParameter adds the fields to the role collection get params
-func (o *RoleCollectionGetParams) WithFieldsQueryParameter(fields []string) *RoleCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithMaxRecords adds the maxRecords to the role collection get params
+func (o *RoleCollectionGetParams) WithMaxRecords(maxRecords *int64) *RoleCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the role collection get params
-func (o *RoleCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetMaxRecords adds the maxRecords to the role collection get params
+func (o *RoleCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the role collection get params
-func (o *RoleCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *RoleCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithName adds the name to the role collection get params
+func (o *RoleCollectionGetParams) WithName(name *string) *RoleCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the role collection get params
-func (o *RoleCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetName adds the name to the role collection get params
+func (o *RoleCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNameQueryParameter adds the name to the role collection get params
-func (o *RoleCollectionGetParams) WithNameQueryParameter(name *string) *RoleCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithOrderBy adds the orderBy to the role collection get params
+func (o *RoleCollectionGetParams) WithOrderBy(orderBy []string) *RoleCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the role collection get params
-func (o *RoleCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetOrderBy adds the orderBy to the role collection get params
+func (o *RoleCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOrderByQueryParameter adds the orderBy to the role collection get params
-func (o *RoleCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *RoleCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOwnerName adds the ownerName to the role collection get params
+func (o *RoleCollectionGetParams) WithOwnerName(ownerName *string) *RoleCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the role collection get params
-func (o *RoleCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOwnerName adds the ownerName to the role collection get params
+func (o *RoleCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the role collection get params
-func (o *RoleCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *RoleCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerUUID adds the ownerUUID to the role collection get params
+func (o *RoleCollectionGetParams) WithOwnerUUID(ownerUUID *string) *RoleCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the role collection get params
-func (o *RoleCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerUUID adds the ownerUuid to the role collection get params
+func (o *RoleCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the role collection get params
-func (o *RoleCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *RoleCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithPrivilegesAccess adds the privilegesAccess to the role collection get params
+func (o *RoleCollectionGetParams) WithPrivilegesAccess(privilegesAccess *string) *RoleCollectionGetParams {
+	o.SetPrivilegesAccess(privilegesAccess)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the role collection get params
-func (o *RoleCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetPrivilegesAccess adds the privilegesAccess to the role collection get params
+func (o *RoleCollectionGetParams) SetPrivilegesAccess(privilegesAccess *string) {
+	o.PrivilegesAccess = privilegesAccess
 }
 
-// WithPrivilegesAccessQueryParameter adds the privilegesAccess to the role collection get params
-func (o *RoleCollectionGetParams) WithPrivilegesAccessQueryParameter(privilegesAccess *string) *RoleCollectionGetParams {
-	o.SetPrivilegesAccessQueryParameter(privilegesAccess)
+// WithPrivilegesPath adds the privilegesPath to the role collection get params
+func (o *RoleCollectionGetParams) WithPrivilegesPath(privilegesPath *string) *RoleCollectionGetParams {
+	o.SetPrivilegesPath(privilegesPath)
 	return o
 }
 
-// SetPrivilegesAccessQueryParameter adds the privilegesAccess to the role collection get params
-func (o *RoleCollectionGetParams) SetPrivilegesAccessQueryParameter(privilegesAccess *string) {
-	o.PrivilegesAccessQueryParameter = privilegesAccess
+// SetPrivilegesPath adds the privilegesPath to the role collection get params
+func (o *RoleCollectionGetParams) SetPrivilegesPath(privilegesPath *string) {
+	o.PrivilegesPath = privilegesPath
 }
 
-// WithPrivilegesPathQueryParameter adds the privilegesPath to the role collection get params
-func (o *RoleCollectionGetParams) WithPrivilegesPathQueryParameter(privilegesPath *string) *RoleCollectionGetParams {
-	o.SetPrivilegesPathQueryParameter(privilegesPath)
+// WithPrivilegesQuery adds the privilegesQuery to the role collection get params
+func (o *RoleCollectionGetParams) WithPrivilegesQuery(privilegesQuery *string) *RoleCollectionGetParams {
+	o.SetPrivilegesQuery(privilegesQuery)
 	return o
 }
 
-// SetPrivilegesPathQueryParameter adds the privilegesPath to the role collection get params
-func (o *RoleCollectionGetParams) SetPrivilegesPathQueryParameter(privilegesPath *string) {
-	o.PrivilegesPathQueryParameter = privilegesPath
+// SetPrivilegesQuery adds the privilegesQuery to the role collection get params
+func (o *RoleCollectionGetParams) SetPrivilegesQuery(privilegesQuery *string) {
+	o.PrivilegesQuery = privilegesQuery
 }
 
-// WithPrivilegesQueryQueryParameter adds the privilegesQuery to the role collection get params
-func (o *RoleCollectionGetParams) WithPrivilegesQueryQueryParameter(privilegesQuery *string) *RoleCollectionGetParams {
-	o.SetPrivilegesQueryQueryParameter(privilegesQuery)
+// WithReturnRecords adds the returnRecords to the role collection get params
+func (o *RoleCollectionGetParams) WithReturnRecords(returnRecords *bool) *RoleCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetPrivilegesQueryQueryParameter adds the privilegesQuery to the role collection get params
-func (o *RoleCollectionGetParams) SetPrivilegesQueryQueryParameter(privilegesQuery *string) {
-	o.PrivilegesQueryQueryParameter = privilegesQuery
+// SetReturnRecords adds the returnRecords to the role collection get params
+func (o *RoleCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the role collection get params
-func (o *RoleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *RoleCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnTimeout adds the returnTimeout to the role collection get params
+func (o *RoleCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *RoleCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the role collection get params
-func (o *RoleCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnTimeout adds the returnTimeout to the role collection get params
+func (o *RoleCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the role collection get params
-func (o *RoleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *RoleCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithScope adds the scope to the role collection get params
+func (o *RoleCollectionGetParams) WithScope(scope *string) *RoleCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the role collection get params
-func (o *RoleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
-}
-
-// WithScopeQueryParameter adds the scope to the role collection get params
-func (o *RoleCollectionGetParams) WithScopeQueryParameter(scope *string) *RoleCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
-	return o
-}
-
-// SetScopeQueryParameter adds the scope to the role collection get params
-func (o *RoleCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the role collection get params
+func (o *RoleCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +362,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.BuiltinQueryParameter != nil {
+	if o.Builtin != nil {
 
 		// query param builtin
 		var qrBuiltin bool
 
-		if o.BuiltinQueryParameter != nil {
-			qrBuiltin = *o.BuiltinQueryParameter
+		if o.Builtin != nil {
+			qrBuiltin = *o.Builtin
 		}
 		qBuiltin := swag.FormatBool(qrBuiltin)
 		if qBuiltin != "" {
@@ -396,24 +379,7 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
-
-		// query param comment
-		var qrComment string
-
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
-		}
-		qComment := qrComment
-		if qComment != "" {
-
-			if err := r.SetQueryParam("comment", qComment); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -424,13 +390,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -441,13 +407,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -458,7 +424,7 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +435,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -486,13 +452,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -503,13 +469,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PrivilegesAccessQueryParameter != nil {
+	if o.PrivilegesAccess != nil {
 
 		// query param privileges.access
 		var qrPrivilegesAccess string
 
-		if o.PrivilegesAccessQueryParameter != nil {
-			qrPrivilegesAccess = *o.PrivilegesAccessQueryParameter
+		if o.PrivilegesAccess != nil {
+			qrPrivilegesAccess = *o.PrivilegesAccess
 		}
 		qPrivilegesAccess := qrPrivilegesAccess
 		if qPrivilegesAccess != "" {
@@ -520,13 +486,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PrivilegesPathQueryParameter != nil {
+	if o.PrivilegesPath != nil {
 
 		// query param privileges.path
 		var qrPrivilegesPath string
 
-		if o.PrivilegesPathQueryParameter != nil {
-			qrPrivilegesPath = *o.PrivilegesPathQueryParameter
+		if o.PrivilegesPath != nil {
+			qrPrivilegesPath = *o.PrivilegesPath
 		}
 		qPrivilegesPath := qrPrivilegesPath
 		if qPrivilegesPath != "" {
@@ -537,13 +503,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PrivilegesQueryQueryParameter != nil {
+	if o.PrivilegesQuery != nil {
 
 		// query param privileges.query
 		var qrPrivilegesQuery string
 
-		if o.PrivilegesQueryQueryParameter != nil {
-			qrPrivilegesQuery = *o.PrivilegesQueryQueryParameter
+		if o.PrivilegesQuery != nil {
+			qrPrivilegesQuery = *o.PrivilegesQuery
 		}
 		qPrivilegesQuery := qrPrivilegesQuery
 		if qPrivilegesQuery != "" {
@@ -554,13 +520,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -571,13 +537,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -588,13 +554,13 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -613,7 +579,7 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamRoleCollectionGet binds the parameter fields
 func (o *RoleCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +596,7 @@ func (o *RoleCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamRoleCollectionGet binds the parameter order_by
 func (o *RoleCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -20,13 +20,14 @@ import (
 type CifsSymlinkMappingResponse struct {
 
 	// links
-	Links *CifsSymlinkMappingResponseLinks `json:"_links,omitempty"`
+	Links *CifsSymlinkMappingResponseInlineLinks `json:"_links,omitempty"`
+
+	// cifs symlink mapping response inline records
+	CifsSymlinkMappingResponseInlineRecords []*CifsSymlinkMapping `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CifsSymlinkMapping `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cifs symlink mapping response
@@ -37,7 +38,7 @@ func (m *CifsSymlinkMappingResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCifsSymlinkMappingResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CifsSymlinkMappingResponse) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CifsSymlinkMappingResponse) validateCifsSymlinkMappingResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsSymlinkMappingResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CifsSymlinkMappingResponseInlineRecords); i++ {
+		if swag.IsZero(m.CifsSymlinkMappingResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CifsSymlinkMappingResponseInlineRecords[i] != nil {
+			if err := m.CifsSymlinkMappingResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CifsSymlinkMappingResponse) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCifsSymlinkMappingResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CifsSymlinkMappingResponse) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingResponse) contextValidateCifsSymlinkMappingResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CifsSymlinkMappingResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsSymlinkMappingResponseInlineRecords[i] != nil {
+			if err := m.CifsSymlinkMappingResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CifsSymlinkMappingResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSymlinkMappingResponseLinks cifs symlink mapping response links
+// CifsSymlinkMappingResponseInlineLinks cifs symlink mapping response inline links
 //
-// swagger:model CifsSymlinkMappingResponseLinks
-type CifsSymlinkMappingResponseLinks struct {
+// swagger:model cifs_symlink_mapping_response_inline__links
+type CifsSymlinkMappingResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CifsSymlinkMappingResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs symlink mapping response links
-func (m *CifsSymlinkMappingResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs symlink mapping response inline links
+func (m *CifsSymlinkMappingResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CifsSymlinkMappingResponseLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CifsSymlinkMappingResponseLinks) validateNext(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CifsSymlinkMappingResponseLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this cifs symlink mapping response links based on the context it is used
-func (m *CifsSymlinkMappingResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs symlink mapping response inline links based on the context it is used
+func (m *CifsSymlinkMappingResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CifsSymlinkMappingResponseLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CifsSymlinkMappingResponseLinks) contextValidateNext(ctx context.Contex
 	return nil
 }
 
-func (m *CifsSymlinkMappingResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSymlinkMappingResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CifsSymlinkMappingResponseLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSymlinkMappingResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSymlinkMappingResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CifsSymlinkMappingResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSymlinkMappingResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSymlinkMappingResponseLinks
+func (m *CifsSymlinkMappingResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSymlinkMappingResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

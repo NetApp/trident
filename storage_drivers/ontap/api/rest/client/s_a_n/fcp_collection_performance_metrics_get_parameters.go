@@ -66,13 +66,13 @@ type FcpCollectionPerformanceMetricsGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,67 +87,67 @@ type FcpCollectionPerformanceMetricsGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* IopsOther.
 
 	   Filter by iops.other
 	*/
-	IopsOtherQueryParameter *int64
+	IopsOther *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsTotal.
 
 	   Filter by iops.total
 	*/
-	IopsTotalQueryParameter *int64
+	IopsTotal *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* LatencyOther.
 
 	   Filter by latency.other
 	*/
-	LatencyOtherQueryParameter *int64
+	LatencyOther *int64
 
 	/* LatencyRead.
 
 	   Filter by latency.read
 	*/
-	LatencyReadQueryParameter *int64
+	LatencyRead *int64
 
 	/* LatencyTotal.
 
 	   Filter by latency.total
 	*/
-	LatencyTotalQueryParameter *int64
+	LatencyTotal *int64
 
 	/* LatencyWrite.
 
 	   Filter by latency.write
 	*/
-	LatencyWriteQueryParameter *int64
+	LatencyWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -155,7 +155,7 @@ type FcpCollectionPerformanceMetricsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -163,43 +163,43 @@ type FcpCollectionPerformanceMetricsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -219,17 +219,17 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WithDefaults() *FcpCollection
 // All values with no default are reset to their zero value.
 func (o *FcpCollectionPerformanceMetricsGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FcpCollectionPerformanceMetricsGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -271,235 +271,235 @@ func (o *FcpCollectionPerformanceMetricsGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithDurationQueryParameter(duration *string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithDuration(duration *string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithFieldsQueryParameter(fields []string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithFields(fields []string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithIntervalQueryParameter(interval *string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithInterval(interval *string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithIopsOtherQueryParameter adds the iopsOther to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsOtherQueryParameter(iopsOther *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetIopsOtherQueryParameter(iopsOther)
+// WithIopsOther adds the iopsOther to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsOther(iopsOther *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetIopsOther(iopsOther)
 	return o
 }
 
-// SetIopsOtherQueryParameter adds the iopsOther to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsOtherQueryParameter(iopsOther *int64) {
-	o.IopsOtherQueryParameter = iopsOther
+// SetIopsOther adds the iopsOther to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsOther(iopsOther *int64) {
+	o.IopsOther = iopsOther
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsReadQueryParameter(iopsRead *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsRead(iopsRead *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsTotalQueryParameter adds the iopsTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsTotalQueryParameter(iopsTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetIopsTotalQueryParameter(iopsTotal)
+// WithIopsTotal adds the iopsTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsTotal(iopsTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetIopsTotal(iopsTotal)
 	return o
 }
 
-// SetIopsTotalQueryParameter adds the iopsTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsTotalQueryParameter(iopsTotal *int64) {
-	o.IopsTotalQueryParameter = iopsTotal
+// SetIopsTotal adds the iopsTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsTotal(iopsTotal *int64) {
+	o.IopsTotal = iopsTotal
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithIopsWrite(iopsWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithLatencyOtherQueryParameter adds the latencyOther to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyOtherQueryParameter(latencyOther *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetLatencyOtherQueryParameter(latencyOther)
+// WithLatencyOther adds the latencyOther to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyOther(latencyOther *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetLatencyOther(latencyOther)
 	return o
 }
 
-// SetLatencyOtherQueryParameter adds the latencyOther to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyOtherQueryParameter(latencyOther *int64) {
-	o.LatencyOtherQueryParameter = latencyOther
+// SetLatencyOther adds the latencyOther to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyOther(latencyOther *int64) {
+	o.LatencyOther = latencyOther
 }
 
-// WithLatencyReadQueryParameter adds the latencyRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyReadQueryParameter(latencyRead *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetLatencyReadQueryParameter(latencyRead)
+// WithLatencyRead adds the latencyRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyRead(latencyRead *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetLatencyRead(latencyRead)
 	return o
 }
 
-// SetLatencyReadQueryParameter adds the latencyRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyReadQueryParameter(latencyRead *int64) {
-	o.LatencyReadQueryParameter = latencyRead
+// SetLatencyRead adds the latencyRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyRead(latencyRead *int64) {
+	o.LatencyRead = latencyRead
 }
 
-// WithLatencyTotalQueryParameter adds the latencyTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyTotalQueryParameter(latencyTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetLatencyTotalQueryParameter(latencyTotal)
+// WithLatencyTotal adds the latencyTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyTotal(latencyTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetLatencyTotal(latencyTotal)
 	return o
 }
 
-// SetLatencyTotalQueryParameter adds the latencyTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyTotalQueryParameter(latencyTotal *int64) {
-	o.LatencyTotalQueryParameter = latencyTotal
+// SetLatencyTotal adds the latencyTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyTotal(latencyTotal *int64) {
+	o.LatencyTotal = latencyTotal
 }
 
-// WithLatencyWriteQueryParameter adds the latencyWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyWriteQueryParameter(latencyWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetLatencyWriteQueryParameter(latencyWrite)
+// WithLatencyWrite adds the latencyWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithLatencyWrite(latencyWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetLatencyWrite(latencyWrite)
 	return o
 }
 
-// SetLatencyWriteQueryParameter adds the latencyWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyWriteQueryParameter(latencyWrite *int64) {
-	o.LatencyWriteQueryParameter = latencyWrite
+// SetLatencyWrite adds the latencyWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetLatencyWrite(latencyWrite *int64) {
+	o.LatencyWrite = latencyWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithMaxRecords(maxRecords *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithOrderByQueryParameter(orderBy []string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithOrderBy(orderBy []string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithReturnRecords(returnRecords *bool) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithReturnTimeout(returnTimeout *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithStatusQueryParameter(status *string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithStatus(status *string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithSVMUUIDPathParameter(svmUUID string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithSvmUUID(svmUUID string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputRead(throughputRead *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputTotal(throughputTotal *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithThroughputWrite(throughputWrite *int64) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) WithTimestampQueryParameter(timestamp *string) *FcpCollectionPerformanceMetricsGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) WithTimestamp(timestamp *string) *FcpCollectionPerformanceMetricsGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the fcp collection performance metrics get params
-func (o *FcpCollectionPerformanceMetricsGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the fcp collection performance metrics get params
+func (o *FcpCollectionPerformanceMetricsGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -510,13 +510,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -527,7 +527,7 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -538,13 +538,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -555,13 +555,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IopsOtherQueryParameter != nil {
+	if o.IopsOther != nil {
 
 		// query param iops.other
 		var qrIopsOther int64
 
-		if o.IopsOtherQueryParameter != nil {
-			qrIopsOther = *o.IopsOtherQueryParameter
+		if o.IopsOther != nil {
+			qrIopsOther = *o.IopsOther
 		}
 		qIopsOther := swag.FormatInt64(qrIopsOther)
 		if qIopsOther != "" {
@@ -572,13 +572,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -589,13 +589,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IopsTotalQueryParameter != nil {
+	if o.IopsTotal != nil {
 
 		// query param iops.total
 		var qrIopsTotal int64
 
-		if o.IopsTotalQueryParameter != nil {
-			qrIopsTotal = *o.IopsTotalQueryParameter
+		if o.IopsTotal != nil {
+			qrIopsTotal = *o.IopsTotal
 		}
 		qIopsTotal := swag.FormatInt64(qrIopsTotal)
 		if qIopsTotal != "" {
@@ -606,13 +606,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -623,13 +623,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.LatencyOtherQueryParameter != nil {
+	if o.LatencyOther != nil {
 
 		// query param latency.other
 		var qrLatencyOther int64
 
-		if o.LatencyOtherQueryParameter != nil {
-			qrLatencyOther = *o.LatencyOtherQueryParameter
+		if o.LatencyOther != nil {
+			qrLatencyOther = *o.LatencyOther
 		}
 		qLatencyOther := swag.FormatInt64(qrLatencyOther)
 		if qLatencyOther != "" {
@@ -640,13 +640,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.LatencyReadQueryParameter != nil {
+	if o.LatencyRead != nil {
 
 		// query param latency.read
 		var qrLatencyRead int64
 
-		if o.LatencyReadQueryParameter != nil {
-			qrLatencyRead = *o.LatencyReadQueryParameter
+		if o.LatencyRead != nil {
+			qrLatencyRead = *o.LatencyRead
 		}
 		qLatencyRead := swag.FormatInt64(qrLatencyRead)
 		if qLatencyRead != "" {
@@ -657,13 +657,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.LatencyTotalQueryParameter != nil {
+	if o.LatencyTotal != nil {
 
 		// query param latency.total
 		var qrLatencyTotal int64
 
-		if o.LatencyTotalQueryParameter != nil {
-			qrLatencyTotal = *o.LatencyTotalQueryParameter
+		if o.LatencyTotal != nil {
+			qrLatencyTotal = *o.LatencyTotal
 		}
 		qLatencyTotal := swag.FormatInt64(qrLatencyTotal)
 		if qLatencyTotal != "" {
@@ -674,13 +674,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.LatencyWriteQueryParameter != nil {
+	if o.LatencyWrite != nil {
 
 		// query param latency.write
 		var qrLatencyWrite int64
 
-		if o.LatencyWriteQueryParameter != nil {
-			qrLatencyWrite = *o.LatencyWriteQueryParameter
+		if o.LatencyWrite != nil {
+			qrLatencyWrite = *o.LatencyWrite
 		}
 		qLatencyWrite := swag.FormatInt64(qrLatencyWrite)
 		if qLatencyWrite != "" {
@@ -691,13 +691,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -708,7 +708,7 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -719,13 +719,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -736,13 +736,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -753,13 +753,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -771,17 +771,17 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -792,13 +792,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -809,13 +809,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -826,13 +826,13 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -851,7 +851,7 @@ func (o *FcpCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamFcpCollectionPerformanceMetricsGet binds the parameter fields
 func (o *FcpCollectionPerformanceMetricsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -868,7 +868,7 @@ func (o *FcpCollectionPerformanceMetricsGetParams) bindParamFields(formats strfm
 
 // bindParamFcpCollectionPerformanceMetricsGet binds the parameter order_by
 func (o *FcpCollectionPerformanceMetricsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

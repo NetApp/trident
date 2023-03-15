@@ -22,7 +22,7 @@ type FirmwareShelf struct {
 	// in progress count
 	// Example: 2
 	// Read Only: true
-	InProgressCount int64 `json:"in_progress_count,omitempty"`
+	InProgressCount *int64 `json:"in_progress_count,omitempty"`
 
 	// Status of the shelf firmware update.
 	// Read Only: true
@@ -51,7 +51,7 @@ func (m *FirmwareShelf) ContextValidate(ctx context.Context, formats strfmt.Regi
 
 func (m *FirmwareShelf) contextValidateInProgressCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "in_progress_count", "body", int64(m.InProgressCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "in_progress_count", "body", m.InProgressCount); err != nil {
 		return err
 	}
 

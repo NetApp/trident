@@ -20,13 +20,14 @@ import (
 type LocalHostResponse struct {
 
 	// links
-	Links *LocalHostResponseLinks `json:"_links,omitempty"`
+	Links *LocalHostResponseInlineLinks `json:"_links,omitempty"`
+
+	// local host response inline records
+	LocalHostResponseInlineRecords []*LocalHost `json:"records,omitempty"`
 
 	// Number of hosts to IP records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*LocalHost `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this local host response
@@ -37,7 +38,7 @@ func (m *LocalHostResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateLocalHostResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *LocalHostResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *LocalHostResponse) validateLocalHostResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.LocalHostResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.LocalHostResponseInlineRecords); i++ {
+		if swag.IsZero(m.LocalHostResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.LocalHostResponseInlineRecords[i] != nil {
+			if err := m.LocalHostResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *LocalHostResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateLocalHostResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *LocalHostResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *LocalHostResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostResponse) contextValidateLocalHostResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.LocalHostResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.LocalHostResponseInlineRecords[i] != nil {
+			if err := m.LocalHostResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *LocalHostResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalHostResponseLinks local host response links
+// LocalHostResponseInlineLinks local host response inline links
 //
-// swagger:model LocalHostResponseLinks
-type LocalHostResponseLinks struct {
+// swagger:model local_host_response_inline__links
+type LocalHostResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type LocalHostResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local host response links
-func (m *LocalHostResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local host response inline links
+func (m *LocalHostResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *LocalHostResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *LocalHostResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *LocalHostResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalHostResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *LocalHostResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local host response links based on the context it is used
-func (m *LocalHostResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local host response inline links based on the context it is used
+func (m *LocalHostResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *LocalHostResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *LocalHostResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *LocalHostResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *LocalHostResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *LocalHostResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *LocalHostResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalHostResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *LocalHostResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalHostResponseLinks) UnmarshalBinary(b []byte) error {
-	var res LocalHostResponseLinks
+func (m *LocalHostResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalHostResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

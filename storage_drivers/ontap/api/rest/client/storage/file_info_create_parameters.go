@@ -15,6 +15,8 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NewFileInfoCreateParams creates a new FileInfoCreateParams object,
@@ -66,43 +68,43 @@ type FileInfoCreateParams struct {
 
 	   How many bytes into the file to begin writing. Use -1 to append (default).
 	*/
-	ByteOffsetQueryParameter *int64
+	ByteOffset *int64
 
-	/* Data.
+	/* Info.
 
-	   Data to write to the file.
+	   Info specification
 	*/
-	Data *string
+	Info *models.FileInfo
 
 	/* Overwrite.
 
 	   If false, and the file exists, the write will fail. Default is false.
 	*/
-	OverwriteQueryParameter *bool
+	Overwrite *bool
 
 	/* Path.
 
 	   Relative path of a new file, directory or symlink. The path field requires using "%2E" to represent "." and "%2F" to represent "/" for the path provided.
 	*/
-	PathPathParameter string
+	Path string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* StreamName.
 
 	   Name of stream associated with the file to write data to.
 	*/
-	StreamNameQueryParameter *string
+	StreamName *string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -122,11 +124,11 @@ func (o *FileInfoCreateParams) WithDefaults() *FileInfoCreateParams {
 // All values with no default are reset to their zero value.
 func (o *FileInfoCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := FileInfoCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -168,81 +170,81 @@ func (o *FileInfoCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithByteOffsetQueryParameter adds the byteOffset to the file info create params
-func (o *FileInfoCreateParams) WithByteOffsetQueryParameter(byteOffset *int64) *FileInfoCreateParams {
-	o.SetByteOffsetQueryParameter(byteOffset)
+// WithByteOffset adds the byteOffset to the file info create params
+func (o *FileInfoCreateParams) WithByteOffset(byteOffset *int64) *FileInfoCreateParams {
+	o.SetByteOffset(byteOffset)
 	return o
 }
 
-// SetByteOffsetQueryParameter adds the byteOffset to the file info create params
-func (o *FileInfoCreateParams) SetByteOffsetQueryParameter(byteOffset *int64) {
-	o.ByteOffsetQueryParameter = byteOffset
+// SetByteOffset adds the byteOffset to the file info create params
+func (o *FileInfoCreateParams) SetByteOffset(byteOffset *int64) {
+	o.ByteOffset = byteOffset
 }
 
-// WithData adds the data to the file info create params
-func (o *FileInfoCreateParams) WithData(data *string) *FileInfoCreateParams {
-	o.SetData(data)
+// WithInfo adds the info to the file info create params
+func (o *FileInfoCreateParams) WithInfo(info *models.FileInfo) *FileInfoCreateParams {
+	o.SetInfo(info)
 	return o
 }
 
-// SetData adds the data to the file info create params
-func (o *FileInfoCreateParams) SetData(data *string) {
-	o.Data = data
+// SetInfo adds the info to the file info create params
+func (o *FileInfoCreateParams) SetInfo(info *models.FileInfo) {
+	o.Info = info
 }
 
-// WithOverwriteQueryParameter adds the overwrite to the file info create params
-func (o *FileInfoCreateParams) WithOverwriteQueryParameter(overwrite *bool) *FileInfoCreateParams {
-	o.SetOverwriteQueryParameter(overwrite)
+// WithOverwrite adds the overwrite to the file info create params
+func (o *FileInfoCreateParams) WithOverwrite(overwrite *bool) *FileInfoCreateParams {
+	o.SetOverwrite(overwrite)
 	return o
 }
 
-// SetOverwriteQueryParameter adds the overwrite to the file info create params
-func (o *FileInfoCreateParams) SetOverwriteQueryParameter(overwrite *bool) {
-	o.OverwriteQueryParameter = overwrite
+// SetOverwrite adds the overwrite to the file info create params
+func (o *FileInfoCreateParams) SetOverwrite(overwrite *bool) {
+	o.Overwrite = overwrite
 }
 
-// WithPathPathParameter adds the path to the file info create params
-func (o *FileInfoCreateParams) WithPathPathParameter(path string) *FileInfoCreateParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the file info create params
+func (o *FileInfoCreateParams) WithPath(path string) *FileInfoCreateParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the file info create params
-func (o *FileInfoCreateParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the file info create params
+func (o *FileInfoCreateParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the file info create params
-func (o *FileInfoCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileInfoCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the file info create params
+func (o *FileInfoCreateParams) WithReturnRecords(returnRecords *bool) *FileInfoCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the file info create params
-func (o *FileInfoCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the file info create params
+func (o *FileInfoCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithStreamNameQueryParameter adds the streamName to the file info create params
-func (o *FileInfoCreateParams) WithStreamNameQueryParameter(streamName *string) *FileInfoCreateParams {
-	o.SetStreamNameQueryParameter(streamName)
+// WithStreamName adds the streamName to the file info create params
+func (o *FileInfoCreateParams) WithStreamName(streamName *string) *FileInfoCreateParams {
+	o.SetStreamName(streamName)
 	return o
 }
 
-// SetStreamNameQueryParameter adds the streamName to the file info create params
-func (o *FileInfoCreateParams) SetStreamNameQueryParameter(streamName *string) {
-	o.StreamNameQueryParameter = streamName
+// SetStreamName adds the streamName to the file info create params
+func (o *FileInfoCreateParams) SetStreamName(streamName *string) {
+	o.StreamName = streamName
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the file info create params
-func (o *FileInfoCreateParams) WithVolumeUUIDPathParameter(volumeUUID string) *FileInfoCreateParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the file info create params
+func (o *FileInfoCreateParams) WithVolumeUUID(volumeUUID string) *FileInfoCreateParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the file info create params
-func (o *FileInfoCreateParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the file info create params
+func (o *FileInfoCreateParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -253,13 +255,13 @@ func (o *FileInfoCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.ByteOffsetQueryParameter != nil {
+	if o.ByteOffset != nil {
 
 		// query param byte_offset
 		var qrByteOffset int64
 
-		if o.ByteOffsetQueryParameter != nil {
-			qrByteOffset = *o.ByteOffsetQueryParameter
+		if o.ByteOffset != nil {
+			qrByteOffset = *o.ByteOffset
 		}
 		qByteOffset := swag.FormatInt64(qrByteOffset)
 		if qByteOffset != "" {
@@ -269,29 +271,19 @@ func (o *FileInfoCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 			}
 		}
 	}
-
-	if o.Data != nil {
-
-		// form param data
-		var frData string
-		if o.Data != nil {
-			frData = *o.Data
-		}
-		fData := frData
-		if fData != "" {
-			if err := r.SetFormParam("data", fData); err != nil {
-				return err
-			}
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
+			return err
 		}
 	}
 
-	if o.OverwriteQueryParameter != nil {
+	if o.Overwrite != nil {
 
 		// query param overwrite
 		var qrOverwrite bool
 
-		if o.OverwriteQueryParameter != nil {
-			qrOverwrite = *o.OverwriteQueryParameter
+		if o.Overwrite != nil {
+			qrOverwrite = *o.Overwrite
 		}
 		qOverwrite := swag.FormatBool(qrOverwrite)
 		if qOverwrite != "" {
@@ -303,17 +295,17 @@ func (o *FileInfoCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -324,13 +316,13 @@ func (o *FileInfoCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.StreamNameQueryParameter != nil {
+	if o.StreamName != nil {
 
 		// query param stream_name
 		var qrStreamName string
 
-		if o.StreamNameQueryParameter != nil {
-			qrStreamName = *o.StreamNameQueryParameter
+		if o.StreamName != nil {
+			qrStreamName = *o.StreamName
 		}
 		qStreamName := qrStreamName
 		if qStreamName != "" {
@@ -342,7 +334,7 @@ func (o *FileInfoCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

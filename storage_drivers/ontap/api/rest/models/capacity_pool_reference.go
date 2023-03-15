@@ -23,7 +23,7 @@ type CapacityPoolReference struct {
 
 	// serial number
 	// Example: 390000100
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
 // Validate validates this capacity pool reference

@@ -66,67 +66,67 @@ type ApplicationComponentSnapshotCollectionGetParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* ComponentName.
 
 	   Filter by Application Component Name
 	*/
-	ComponentNameQueryParameter *string
+	ComponentName *string
 
 	/* ComponentUUID.
 
 	   Application Component UUID
 	*/
-	ComponentUUIDPathParameter string
+	ComponentUUID string
 
 	/* ConsistencyType.
 
 	   Filter by consistency_type
 	*/
-	ConsistencyTypeQueryParameter *string
+	ConsistencyType *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IsPartial.
 
 	   Filter by is_partial
 	*/
-	IsPartialQueryParameter *string
+	IsPartial *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type ApplicationComponentSnapshotCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,13 +142,13 @@ type ApplicationComponentSnapshotCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WithDefaults() *Applic
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentSnapshotCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ApplicationComponentSnapshotCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) SetHTTPClient(client *
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithCommentQueryParameter adds the comment to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithCommentQueryParameter(comment *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithComment(comment *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithComponentNameQueryParameter adds the componentName to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithComponentNameQueryParameter(componentName *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetComponentNameQueryParameter(componentName)
+// WithComponentName adds the componentName to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithComponentName(componentName *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetComponentName(componentName)
 	return o
 }
 
-// SetComponentNameQueryParameter adds the componentName to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetComponentNameQueryParameter(componentName *string) {
-	o.ComponentNameQueryParameter = componentName
+// SetComponentName adds the componentName to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetComponentName(componentName *string) {
+	o.ComponentName = componentName
 }
 
-// WithComponentUUIDPathParameter adds the componentUUID to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithComponentUUIDPathParameter(componentUUID string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetComponentUUIDPathParameter(componentUUID)
+// WithComponentUUID adds the componentUUID to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithComponentUUID(componentUUID string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetComponentUUID(componentUUID)
 	return o
 }
 
-// SetComponentUUIDPathParameter adds the componentUuid to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetComponentUUIDPathParameter(componentUUID string) {
-	o.ComponentUUIDPathParameter = componentUUID
+// SetComponentUUID adds the componentUuid to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetComponentUUID(componentUUID string) {
+	o.ComponentUUID = componentUUID
 }
 
-// WithConsistencyTypeQueryParameter adds the consistencyType to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithConsistencyTypeQueryParameter(consistencyType *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetConsistencyTypeQueryParameter(consistencyType)
+// WithConsistencyType adds the consistencyType to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithConsistencyType(consistencyType *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetConsistencyType(consistencyType)
 	return o
 }
 
-// SetConsistencyTypeQueryParameter adds the consistencyType to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetConsistencyTypeQueryParameter(consistencyType *string) {
-	o.ConsistencyTypeQueryParameter = consistencyType
+// SetConsistencyType adds the consistencyType to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetConsistencyType(consistencyType *string) {
+	o.ConsistencyType = consistencyType
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithCreateTime(createTime *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithFieldsQueryParameter adds the fields to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithFields(fields []string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIsPartialQueryParameter adds the isPartial to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithIsPartialQueryParameter(isPartial *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetIsPartialQueryParameter(isPartial)
+// WithIsPartial adds the isPartial to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithIsPartial(isPartial *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetIsPartial(isPartial)
 	return o
 }
 
-// SetIsPartialQueryParameter adds the isPartial to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetIsPartialQueryParameter(isPartial *string) {
-	o.IsPartialQueryParameter = isPartial
+// SetIsPartial adds the isPartial to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetIsPartial(isPartial *string) {
+	o.IsPartial = isPartial
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithMaxRecords(maxRecords *int64) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithNameQueryParameter(name *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithName(name *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithOrderBy(orderBy []string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithReturnRecords(returnRecords *bool) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDQueryParameter adds the uuid to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ApplicationComponentSnapshotCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) WithUUID(uuid *string) *ApplicationComponentSnapshotCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the application component snapshot collection get params
-func (o *ApplicationComponentSnapshotCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the application component snapshot collection get params
+func (o *ApplicationComponentSnapshotCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -380,17 +380,17 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -401,13 +401,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ComponentNameQueryParameter != nil {
+	if o.ComponentName != nil {
 
 		// query param component.name
 		var qrComponentName string
 
-		if o.ComponentNameQueryParameter != nil {
-			qrComponentName = *o.ComponentNameQueryParameter
+		if o.ComponentName != nil {
+			qrComponentName = *o.ComponentName
 		}
 		qComponentName := qrComponentName
 		if qComponentName != "" {
@@ -419,17 +419,17 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 	}
 
 	// path param component.uuid
-	if err := r.SetPathParam("component.uuid", o.ComponentUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("component.uuid", o.ComponentUUID); err != nil {
 		return err
 	}
 
-	if o.ConsistencyTypeQueryParameter != nil {
+	if o.ConsistencyType != nil {
 
 		// query param consistency_type
 		var qrConsistencyType string
 
-		if o.ConsistencyTypeQueryParameter != nil {
-			qrConsistencyType = *o.ConsistencyTypeQueryParameter
+		if o.ConsistencyType != nil {
+			qrConsistencyType = *o.ConsistencyType
 		}
 		qConsistencyType := qrConsistencyType
 		if qConsistencyType != "" {
@@ -440,13 +440,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -457,7 +457,7 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -468,13 +468,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.IsPartialQueryParameter != nil {
+	if o.IsPartial != nil {
 
 		// query param is_partial
 		var qrIsPartial string
 
-		if o.IsPartialQueryParameter != nil {
-			qrIsPartial = *o.IsPartialQueryParameter
+		if o.IsPartial != nil {
+			qrIsPartial = *o.IsPartial
 		}
 		qIsPartial := qrIsPartial
 		if qIsPartial != "" {
@@ -485,13 +485,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -502,13 +502,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -519,7 +519,7 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -530,13 +530,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -547,13 +547,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -564,13 +564,13 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -589,7 +589,7 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) WriteToRequest(r runti
 
 // bindParamApplicationComponentSnapshotCollectionGet binds the parameter fields
 func (o *ApplicationComponentSnapshotCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -606,7 +606,7 @@ func (o *ApplicationComponentSnapshotCollectionGetParams) bindParamFields(format
 
 // bindParamApplicationComponentSnapshotCollectionGet binds the parameter order_by
 func (o *ApplicationComponentSnapshotCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -109,6 +109,8 @@ func NewFpolicyEngineModifyDefault(code int) *FpolicyEngineModifyDefault {
 | 9764922    | The primary and secondary server has a redundant IP address |
 | 9764942    | At least one FPolicy policy is using the FPolicy engine |
 | 9764886    | FPolicy engine is a cluster-level FPolicy engine |
+| 9765042    | The specified send buffer size exceeds the maximum limit |
+| 9765043    | The specified receive buffer size exceeds the maximum limit |
 */
 type FpolicyEngineModifyDefault struct {
 	_statusCode int

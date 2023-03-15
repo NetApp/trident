@@ -19,10 +19,10 @@ import (
 type AnalyticsCollectionInfo struct {
 
 	// by accessed time
-	ByAccessedTime *AnalyticsCollectionInfoByAccessedTime `json:"by_accessed_time,omitempty"`
+	ByAccessedTime *AnalyticsCollectionInfoInlineByAccessedTime `json:"by_accessed_time,omitempty"`
 
 	// by modified time
-	ByModifiedTime *AnalyticsCollectionInfoByModifiedTime `json:"by_modified_time,omitempty"`
+	ByModifiedTime *AnalyticsCollectionInfoInlineByModifiedTime `json:"by_modified_time,omitempty"`
 }
 
 // Validate validates this analytics collection info
@@ -141,17 +141,17 @@ func (m *AnalyticsCollectionInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AnalyticsCollectionInfoByAccessedTime File system analytics information, broken down by date of last access.
+// AnalyticsCollectionInfoInlineByAccessedTime File system analytics information, broken down by date of last access.
 //
-// swagger:model AnalyticsCollectionInfoByAccessedTime
-type AnalyticsCollectionInfoByAccessedTime struct {
+// swagger:model analytics_collection_info_inline_by_accessed_time
+type AnalyticsCollectionInfoInlineByAccessedTime struct {
 
 	// bytes used
-	BytesUsed *AnalyticsCollectionInfoByAccessedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this analytics collection info by accessed time
-func (m *AnalyticsCollectionInfoByAccessedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics collection info inline by accessed time
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -164,7 +164,7 @@ func (m *AnalyticsCollectionInfoByAccessedTime) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -181,8 +181,8 @@ func (m *AnalyticsCollectionInfoByAccessedTime) validateBytesUsed(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this analytics collection info by accessed time based on the context it is used
-func (m *AnalyticsCollectionInfoByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics collection info inline by accessed time based on the context it is used
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -195,7 +195,7 @@ func (m *AnalyticsCollectionInfoByAccessedTime) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -210,7 +210,7 @@ func (m *AnalyticsCollectionInfoByAccessedTime) contextValidateBytesUsed(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByAccessedTime) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -218,8 +218,8 @@ func (m *AnalyticsCollectionInfoByAccessedTime) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByAccessedTime) UnmarshalBinary(b []byte) error {
-	var res AnalyticsCollectionInfoByAccessedTime
+func (m *AnalyticsCollectionInfoInlineByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res AnalyticsCollectionInfoInlineByAccessedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -227,17 +227,17 @@ func (m *AnalyticsCollectionInfoByAccessedTime) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// AnalyticsCollectionInfoByAccessedTimeBytesUsed Number of bytes used on-disk, broken down by date of last access.
+// AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last access.
 //
-// swagger:model AnalyticsCollectionInfoByAccessedTimeBytesUsed
-type AnalyticsCollectionInfoByAccessedTimeBytesUsed struct {
+// swagger:model analytics_collection_info_inline_by_accessed_time_inline_bytes_used
+type AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 }
 
-// Validate validates this analytics collection info by accessed time bytes used
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics collection info inline by accessed time inline bytes used
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -250,7 +250,7 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) Validate(formats strfmt
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -265,8 +265,8 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) validateLabels(formats 
 	return nil
 }
 
-// ContextValidate validate this analytics collection info by accessed time bytes used based on the context it is used
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics collection info inline by accessed time inline bytes used based on the context it is used
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -279,7 +279,7 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) ContextValidate(ctx con
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -292,7 +292,7 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) contextValidateLabels(c
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -300,8 +300,8 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res AnalyticsCollectionInfoByAccessedTimeBytesUsed
+func (m *AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res AnalyticsCollectionInfoInlineByAccessedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -309,17 +309,17 @@ func (m *AnalyticsCollectionInfoByAccessedTimeBytesUsed) UnmarshalBinary(b []byt
 	return nil
 }
 
-// AnalyticsCollectionInfoByModifiedTime File system analytics information, broken down by date of last modification.
+// AnalyticsCollectionInfoInlineByModifiedTime File system analytics information, broken down by date of last modification.
 //
-// swagger:model AnalyticsCollectionInfoByModifiedTime
-type AnalyticsCollectionInfoByModifiedTime struct {
+// swagger:model analytics_collection_info_inline_by_modified_time
+type AnalyticsCollectionInfoInlineByModifiedTime struct {
 
 	// bytes used
-	BytesUsed *AnalyticsCollectionInfoByModifiedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this analytics collection info by modified time
-func (m *AnalyticsCollectionInfoByModifiedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics collection info inline by modified time
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -332,7 +332,7 @@ func (m *AnalyticsCollectionInfoByModifiedTime) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -349,8 +349,8 @@ func (m *AnalyticsCollectionInfoByModifiedTime) validateBytesUsed(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this analytics collection info by modified time based on the context it is used
-func (m *AnalyticsCollectionInfoByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics collection info inline by modified time based on the context it is used
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -363,7 +363,7 @@ func (m *AnalyticsCollectionInfoByModifiedTime) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -378,7 +378,7 @@ func (m *AnalyticsCollectionInfoByModifiedTime) contextValidateBytesUsed(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByModifiedTime) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -386,8 +386,8 @@ func (m *AnalyticsCollectionInfoByModifiedTime) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByModifiedTime) UnmarshalBinary(b []byte) error {
-	var res AnalyticsCollectionInfoByModifiedTime
+func (m *AnalyticsCollectionInfoInlineByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res AnalyticsCollectionInfoInlineByModifiedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -395,17 +395,17 @@ func (m *AnalyticsCollectionInfoByModifiedTime) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// AnalyticsCollectionInfoByModifiedTimeBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+// AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last modification.
 //
-// swagger:model AnalyticsCollectionInfoByModifiedTimeBytesUsed
-type AnalyticsCollectionInfoByModifiedTimeBytesUsed struct {
+// swagger:model analytics_collection_info_inline_by_modified_time_inline_bytes_used
+type AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 }
 
-// Validate validates this analytics collection info by modified time bytes used
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this analytics collection info inline by modified time inline bytes used
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -418,7 +418,7 @@ func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) Validate(formats strfmt
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -433,8 +433,8 @@ func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) validateLabels(formats 
 	return nil
 }
 
-// ContextValidate validate this analytics collection info by modified time bytes used based on the context it is used
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this analytics collection info inline by modified time inline bytes used based on the context it is used
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -447,7 +447,7 @@ func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) ContextValidate(ctx con
 	return nil
 }
 
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -460,7 +460,7 @@ func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) contextValidateLabels(c
 }
 
 // MarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -468,8 +468,8 @@ func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *AnalyticsCollectionInfoByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res AnalyticsCollectionInfoByModifiedTimeBytesUsed
+func (m *AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res AnalyticsCollectionInfoInlineByModifiedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

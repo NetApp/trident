@@ -21,7 +21,7 @@ import (
 type CifsService struct {
 
 	// links
-	Links *CifsServiceLinks `json:"_links,omitempty"`
+	Links *CifsServiceInlineLinks `json:"_links,omitempty"`
 
 	// ad domain
 	AdDomain *AdDomain `json:"ad_domain,omitempty"`
@@ -39,14 +39,17 @@ type CifsService struct {
 	//
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// If set to true, group policies will be applied to the SVM.
+	GroupPolicyObjectEnabled *bool `json:"group_policy_object_enabled,omitempty"`
+
 	// metric
-	Metric *CifsServiceMetric `json:"metric,omitempty"`
+	Metric *CifsServiceInlineMetric `json:"metric,omitempty"`
 
 	// The name of the CIFS server.
 	// Example: CIFS1
 	// Max Length: 15
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// netbios
 	Netbios *CifsNetbios `json:"netbios,omitempty"`
@@ -58,10 +61,10 @@ type CifsService struct {
 	Security *CifsServiceSecurity `json:"security,omitempty"`
 
 	// statistics
-	Statistics *CifsServiceStatistics `json:"statistics,omitempty"`
+	Statistics *CifsServiceInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *CifsServiceSvm `json:"svm,omitempty"`
+	Svm *CifsServiceInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this cifs service
@@ -186,11 +189,11 @@ func (m *CifsService) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 15); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 15); err != nil {
 		return err
 	}
 
@@ -454,17 +457,17 @@ func (m *CifsService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceLinks cifs service links
+// CifsServiceInlineLinks cifs service inline links
 //
-// swagger:model CifsServiceLinks
-type CifsServiceLinks struct {
+// swagger:model cifs_service_inline__links
+type CifsServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs service links
-func (m *CifsServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline links
+func (m *CifsServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -477,7 +480,7 @@ func (m *CifsServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -494,8 +497,8 @@ func (m *CifsServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service links based on the context it is used
-func (m *CifsServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline links based on the context it is used
+func (m *CifsServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -508,7 +511,7 @@ func (m *CifsServiceLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *CifsServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -523,7 +526,7 @@ func (m *CifsServiceLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -531,8 +534,8 @@ func (m *CifsServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceLinks) UnmarshalBinary(b []byte) error {
-	var res CifsServiceLinks
+func (m *CifsServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -540,35 +543,35 @@ func (m *CifsServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceMetric cifs service metric
+// CifsServiceInlineMetric cifs service inline metric
 //
-// swagger:model CifsServiceMetric
-type CifsServiceMetric struct {
+// swagger:model cifs_service_inline_metric
+type CifsServiceInlineMetric struct {
 
 	// links
-	Links *CifsServiceMetricLinks `json:"_links,omitempty"`
+	Links *CifsServiceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *CifsServiceMetricIops `json:"iops,omitempty"`
+	Iops *CifsServiceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *CifsServiceMetricLatency `json:"latency,omitempty"`
+	Latency *CifsServiceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *CifsServiceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *CifsServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -577,8 +580,8 @@ type CifsServiceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this cifs service metric
-func (m *CifsServiceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline metric
+func (m *CifsServiceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -615,7 +618,7 @@ func (m *CifsServiceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -632,7 +635,7 @@ func (m *CifsServiceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var cifsServiceMetricTypeDurationPropEnum []interface{}
+var cifsServiceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -640,95 +643,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsServiceMetricTypeDurationPropEnum = append(cifsServiceMetricTypeDurationPropEnum, v)
+		cifsServiceInlineMetricTypeDurationPropEnum = append(cifsServiceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// CifsServiceMetricDurationPT15S captures enum value "PT15S"
-	CifsServiceMetricDurationPT15S string = "PT15S"
+	// CifsServiceInlineMetricDurationPT15S captures enum value "PT15S"
+	CifsServiceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// CifsServiceMetricDurationPT4M captures enum value "PT4M"
-	CifsServiceMetricDurationPT4M string = "PT4M"
+	// CifsServiceInlineMetricDurationPT4M captures enum value "PT4M"
+	CifsServiceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// CifsServiceMetricDurationPT30M captures enum value "PT30M"
-	CifsServiceMetricDurationPT30M string = "PT30M"
+	// CifsServiceInlineMetricDurationPT30M captures enum value "PT30M"
+	CifsServiceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// CifsServiceMetricDurationPT2H captures enum value "PT2H"
-	CifsServiceMetricDurationPT2H string = "PT2H"
+	// CifsServiceInlineMetricDurationPT2H captures enum value "PT2H"
+	CifsServiceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// CifsServiceMetricDurationP1D captures enum value "P1D"
-	CifsServiceMetricDurationP1D string = "P1D"
+	// CifsServiceInlineMetricDurationP1D captures enum value "P1D"
+	CifsServiceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// CifsServiceMetricDurationPT5M captures enum value "PT5M"
-	CifsServiceMetricDurationPT5M string = "PT5M"
+	// CifsServiceInlineMetricDurationPT5M captures enum value "PT5M"
+	CifsServiceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *CifsServiceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsServiceMetricTypeDurationPropEnum, true); err != nil {
+func (m *CifsServiceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsServiceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceMetric) validateIops(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -745,7 +748,7 @@ func (m *CifsServiceMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceMetric) validateLatency(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -762,7 +765,7 @@ func (m *CifsServiceMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var cifsServiceMetricTypeStatusPropEnum []interface{}
+var cifsServiceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -770,145 +773,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsServiceMetricTypeStatusPropEnum = append(cifsServiceMetricTypeStatusPropEnum, v)
+		cifsServiceInlineMetricTypeStatusPropEnum = append(cifsServiceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// CifsServiceMetricStatusOk captures enum value "ok"
-	CifsServiceMetricStatusOk string = "ok"
+	// CifsServiceInlineMetricStatusOk captures enum value "ok"
+	CifsServiceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// CifsServiceMetricStatusError captures enum value "error"
-	CifsServiceMetricStatusError string = "error"
+	// CifsServiceInlineMetricStatusError captures enum value "error"
+	CifsServiceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// CifsServiceMetricStatusPartialNoData captures enum value "partial_no_data"
-	CifsServiceMetricStatusPartialNoData string = "partial_no_data"
+	// CifsServiceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	CifsServiceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// CifsServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	CifsServiceMetricStatusPartialNoResponse string = "partial_no_response"
+	// CifsServiceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	CifsServiceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// CifsServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	CifsServiceMetricStatusPartialOtherError string = "partial_other_error"
+	// CifsServiceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	CifsServiceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// CifsServiceMetricStatusNegativeDelta captures enum value "negative_delta"
-	CifsServiceMetricStatusNegativeDelta string = "negative_delta"
+	// CifsServiceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	CifsServiceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// CifsServiceMetricStatusNotFound captures enum value "not_found"
-	CifsServiceMetricStatusNotFound string = "not_found"
+	// CifsServiceInlineMetricStatusNotFound captures enum value "not_found"
+	CifsServiceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// CifsServiceMetricStatusBackfilledData captures enum value "backfilled_data"
-	CifsServiceMetricStatusBackfilledData string = "backfilled_data"
+	// CifsServiceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	CifsServiceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// CifsServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	CifsServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// CifsServiceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	CifsServiceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// CifsServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	CifsServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// CifsServiceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	CifsServiceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
+	// cifs_service_inline_metric
+	// CifsServiceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// CifsServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	CifsServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// CifsServiceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	CifsServiceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *CifsServiceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsServiceMetricTypeStatusPropEnum, true); err != nil {
+func (m *CifsServiceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsServiceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -925,7 +928,7 @@ func (m *CifsServiceMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -937,8 +940,8 @@ func (m *CifsServiceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service metric based on the context it is used
-func (m *CifsServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline metric based on the context it is used
+func (m *CifsServiceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -975,7 +978,7 @@ func (m *CifsServiceMetric) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -989,16 +992,16 @@ func (m *CifsServiceMetric) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1012,7 +1015,7 @@ func (m *CifsServiceMetric) contextValidateIops(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1026,16 +1029,16 @@ func (m *CifsServiceMetric) contextValidateLatency(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1049,7 +1052,7 @@ func (m *CifsServiceMetric) contextValidateThroughput(ctx context.Context, forma
 	return nil
 }
 
-func (m *CifsServiceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1059,7 +1062,7 @@ func (m *CifsServiceMetric) contextValidateTimestamp(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceMetric) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1067,8 +1070,8 @@ func (m *CifsServiceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceMetric) UnmarshalBinary(b []byte) error {
-	var res CifsServiceMetric
+func (m *CifsServiceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1076,34 +1079,34 @@ func (m *CifsServiceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceMetricIops The rate of I/O operations observed at the storage object.
+// CifsServiceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model CifsServiceMetricIops
-type CifsServiceMetricIops struct {
+// swagger:model cifs_service_inline_metric_inline_iops
+type CifsServiceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service metric iops
-func (m *CifsServiceMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline metric inline iops
+func (m *CifsServiceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service metric iops based on the context it is used
-func (m *CifsServiceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline metric inline iops based on the context it is used
+func (m *CifsServiceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1113,7 +1116,7 @@ func (m *CifsServiceMetricIops) ContextValidate(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceMetricIops) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1121,8 +1124,8 @@ func (m *CifsServiceMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceMetricIops) UnmarshalBinary(b []byte) error {
-	var res CifsServiceMetricIops
+func (m *CifsServiceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1130,34 +1133,34 @@ func (m *CifsServiceMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceMetricLatency The round trip latency in microseconds observed at the storage object.
+// CifsServiceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model CifsServiceMetricLatency
-type CifsServiceMetricLatency struct {
+// swagger:model cifs_service_inline_metric_inline_latency
+type CifsServiceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service metric latency
-func (m *CifsServiceMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline metric inline latency
+func (m *CifsServiceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service metric latency based on the context it is used
-func (m *CifsServiceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline metric inline latency based on the context it is used
+func (m *CifsServiceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1167,7 +1170,7 @@ func (m *CifsServiceMetricLatency) ContextValidate(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1175,8 +1178,8 @@ func (m *CifsServiceMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceMetricLatency) UnmarshalBinary(b []byte) error {
-	var res CifsServiceMetricLatency
+func (m *CifsServiceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1184,17 +1187,17 @@ func (m *CifsServiceMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceMetricLinks cifs service metric links
+// CifsServiceInlineMetricInlineLinks cifs service inline metric inline links
 //
-// swagger:model CifsServiceMetricLinks
-type CifsServiceMetricLinks struct {
+// swagger:model cifs_service_inline_metric_inline__links
+type CifsServiceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs service metric links
-func (m *CifsServiceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline metric inline links
+func (m *CifsServiceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1207,7 +1210,7 @@ func (m *CifsServiceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1224,8 +1227,8 @@ func (m *CifsServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service metric links based on the context it is used
-func (m *CifsServiceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline metric inline links based on the context it is used
+func (m *CifsServiceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1238,7 +1241,7 @@ func (m *CifsServiceMetricLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsServiceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1253,7 +1256,7 @@ func (m *CifsServiceMetricLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1261,8 +1264,8 @@ func (m *CifsServiceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res CifsServiceMetricLinks
+func (m *CifsServiceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1270,31 +1273,31 @@ func (m *CifsServiceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// CifsServiceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model CifsServiceMetricThroughput
-type CifsServiceMetricThroughput struct {
+// swagger:model cifs_service_inline_metric_inline_throughput
+type CifsServiceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service metric throughput
-func (m *CifsServiceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline metric inline throughput
+func (m *CifsServiceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service metric throughput based on the context it is used
-func (m *CifsServiceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline metric inline throughput based on the context it is used
+func (m *CifsServiceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1304,7 +1307,7 @@ func (m *CifsServiceMetricThroughput) ContextValidate(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1312,8 +1315,8 @@ func (m *CifsServiceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res CifsServiceMetricThroughput
+func (m *CifsServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1321,25 +1324,25 @@ func (m *CifsServiceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceStatistics cifs service statistics
+// CifsServiceInlineStatistics cifs service inline statistics
 //
-// swagger:model CifsServiceStatistics
-type CifsServiceStatistics struct {
+// swagger:model cifs_service_inline_statistics
+type CifsServiceInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *CifsServiceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *CifsServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *CifsServiceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *CifsServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *CifsServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *CifsServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1348,8 +1351,8 @@ type CifsServiceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this cifs service statistics
-func (m *CifsServiceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline statistics
+func (m *CifsServiceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -1378,7 +1381,7 @@ func (m *CifsServiceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -1395,7 +1398,7 @@ func (m *CifsServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -1412,7 +1415,7 @@ func (m *CifsServiceStatistics) validateLatencyRaw(formats strfmt.Registry) erro
 	return nil
 }
 
-var cifsServiceStatisticsTypeStatusPropEnum []interface{}
+var cifsServiceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1420,145 +1423,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsServiceStatisticsTypeStatusPropEnum = append(cifsServiceStatisticsTypeStatusPropEnum, v)
+		cifsServiceInlineStatisticsTypeStatusPropEnum = append(cifsServiceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusOk captures enum value "ok"
-	CifsServiceStatisticsStatusOk string = "ok"
+	// CifsServiceInlineStatisticsStatusOk captures enum value "ok"
+	CifsServiceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusError captures enum value "error"
-	CifsServiceStatisticsStatusError string = "error"
+	// CifsServiceInlineStatisticsStatusError captures enum value "error"
+	CifsServiceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	CifsServiceStatisticsStatusPartialNoData string = "partial_no_data"
+	// CifsServiceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	CifsServiceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	CifsServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// CifsServiceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	CifsServiceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	CifsServiceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// CifsServiceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	CifsServiceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	CifsServiceStatisticsStatusNegativeDelta string = "negative_delta"
+	// CifsServiceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	CifsServiceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusNotFound captures enum value "not_found"
-	CifsServiceStatisticsStatusNotFound string = "not_found"
+	// CifsServiceInlineStatisticsStatusNotFound captures enum value "not_found"
+	CifsServiceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	CifsServiceStatisticsStatusBackfilledData string = "backfilled_data"
+	// CifsServiceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	CifsServiceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	CifsServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// CifsServiceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	CifsServiceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	CifsServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// CifsServiceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	CifsServiceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
+	// cifs_service_inline_statistics
+	// CifsServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// CifsServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	CifsServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// CifsServiceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	CifsServiceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *CifsServiceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsServiceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *CifsServiceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsServiceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -1575,7 +1578,7 @@ func (m *CifsServiceStatistics) validateThroughputRaw(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *CifsServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1587,8 +1590,8 @@ func (m *CifsServiceStatistics) validateTimestamp(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this cifs service statistics based on the context it is used
-func (m *CifsServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline statistics based on the context it is used
+func (m *CifsServiceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -1617,7 +1620,7 @@ func (m *CifsServiceStatistics) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CifsServiceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -1631,7 +1634,7 @@ func (m *CifsServiceStatistics) contextValidateIopsRaw(ctx context.Context, form
 	return nil
 }
 
-func (m *CifsServiceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -1645,16 +1648,16 @@ func (m *CifsServiceStatistics) contextValidateLatencyRaw(ctx context.Context, f
 	return nil
 }
 
-func (m *CifsServiceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsServiceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -1668,7 +1671,7 @@ func (m *CifsServiceStatistics) contextValidateThroughputRaw(ctx context.Context
 	return nil
 }
 
-func (m *CifsServiceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1678,7 +1681,7 @@ func (m *CifsServiceStatistics) contextValidateTimestamp(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceStatistics) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1686,8 +1689,8 @@ func (m *CifsServiceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceStatistics) UnmarshalBinary(b []byte) error {
-	var res CifsServiceStatistics
+func (m *CifsServiceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1695,34 +1698,34 @@ func (m *CifsServiceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// CifsServiceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model CifsServiceStatisticsIopsRaw
-type CifsServiceStatisticsIopsRaw struct {
+// swagger:model cifs_service_inline_statistics_inline_iops_raw
+type CifsServiceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service statistics iops raw
-func (m *CifsServiceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline statistics inline iops raw
+func (m *CifsServiceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service statistics iops raw based on the context it is used
-func (m *CifsServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline statistics inline iops raw based on the context it is used
+func (m *CifsServiceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1732,7 +1735,7 @@ func (m *CifsServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1740,8 +1743,8 @@ func (m *CifsServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res CifsServiceStatisticsIopsRaw
+func (m *CifsServiceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1749,34 +1752,34 @@ func (m *CifsServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// CifsServiceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model CifsServiceStatisticsLatencyRaw
-type CifsServiceStatisticsLatencyRaw struct {
+// swagger:model cifs_service_inline_statistics_inline_latency_raw
+type CifsServiceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service statistics latency raw
-func (m *CifsServiceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline statistics inline latency raw
+func (m *CifsServiceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service statistics latency raw based on the context it is used
-func (m *CifsServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline statistics inline latency raw based on the context it is used
+func (m *CifsServiceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1786,7 +1789,7 @@ func (m *CifsServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1794,8 +1797,8 @@ func (m *CifsServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res CifsServiceStatisticsLatencyRaw
+func (m *CifsServiceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1803,31 +1806,31 @@ func (m *CifsServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// CifsServiceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model CifsServiceStatisticsThroughputRaw
-type CifsServiceStatisticsThroughputRaw struct {
+// swagger:model cifs_service_inline_statistics_inline_throughput_raw
+type CifsServiceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this cifs service statistics throughput raw
-func (m *CifsServiceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline statistics inline throughput raw
+func (m *CifsServiceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service statistics throughput raw based on the context it is used
-func (m *CifsServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline statistics inline throughput raw based on the context it is used
+func (m *CifsServiceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1837,7 +1840,7 @@ func (m *CifsServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1845,8 +1848,8 @@ func (m *CifsServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res CifsServiceStatisticsThroughputRaw
+func (m *CifsServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1854,27 +1857,27 @@ func (m *CifsServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceSvm cifs service svm
+// CifsServiceInlineSvm cifs service inline svm
 //
-// swagger:model CifsServiceSvm
-type CifsServiceSvm struct {
+// swagger:model cifs_service_inline_svm
+type CifsServiceInlineSvm struct {
 
 	// links
-	Links *CifsServiceSvmLinks `json:"_links,omitempty"`
+	Links *CifsServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs service svm
-func (m *CifsServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline svm
+func (m *CifsServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1887,7 +1890,7 @@ func (m *CifsServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1904,8 +1907,8 @@ func (m *CifsServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service svm based on the context it is used
-func (m *CifsServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline svm based on the context it is used
+func (m *CifsServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1918,7 +1921,7 @@ func (m *CifsServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *CifsServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1933,7 +1936,7 @@ func (m *CifsServiceSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1941,8 +1944,8 @@ func (m *CifsServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceSvm) UnmarshalBinary(b []byte) error {
-	var res CifsServiceSvm
+func (m *CifsServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1950,17 +1953,17 @@ func (m *CifsServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsServiceSvmLinks cifs service svm links
+// CifsServiceInlineSvmInlineLinks cifs service inline svm inline links
 //
-// swagger:model CifsServiceSvmLinks
-type CifsServiceSvmLinks struct {
+// swagger:model cifs_service_inline_svm_inline__links
+type CifsServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs service svm links
-func (m *CifsServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs service inline svm inline links
+func (m *CifsServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1973,7 +1976,7 @@ func (m *CifsServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1990,8 +1993,8 @@ func (m *CifsServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs service svm links based on the context it is used
-func (m *CifsServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs service inline svm inline links based on the context it is used
+func (m *CifsServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2004,7 +2007,7 @@ func (m *CifsServiceSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *CifsServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2019,7 +2022,7 @@ func (m *CifsServiceSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CifsServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2027,8 +2030,8 @@ func (m *CifsServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsServiceSvmLinks
+func (m *CifsServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,13 +66,13 @@ type StoragePoolGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Storage pool UUID.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *StoragePoolGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the storage pool get params
-func (o *StoragePoolGetParams) WithFieldsQueryParameter(fields []string) *StoragePoolGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage pool get params
+func (o *StoragePoolGetParams) WithFields(fields []string) *StoragePoolGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage pool get params
-func (o *StoragePoolGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage pool get params
+func (o *StoragePoolGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the storage pool get params
-func (o *StoragePoolGetParams) WithUUIDPathParameter(uuid string) *StoragePoolGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the storage pool get params
+func (o *StoragePoolGetParams) WithUUID(uuid string) *StoragePoolGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the storage pool get params
-func (o *StoragePoolGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the storage pool get params
+func (o *StoragePoolGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *StoragePoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *StoragePoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *StoragePoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamStoragePoolGet binds the parameter fields
 func (o *StoragePoolGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

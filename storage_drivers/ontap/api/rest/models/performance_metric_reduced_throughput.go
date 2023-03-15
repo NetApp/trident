@@ -21,29 +21,29 @@ import (
 type PerformanceMetricReducedThroughput struct {
 
 	// links
-	Links *PerformanceMetricReducedThroughputLinks `json:"_links,omitempty"`
+	Links *PerformanceMetricReducedThroughputInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceMetricReducedThroughputIops `json:"iops,omitempty"`
+	Iops *PerformanceMetricReducedThroughputInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceMetricReducedThroughputLatency `json:"latency,omitempty"`
+	Latency *PerformanceMetricReducedThroughputInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceMetricReducedThroughputThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceMetricReducedThroughputInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -196,7 +196,7 @@ func (m *PerformanceMetricReducedThroughput) validateDuration(formats strfmt.Reg
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -376,7 +376,7 @@ func (m *PerformanceMetricReducedThroughput) validateStatus(formats strfmt.Regis
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -466,7 +466,7 @@ func (m *PerformanceMetricReducedThroughput) contextValidateLinks(ctx context.Co
 
 func (m *PerformanceMetricReducedThroughput) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -503,7 +503,7 @@ func (m *PerformanceMetricReducedThroughput) contextValidateLatency(ctx context.
 
 func (m *PerformanceMetricReducedThroughput) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -551,34 +551,34 @@ func (m *PerformanceMetricReducedThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricReducedThroughputIops The rate of I/O operations observed at the storage object.
+// PerformanceMetricReducedThroughputInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceMetricReducedThroughputIops
-type PerformanceMetricReducedThroughputIops struct {
+// swagger:model performance_metric_reduced_throughput_inline_iops
+type PerformanceMetricReducedThroughputInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric reduced throughput iops
-func (m *PerformanceMetricReducedThroughputIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric reduced throughput inline iops
+func (m *PerformanceMetricReducedThroughputInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric reduced throughput iops based on the context it is used
-func (m *PerformanceMetricReducedThroughputIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric reduced throughput inline iops based on the context it is used
+func (m *PerformanceMetricReducedThroughputInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -588,7 +588,7 @@ func (m *PerformanceMetricReducedThroughputIops) ContextValidate(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricReducedThroughputInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -596,8 +596,8 @@ func (m *PerformanceMetricReducedThroughputIops) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricReducedThroughputIops
+func (m *PerformanceMetricReducedThroughputInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricReducedThroughputInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -605,34 +605,34 @@ func (m *PerformanceMetricReducedThroughputIops) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// PerformanceMetricReducedThroughputLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceMetricReducedThroughputInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceMetricReducedThroughputLatency
-type PerformanceMetricReducedThroughputLatency struct {
+// swagger:model performance_metric_reduced_throughput_inline_latency
+type PerformanceMetricReducedThroughputInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric reduced throughput latency
-func (m *PerformanceMetricReducedThroughputLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric reduced throughput inline latency
+func (m *PerformanceMetricReducedThroughputInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric reduced throughput latency based on the context it is used
-func (m *PerformanceMetricReducedThroughputLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric reduced throughput inline latency based on the context it is used
+func (m *PerformanceMetricReducedThroughputInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -642,7 +642,7 @@ func (m *PerformanceMetricReducedThroughputLatency) ContextValidate(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricReducedThroughputInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -650,8 +650,8 @@ func (m *PerformanceMetricReducedThroughputLatency) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricReducedThroughputLatency
+func (m *PerformanceMetricReducedThroughputInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricReducedThroughputInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -659,17 +659,17 @@ func (m *PerformanceMetricReducedThroughputLatency) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// PerformanceMetricReducedThroughputLinks performance metric reduced throughput links
+// PerformanceMetricReducedThroughputInlineLinks performance metric reduced throughput inline links
 //
-// swagger:model PerformanceMetricReducedThroughputLinks
-type PerformanceMetricReducedThroughputLinks struct {
+// swagger:model performance_metric_reduced_throughput_inline__links
+type PerformanceMetricReducedThroughputInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance metric reduced throughput links
-func (m *PerformanceMetricReducedThroughputLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric reduced throughput inline links
+func (m *PerformanceMetricReducedThroughputInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -682,7 +682,7 @@ func (m *PerformanceMetricReducedThroughputLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *PerformanceMetricReducedThroughputLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceMetricReducedThroughputInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -699,8 +699,8 @@ func (m *PerformanceMetricReducedThroughputLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this performance metric reduced throughput links based on the context it is used
-func (m *PerformanceMetricReducedThroughputLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric reduced throughput inline links based on the context it is used
+func (m *PerformanceMetricReducedThroughputInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *PerformanceMetricReducedThroughputLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *PerformanceMetricReducedThroughputLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceMetricReducedThroughputInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -728,7 +728,7 @@ func (m *PerformanceMetricReducedThroughputLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricReducedThroughputInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -736,8 +736,8 @@ func (m *PerformanceMetricReducedThroughputLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricReducedThroughputLinks
+func (m *PerformanceMetricReducedThroughputInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricReducedThroughputInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -745,31 +745,31 @@ func (m *PerformanceMetricReducedThroughputLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// PerformanceMetricReducedThroughputThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceMetricReducedThroughputInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceMetricReducedThroughputThroughput
-type PerformanceMetricReducedThroughputThroughput struct {
+// swagger:model performance_metric_reduced_throughput_inline_throughput
+type PerformanceMetricReducedThroughputInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric reduced throughput throughput
-func (m *PerformanceMetricReducedThroughputThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric reduced throughput inline throughput
+func (m *PerformanceMetricReducedThroughputInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric reduced throughput throughput based on the context it is used
-func (m *PerformanceMetricReducedThroughputThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric reduced throughput inline throughput based on the context it is used
+func (m *PerformanceMetricReducedThroughputInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -779,7 +779,7 @@ func (m *PerformanceMetricReducedThroughputThroughput) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricReducedThroughputInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -787,8 +787,8 @@ func (m *PerformanceMetricReducedThroughputThroughput) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricReducedThroughputThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricReducedThroughputThroughput
+func (m *PerformanceMetricReducedThroughputInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricReducedThroughputInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

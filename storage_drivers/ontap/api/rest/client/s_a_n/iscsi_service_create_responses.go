@@ -52,6 +52,11 @@ IscsiServiceCreateCreated describes a response with status code 201, with defaul
 Created
 */
 type IscsiServiceCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.IscsiServiceResponse
 }
 
@@ -93,6 +98,13 @@ func (o *IscsiServiceCreateCreated) GetPayload() *models.IscsiServiceResponse {
 }
 
 func (o *IscsiServiceCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.IscsiServiceResponse)
 

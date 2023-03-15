@@ -66,13 +66,13 @@ type AutoUpdateStatusGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Update identifier
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *AutoUpdateStatusGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the auto update status get params
-func (o *AutoUpdateStatusGetParams) WithFieldsQueryParameter(fields []string) *AutoUpdateStatusGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the auto update status get params
+func (o *AutoUpdateStatusGetParams) WithFields(fields []string) *AutoUpdateStatusGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the auto update status get params
-func (o *AutoUpdateStatusGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the auto update status get params
+func (o *AutoUpdateStatusGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the auto update status get params
-func (o *AutoUpdateStatusGetParams) WithUUIDPathParameter(uuid string) *AutoUpdateStatusGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the auto update status get params
+func (o *AutoUpdateStatusGetParams) WithUUID(uuid string) *AutoUpdateStatusGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the auto update status get params
-func (o *AutoUpdateStatusGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the auto update status get params
+func (o *AutoUpdateStatusGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *AutoUpdateStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *AutoUpdateStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *AutoUpdateStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamAutoUpdateStatusGet binds the parameter fields
 func (o *AutoUpdateStatusGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

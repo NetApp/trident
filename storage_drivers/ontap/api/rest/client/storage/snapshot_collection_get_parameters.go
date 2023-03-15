@@ -66,61 +66,79 @@ type SnapshotCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
+
+	/* DeltaSizeConsumed.
+
+	   Filter by delta.size_consumed
+	*/
+	DeltaSizeConsumed *int64
+
+	/* DeltaTimeElapsed.
+
+	   Filter by delta.time_elapsed
+	*/
+	DeltaTimeElapsed *string
 
 	/* ExpiryTime.
 
 	   Filter by expiry_time
 	*/
-	ExpiryTimeQueryParameter *string
+	ExpiryTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* LogicalSize.
+
+	   Filter by logical_size
+	*/
+	LogicalSize *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Owners.
 
 	   Filter by owners
 	*/
-	OwnersQueryParameter *string
+	Owners *string
 
 	/* ProvenanceVolumeUUID.
 
 	   Filter by provenance_volume.uuid
 	*/
-	ProvenanceVolumeUUIDQueryParameter *string
+	ProvenanceVolumeUUID *string
 
 	/* ReclaimableSpace.
 
 	   Filter by reclaimable_space
 	*/
-	ReclaimableSpaceQueryParameter *int64
+	ReclaimableSpace *int64
 
 	/* ReturnRecords.
 
@@ -128,7 +146,7 @@ type SnapshotCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,67 +154,67 @@ type SnapshotCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Size.
 
 	   Filter by size
 	*/
-	SizeQueryParameter *int64
+	Size *int64
 
 	/* SnaplockExpiryTime.
 
 	   Filter by snaplock_expiry_time
 	*/
-	SnaplockExpiryTimeQueryParameter *string
+	SnaplockExpiryTime *string
 
 	/* SnapmirrorLabel.
 
 	   Filter by snapmirror_label
 	*/
-	SnapmirrorLabelQueryParameter *string
+	SnapmirrorLabel *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VersionUUID.
 
 	   Filter by version_uuid
 	*/
-	VersionUUIDQueryParameter *string
+	VersionUUID *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Volume
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -216,14 +234,14 @@ func (o *SnapshotCollectionGetParams) WithDefaults() *SnapshotCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *SnapshotCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnapshotCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -265,246 +283,279 @@ func (o *SnapshotCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithCommentQueryParameter(comment *string) *SnapshotCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithComment(comment *string) *SnapshotCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *SnapshotCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithCreateTime(createTime *string) *SnapshotCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithExpiryTimeQueryParameter adds the expiryTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithExpiryTimeQueryParameter(expiryTime *string) *SnapshotCollectionGetParams {
-	o.SetExpiryTimeQueryParameter(expiryTime)
+// WithDeltaSizeConsumed adds the deltaSizeConsumed to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithDeltaSizeConsumed(deltaSizeConsumed *int64) *SnapshotCollectionGetParams {
+	o.SetDeltaSizeConsumed(deltaSizeConsumed)
 	return o
 }
 
-// SetExpiryTimeQueryParameter adds the expiryTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetExpiryTimeQueryParameter(expiryTime *string) {
-	o.ExpiryTimeQueryParameter = expiryTime
+// SetDeltaSizeConsumed adds the deltaSizeConsumed to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetDeltaSizeConsumed(deltaSizeConsumed *int64) {
+	o.DeltaSizeConsumed = deltaSizeConsumed
 }
 
-// WithFieldsQueryParameter adds the fields to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnapshotCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithDeltaTimeElapsed adds the deltaTimeElapsed to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithDeltaTimeElapsed(deltaTimeElapsed *string) *SnapshotCollectionGetParams {
+	o.SetDeltaTimeElapsed(deltaTimeElapsed)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetDeltaTimeElapsed adds the deltaTimeElapsed to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetDeltaTimeElapsed(deltaTimeElapsed *string) {
+	o.DeltaTimeElapsed = deltaTimeElapsed
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapshotCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithExpiryTime adds the expiryTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithExpiryTime(expiryTime *string) *SnapshotCollectionGetParams {
+	o.SetExpiryTime(expiryTime)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetExpiryTime adds the expiryTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetExpiryTime(expiryTime *string) {
+	o.ExpiryTime = expiryTime
 }
 
-// WithNameQueryParameter adds the name to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithNameQueryParameter(name *string) *SnapshotCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithFields adds the fields to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithFields(fields []string) *SnapshotCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetFields adds the fields to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnapshotCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithLogicalSize adds the logicalSize to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithLogicalSize(logicalSize *int64) *SnapshotCollectionGetParams {
+	o.SetLogicalSize(logicalSize)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetLogicalSize adds the logicalSize to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetLogicalSize(logicalSize *int64) {
+	o.LogicalSize = logicalSize
 }
 
-// WithOwnersQueryParameter adds the owners to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithOwnersQueryParameter(owners *string) *SnapshotCollectionGetParams {
-	o.SetOwnersQueryParameter(owners)
+// WithMaxRecords adds the maxRecords to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnapshotCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetOwnersQueryParameter adds the owners to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetOwnersQueryParameter(owners *string) {
-	o.OwnersQueryParameter = owners
+// SetMaxRecords adds the maxRecords to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithProvenanceVolumeUUIDQueryParameter adds the provenanceVolumeUUID to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID *string) *SnapshotCollectionGetParams {
-	o.SetProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID)
+// WithName adds the name to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithName(name *string) *SnapshotCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetProvenanceVolumeUUIDQueryParameter adds the provenanceVolumeUuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID *string) {
-	o.ProvenanceVolumeUUIDQueryParameter = provenanceVolumeUUID
+// SetName adds the name to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithReclaimableSpaceQueryParameter adds the reclaimableSpace to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithReclaimableSpaceQueryParameter(reclaimableSpace *int64) *SnapshotCollectionGetParams {
-	o.SetReclaimableSpaceQueryParameter(reclaimableSpace)
+// WithOrderBy adds the orderBy to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithOrderBy(orderBy []string) *SnapshotCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetReclaimableSpaceQueryParameter adds the reclaimableSpace to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetReclaimableSpaceQueryParameter(reclaimableSpace *int64) {
-	o.ReclaimableSpaceQueryParameter = reclaimableSpace
+// SetOrderBy adds the orderBy to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapshotCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithOwners adds the owners to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithOwners(owners *string) *SnapshotCollectionGetParams {
+	o.SetOwners(owners)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetOwners adds the owners to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetOwners(owners *string) {
+	o.Owners = owners
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapshotCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithProvenanceVolumeUUID adds the provenanceVolumeUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithProvenanceVolumeUUID(provenanceVolumeUUID *string) *SnapshotCollectionGetParams {
+	o.SetProvenanceVolumeUUID(provenanceVolumeUUID)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetProvenanceVolumeUUID adds the provenanceVolumeUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetProvenanceVolumeUUID(provenanceVolumeUUID *string) {
+	o.ProvenanceVolumeUUID = provenanceVolumeUUID
 }
 
-// WithSizeQueryParameter adds the size to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithSizeQueryParameter(size *int64) *SnapshotCollectionGetParams {
-	o.SetSizeQueryParameter(size)
+// WithReclaimableSpace adds the reclaimableSpace to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithReclaimableSpace(reclaimableSpace *int64) *SnapshotCollectionGetParams {
+	o.SetReclaimableSpace(reclaimableSpace)
 	return o
 }
 
-// SetSizeQueryParameter adds the size to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetSizeQueryParameter(size *int64) {
-	o.SizeQueryParameter = size
+// SetReclaimableSpace adds the reclaimableSpace to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetReclaimableSpace(reclaimableSpace *int64) {
+	o.ReclaimableSpace = reclaimableSpace
 }
 
-// WithSnaplockExpiryTimeQueryParameter adds the snaplockExpiryTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithSnaplockExpiryTimeQueryParameter(snaplockExpiryTime *string) *SnapshotCollectionGetParams {
-	o.SetSnaplockExpiryTimeQueryParameter(snaplockExpiryTime)
+// WithReturnRecords adds the returnRecords to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnapshotCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetSnaplockExpiryTimeQueryParameter adds the snaplockExpiryTime to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetSnaplockExpiryTimeQueryParameter(snaplockExpiryTime *string) {
-	o.SnaplockExpiryTimeQueryParameter = snaplockExpiryTime
+// SetReturnRecords adds the returnRecords to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithSnapmirrorLabelQueryParameter(snapmirrorLabel *string) *SnapshotCollectionGetParams {
-	o.SetSnapmirrorLabelQueryParameter(snapmirrorLabel)
+// WithReturnTimeout adds the returnTimeout to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnapshotCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetSnapmirrorLabelQueryParameter(snapmirrorLabel *string) {
-	o.SnapmirrorLabelQueryParameter = snapmirrorLabel
+// SetReturnTimeout adds the returnTimeout to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithStateQueryParameter(state *string) *SnapshotCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithSize adds the size to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSize(size *int64) *SnapshotCollectionGetParams {
+	o.SetSize(size)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetSize adds the size to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSize(size *int64) {
+	o.Size = size
 }
 
-// WithSVMNameQueryParameter adds the svmName to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SnapshotCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *SnapshotCollectionGetParams {
+	o.SetSnaplockExpiryTime(snaplockExpiryTime)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
+	o.SnaplockExpiryTime = snaplockExpiryTime
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SnapshotCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSnapmirrorLabel adds the snapmirrorLabel to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSnapmirrorLabel(snapmirrorLabel *string) *SnapshotCollectionGetParams {
+	o.SetSnapmirrorLabel(snapmirrorLabel)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSnapmirrorLabel adds the snapmirrorLabel to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSnapmirrorLabel(snapmirrorLabel *string) {
+	o.SnapmirrorLabel = snapmirrorLabel
 }
 
-// WithUUIDQueryParameter adds the uuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SnapshotCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithState adds the state to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithState(state *string) *SnapshotCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetState adds the state to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithVersionUUIDQueryParameter adds the versionUUID to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithVersionUUIDQueryParameter(versionUUID *string) *SnapshotCollectionGetParams {
-	o.SetVersionUUIDQueryParameter(versionUUID)
+// WithSvmName adds the svmName to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSvmName(svmName *string) *SnapshotCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetVersionUUIDQueryParameter adds the versionUuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetVersionUUIDQueryParameter(versionUUID *string) {
-	o.VersionUUIDQueryParameter = versionUUID
+// SetSvmName adds the svmName to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *SnapshotCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithSvmUUID adds the svmUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithSvmUUID(svmUUID *string) *SnapshotCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetSvmUUID adds the svmUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnapshotCollectionGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithUUID adds the uuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithUUID(uuid *string) *SnapshotCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snapshot collection get params
-func (o *SnapshotCollectionGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetUUID adds the uuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVersionUUID adds the versionUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithVersionUUID(versionUUID *string) *SnapshotCollectionGetParams {
+	o.SetVersionUUID(versionUUID)
+	return o
+}
+
+// SetVersionUUID adds the versionUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetVersionUUID(versionUUID *string) {
+	o.VersionUUID = versionUUID
+}
+
+// WithVolumeName adds the volumeName to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithVolumeName(volumeName *string) *SnapshotCollectionGetParams {
+	o.SetVolumeName(volumeName)
+	return o
+}
+
+// SetVolumeName adds the volumeName to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
+}
+
+// WithVolumeUUID adds the volumeUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithVolumeUUID(volumeUUID string) *SnapshotCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
+	return o
+}
+
+// SetVolumeUUID adds the volumeUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -515,13 +566,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -532,13 +583,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -549,13 +600,47 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ExpiryTimeQueryParameter != nil {
+	if o.DeltaSizeConsumed != nil {
+
+		// query param delta.size_consumed
+		var qrDeltaSizeConsumed int64
+
+		if o.DeltaSizeConsumed != nil {
+			qrDeltaSizeConsumed = *o.DeltaSizeConsumed
+		}
+		qDeltaSizeConsumed := swag.FormatInt64(qrDeltaSizeConsumed)
+		if qDeltaSizeConsumed != "" {
+
+			if err := r.SetQueryParam("delta.size_consumed", qDeltaSizeConsumed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DeltaTimeElapsed != nil {
+
+		// query param delta.time_elapsed
+		var qrDeltaTimeElapsed string
+
+		if o.DeltaTimeElapsed != nil {
+			qrDeltaTimeElapsed = *o.DeltaTimeElapsed
+		}
+		qDeltaTimeElapsed := qrDeltaTimeElapsed
+		if qDeltaTimeElapsed != "" {
+
+			if err := r.SetQueryParam("delta.time_elapsed", qDeltaTimeElapsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExpiryTime != nil {
 
 		// query param expiry_time
 		var qrExpiryTime string
 
-		if o.ExpiryTimeQueryParameter != nil {
-			qrExpiryTime = *o.ExpiryTimeQueryParameter
+		if o.ExpiryTime != nil {
+			qrExpiryTime = *o.ExpiryTime
 		}
 		qExpiryTime := qrExpiryTime
 		if qExpiryTime != "" {
@@ -566,7 +651,7 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -577,13 +662,30 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.LogicalSize != nil {
+
+		// query param logical_size
+		var qrLogicalSize int64
+
+		if o.LogicalSize != nil {
+			qrLogicalSize = *o.LogicalSize
+		}
+		qLogicalSize := swag.FormatInt64(qrLogicalSize)
+		if qLogicalSize != "" {
+
+			if err := r.SetQueryParam("logical_size", qLogicalSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -594,13 +696,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -611,7 +713,7 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -622,13 +724,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OwnersQueryParameter != nil {
+	if o.Owners != nil {
 
 		// query param owners
 		var qrOwners string
 
-		if o.OwnersQueryParameter != nil {
-			qrOwners = *o.OwnersQueryParameter
+		if o.Owners != nil {
+			qrOwners = *o.Owners
 		}
 		qOwners := qrOwners
 		if qOwners != "" {
@@ -639,13 +741,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ProvenanceVolumeUUIDQueryParameter != nil {
+	if o.ProvenanceVolumeUUID != nil {
 
 		// query param provenance_volume.uuid
 		var qrProvenanceVolumeUUID string
 
-		if o.ProvenanceVolumeUUIDQueryParameter != nil {
-			qrProvenanceVolumeUUID = *o.ProvenanceVolumeUUIDQueryParameter
+		if o.ProvenanceVolumeUUID != nil {
+			qrProvenanceVolumeUUID = *o.ProvenanceVolumeUUID
 		}
 		qProvenanceVolumeUUID := qrProvenanceVolumeUUID
 		if qProvenanceVolumeUUID != "" {
@@ -656,13 +758,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReclaimableSpaceQueryParameter != nil {
+	if o.ReclaimableSpace != nil {
 
 		// query param reclaimable_space
 		var qrReclaimableSpace int64
 
-		if o.ReclaimableSpaceQueryParameter != nil {
-			qrReclaimableSpace = *o.ReclaimableSpaceQueryParameter
+		if o.ReclaimableSpace != nil {
+			qrReclaimableSpace = *o.ReclaimableSpace
 		}
 		qReclaimableSpace := swag.FormatInt64(qrReclaimableSpace)
 		if qReclaimableSpace != "" {
@@ -673,13 +775,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -690,13 +792,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -707,13 +809,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SizeQueryParameter != nil {
+	if o.Size != nil {
 
 		// query param size
 		var qrSize int64
 
-		if o.SizeQueryParameter != nil {
-			qrSize = *o.SizeQueryParameter
+		if o.Size != nil {
+			qrSize = *o.Size
 		}
 		qSize := swag.FormatInt64(qrSize)
 		if qSize != "" {
@@ -724,13 +826,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SnaplockExpiryTimeQueryParameter != nil {
+	if o.SnaplockExpiryTime != nil {
 
 		// query param snaplock_expiry_time
 		var qrSnaplockExpiryTime string
 
-		if o.SnaplockExpiryTimeQueryParameter != nil {
-			qrSnaplockExpiryTime = *o.SnaplockExpiryTimeQueryParameter
+		if o.SnaplockExpiryTime != nil {
+			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
 		}
 		qSnaplockExpiryTime := qrSnaplockExpiryTime
 		if qSnaplockExpiryTime != "" {
@@ -741,13 +843,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SnapmirrorLabelQueryParameter != nil {
+	if o.SnapmirrorLabel != nil {
 
 		// query param snapmirror_label
 		var qrSnapmirrorLabel string
 
-		if o.SnapmirrorLabelQueryParameter != nil {
-			qrSnapmirrorLabel = *o.SnapmirrorLabelQueryParameter
+		if o.SnapmirrorLabel != nil {
+			qrSnapmirrorLabel = *o.SnapmirrorLabel
 		}
 		qSnapmirrorLabel := qrSnapmirrorLabel
 		if qSnapmirrorLabel != "" {
@@ -758,13 +860,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -775,13 +877,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -792,13 +894,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -809,13 +911,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -826,13 +928,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VersionUUIDQueryParameter != nil {
+	if o.VersionUUID != nil {
 
 		// query param version_uuid
 		var qrVersionUUID string
 
-		if o.VersionUUIDQueryParameter != nil {
-			qrVersionUUID = *o.VersionUUIDQueryParameter
+		if o.VersionUUID != nil {
+			qrVersionUUID = *o.VersionUUID
 		}
 		qVersionUUID := qrVersionUUID
 		if qVersionUUID != "" {
@@ -843,13 +945,13 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -861,7 +963,7 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -873,7 +975,7 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSnapshotCollectionGet binds the parameter fields
 func (o *SnapshotCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -890,7 +992,7 @@ func (o *SnapshotCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamSnapshotCollectionGet binds the parameter order_by
 func (o *SnapshotCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,19 +66,19 @@ type FileDirectorySecurityGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Path.
 
 	   target path
 	*/
-	PathPathParameter string
+	Path string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *FileDirectorySecurityGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the file directory security get params
-func (o *FileDirectorySecurityGetParams) WithFieldsQueryParameter(fields []string) *FileDirectorySecurityGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the file directory security get params
+func (o *FileDirectorySecurityGetParams) WithFields(fields []string) *FileDirectorySecurityGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the file directory security get params
-func (o *FileDirectorySecurityGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the file directory security get params
+func (o *FileDirectorySecurityGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPathPathParameter adds the path to the file directory security get params
-func (o *FileDirectorySecurityGetParams) WithPathPathParameter(path string) *FileDirectorySecurityGetParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the file directory security get params
+func (o *FileDirectorySecurityGetParams) WithPath(path string) *FileDirectorySecurityGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the file directory security get params
-func (o *FileDirectorySecurityGetParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the file directory security get params
+func (o *FileDirectorySecurityGetParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the file directory security get params
-func (o *FileDirectorySecurityGetParams) WithSVMUUIDPathParameter(svmUUID string) *FileDirectorySecurityGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the file directory security get params
+func (o *FileDirectorySecurityGetParams) WithSvmUUID(svmUUID string) *FileDirectorySecurityGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the file directory security get params
-func (o *FileDirectorySecurityGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the file directory security get params
+func (o *FileDirectorySecurityGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *FileDirectorySecurityGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *FileDirectorySecurityGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *FileDirectorySecurityGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamFileDirectorySecurityGet binds the parameter fields
 func (o *FileDirectorySecurityGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,13 +66,13 @@ type SnaplockRetentionPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* PolicyName.
 
 	   Name of the retention policy
 	*/
-	PolicyNamePathParameter string
+	PolicyName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnaplockRetentionPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) WithFieldsQueryParameter(fields []string) *SnaplockRetentionPolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) WithFields(fields []string) *SnaplockRetentionPolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPolicyNamePathParameter adds the policyName to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) WithPolicyNamePathParameter(policyName string) *SnaplockRetentionPolicyGetParams {
-	o.SetPolicyNamePathParameter(policyName)
+// WithPolicyName adds the policyName to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) WithPolicyName(policyName string) *SnaplockRetentionPolicyGetParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNamePathParameter adds the policyName to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) SetPolicyNamePathParameter(policyName string) {
-	o.PolicyNamePathParameter = policyName
+// SetPolicyName adds the policyName to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) SetPolicyName(policyName string) {
+	o.PolicyName = policyName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnaplockRetentionPolicyGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnaplockRetentionPolicyGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param policy.name
-	if err := r.SetPathParam("policy.name", o.PolicyNamePathParameter); err != nil {
+	if err := r.SetPathParam("policy.name", o.PolicyName); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnaplockRetentionPolicyGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnaplockRetentionPolicyGet binds the parameter fields
 func (o *SnaplockRetentionPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

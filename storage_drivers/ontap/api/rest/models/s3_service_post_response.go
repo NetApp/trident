@@ -20,17 +20,18 @@ import (
 type S3ServicePostResponse struct {
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*S3ServicePostResponseRecordsItems0 `json:"records,omitempty"`
+	// s3 service post response inline records
+	S3ServicePostResponseInlineRecords []*S3ServicePostResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this s3 service post response
 func (m *S3ServicePostResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateS3ServicePostResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -40,18 +41,18 @@ func (m *S3ServicePostResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServicePostResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *S3ServicePostResponse) validateS3ServicePostResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3ServicePostResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.S3ServicePostResponseInlineRecords); i++ {
+		if swag.IsZero(m.S3ServicePostResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.S3ServicePostResponseInlineRecords[i] != nil {
+			if err := m.S3ServicePostResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -68,7 +69,7 @@ func (m *S3ServicePostResponse) validateRecords(formats strfmt.Registry) error {
 func (m *S3ServicePostResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateS3ServicePostResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,12 +79,12 @@ func (m *S3ServicePostResponse) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *S3ServicePostResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServicePostResponse) contextValidateS3ServicePostResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.S3ServicePostResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3ServicePostResponseInlineRecords[i] != nil {
+			if err := m.S3ServicePostResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -114,10 +115,10 @@ func (m *S3ServicePostResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServicePostResponseRecordsItems0 s3 service post response records items0
+// S3ServicePostResponseInlineRecordsInlineArrayItem s3 service post response inline records inline array item
 //
-// swagger:model S3ServicePostResponseRecordsItems0
-type S3ServicePostResponseRecordsItems0 struct {
+// swagger:model s3_service_post_response_inline_records_inline_array_item
+type S3ServicePostResponseInlineRecordsInlineArrayItem struct {
 
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
@@ -126,11 +127,11 @@ type S3ServicePostResponseRecordsItems0 struct {
 	Job *JobLink `json:"job,omitempty"`
 
 	// users
-	Users []*S3ServiceUserPostResponse `json:"users,omitempty"`
+	Users []*S3ServiceUserPostResponse `json:"users"`
 }
 
-// Validate validates this s3 service post response records items0
-func (m *S3ServicePostResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service post response inline records inline array item
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -151,7 +152,7 @@ func (m *S3ServicePostResponseRecordsItems0) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -168,7 +169,7 @@ func (m *S3ServicePostResponseRecordsItems0) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) validateJob(formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) validateJob(formats strfmt.Registry) error {
 	if swag.IsZero(m.Job) { // not required
 		return nil
 	}
@@ -185,7 +186,7 @@ func (m *S3ServicePostResponseRecordsItems0) validateJob(formats strfmt.Registry
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) validateUsers(formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) validateUsers(formats strfmt.Registry) error {
 	if swag.IsZero(m.Users) { // not required
 		return nil
 	}
@@ -209,8 +210,8 @@ func (m *S3ServicePostResponseRecordsItems0) validateUsers(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this s3 service post response records items0 based on the context it is used
-func (m *S3ServicePostResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service post response inline records inline array item based on the context it is used
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -231,7 +232,7 @@ func (m *S3ServicePostResponseRecordsItems0) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -245,7 +246,7 @@ func (m *S3ServicePostResponseRecordsItems0) contextValidateLinks(ctx context.Co
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) contextValidateJob(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) contextValidateJob(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Job != nil {
 		if err := m.Job.ContextValidate(ctx, formats); err != nil {
@@ -259,7 +260,7 @@ func (m *S3ServicePostResponseRecordsItems0) contextValidateJob(ctx context.Cont
 	return nil
 }
 
-func (m *S3ServicePostResponseRecordsItems0) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Users); i++ {
 
@@ -278,7 +279,7 @@ func (m *S3ServicePostResponseRecordsItems0) contextValidateUsers(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServicePostResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -286,8 +287,8 @@ func (m *S3ServicePostResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServicePostResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res S3ServicePostResponseRecordsItems0
+func (m *S3ServicePostResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res S3ServicePostResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

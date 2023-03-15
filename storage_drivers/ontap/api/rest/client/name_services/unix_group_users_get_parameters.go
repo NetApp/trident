@@ -66,25 +66,25 @@ type UnixGroupUsersGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   UNIX user to be retrieved from the group.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixGroupName.
 
 	   UNIX group name.
 	*/
-	UnixGroupNamePathParameter string
+	UnixGroupName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *UnixGroupUsersGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the unix group users get params
-func (o *UnixGroupUsersGetParams) WithFieldsQueryParameter(fields []string) *UnixGroupUsersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the unix group users get params
+func (o *UnixGroupUsersGetParams) WithFields(fields []string) *UnixGroupUsersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the unix group users get params
-func (o *UnixGroupUsersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the unix group users get params
+func (o *UnixGroupUsersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the unix group users get params
-func (o *UnixGroupUsersGetParams) WithNamePathParameter(name string) *UnixGroupUsersGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the unix group users get params
+func (o *UnixGroupUsersGetParams) WithName(name string) *UnixGroupUsersGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the unix group users get params
-func (o *UnixGroupUsersGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the unix group users get params
+func (o *UnixGroupUsersGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix group users get params
-func (o *UnixGroupUsersGetParams) WithSVMUUIDPathParameter(svmUUID string) *UnixGroupUsersGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix group users get params
+func (o *UnixGroupUsersGetParams) WithSvmUUID(svmUUID string) *UnixGroupUsersGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix group users get params
-func (o *UnixGroupUsersGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix group users get params
+func (o *UnixGroupUsersGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixGroupNamePathParameter adds the unixGroupName to the unix group users get params
-func (o *UnixGroupUsersGetParams) WithUnixGroupNamePathParameter(unixGroupName string) *UnixGroupUsersGetParams {
-	o.SetUnixGroupNamePathParameter(unixGroupName)
+// WithUnixGroupName adds the unixGroupName to the unix group users get params
+func (o *UnixGroupUsersGetParams) WithUnixGroupName(unixGroupName string) *UnixGroupUsersGetParams {
+	o.SetUnixGroupName(unixGroupName)
 	return o
 }
 
-// SetUnixGroupNamePathParameter adds the unixGroupName to the unix group users get params
-func (o *UnixGroupUsersGetParams) SetUnixGroupNamePathParameter(unixGroupName string) {
-	o.UnixGroupNamePathParameter = unixGroupName
+// SetUnixGroupName adds the unixGroupName to the unix group users get params
+func (o *UnixGroupUsersGetParams) SetUnixGroupName(unixGroupName string) {
+	o.UnixGroupName = unixGroupName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +191,7 @@ func (o *UnixGroupUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +203,17 @@ func (o *UnixGroupUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_group.name
-	if err := r.SetPathParam("unix_group.name", o.UnixGroupNamePathParameter); err != nil {
+	if err := r.SetPathParam("unix_group.name", o.UnixGroupName); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *UnixGroupUsersGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamUnixGroupUsersGet binds the parameter fields
 func (o *UnixGroupUsersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

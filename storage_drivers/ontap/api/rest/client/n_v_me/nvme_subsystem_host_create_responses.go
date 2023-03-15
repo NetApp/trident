@@ -52,6 +52,11 @@ NvmeSubsystemHostCreateCreated describes a response with status code 201, with d
 Created
 */
 type NvmeSubsystemHostCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.NvmeSubsystemHostResponse
 }
 
@@ -94,6 +99,13 @@ func (o *NvmeSubsystemHostCreateCreated) GetPayload() *models.NvmeSubsystemHostR
 
 func (o *NvmeSubsystemHostCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.NvmeSubsystemHostResponse)
 
 	// response payload
@@ -118,13 +130,15 @@ func NewNvmeSubsystemHostCreateDefault(code int) *NvmeSubsystemHostCreateDefault
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 262186 | The "records" array and other host properties are mutually exclusive. |
 | 72089705 | The NVMe subsystem host already exists for the NVMe subsystem. |
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72090001 | The NVMe subsystem does not exist. |
-| 72090002 | The POST request of hosts to an NVMe subsystem can only contain an 'nqn' property or 'records' property, but not both. |
-| 72090003 | The elements in the records array for a POST of hosts to an NVMe subsystem must contain only the nqn property. |
+| 72090003 | A host to be added to an NVMe subsystem is missing the "nqn" property. |
+| 72090041 | An element in the "records" array contains an invalid property. |
+| 72090042 | The `dh_hmac_chap.host_secret_key` property is required when setting any other NVMe in-band authentication properties for a host. |
 */
 type NvmeSubsystemHostCreateDefault struct {
 	_statusCode int

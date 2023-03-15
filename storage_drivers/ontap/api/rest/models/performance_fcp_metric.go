@@ -21,32 +21,32 @@ import (
 type PerformanceFcpMetric struct {
 
 	// links
-	Links *PerformanceFcpMetricLinks `json:"_links,omitempty"`
+	Links *PerformanceFcpMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceFcpMetricIops `json:"iops,omitempty"`
+	Iops *PerformanceFcpMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceFcpMetricLatency `json:"latency,omitempty"`
+	Latency *PerformanceFcpMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// svm
-	Svm *PerformanceFcpMetricSvm `json:"svm,omitempty"`
+	Svm *PerformanceFcpMetricInlineSvm `json:"svm,omitempty"`
 
 	// throughput
-	Throughput *PerformanceFcpMetricThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceFcpMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -203,7 +203,7 @@ func (m *PerformanceFcpMetric) validateDuration(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -383,7 +383,7 @@ func (m *PerformanceFcpMetric) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -494,7 +494,7 @@ func (m *PerformanceFcpMetric) contextValidateLinks(ctx context.Context, formats
 
 func (m *PerformanceFcpMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -531,7 +531,7 @@ func (m *PerformanceFcpMetric) contextValidateLatency(ctx context.Context, forma
 
 func (m *PerformanceFcpMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -593,34 +593,34 @@ func (m *PerformanceFcpMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricIops The rate of I/O operations observed at the storage object.
+// PerformanceFcpMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceFcpMetricIops
-type PerformanceFcpMetricIops struct {
+// swagger:model performance_fcp_metric_inline_iops
+type PerformanceFcpMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fcp metric iops
-func (m *PerformanceFcpMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fcp metric inline iops
+func (m *PerformanceFcpMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fcp metric iops based on the context it is used
-func (m *PerformanceFcpMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fcp metric inline iops based on the context it is used
+func (m *PerformanceFcpMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -630,7 +630,7 @@ func (m *PerformanceFcpMetricIops) ContextValidate(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcpMetricIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcpMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -638,8 +638,8 @@ func (m *PerformanceFcpMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcpMetricIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcpMetricIops
+func (m *PerformanceFcpMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -647,34 +647,34 @@ func (m *PerformanceFcpMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceFcpMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceFcpMetricLatency
-type PerformanceFcpMetricLatency struct {
+// swagger:model performance_fcp_metric_inline_latency
+type PerformanceFcpMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fcp metric latency
-func (m *PerformanceFcpMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fcp metric inline latency
+func (m *PerformanceFcpMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fcp metric latency based on the context it is used
-func (m *PerformanceFcpMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fcp metric inline latency based on the context it is used
+func (m *PerformanceFcpMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -684,7 +684,7 @@ func (m *PerformanceFcpMetricLatency) ContextValidate(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcpMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcpMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -692,8 +692,8 @@ func (m *PerformanceFcpMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcpMetricLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcpMetricLatency
+func (m *PerformanceFcpMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -701,17 +701,17 @@ func (m *PerformanceFcpMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricLinks performance fcp metric links
+// PerformanceFcpMetricInlineLinks performance fcp metric inline links
 //
-// swagger:model PerformanceFcpMetricLinks
-type PerformanceFcpMetricLinks struct {
+// swagger:model performance_fcp_metric_inline__links
+type PerformanceFcpMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance fcp metric links
-func (m *PerformanceFcpMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fcp metric inline links
+func (m *PerformanceFcpMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -724,7 +724,7 @@ func (m *PerformanceFcpMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PerformanceFcpMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceFcpMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -741,8 +741,8 @@ func (m *PerformanceFcpMetricLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this performance fcp metric links based on the context it is used
-func (m *PerformanceFcpMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fcp metric inline links based on the context it is used
+func (m *PerformanceFcpMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -755,7 +755,7 @@ func (m *PerformanceFcpMetricLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *PerformanceFcpMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcpMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -770,7 +770,7 @@ func (m *PerformanceFcpMetricLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcpMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcpMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -778,8 +778,8 @@ func (m *PerformanceFcpMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcpMetricLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcpMetricLinks
+func (m *PerformanceFcpMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -787,29 +787,29 @@ func (m *PerformanceFcpMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricSvm performance fcp metric svm
+// PerformanceFcpMetricInlineSvm performance fcp metric inline svm
 //
-// swagger:model PerformanceFcpMetricSvm
-type PerformanceFcpMetricSvm struct {
+// swagger:model performance_fcp_metric_inline_svm
+type PerformanceFcpMetricInlineSvm struct {
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this performance fcp metric svm
-func (m *PerformanceFcpMetricSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fcp metric inline svm
+func (m *PerformanceFcpMetricInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this performance fcp metric svm based on context it is used
-func (m *PerformanceFcpMetricSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this performance fcp metric inline svm based on context it is used
+func (m *PerformanceFcpMetricInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcpMetricSvm) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcpMetricInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -817,8 +817,8 @@ func (m *PerformanceFcpMetricSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcpMetricSvm) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcpMetricSvm
+func (m *PerformanceFcpMetricInlineSvm) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -826,31 +826,31 @@ func (m *PerformanceFcpMetricSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceFcpMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceFcpMetricThroughput
-type PerformanceFcpMetricThroughput struct {
+// swagger:model performance_fcp_metric_inline_throughput
+type PerformanceFcpMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fcp metric throughput
-func (m *PerformanceFcpMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fcp metric inline throughput
+func (m *PerformanceFcpMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fcp metric throughput based on the context it is used
-func (m *PerformanceFcpMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fcp metric inline throughput based on the context it is used
+func (m *PerformanceFcpMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -860,7 +860,7 @@ func (m *PerformanceFcpMetricThroughput) ContextValidate(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcpMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcpMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -868,8 +868,8 @@ func (m *PerformanceFcpMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcpMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcpMetricThroughput
+func (m *PerformanceFcpMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

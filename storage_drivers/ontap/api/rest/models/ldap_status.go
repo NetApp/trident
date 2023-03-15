@@ -23,19 +23,19 @@ type LdapStatus struct {
 	// Code corresponding to the status message.
 	//
 	// Example: 65537300
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
-	// dn message
-	DnMessage []string `json:"dn_message,omitempty"`
+	// ldap status inline dn message
+	LdapStatusInlineDnMessage []*string `json:"dn_message,omitempty"`
 
 	// Provides additional details on the status of the LDAP service.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Specifies the status of the LDAP service.
 	//
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this ldap status
@@ -101,7 +101,7 @@ func (m *LdapStatus) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

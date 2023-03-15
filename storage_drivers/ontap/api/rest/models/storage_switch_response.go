@@ -20,13 +20,14 @@ import (
 type StorageSwitchResponse struct {
 
 	// links
-	Links *StorageSwitchResponseLinks `json:"_links,omitempty"`
+	Links *StorageSwitchResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*StorageSwitch `json:"records,omitempty"`
+	// storage switch response inline records
+	StorageSwitchResponseInlineRecords []*StorageSwitch `json:"records,omitempty"`
 }
 
 // Validate validates this storage switch response
@@ -37,7 +38,7 @@ func (m *StorageSwitchResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateStorageSwitchResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *StorageSwitchResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *StorageSwitchResponse) validateStorageSwitchResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.StorageSwitchResponseInlineRecords); i++ {
+		if swag.IsZero(m.StorageSwitchResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.StorageSwitchResponseInlineRecords[i] != nil {
+			if err := m.StorageSwitchResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *StorageSwitchResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *StorageSwitchResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *StorageSwitchResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchResponse) contextValidateStorageSwitchResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.StorageSwitchResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchResponseInlineRecords[i] != nil {
+			if err := m.StorageSwitchResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *StorageSwitchResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchResponseLinks storage switch response links
+// StorageSwitchResponseInlineLinks storage switch response inline links
 //
-// swagger:model StorageSwitchResponseLinks
-type StorageSwitchResponseLinks struct {
+// swagger:model storage_switch_response_inline__links
+type StorageSwitchResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type StorageSwitchResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage switch response links
-func (m *StorageSwitchResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch response inline links
+func (m *StorageSwitchResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *StorageSwitchResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *StorageSwitchResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *StorageSwitchResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *StorageSwitchResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StorageSwitchResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *StorageSwitchResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this storage switch response links based on the context it is used
-func (m *StorageSwitchResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch response inline links based on the context it is used
+func (m *StorageSwitchResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *StorageSwitchResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *StorageSwitchResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *StorageSwitchResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *StorageSwitchResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *StorageSwitchResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *StorageSwitchResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchResponseLinks) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchResponseLinks
+func (m *StorageSwitchResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

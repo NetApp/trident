@@ -22,22 +22,22 @@ type FirmwareDqpRecordCount struct {
 	// Alias record count
 	// Example: 200
 	// Read Only: true
-	Alias int64 `json:"alias,omitempty"`
+	Alias *int64 `json:"alias,omitempty"`
 
 	// Device record count
 	// Example: 29
 	// Read Only: true
-	Device int64 `json:"device,omitempty"`
+	Device *int64 `json:"device,omitempty"`
 
 	// Drive record count
 	// Example: 680
 	// Read Only: true
-	Drive int64 `json:"drive,omitempty"`
+	Drive *int64 `json:"drive,omitempty"`
 
 	// System record count
 	// Example: 3
 	// Read Only: true
-	System int64 `json:"system,omitempty"`
+	System *int64 `json:"system,omitempty"`
 }
 
 // Validate validates this firmware dqp record count
@@ -73,7 +73,7 @@ func (m *FirmwareDqpRecordCount) ContextValidate(ctx context.Context, formats st
 
 func (m *FirmwareDqpRecordCount) contextValidateAlias(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "alias", "body", int64(m.Alias)); err != nil {
+	if err := validate.ReadOnly(ctx, "alias", "body", m.Alias); err != nil {
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (m *FirmwareDqpRecordCount) contextValidateAlias(ctx context.Context, forma
 
 func (m *FirmwareDqpRecordCount) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "device", "body", int64(m.Device)); err != nil {
+	if err := validate.ReadOnly(ctx, "device", "body", m.Device); err != nil {
 		return err
 	}
 
@@ -91,7 +91,7 @@ func (m *FirmwareDqpRecordCount) contextValidateDevice(ctx context.Context, form
 
 func (m *FirmwareDqpRecordCount) contextValidateDrive(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "drive", "body", int64(m.Drive)); err != nil {
+	if err := validate.ReadOnly(ctx, "drive", "body", m.Drive); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (m *FirmwareDqpRecordCount) contextValidateDrive(ctx context.Context, forma
 
 func (m *FirmwareDqpRecordCount) contextValidateSystem(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "system", "body", int64(m.System)); err != nil {
+	if err := validate.ReadOnly(ctx, "system", "body", m.System); err != nil {
 		return err
 	}
 

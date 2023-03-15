@@ -65,7 +65,7 @@ type ClientLockDeleteParams struct {
 
 	   Lock ID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *ClientLockDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the client lock delete params
-func (o *ClientLockDeleteParams) WithUUIDPathParameter(uuid string) *ClientLockDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the client lock delete params
+func (o *ClientLockDeleteParams) WithUUID(uuid string) *ClientLockDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the client lock delete params
-func (o *ClientLockDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the client lock delete params
+func (o *ClientLockDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *ClientLockDeleteParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

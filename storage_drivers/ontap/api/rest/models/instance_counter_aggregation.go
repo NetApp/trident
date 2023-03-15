@@ -24,10 +24,10 @@ type InstanceCounterAggregation struct {
 	//   If all requests to remote nodes for counter data are successful, then this value will be 'true'.
 	//   If any requests to remote nodes fail, then this value will be 'false'.
 	//
-	Complete bool `json:"complete,omitempty"`
+	Complete *bool `json:"complete,omitempty"`
 
 	// Number of nodes included in the aggregation of this counter.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 }
 
 // Validate validates this instance counter aggregation

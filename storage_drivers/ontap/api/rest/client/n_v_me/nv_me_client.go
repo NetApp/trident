@@ -217,7 +217,7 @@ func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runti
 	NvmeNamespaceCollectionGet Retrieves NVMe namespaces.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `subsystem_map.*`
 * `status.mapped`
@@ -367,7 +367,7 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 	NvmeNamespaceGet Retrieves an NVMe namespace.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `subsystem_map.*`
 * `status.mapped`
@@ -462,7 +462,7 @@ func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo
 	NvmeServiceCollectionGet Retrieves NVMe services.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -904,7 +904,7 @@ func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo
 	NvmeSubsystemGet Retrieves an NVMe subsystem.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
 ### Related ONTAP commands
 * `vserver nvme subsystem host show`
@@ -952,7 +952,7 @@ func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runti
 	NvmeSubsystemHostCollectionGet Retrieves the NVMe subsystem hosts of an NVMe subsystem.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
@@ -1130,7 +1130,7 @@ func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authIn
 	NvmeSubsystemMapCollectionGet Retrieves NVMe subsystem maps.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
@@ -1266,7 +1266,7 @@ func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, au
 	NvmeSubsystemMapGet Retrieves an NVMe subsystem map.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`

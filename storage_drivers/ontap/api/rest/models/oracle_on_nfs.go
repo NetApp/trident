@@ -22,24 +22,24 @@ import (
 type OracleOnNfs struct {
 
 	// archive log
-	ArchiveLog *OracleOnNfsArchiveLog `json:"archive_log,omitempty"`
+	ArchiveLog *OracleOnNfsInlineArchiveLog `json:"archive_log,omitempty"`
 
 	// db
 	// Required: true
-	Db *OracleOnNfsDb `json:"db"`
-
-	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
-	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
+	Db *OracleOnNfsInlineDb `json:"db"`
 
 	// ora home
-	OraHome *OracleOnNfsOraHome `json:"ora_home,omitempty"`
+	OraHome *OracleOnNfsInlineOraHome `json:"ora_home,omitempty"`
+
+	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
+	OracleOnNfsInlineNfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 
 	// protection type
-	ProtectionType *OracleOnNfsProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *OracleOnNfsInlineProtectionType `json:"protection_type,omitempty"`
 
 	// redo log
 	// Required: true
-	RedoLog *OracleOnNfsRedoLog `json:"redo_log"`
+	RedoLog *OracleOnNfsInlineRedoLog `json:"redo_log"`
 }
 
 // Validate validates this oracle on nfs
@@ -54,11 +54,11 @@ func (m *OracleOnNfs) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNfsAccess(formats); err != nil {
+	if err := m.validateOraHome(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateOraHome(formats); err != nil {
+	if err := m.validateOracleOnNfsInlineNfsAccess(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -111,30 +111,6 @@ func (m *OracleOnNfs) validateDb(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfs) validateNfsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.NfsAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-		if swag.IsZero(m.NfsAccess[i]) { // not required
-			continue
-		}
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *OracleOnNfs) validateOraHome(formats strfmt.Registry) error {
 	if swag.IsZero(m.OraHome) { // not required
 		return nil
@@ -147,6 +123,30 @@ func (m *OracleOnNfs) validateOraHome(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *OracleOnNfs) validateOracleOnNfsInlineNfsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.OracleOnNfsInlineNfsAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OracleOnNfsInlineNfsAccess); i++ {
+		if swag.IsZero(m.OracleOnNfsInlineNfsAccess[i]) { // not required
+			continue
+		}
+
+		if m.OracleOnNfsInlineNfsAccess[i] != nil {
+			if err := m.OracleOnNfsInlineNfsAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -199,11 +199,11 @@ func (m *OracleOnNfs) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNfsAccess(ctx, formats); err != nil {
+	if err := m.contextValidateOraHome(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateOraHome(ctx, formats); err != nil {
+	if err := m.contextValidateOracleOnNfsInlineNfsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -249,24 +249,6 @@ func (m *OracleOnNfs) contextValidateDb(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *OracleOnNfs) contextValidateNfsAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *OracleOnNfs) contextValidateOraHome(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.OraHome != nil {
@@ -276,6 +258,24 @@ func (m *OracleOnNfs) contextValidateOraHome(ctx context.Context, formats strfmt
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *OracleOnNfs) contextValidateOracleOnNfsInlineNfsAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.OracleOnNfsInlineNfsAccess); i++ {
+
+		if m.OracleOnNfsInlineNfsAccess[i] != nil {
+			if err := m.OracleOnNfsInlineNfsAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -327,20 +327,20 @@ func (m *OracleOnNfs) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsArchiveLog oracle on nfs archive log
+// OracleOnNfsInlineArchiveLog oracle on nfs inline archive log
 //
-// swagger:model OracleOnNfsArchiveLog
-type OracleOnNfsArchiveLog struct {
+// swagger:model oracle_on_nfs_inline_archive_log
+type OracleOnNfsInlineArchiveLog struct {
 
 	// The size of the archive log. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *OracleOnNfsArchiveLogStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnNfsInlineArchiveLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on nfs archive log
-func (m *OracleOnNfsArchiveLog) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline archive log
+func (m *OracleOnNfsInlineArchiveLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -353,7 +353,7 @@ func (m *OracleOnNfsArchiveLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsArchiveLog) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineArchiveLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -370,8 +370,8 @@ func (m *OracleOnNfsArchiveLog) validateStorageService(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this oracle on nfs archive log based on the context it is used
-func (m *OracleOnNfsArchiveLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on nfs inline archive log based on the context it is used
+func (m *OracleOnNfsInlineArchiveLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -384,7 +384,7 @@ func (m *OracleOnNfsArchiveLog) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *OracleOnNfsArchiveLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineArchiveLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -399,7 +399,7 @@ func (m *OracleOnNfsArchiveLog) contextValidateStorageService(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsArchiveLog) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineArchiveLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -407,8 +407,8 @@ func (m *OracleOnNfsArchiveLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsArchiveLog) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsArchiveLog
+func (m *OracleOnNfsInlineArchiveLog) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineArchiveLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -416,18 +416,18 @@ func (m *OracleOnNfsArchiveLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsArchiveLogStorageService oracle on nfs archive log storage service
+// OracleOnNfsInlineArchiveLogInlineStorageService oracle on nfs inline archive log inline storage service
 //
-// swagger:model OracleOnNfsArchiveLogStorageService
-type OracleOnNfsArchiveLogStorageService struct {
+// swagger:model oracle_on_nfs_inline_archive_log_inline_storage_service
+type OracleOnNfsInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on nfs archive log storage service
-func (m *OracleOnNfsArchiveLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline archive log inline storage service
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -440,7 +440,7 @@ func (m *OracleOnNfsArchiveLogStorageService) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var oracleOnNfsArchiveLogStorageServiceTypeNamePropEnum []interface{}
+var oracleOnNfsInlineArchiveLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -448,52 +448,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsArchiveLogStorageServiceTypeNamePropEnum = append(oracleOnNfsArchiveLogStorageServiceTypeNamePropEnum, v)
+		oracleOnNfsInlineArchiveLogInlineStorageServiceTypeNamePropEnum = append(oracleOnNfsInlineArchiveLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsArchiveLogStorageService
-	// OracleOnNfsArchiveLogStorageService
+	// oracle_on_nfs_inline_archive_log_inline_storage_service
+	// OracleOnNfsInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnNfsArchiveLogStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnNfsArchiveLogStorageServiceNameExtreme string = "extreme"
+	// OracleOnNfsInlineArchiveLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnNfsInlineArchiveLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsArchiveLogStorageService
-	// OracleOnNfsArchiveLogStorageService
+	// oracle_on_nfs_inline_archive_log_inline_storage_service
+	// OracleOnNfsInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnNfsArchiveLogStorageServiceNamePerformance captures enum value "performance"
-	OracleOnNfsArchiveLogStorageServiceNamePerformance string = "performance"
+	// OracleOnNfsInlineArchiveLogInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnNfsInlineArchiveLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsArchiveLogStorageService
-	// OracleOnNfsArchiveLogStorageService
+	// oracle_on_nfs_inline_archive_log_inline_storage_service
+	// OracleOnNfsInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnNfsArchiveLogStorageServiceNameValue captures enum value "value"
-	OracleOnNfsArchiveLogStorageServiceNameValue string = "value"
+	// OracleOnNfsInlineArchiveLogInlineStorageServiceNameValue captures enum value "value"
+	OracleOnNfsInlineArchiveLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnNfsArchiveLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsArchiveLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineArchiveLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsArchiveLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -506,13 +506,13 @@ func (m *OracleOnNfsArchiveLogStorageService) validateName(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validates this oracle on nfs archive log storage service based on context it is used
-func (m *OracleOnNfsArchiveLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on nfs inline archive log inline storage service based on context it is used
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsArchiveLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -520,8 +520,8 @@ func (m *OracleOnNfsArchiveLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsArchiveLogStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsArchiveLogStorageService
+func (m *OracleOnNfsInlineArchiveLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineArchiveLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -529,21 +529,21 @@ func (m *OracleOnNfsArchiveLogStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsDb oracle on nfs db
+// OracleOnNfsInlineDb oracle on nfs inline db
 //
-// swagger:model OracleOnNfsDb
-type OracleOnNfsDb struct {
+// swagger:model oracle_on_nfs_inline_db
+type OracleOnNfsInlineDb struct {
 
 	// The size of the database. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *OracleOnNfsDbStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnNfsInlineDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on nfs db
-func (m *OracleOnNfsDb) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline db
+func (m *OracleOnNfsInlineDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -560,7 +560,7 @@ func (m *OracleOnNfsDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsDb) validateSize(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineDb) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("db"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -569,7 +569,7 @@ func (m *OracleOnNfsDb) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsDb) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -586,8 +586,8 @@ func (m *OracleOnNfsDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this oracle on nfs db based on the context it is used
-func (m *OracleOnNfsDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on nfs inline db based on the context it is used
+func (m *OracleOnNfsInlineDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -600,7 +600,7 @@ func (m *OracleOnNfsDb) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *OracleOnNfsDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -615,7 +615,7 @@ func (m *OracleOnNfsDb) contextValidateStorageService(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsDb) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -623,8 +623,8 @@ func (m *OracleOnNfsDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsDb) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsDb
+func (m *OracleOnNfsInlineDb) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -632,18 +632,18 @@ func (m *OracleOnNfsDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsDbStorageService oracle on nfs db storage service
+// OracleOnNfsInlineDbInlineStorageService oracle on nfs inline db inline storage service
 //
-// swagger:model OracleOnNfsDbStorageService
-type OracleOnNfsDbStorageService struct {
+// swagger:model oracle_on_nfs_inline_db_inline_storage_service
+type OracleOnNfsInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on nfs db storage service
-func (m *OracleOnNfsDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline db inline storage service
+func (m *OracleOnNfsInlineDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -656,7 +656,7 @@ func (m *OracleOnNfsDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnNfsDbStorageServiceTypeNamePropEnum []interface{}
+var oracleOnNfsInlineDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -664,52 +664,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsDbStorageServiceTypeNamePropEnum = append(oracleOnNfsDbStorageServiceTypeNamePropEnum, v)
+		oracleOnNfsInlineDbInlineStorageServiceTypeNamePropEnum = append(oracleOnNfsInlineDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsDbStorageService
-	// OracleOnNfsDbStorageService
+	// oracle_on_nfs_inline_db_inline_storage_service
+	// OracleOnNfsInlineDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnNfsDbStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnNfsDbStorageServiceNameExtreme string = "extreme"
+	// OracleOnNfsInlineDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnNfsInlineDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsDbStorageService
-	// OracleOnNfsDbStorageService
+	// oracle_on_nfs_inline_db_inline_storage_service
+	// OracleOnNfsInlineDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnNfsDbStorageServiceNamePerformance captures enum value "performance"
-	OracleOnNfsDbStorageServiceNamePerformance string = "performance"
+	// OracleOnNfsInlineDbInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnNfsInlineDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsDbStorageService
-	// OracleOnNfsDbStorageService
+	// oracle_on_nfs_inline_db_inline_storage_service
+	// OracleOnNfsInlineDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnNfsDbStorageServiceNameValue captures enum value "value"
-	OracleOnNfsDbStorageServiceNameValue string = "value"
+	// OracleOnNfsInlineDbInlineStorageServiceNameValue captures enum value "value"
+	OracleOnNfsInlineDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnNfsDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnNfsInlineDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -722,13 +722,13 @@ func (m *OracleOnNfsDbStorageService) validateName(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this oracle on nfs db storage service based on context it is used
-func (m *OracleOnNfsDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on nfs inline db inline storage service based on context it is used
+func (m *OracleOnNfsInlineDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -736,8 +736,8 @@ func (m *OracleOnNfsDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsDbStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsDbStorageService
+func (m *OracleOnNfsInlineDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -745,20 +745,20 @@ func (m *OracleOnNfsDbStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsOraHome oracle on nfs ora home
+// OracleOnNfsInlineOraHome oracle on nfs inline ora home
 //
-// swagger:model OracleOnNfsOraHome
-type OracleOnNfsOraHome struct {
+// swagger:model oracle_on_nfs_inline_ora_home
+type OracleOnNfsInlineOraHome struct {
 
 	// The size of the ORACLE_HOME storage volume. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *OracleOnNfsOraHomeStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnNfsInlineOraHomeInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on nfs ora home
-func (m *OracleOnNfsOraHome) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline ora home
+func (m *OracleOnNfsInlineOraHome) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -771,7 +771,7 @@ func (m *OracleOnNfsOraHome) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsOraHome) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineOraHome) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -788,8 +788,8 @@ func (m *OracleOnNfsOraHome) validateStorageService(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this oracle on nfs ora home based on the context it is used
-func (m *OracleOnNfsOraHome) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on nfs inline ora home based on the context it is used
+func (m *OracleOnNfsInlineOraHome) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -802,7 +802,7 @@ func (m *OracleOnNfsOraHome) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *OracleOnNfsOraHome) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineOraHome) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -817,7 +817,7 @@ func (m *OracleOnNfsOraHome) contextValidateStorageService(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsOraHome) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineOraHome) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -825,8 +825,8 @@ func (m *OracleOnNfsOraHome) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsOraHome) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsOraHome
+func (m *OracleOnNfsInlineOraHome) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineOraHome
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -834,18 +834,18 @@ func (m *OracleOnNfsOraHome) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsOraHomeStorageService oracle on nfs ora home storage service
+// OracleOnNfsInlineOraHomeInlineStorageService oracle on nfs inline ora home inline storage service
 //
-// swagger:model OracleOnNfsOraHomeStorageService
-type OracleOnNfsOraHomeStorageService struct {
+// swagger:model oracle_on_nfs_inline_ora_home_inline_storage_service
+type OracleOnNfsInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on nfs ora home storage service
-func (m *OracleOnNfsOraHomeStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline ora home inline storage service
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -858,7 +858,7 @@ func (m *OracleOnNfsOraHomeStorageService) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-var oracleOnNfsOraHomeStorageServiceTypeNamePropEnum []interface{}
+var oracleOnNfsInlineOraHomeInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -866,52 +866,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsOraHomeStorageServiceTypeNamePropEnum = append(oracleOnNfsOraHomeStorageServiceTypeNamePropEnum, v)
+		oracleOnNfsInlineOraHomeInlineStorageServiceTypeNamePropEnum = append(oracleOnNfsInlineOraHomeInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsOraHomeStorageService
-	// OracleOnNfsOraHomeStorageService
+	// oracle_on_nfs_inline_ora_home_inline_storage_service
+	// OracleOnNfsInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnNfsOraHomeStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnNfsOraHomeStorageServiceNameExtreme string = "extreme"
+	// OracleOnNfsInlineOraHomeInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnNfsInlineOraHomeInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsOraHomeStorageService
-	// OracleOnNfsOraHomeStorageService
+	// oracle_on_nfs_inline_ora_home_inline_storage_service
+	// OracleOnNfsInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnNfsOraHomeStorageServiceNamePerformance captures enum value "performance"
-	OracleOnNfsOraHomeStorageServiceNamePerformance string = "performance"
+	// OracleOnNfsInlineOraHomeInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnNfsInlineOraHomeInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsOraHomeStorageService
-	// OracleOnNfsOraHomeStorageService
+	// oracle_on_nfs_inline_ora_home_inline_storage_service
+	// OracleOnNfsInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnNfsOraHomeStorageServiceNameValue captures enum value "value"
-	OracleOnNfsOraHomeStorageServiceNameValue string = "value"
+	// OracleOnNfsInlineOraHomeInlineStorageServiceNameValue captures enum value "value"
+	OracleOnNfsInlineOraHomeInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnNfsOraHomeStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsOraHomeStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineOraHomeInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsOraHomeStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -924,13 +924,13 @@ func (m *OracleOnNfsOraHomeStorageService) validateName(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this oracle on nfs ora home storage service based on context it is used
-func (m *OracleOnNfsOraHomeStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on nfs inline ora home inline storage service based on context it is used
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsOraHomeStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -938,8 +938,8 @@ func (m *OracleOnNfsOraHomeStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsOraHomeStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsOraHomeStorageService
+func (m *OracleOnNfsInlineOraHomeInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineOraHomeInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -947,22 +947,22 @@ func (m *OracleOnNfsOraHomeStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsProtectionType oracle on nfs protection type
+// OracleOnNfsInlineProtectionType oracle on nfs inline protection type
 //
-// swagger:model OracleOnNfsProtectionType
-type OracleOnNfsProtectionType struct {
+// swagger:model oracle_on_nfs_inline_protection_type
+type OracleOnNfsInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this oracle on nfs protection type
-func (m *OracleOnNfsProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline protection type
+func (m *OracleOnNfsInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -979,7 +979,7 @@ func (m *OracleOnNfsProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnNfsProtectionTypeTypeLocalRpoPropEnum []interface{}
+var oracleOnNfsInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -987,55 +987,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsProtectionTypeTypeLocalRpoPropEnum = append(oracleOnNfsProtectionTypeTypeLocalRpoPropEnum, v)
+		oracleOnNfsInlineProtectionTypeTypeLocalRpoPropEnum = append(oracleOnNfsInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsProtectionType
-	// OracleOnNfsProtectionType
+	// oracle_on_nfs_inline_protection_type
+	// OracleOnNfsInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// OracleOnNfsProtectionTypeLocalRpoHourly captures enum value "hourly"
-	OracleOnNfsProtectionTypeLocalRpoHourly string = "hourly"
+	// OracleOnNfsInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	OracleOnNfsInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsProtectionType
-	// OracleOnNfsProtectionType
+	// oracle_on_nfs_inline_protection_type
+	// OracleOnNfsInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// OracleOnNfsProtectionTypeLocalRpoNone captures enum value "none"
-	OracleOnNfsProtectionTypeLocalRpoNone string = "none"
+	// OracleOnNfsInlineProtectionTypeLocalRpoNone captures enum value "none"
+	OracleOnNfsInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *OracleOnNfsProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *OracleOnNfsInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var oracleOnNfsProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var oracleOnNfsInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1043,61 +1043,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsProtectionTypeTypeRemoteRpoPropEnum = append(oracleOnNfsProtectionTypeTypeRemoteRpoPropEnum, v)
+		oracleOnNfsInlineProtectionTypeTypeRemoteRpoPropEnum = append(oracleOnNfsInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsProtectionType
-	// OracleOnNfsProtectionType
+	// oracle_on_nfs_inline_protection_type
+	// OracleOnNfsInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// OracleOnNfsProtectionTypeRemoteRpoNone captures enum value "none"
-	OracleOnNfsProtectionTypeRemoteRpoNone string = "none"
+	// OracleOnNfsInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	OracleOnNfsInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsProtectionType
-	// OracleOnNfsProtectionType
+	// oracle_on_nfs_inline_protection_type
+	// OracleOnNfsInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// OracleOnNfsProtectionTypeRemoteRpoZero captures enum value "zero"
-	OracleOnNfsProtectionTypeRemoteRpoZero string = "zero"
+	// OracleOnNfsInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	OracleOnNfsInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *OracleOnNfsProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *OracleOnNfsInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this oracle on nfs protection type based on context it is used
-func (m *OracleOnNfsProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on nfs inline protection type based on context it is used
+func (m *OracleOnNfsInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsProtectionType) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1105,8 +1105,8 @@ func (m *OracleOnNfsProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsProtectionType) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsProtectionType
+func (m *OracleOnNfsInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1114,10 +1114,10 @@ func (m *OracleOnNfsProtectionType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsRedoLog oracle on nfs redo log
+// OracleOnNfsInlineRedoLog oracle on nfs inline redo log
 //
-// swagger:model OracleOnNfsRedoLog
-type OracleOnNfsRedoLog struct {
+// swagger:model oracle_on_nfs_inline_redo_log
+type OracleOnNfsInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
 	// Enum: [false true]
@@ -1128,11 +1128,11 @@ type OracleOnNfsRedoLog struct {
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *OracleOnNfsRedoLogStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnNfsInlineRedoLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on nfs redo log
-func (m *OracleOnNfsRedoLog) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline redo log
+func (m *OracleOnNfsInlineRedoLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMirrored(formats); err != nil {
@@ -1153,7 +1153,7 @@ func (m *OracleOnNfsRedoLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnNfsRedoLogTypeMirroredPropEnum []interface{}
+var oracleOnNfsInlineRedoLogTypeMirroredPropEnum []interface{}
 
 func init() {
 	var res []bool
@@ -1161,19 +1161,19 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsRedoLogTypeMirroredPropEnum = append(oracleOnNfsRedoLogTypeMirroredPropEnum, v)
+		oracleOnNfsInlineRedoLogTypeMirroredPropEnum = append(oracleOnNfsInlineRedoLogTypeMirroredPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *OracleOnNfsRedoLog) validateMirroredEnum(path, location string, value bool) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsRedoLogTypeMirroredPropEnum, true); err != nil {
+func (m *OracleOnNfsInlineRedoLog) validateMirroredEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineRedoLogTypeMirroredPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsRedoLog) validateMirrored(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineRedoLog) validateMirrored(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mirrored) { // not required
 		return nil
 	}
@@ -1186,7 +1186,7 @@ func (m *OracleOnNfsRedoLog) validateMirrored(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsRedoLog) validateSize(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineRedoLog) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("redo_log"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -1195,7 +1195,7 @@ func (m *OracleOnNfsRedoLog) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnNfsRedoLog) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineRedoLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -1212,8 +1212,8 @@ func (m *OracleOnNfsRedoLog) validateStorageService(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this oracle on nfs redo log based on the context it is used
-func (m *OracleOnNfsRedoLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on nfs inline redo log based on the context it is used
+func (m *OracleOnNfsInlineRedoLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -1226,7 +1226,7 @@ func (m *OracleOnNfsRedoLog) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *OracleOnNfsRedoLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineRedoLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1241,7 +1241,7 @@ func (m *OracleOnNfsRedoLog) contextValidateStorageService(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsRedoLog) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineRedoLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1249,8 +1249,8 @@ func (m *OracleOnNfsRedoLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsRedoLog) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsRedoLog
+func (m *OracleOnNfsInlineRedoLog) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineRedoLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1258,18 +1258,18 @@ func (m *OracleOnNfsRedoLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnNfsRedoLogStorageService oracle on nfs redo log storage service
+// OracleOnNfsInlineRedoLogInlineStorageService oracle on nfs inline redo log inline storage service
 //
-// swagger:model OracleOnNfsRedoLogStorageService
-type OracleOnNfsRedoLogStorageService struct {
+// swagger:model oracle_on_nfs_inline_redo_log_inline_storage_service
+type OracleOnNfsInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on nfs redo log storage service
-func (m *OracleOnNfsRedoLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on nfs inline redo log inline storage service
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1282,7 +1282,7 @@ func (m *OracleOnNfsRedoLogStorageService) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-var oracleOnNfsRedoLogStorageServiceTypeNamePropEnum []interface{}
+var oracleOnNfsInlineRedoLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1290,52 +1290,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnNfsRedoLogStorageServiceTypeNamePropEnum = append(oracleOnNfsRedoLogStorageServiceTypeNamePropEnum, v)
+		oracleOnNfsInlineRedoLogInlineStorageServiceTypeNamePropEnum = append(oracleOnNfsInlineRedoLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsRedoLogStorageService
-	// OracleOnNfsRedoLogStorageService
+	// oracle_on_nfs_inline_redo_log_inline_storage_service
+	// OracleOnNfsInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnNfsRedoLogStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnNfsRedoLogStorageServiceNameExtreme string = "extreme"
+	// OracleOnNfsInlineRedoLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnNfsInlineRedoLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsRedoLogStorageService
-	// OracleOnNfsRedoLogStorageService
+	// oracle_on_nfs_inline_redo_log_inline_storage_service
+	// OracleOnNfsInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnNfsRedoLogStorageServiceNamePerformance captures enum value "performance"
-	OracleOnNfsRedoLogStorageServiceNamePerformance string = "performance"
+	// OracleOnNfsInlineRedoLogInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnNfsInlineRedoLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnNfsRedoLogStorageService
-	// OracleOnNfsRedoLogStorageService
+	// oracle_on_nfs_inline_redo_log_inline_storage_service
+	// OracleOnNfsInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnNfsRedoLogStorageServiceNameValue captures enum value "value"
-	OracleOnNfsRedoLogStorageServiceNameValue string = "value"
+	// OracleOnNfsInlineRedoLogInlineStorageServiceNameValue captures enum value "value"
+	OracleOnNfsInlineRedoLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnNfsRedoLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnNfsRedoLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnNfsInlineRedoLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnNfsRedoLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1348,13 +1348,13 @@ func (m *OracleOnNfsRedoLogStorageService) validateName(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this oracle on nfs redo log storage service based on context it is used
-func (m *OracleOnNfsRedoLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on nfs inline redo log inline storage service based on context it is used
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnNfsRedoLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1362,8 +1362,8 @@ func (m *OracleOnNfsRedoLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnNfsRedoLogStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnNfsRedoLogStorageService
+func (m *OracleOnNfsInlineRedoLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnNfsInlineRedoLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

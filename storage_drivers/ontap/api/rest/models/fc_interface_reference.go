@@ -20,23 +20,23 @@ import (
 type FcInterfaceReference struct {
 
 	// links
-	Links *FcInterfaceReferenceLinks `json:"_links,omitempty"`
+	Links *FcInterfaceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the FC interface.
 	//
 	// Example: fc_lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the FC interface.
 	//
 	// Example: 3a09ab42-4da1-32cf-9d35-3385a6101a0b
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The WWPN of the FC interface.
 	//
 	// Example: 20:00:00:50:56:b4:13:a8
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this fc interface reference
@@ -104,7 +104,7 @@ func (m *FcInterfaceReference) contextValidateLinks(ctx context.Context, formats
 
 func (m *FcInterfaceReference) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -129,17 +129,17 @@ func (m *FcInterfaceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceReferenceLinks fc interface reference links
+// FcInterfaceReferenceInlineLinks fc interface reference inline links
 //
-// swagger:model FcInterfaceReferenceLinks
-type FcInterfaceReferenceLinks struct {
+// swagger:model fc_interface_reference_inline__links
+type FcInterfaceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc interface reference links
-func (m *FcInterfaceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc interface reference inline links
+func (m *FcInterfaceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -152,7 +152,7 @@ func (m *FcInterfaceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcInterfaceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -169,8 +169,8 @@ func (m *FcInterfaceReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fc interface reference links based on the context it is used
-func (m *FcInterfaceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc interface reference inline links based on the context it is used
+func (m *FcInterfaceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -183,7 +183,7 @@ func (m *FcInterfaceReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FcInterfaceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -198,7 +198,7 @@ func (m *FcInterfaceReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FcInterfaceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *FcInterfaceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -206,8 +206,8 @@ func (m *FcInterfaceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcInterfaceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res FcInterfaceReferenceLinks
+func (m *FcInterfaceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

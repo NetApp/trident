@@ -21,13 +21,13 @@ import (
 type FpolicyConnection struct {
 
 	// links
-	Links *FpolicyConnectionLinks `json:"_links,omitempty"`
+	Links *FpolicyConnectionInlineLinks `json:"_links,omitempty"`
 
 	// disconnected reason
-	DisconnectedReason *FpolicyConnectionDisconnectedReason `json:"disconnected_reason,omitempty"`
+	DisconnectedReason *FpolicyConnectionInlineDisconnectedReason `json:"disconnected_reason,omitempty"`
 
 	// node
-	Node *FpolicyConnectionNode `json:"node,omitempty"`
+	Node *FpolicyConnectionInlineNode `json:"node,omitempty"`
 
 	// policy
 	// Read Only: true
@@ -36,14 +36,14 @@ type FpolicyConnection struct {
 	// IP address of the FPolicy server.
 	// Example: 10.132.145.20
 	// Read Only: true
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// Unique session ID associated with each connection to the FPolicy server and it can be used to identify
 	// the established connection.
 	//
 	// Example: 5224ec64-b336-11eb-841c-0050568e14c2
 	// Read Only: true
-	SessionUUID string `json:"session_uuid,omitempty"`
+	SessionUUID *string `json:"session_uuid,omitempty"`
 
 	// Specifies the FPolicy server connection state indicating if it is in the connected or disconnected state.
 	// The following is a list of the possible states:
@@ -52,10 +52,10 @@ type FpolicyConnection struct {
 	//
 	// Example: connected
 	// Enum: [connected disconnected]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *FpolicyConnectionSvm `json:"svm,omitempty"`
+	Svm *FpolicyConnectionInlineSvm `json:"svm,omitempty"`
 
 	// FPolicy server type. The possible values are:
 	//   * primary - Primary server
@@ -64,7 +64,7 @@ type FpolicyConnection struct {
 	// Example: primary
 	// Read Only: true
 	// Enum: [primary secondary]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Specifies the time at which FPolicy server is connected or disconnected.
 	// Example: 2019-06-12T11:00:16-04:00
@@ -232,7 +232,7 @@ func (m *FpolicyConnection) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -305,7 +305,7 @@ func (m *FpolicyConnection) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -428,7 +428,7 @@ func (m *FpolicyConnection) contextValidatePolicy(ctx context.Context, formats s
 
 func (m *FpolicyConnection) contextValidateServer(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "server", "body", string(m.Server)); err != nil {
+	if err := validate.ReadOnly(ctx, "server", "body", m.Server); err != nil {
 		return err
 	}
 
@@ -437,7 +437,7 @@ func (m *FpolicyConnection) contextValidateServer(ctx context.Context, formats s
 
 func (m *FpolicyConnection) contextValidateSessionUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "session_uuid", "body", string(m.SessionUUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "session_uuid", "body", m.SessionUUID); err != nil {
 		return err
 	}
 
@@ -460,7 +460,7 @@ func (m *FpolicyConnection) contextValidateSvm(ctx context.Context, formats strf
 
 func (m *FpolicyConnection) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -494,27 +494,27 @@ func (m *FpolicyConnection) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionDisconnectedReason Indicates the reason for FPolicy server disconnection.
+// FpolicyConnectionInlineDisconnectedReason Indicates the reason for FPolicy server disconnection.
 //
-// swagger:model FpolicyConnectionDisconnectedReason
-type FpolicyConnectionDisconnectedReason struct {
+// swagger:model fpolicy_connection_inline_disconnected_reason
+type FpolicyConnectionInlineDisconnectedReason struct {
 
 	// Reason ID for the FPolicy Server disconnection.
 	// Example: 9370
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// FPolicy server reason for disconnection message.
 	// Example: TCP Connection to FPolicy server failed.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this fpolicy connection disconnected reason
-func (m *FpolicyConnectionDisconnectedReason) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline disconnected reason
+func (m *FpolicyConnectionInlineDisconnectedReason) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection disconnected reason based on the context it is used
-func (m *FpolicyConnectionDisconnectedReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline disconnected reason based on the context it is used
+func (m *FpolicyConnectionInlineDisconnectedReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -524,7 +524,7 @@ func (m *FpolicyConnectionDisconnectedReason) ContextValidate(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionDisconnectedReason) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineDisconnectedReason) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -532,8 +532,8 @@ func (m *FpolicyConnectionDisconnectedReason) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionDisconnectedReason) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionDisconnectedReason
+func (m *FpolicyConnectionInlineDisconnectedReason) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineDisconnectedReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -541,17 +541,17 @@ func (m *FpolicyConnectionDisconnectedReason) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionLinks fpolicy connection links
+// FpolicyConnectionInlineLinks fpolicy connection inline links
 //
-// swagger:model FpolicyConnectionLinks
-type FpolicyConnectionLinks struct {
+// swagger:model fpolicy_connection_inline__links
+type FpolicyConnectionInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy connection links
-func (m *FpolicyConnectionLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline links
+func (m *FpolicyConnectionInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -564,7 +564,7 @@ func (m *FpolicyConnectionLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyConnectionLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -581,8 +581,8 @@ func (m *FpolicyConnectionLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection links based on the context it is used
-func (m *FpolicyConnectionLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline links based on the context it is used
+func (m *FpolicyConnectionInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -595,7 +595,7 @@ func (m *FpolicyConnectionLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FpolicyConnectionLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -610,7 +610,7 @@ func (m *FpolicyConnectionLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -618,8 +618,8 @@ func (m *FpolicyConnectionLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionLinks
+func (m *FpolicyConnectionInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -627,25 +627,25 @@ func (m *FpolicyConnectionLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionNode fpolicy connection node
+// FpolicyConnectionInlineNode fpolicy connection inline node
 //
-// swagger:model FpolicyConnectionNode
-type FpolicyConnectionNode struct {
+// swagger:model fpolicy_connection_inline_node
+type FpolicyConnectionInlineNode struct {
 
 	// links
-	Links *FpolicyConnectionNodeLinks `json:"_links,omitempty"`
+	Links *FpolicyConnectionInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fpolicy connection node
-func (m *FpolicyConnectionNode) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline node
+func (m *FpolicyConnectionInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -658,7 +658,7 @@ func (m *FpolicyConnectionNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyConnectionNode) validateLinks(formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -675,8 +675,8 @@ func (m *FpolicyConnectionNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection node based on the context it is used
-func (m *FpolicyConnectionNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline node based on the context it is used
+func (m *FpolicyConnectionInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -689,7 +689,7 @@ func (m *FpolicyConnectionNode) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FpolicyConnectionNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -704,7 +704,7 @@ func (m *FpolicyConnectionNode) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionNode) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -712,8 +712,8 @@ func (m *FpolicyConnectionNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionNode) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionNode
+func (m *FpolicyConnectionInlineNode) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -721,17 +721,17 @@ func (m *FpolicyConnectionNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionNodeLinks fpolicy connection node links
+// FpolicyConnectionInlineNodeInlineLinks fpolicy connection inline node inline links
 //
-// swagger:model FpolicyConnectionNodeLinks
-type FpolicyConnectionNodeLinks struct {
+// swagger:model fpolicy_connection_inline_node_inline__links
+type FpolicyConnectionInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy connection node links
-func (m *FpolicyConnectionNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline node inline links
+func (m *FpolicyConnectionInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -744,7 +744,7 @@ func (m *FpolicyConnectionNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyConnectionNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -761,8 +761,8 @@ func (m *FpolicyConnectionNodeLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection node links based on the context it is used
-func (m *FpolicyConnectionNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline node inline links based on the context it is used
+func (m *FpolicyConnectionInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -775,7 +775,7 @@ func (m *FpolicyConnectionNodeLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *FpolicyConnectionNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -790,7 +790,7 @@ func (m *FpolicyConnectionNodeLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -798,8 +798,8 @@ func (m *FpolicyConnectionNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionNodeLinks
+func (m *FpolicyConnectionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -807,27 +807,27 @@ func (m *FpolicyConnectionNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionSvm fpolicy connection svm
+// FpolicyConnectionInlineSvm fpolicy connection inline svm
 //
-// swagger:model FpolicyConnectionSvm
-type FpolicyConnectionSvm struct {
+// swagger:model fpolicy_connection_inline_svm
+type FpolicyConnectionInlineSvm struct {
 
 	// links
-	Links *FpolicyConnectionSvmLinks `json:"_links,omitempty"`
+	Links *FpolicyConnectionInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fpolicy connection svm
-func (m *FpolicyConnectionSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline svm
+func (m *FpolicyConnectionInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -840,7 +840,7 @@ func (m *FpolicyConnectionSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyConnectionSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -857,8 +857,8 @@ func (m *FpolicyConnectionSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection svm based on the context it is used
-func (m *FpolicyConnectionSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline svm based on the context it is used
+func (m *FpolicyConnectionInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -871,7 +871,7 @@ func (m *FpolicyConnectionSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FpolicyConnectionSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -886,7 +886,7 @@ func (m *FpolicyConnectionSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionSvm) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -894,8 +894,8 @@ func (m *FpolicyConnectionSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionSvm) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionSvm
+func (m *FpolicyConnectionInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -903,17 +903,17 @@ func (m *FpolicyConnectionSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyConnectionSvmLinks fpolicy connection svm links
+// FpolicyConnectionInlineSvmInlineLinks fpolicy connection inline svm inline links
 //
-// swagger:model FpolicyConnectionSvmLinks
-type FpolicyConnectionSvmLinks struct {
+// swagger:model fpolicy_connection_inline_svm_inline__links
+type FpolicyConnectionInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy connection svm links
-func (m *FpolicyConnectionSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy connection inline svm inline links
+func (m *FpolicyConnectionInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -926,7 +926,7 @@ func (m *FpolicyConnectionSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyConnectionSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -943,8 +943,8 @@ func (m *FpolicyConnectionSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fpolicy connection svm links based on the context it is used
-func (m *FpolicyConnectionSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy connection inline svm inline links based on the context it is used
+func (m *FpolicyConnectionInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -957,7 +957,7 @@ func (m *FpolicyConnectionSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FpolicyConnectionSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyConnectionInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -972,7 +972,7 @@ func (m *FpolicyConnectionSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyConnectionSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyConnectionInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -980,8 +980,8 @@ func (m *FpolicyConnectionSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyConnectionSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyConnectionSvmLinks
+func (m *FpolicyConnectionInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyConnectionInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

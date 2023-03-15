@@ -73,19 +73,19 @@ type FpolicyConnectionModifyParams struct {
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* PolicyName.
 
 	   Policy name
 	*/
-	PolicyNamePathParameter string
+	PolicyName string
 
 	/* Server.
 
 	   FPolicy Server IP address
 	*/
-	ServerPathParameter string
+	Server string
 
 	/* SvmUUID.
 
@@ -157,37 +157,37 @@ func (o *FpolicyConnectionModifyParams) SetInfo(info *models.FpolicyConnection) 
 	o.Info = info
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *FpolicyConnectionModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) WithNodeUUID(nodeUUID string) *FpolicyConnectionModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithPolicyNamePathParameter adds the policyName to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) WithPolicyNamePathParameter(policyName string) *FpolicyConnectionModifyParams {
-	o.SetPolicyNamePathParameter(policyName)
+// WithPolicyName adds the policyName to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) WithPolicyName(policyName string) *FpolicyConnectionModifyParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNamePathParameter adds the policyName to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) SetPolicyNamePathParameter(policyName string) {
-	o.PolicyNamePathParameter = policyName
+// SetPolicyName adds the policyName to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) SetPolicyName(policyName string) {
+	o.PolicyName = policyName
 }
 
-// WithServerPathParameter adds the server to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) WithServerPathParameter(server string) *FpolicyConnectionModifyParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) WithServer(server string) *FpolicyConnectionModifyParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the fpolicy connection modify params
-func (o *FpolicyConnectionModifyParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the fpolicy connection modify params
+func (o *FpolicyConnectionModifyParams) SetServer(server string) {
+	o.Server = server
 }
 
 // WithSvmUUID adds the svmUUID to the fpolicy connection modify params
@@ -215,17 +215,17 @@ func (o *FpolicyConnectionModifyParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param policy.name
-	if err := r.SetPathParam("policy.name", o.PolicyNamePathParameter); err != nil {
+	if err := r.SetPathParam("policy.name", o.PolicyName); err != nil {
 		return err
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 

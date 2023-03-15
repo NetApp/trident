@@ -25,8 +25,8 @@ type NasApplicationComponentsTiering struct {
 	// Enum: [required best_effort disallowed]
 	Control *string `json:"control,omitempty"`
 
-	// object stores
-	ObjectStores []*NasApplicationComponentsTieringObjectStoresItems0 `json:"object_stores,omitempty"`
+	// nas application components tiering inline object stores
+	NasApplicationComponentsTieringInlineObjectStores []*NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem `json:"object_stores,omitempty"`
 
 	// The storage tiering type of the application component.
 	// Enum: [all auto none snapshot_only]
@@ -41,7 +41,7 @@ func (m *NasApplicationComponentsTiering) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateObjectStores(formats); err != nil {
+	if err := m.validateNasApplicationComponentsTieringInlineObjectStores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,18 +121,18 @@ func (m *NasApplicationComponentsTiering) validateControl(formats strfmt.Registr
 	return nil
 }
 
-func (m *NasApplicationComponentsTiering) validateObjectStores(formats strfmt.Registry) error {
-	if swag.IsZero(m.ObjectStores) { // not required
+func (m *NasApplicationComponentsTiering) validateNasApplicationComponentsTieringInlineObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.NasApplicationComponentsTieringInlineObjectStores) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.ObjectStores); i++ {
-		if swag.IsZero(m.ObjectStores[i]) { // not required
+	for i := 0; i < len(m.NasApplicationComponentsTieringInlineObjectStores); i++ {
+		if swag.IsZero(m.NasApplicationComponentsTieringInlineObjectStores[i]) { // not required
 			continue
 		}
 
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].Validate(formats); err != nil {
+		if m.NasApplicationComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.NasApplicationComponentsTieringInlineObjectStores[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
 				}
@@ -225,7 +225,7 @@ func (m *NasApplicationComponentsTiering) validatePolicy(formats strfmt.Registry
 func (m *NasApplicationComponentsTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+	if err := m.contextValidateNasApplicationComponentsTieringInlineObjectStores(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -235,12 +235,12 @@ func (m *NasApplicationComponentsTiering) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *NasApplicationComponentsTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasApplicationComponentsTiering) contextValidateNasApplicationComponentsTieringInlineObjectStores(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ObjectStores); i++ {
+	for i := 0; i < len(m.NasApplicationComponentsTieringInlineObjectStores); i++ {
 
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+		if m.NasApplicationComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.NasApplicationComponentsTieringInlineObjectStores[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
 				}
@@ -271,19 +271,19 @@ func (m *NasApplicationComponentsTiering) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NasApplicationComponentsTieringObjectStoresItems0 nas application components tiering object stores items0
+// NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem nas application components tiering inline object stores inline array item
 //
-// swagger:model NasApplicationComponentsTieringObjectStoresItems0
-type NasApplicationComponentsTieringObjectStoresItems0 struct {
+// swagger:model nas_application_components_tiering_inline_object_stores_inline_array_item
+type NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem struct {
 
 	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this nas application components tiering object stores items0
-func (m *NasApplicationComponentsTieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nas application components tiering inline object stores inline array item
+func (m *NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -296,29 +296,29 @@ func (m *NasApplicationComponentsTieringObjectStoresItems0) Validate(formats str
 	return nil
 }
 
-func (m *NasApplicationComponentsTieringObjectStoresItems0) validateName(formats strfmt.Registry) error {
+func (m *NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 512); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this nas application components tiering object stores items0 based on context it is used
-func (m *NasApplicationComponentsTieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas application components tiering inline object stores inline array item based on context it is used
+func (m *NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsTieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+func (m *NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -326,8 +326,8 @@ func (m *NasApplicationComponentsTieringObjectStoresItems0) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsTieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsTieringObjectStoresItems0
+func (m *NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NasApplicationComponentsTieringInlineObjectStoresInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

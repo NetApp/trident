@@ -20,13 +20,14 @@ import (
 type SvmMigrationVolumeResponse struct {
 
 	// links
-	Links *SvmMigrationVolumeResponseLinks `json:"_links,omitempty"`
+	Links *SvmMigrationVolumeResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SvmMigrationVolume `json:"records,omitempty"`
+	// svm migration volume response inline records
+	SvmMigrationVolumeResponseInlineRecords []*SvmMigrationVolume `json:"records,omitempty"`
 }
 
 // Validate validates this svm migration volume response
@@ -37,7 +38,7 @@ func (m *SvmMigrationVolumeResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSvmMigrationVolumeResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SvmMigrationVolumeResponse) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SvmMigrationVolumeResponse) validateSvmMigrationVolumeResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SvmMigrationVolumeResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SvmMigrationVolumeResponseInlineRecords); i++ {
+		if swag.IsZero(m.SvmMigrationVolumeResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SvmMigrationVolumeResponseInlineRecords[i] != nil {
+			if err := m.SvmMigrationVolumeResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SvmMigrationVolumeResponse) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSvmMigrationVolumeResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SvmMigrationVolumeResponse) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeResponse) contextValidateSvmMigrationVolumeResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SvmMigrationVolumeResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SvmMigrationVolumeResponseInlineRecords[i] != nil {
+			if err := m.SvmMigrationVolumeResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SvmMigrationVolumeResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationVolumeResponseLinks svm migration volume response links
+// SvmMigrationVolumeResponseInlineLinks svm migration volume response inline links
 //
-// swagger:model SvmMigrationVolumeResponseLinks
-type SvmMigrationVolumeResponseLinks struct {
+// swagger:model svm_migration_volume_response_inline__links
+type SvmMigrationVolumeResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SvmMigrationVolumeResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this svm migration volume response links
-func (m *SvmMigrationVolumeResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this svm migration volume response inline links
+func (m *SvmMigrationVolumeResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SvmMigrationVolumeResponseLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SvmMigrationVolumeResponseLinks) validateNext(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SvmMigrationVolumeResponseLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this svm migration volume response links based on the context it is used
-func (m *SvmMigrationVolumeResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this svm migration volume response inline links based on the context it is used
+func (m *SvmMigrationVolumeResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SvmMigrationVolumeResponseLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SvmMigrationVolumeResponseLinks) contextValidateNext(ctx context.Contex
 	return nil
 }
 
-func (m *SvmMigrationVolumeResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SvmMigrationVolumeResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SvmMigrationVolumeResponseLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SvmMigrationVolumeResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SvmMigrationVolumeResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SvmMigrationVolumeResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SvmMigrationVolumeResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SvmMigrationVolumeResponseLinks
+func (m *SvmMigrationVolumeResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SvmMigrationVolumeResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

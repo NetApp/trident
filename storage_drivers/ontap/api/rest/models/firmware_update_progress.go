@@ -21,32 +21,32 @@ import (
 // swagger:model firmware_update_progress
 type FirmwareUpdateProgress struct {
 
+	// firmware update progress inline update state
+	FirmwareUpdateProgressInlineUpdateState []*FirmwareUpdateProgressState `json:"update_state,omitempty"`
+
 	// job
 	Job *JobLink `json:"job,omitempty"`
-
-	// update state
-	UpdateState []*FirmwareUpdateProgressState `json:"update_state,omitempty"`
 
 	// Specifies the type of update.
 	// Read Only: true
 	// Enum: [manual_update automatic_update]
-	UpdateType string `json:"update_type,omitempty"`
+	UpdateType *string `json:"update_type,omitempty"`
 
 	// zip file name
 	// Example: disk_firmware.zip
 	// Read Only: true
-	ZipFileName string `json:"zip_file_name,omitempty"`
+	ZipFileName *string `json:"zip_file_name,omitempty"`
 }
 
 // Validate validates this firmware update progress
 func (m *FirmwareUpdateProgress) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateJob(formats); err != nil {
+	if err := m.validateFirmwareUpdateProgressInlineUpdateState(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateUpdateState(formats); err != nil {
+	if err := m.validateJob(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -57,6 +57,30 @@ func (m *FirmwareUpdateProgress) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *FirmwareUpdateProgress) validateFirmwareUpdateProgressInlineUpdateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.FirmwareUpdateProgressInlineUpdateState) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FirmwareUpdateProgressInlineUpdateState); i++ {
+		if swag.IsZero(m.FirmwareUpdateProgressInlineUpdateState[i]) { // not required
+			continue
+		}
+
+		if m.FirmwareUpdateProgressInlineUpdateState[i] != nil {
+			if err := m.FirmwareUpdateProgressInlineUpdateState[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -72,30 +96,6 @@ func (m *FirmwareUpdateProgress) validateJob(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *FirmwareUpdateProgress) validateUpdateState(formats strfmt.Registry) error {
-	if swag.IsZero(m.UpdateState) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.UpdateState); i++ {
-		if swag.IsZero(m.UpdateState[i]) { // not required
-			continue
-		}
-
-		if m.UpdateState[i] != nil {
-			if err := m.UpdateState[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -150,7 +150,7 @@ func (m *FirmwareUpdateProgress) validateUpdateType(formats strfmt.Registry) err
 	}
 
 	// value enum
-	if err := m.validateUpdateTypeEnum("update_type", "body", m.UpdateType); err != nil {
+	if err := m.validateUpdateTypeEnum("update_type", "body", *m.UpdateType); err != nil {
 		return err
 	}
 
@@ -161,11 +161,11 @@ func (m *FirmwareUpdateProgress) validateUpdateType(formats strfmt.Registry) err
 func (m *FirmwareUpdateProgress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateJob(ctx, formats); err != nil {
+	if err := m.contextValidateFirmwareUpdateProgressInlineUpdateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUpdateState(ctx, formats); err != nil {
+	if err := m.contextValidateJob(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -183,6 +183,24 @@ func (m *FirmwareUpdateProgress) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
+func (m *FirmwareUpdateProgress) contextValidateFirmwareUpdateProgressInlineUpdateState(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FirmwareUpdateProgressInlineUpdateState); i++ {
+
+		if m.FirmwareUpdateProgressInlineUpdateState[i] != nil {
+			if err := m.FirmwareUpdateProgressInlineUpdateState[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FirmwareUpdateProgress) contextValidateJob(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Job != nil {
@@ -197,27 +215,9 @@ func (m *FirmwareUpdateProgress) contextValidateJob(ctx context.Context, formats
 	return nil
 }
 
-func (m *FirmwareUpdateProgress) contextValidateUpdateState(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.UpdateState); i++ {
-
-		if m.UpdateState[i] != nil {
-			if err := m.UpdateState[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *FirmwareUpdateProgress) contextValidateUpdateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "update_type", "body", string(m.UpdateType)); err != nil {
+	if err := validate.ReadOnly(ctx, "update_type", "body", m.UpdateType); err != nil {
 		return err
 	}
 
@@ -226,7 +226,7 @@ func (m *FirmwareUpdateProgress) contextValidateUpdateType(ctx context.Context, 
 
 func (m *FirmwareUpdateProgress) contextValidateZipFileName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "zip_file_name", "body", string(m.ZipFileName)); err != nil {
+	if err := validate.ReadOnly(ctx, "zip_file_name", "body", m.ZipFileName); err != nil {
 		return err
 	}
 

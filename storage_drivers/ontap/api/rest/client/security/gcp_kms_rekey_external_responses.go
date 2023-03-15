@@ -108,6 +108,7 @@ func NewGcpKmsRekeyExternalDefault(code int) *GcpKmsRekeyExternalDefault {
 | ---------- | ----------- |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
 | 65537721 | Google Cloud KMS is not configured for the given SVM. |
+| 65537729 | External rekey failed on one or more nodes. Use the REST API POST method \"/api/security/gcp-kms/{uuid}/rekey-external\" to try the rekey operation again. |
 */
 type GcpKmsRekeyExternalDefault struct {
 	_statusCode int

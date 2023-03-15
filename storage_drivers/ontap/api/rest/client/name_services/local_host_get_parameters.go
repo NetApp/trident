@@ -66,19 +66,19 @@ type LocalHostGetParams struct {
 
 	   The IP address.
 	*/
-	AddressPathParameter string
+	Address string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* OwnerUUID.
 
 	   UUID of the owner to which this object belongs.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *LocalHostGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressPathParameter adds the address to the local host get params
-func (o *LocalHostGetParams) WithAddressPathParameter(address string) *LocalHostGetParams {
-	o.SetAddressPathParameter(address)
+// WithAddress adds the address to the local host get params
+func (o *LocalHostGetParams) WithAddress(address string) *LocalHostGetParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressPathParameter adds the address to the local host get params
-func (o *LocalHostGetParams) SetAddressPathParameter(address string) {
-	o.AddressPathParameter = address
+// SetAddress adds the address to the local host get params
+func (o *LocalHostGetParams) SetAddress(address string) {
+	o.Address = address
 }
 
-// WithFieldsQueryParameter adds the fields to the local host get params
-func (o *LocalHostGetParams) WithFieldsQueryParameter(fields []string) *LocalHostGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local host get params
+func (o *LocalHostGetParams) WithFields(fields []string) *LocalHostGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local host get params
-func (o *LocalHostGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local host get params
+func (o *LocalHostGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the local host get params
-func (o *LocalHostGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *LocalHostGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the local host get params
+func (o *LocalHostGetParams) WithOwnerUUID(ownerUUID string) *LocalHostGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the local host get params
-func (o *LocalHostGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the local host get params
+func (o *LocalHostGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *LocalHostGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param address
-	if err := r.SetPathParam("address", o.AddressPathParameter); err != nil {
+	if err := r.SetPathParam("address", o.Address); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *LocalHostGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *LocalHostGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamLocalHostGet binds the parameter fields
 func (o *LocalHostGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

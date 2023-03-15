@@ -73,7 +73,7 @@ type KerberosInterfaceModifyParams struct {
 
 	   Network interface UUID
 	*/
-	InterfaceUUIDPathParameter string
+	InterfaceUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *KerberosInterfaceModifyParams) SetInfo(info *models.KerberosInterface) 
 	o.Info = info
 }
 
-// WithInterfaceUUIDPathParameter adds the interfaceUUID to the kerberos interface modify params
-func (o *KerberosInterfaceModifyParams) WithInterfaceUUIDPathParameter(interfaceUUID string) *KerberosInterfaceModifyParams {
-	o.SetInterfaceUUIDPathParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the kerberos interface modify params
+func (o *KerberosInterfaceModifyParams) WithInterfaceUUID(interfaceUUID string) *KerberosInterfaceModifyParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDPathParameter adds the interfaceUuid to the kerberos interface modify params
-func (o *KerberosInterfaceModifyParams) SetInterfaceUUIDPathParameter(interfaceUUID string) {
-	o.InterfaceUUIDPathParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the kerberos interface modify params
+func (o *KerberosInterfaceModifyParams) SetInterfaceUUID(interfaceUUID string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *KerberosInterfaceModifyParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param interface.uuid
-	if err := r.SetPathParam("interface.uuid", o.InterfaceUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("interface.uuid", o.InterfaceUUID); err != nil {
 		return err
 	}
 

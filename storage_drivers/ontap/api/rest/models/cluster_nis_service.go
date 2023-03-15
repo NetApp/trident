@@ -21,26 +21,26 @@ import (
 type ClusterNisService struct {
 
 	// links
-	Links *ClusterNisServiceLinks `json:"_links,omitempty"`
+	Links *ClusterNisServiceInlineLinks `json:"_links,omitempty"`
 
 	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
-	BindingDetails []*ClusterNisServiceBindingDetailsItems0 `json:"binding_details,omitempty"`
+	ClusterNisServiceInlineBindingDetails []*ClusterNisServiceInlineBindingDetailsInlineArrayItem `json:"binding_details,omitempty"`
 
-	// bound servers
+	// cluster nis service inline bound servers
 	// Read Only: true
-	BoundServers []string `json:"bound_servers,omitempty"`
-
-	// The NIS domain to which this configuration belongs.
-	//
-	// Max Length: 64
-	// Min Length: 1
-	Domain string `json:"domain,omitempty"`
+	ClusterNisServiceInlineBoundServers []*string `json:"bound_servers,omitempty"`
 
 	// A list of hostnames or IP addresses of NIS servers used
 	// by the NIS domain configuration.
 	//
 	// Max Items: 10
-	Servers []string `json:"servers,omitempty"`
+	ClusterNisServiceInlineServers []*string `json:"servers,omitempty"`
+
+	// The NIS domain to which this configuration belongs.
+	//
+	// Max Length: 64
+	// Min Length: 1
+	Domain *string `json:"domain,omitempty"`
 }
 
 // Validate validates this cluster nis service
@@ -51,19 +51,19 @@ func (m *ClusterNisService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateBindingDetails(formats); err != nil {
+	if err := m.validateClusterNisServiceInlineBindingDetails(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateBoundServers(formats); err != nil {
+	if err := m.validateClusterNisServiceInlineBoundServers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClusterNisServiceInlineServers(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateDomain(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateServers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,18 +90,18 @@ func (m *ClusterNisService) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterNisService) validateBindingDetails(formats strfmt.Registry) error {
-	if swag.IsZero(m.BindingDetails) { // not required
+func (m *ClusterNisService) validateClusterNisServiceInlineBindingDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterNisServiceInlineBindingDetails) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.BindingDetails); i++ {
-		if swag.IsZero(m.BindingDetails[i]) { // not required
+	for i := 0; i < len(m.ClusterNisServiceInlineBindingDetails); i++ {
+		if swag.IsZero(m.ClusterNisServiceInlineBindingDetails[i]) { // not required
 			continue
 		}
 
-		if m.BindingDetails[i] != nil {
-			if err := m.BindingDetails[i].Validate(formats); err != nil {
+		if m.ClusterNisServiceInlineBindingDetails[i] != nil {
+			if err := m.ClusterNisServiceInlineBindingDetails[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
 				}
@@ -114,18 +114,50 @@ func (m *ClusterNisService) validateBindingDetails(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ClusterNisService) validateBoundServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.BoundServers) { // not required
+func (m *ClusterNisService) validateClusterNisServiceInlineBoundServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterNisServiceInlineBoundServers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.BoundServers); i++ {
+	for i := 0; i < len(m.ClusterNisServiceInlineBoundServers); i++ {
+		if swag.IsZero(m.ClusterNisServiceInlineBoundServers[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinLength("bound_servers"+"."+strconv.Itoa(i), "body", m.BoundServers[i], 1); err != nil {
+		if err := validate.MinLength("bound_servers"+"."+strconv.Itoa(i), "body", *m.ClusterNisServiceInlineBoundServers[i], 1); err != nil {
 			return err
 		}
 
-		if err := validate.MaxLength("bound_servers"+"."+strconv.Itoa(i), "body", m.BoundServers[i], 255); err != nil {
+		if err := validate.MaxLength("bound_servers"+"."+strconv.Itoa(i), "body", *m.ClusterNisServiceInlineBoundServers[i], 255); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterNisService) validateClusterNisServiceInlineServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterNisServiceInlineServers) { // not required
+		return nil
+	}
+
+	iClusterNisServiceInlineServersSize := int64(len(m.ClusterNisServiceInlineServers))
+
+	if err := validate.MaxItems("servers", "body", iClusterNisServiceInlineServersSize, 10); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ClusterNisServiceInlineServers); i++ {
+		if swag.IsZero(m.ClusterNisServiceInlineServers[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinLength("servers"+"."+strconv.Itoa(i), "body", *m.ClusterNisServiceInlineServers[i], 1); err != nil {
+			return err
+		}
+
+		if err := validate.MaxLength("servers"+"."+strconv.Itoa(i), "body", *m.ClusterNisServiceInlineServers[i], 255); err != nil {
 			return err
 		}
 
@@ -139,38 +171,12 @@ func (m *ClusterNisService) validateDomain(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("domain", "body", m.Domain, 1); err != nil {
+	if err := validate.MinLength("domain", "body", *m.Domain, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("domain", "body", m.Domain, 64); err != nil {
+	if err := validate.MaxLength("domain", "body", *m.Domain, 64); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ClusterNisService) validateServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Servers) { // not required
-		return nil
-	}
-
-	iServersSize := int64(len(m.Servers))
-
-	if err := validate.MaxItems("servers", "body", iServersSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Servers); i++ {
-
-		if err := validate.MinLength("servers"+"."+strconv.Itoa(i), "body", m.Servers[i], 1); err != nil {
-			return err
-		}
-
-		if err := validate.MaxLength("servers"+"."+strconv.Itoa(i), "body", m.Servers[i], 255); err != nil {
-			return err
-		}
-
 	}
 
 	return nil
@@ -184,11 +190,11 @@ func (m *ClusterNisService) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBindingDetails(ctx, formats); err != nil {
+	if err := m.contextValidateClusterNisServiceInlineBindingDetails(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBoundServers(ctx, formats); err != nil {
+	if err := m.contextValidateClusterNisServiceInlineBoundServers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -212,12 +218,12 @@ func (m *ClusterNisService) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ClusterNisService) contextValidateBindingDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterNisService) contextValidateClusterNisServiceInlineBindingDetails(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.BindingDetails); i++ {
+	for i := 0; i < len(m.ClusterNisServiceInlineBindingDetails); i++ {
 
-		if m.BindingDetails[i] != nil {
-			if err := m.BindingDetails[i].ContextValidate(ctx, formats); err != nil {
+		if m.ClusterNisServiceInlineBindingDetails[i] != nil {
+			if err := m.ClusterNisServiceInlineBindingDetails[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
 				}
@@ -230,9 +236,9 @@ func (m *ClusterNisService) contextValidateBindingDetails(ctx context.Context, f
 	return nil
 }
 
-func (m *ClusterNisService) contextValidateBoundServers(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterNisService) contextValidateClusterNisServiceInlineBoundServers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "bound_servers", "body", []string(m.BoundServers)); err != nil {
+	if err := validate.ReadOnly(ctx, "bound_servers", "body", []*string(m.ClusterNisServiceInlineBoundServers)); err != nil {
 		return err
 	}
 
@@ -257,22 +263,22 @@ func (m *ClusterNisService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterNisServiceBindingDetailsItems0 cluster nis service binding details items0
+// ClusterNisServiceInlineBindingDetailsInlineArrayItem cluster nis service inline binding details inline array item
 //
-// swagger:model ClusterNisServiceBindingDetailsItems0
-type ClusterNisServiceBindingDetailsItems0 struct {
+// swagger:model cluster_nis_service_inline_binding_details_inline_array_item
+type ClusterNisServiceInlineBindingDetailsInlineArrayItem struct {
 
 	// Hostname/IP address of the NIS server in the domain.
 	// Max Length: 255
 	// Min Length: 1
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// status
 	Status *BindingStatus `json:"status,omitempty"`
 }
 
-// Validate validates this cluster nis service binding details items0
-func (m *ClusterNisServiceBindingDetailsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster nis service inline binding details inline array item
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateServer(formats); err != nil {
@@ -289,23 +295,23 @@ func (m *ClusterNisServiceBindingDetailsItems0) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *ClusterNisServiceBindingDetailsItems0) validateServer(formats strfmt.Registry) error {
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) validateServer(formats strfmt.Registry) error {
 	if swag.IsZero(m.Server) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("server", "body", m.Server, 1); err != nil {
+	if err := validate.MinLength("server", "body", *m.Server, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("server", "body", m.Server, 255); err != nil {
+	if err := validate.MaxLength("server", "body", *m.Server, 255); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ClusterNisServiceBindingDetailsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -322,8 +328,8 @@ func (m *ClusterNisServiceBindingDetailsItems0) validateStatus(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this cluster nis service binding details items0 based on the context it is used
-func (m *ClusterNisServiceBindingDetailsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster nis service inline binding details inline array item based on the context it is used
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
@@ -336,7 +342,7 @@ func (m *ClusterNisServiceBindingDetailsItems0) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *ClusterNisServiceBindingDetailsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Status != nil {
 		if err := m.Status.ContextValidate(ctx, formats); err != nil {
@@ -351,7 +357,7 @@ func (m *ClusterNisServiceBindingDetailsItems0) contextValidateStatus(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterNisServiceBindingDetailsItems0) MarshalBinary() ([]byte, error) {
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -359,8 +365,8 @@ func (m *ClusterNisServiceBindingDetailsItems0) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterNisServiceBindingDetailsItems0) UnmarshalBinary(b []byte) error {
-	var res ClusterNisServiceBindingDetailsItems0
+func (m *ClusterNisServiceInlineBindingDetailsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ClusterNisServiceInlineBindingDetailsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -368,17 +374,17 @@ func (m *ClusterNisServiceBindingDetailsItems0) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// ClusterNisServiceLinks cluster nis service links
+// ClusterNisServiceInlineLinks cluster nis service inline links
 //
-// swagger:model ClusterNisServiceLinks
-type ClusterNisServiceLinks struct {
+// swagger:model cluster_nis_service_inline__links
+type ClusterNisServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster nis service links
-func (m *ClusterNisServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster nis service inline links
+func (m *ClusterNisServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -391,7 +397,7 @@ func (m *ClusterNisServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterNisServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterNisServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -408,8 +414,8 @@ func (m *ClusterNisServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster nis service links based on the context it is used
-func (m *ClusterNisServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster nis service inline links based on the context it is used
+func (m *ClusterNisServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -422,7 +428,7 @@ func (m *ClusterNisServiceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ClusterNisServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterNisServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -437,7 +443,7 @@ func (m *ClusterNisServiceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterNisServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterNisServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -445,8 +451,8 @@ func (m *ClusterNisServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterNisServiceLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterNisServiceLinks
+func (m *ClusterNisServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterNisServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

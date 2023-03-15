@@ -19,16 +19,16 @@ import (
 type VolumeProtocolRawPerformanceStatCreate struct {
 
 	// dir
-	Dir *VolumeProtocolRawPerformanceStatCreateDir `json:"dir,omitempty"`
+	Dir *VolumeProtocolRawPerformanceStatCreateInlineDir `json:"dir,omitempty"`
 
 	// file
-	File *VolumeProtocolRawPerformanceStatCreateFile `json:"file,omitempty"`
+	File *VolumeProtocolRawPerformanceStatCreateInlineFile `json:"file,omitempty"`
 
 	// other
-	Other *VolumeProtocolRawPerformanceStatCreateOther `json:"other,omitempty"`
+	Other *VolumeProtocolRawPerformanceStatCreateInlineOther `json:"other,omitempty"`
 
 	// symlink
-	Symlink *VolumeProtocolRawPerformanceStatCreateSymlink `json:"symlink,omitempty"`
+	Symlink *VolumeProtocolRawPerformanceStatCreateInlineSymlink `json:"symlink,omitempty"`
 }
 
 // Validate validates this volume protocol raw performance stat create
@@ -225,32 +225,32 @@ func (m *VolumeProtocolRawPerformanceStatCreate) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatCreateDir Raw count and latency data for directory-create operations.
+// VolumeProtocolRawPerformanceStatCreateInlineDir Raw count and latency data for directory-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatCreateDir
-type VolumeProtocolRawPerformanceStatCreateDir struct {
+// swagger:model volume_protocol_raw_performance_stat_create_inline_dir
+type VolumeProtocolRawPerformanceStatCreateInlineDir struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stat create dir
-func (m *VolumeProtocolRawPerformanceStatCreateDir) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stat create inline dir
+func (m *VolumeProtocolRawPerformanceStatCreateInlineDir) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stat create dir based on context it is used
-func (m *VolumeProtocolRawPerformanceStatCreateDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stat create inline dir based on context it is used
+func (m *VolumeProtocolRawPerformanceStatCreateInlineDir) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateDir) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatCreateInlineDir) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -258,8 +258,8 @@ func (m *VolumeProtocolRawPerformanceStatCreateDir) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateDir) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatCreateDir
+func (m *VolumeProtocolRawPerformanceStatCreateInlineDir) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatCreateInlineDir
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -267,32 +267,32 @@ func (m *VolumeProtocolRawPerformanceStatCreateDir) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatCreateFile Raw count and latency data for file-create operations.
+// VolumeProtocolRawPerformanceStatCreateInlineFile Raw count and latency data for file-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatCreateFile
-type VolumeProtocolRawPerformanceStatCreateFile struct {
+// swagger:model volume_protocol_raw_performance_stat_create_inline_file
+type VolumeProtocolRawPerformanceStatCreateInlineFile struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stat create file
-func (m *VolumeProtocolRawPerformanceStatCreateFile) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stat create inline file
+func (m *VolumeProtocolRawPerformanceStatCreateInlineFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stat create file based on context it is used
-func (m *VolumeProtocolRawPerformanceStatCreateFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stat create inline file based on context it is used
+func (m *VolumeProtocolRawPerformanceStatCreateInlineFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateFile) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatCreateInlineFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -300,8 +300,8 @@ func (m *VolumeProtocolRawPerformanceStatCreateFile) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateFile) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatCreateFile
+func (m *VolumeProtocolRawPerformanceStatCreateInlineFile) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatCreateInlineFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -309,32 +309,32 @@ func (m *VolumeProtocolRawPerformanceStatCreateFile) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatCreateOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
+// VolumeProtocolRawPerformanceStatCreateInlineOther Raw count and latency data for create operations on objects other than files, directories and symlinks.
 //
-// swagger:model VolumeProtocolRawPerformanceStatCreateOther
-type VolumeProtocolRawPerformanceStatCreateOther struct {
+// swagger:model volume_protocol_raw_performance_stat_create_inline_other
+type VolumeProtocolRawPerformanceStatCreateInlineOther struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stat create other
-func (m *VolumeProtocolRawPerformanceStatCreateOther) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stat create inline other
+func (m *VolumeProtocolRawPerformanceStatCreateInlineOther) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stat create other based on context it is used
-func (m *VolumeProtocolRawPerformanceStatCreateOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stat create inline other based on context it is used
+func (m *VolumeProtocolRawPerformanceStatCreateInlineOther) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateOther) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatCreateInlineOther) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -342,8 +342,8 @@ func (m *VolumeProtocolRawPerformanceStatCreateOther) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateOther) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatCreateOther
+func (m *VolumeProtocolRawPerformanceStatCreateInlineOther) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatCreateInlineOther
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -351,32 +351,32 @@ func (m *VolumeProtocolRawPerformanceStatCreateOther) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// VolumeProtocolRawPerformanceStatCreateSymlink Raw count and latency data for symlink-create operations.
+// VolumeProtocolRawPerformanceStatCreateInlineSymlink Raw count and latency data for symlink-create operations.
 //
-// swagger:model VolumeProtocolRawPerformanceStatCreateSymlink
-type VolumeProtocolRawPerformanceStatCreateSymlink struct {
+// swagger:model volume_protocol_raw_performance_stat_create_inline_symlink
+type VolumeProtocolRawPerformanceStatCreateInlineSymlink struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
-// Validate validates this volume protocol raw performance stat create symlink
-func (m *VolumeProtocolRawPerformanceStatCreateSymlink) Validate(formats strfmt.Registry) error {
+// Validate validates this volume protocol raw performance stat create inline symlink
+func (m *VolumeProtocolRawPerformanceStatCreateInlineSymlink) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume protocol raw performance stat create symlink based on context it is used
-func (m *VolumeProtocolRawPerformanceStatCreateSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume protocol raw performance stat create inline symlink based on context it is used
+func (m *VolumeProtocolRawPerformanceStatCreateInlineSymlink) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateSymlink) MarshalBinary() ([]byte, error) {
+func (m *VolumeProtocolRawPerformanceStatCreateInlineSymlink) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -384,8 +384,8 @@ func (m *VolumeProtocolRawPerformanceStatCreateSymlink) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeProtocolRawPerformanceStatCreateSymlink) UnmarshalBinary(b []byte) error {
-	var res VolumeProtocolRawPerformanceStatCreateSymlink
+func (m *VolumeProtocolRawPerformanceStatCreateInlineSymlink) UnmarshalBinary(b []byte) error {
+	var res VolumeProtocolRawPerformanceStatCreateInlineSymlink
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

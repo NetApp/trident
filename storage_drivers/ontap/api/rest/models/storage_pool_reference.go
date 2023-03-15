@@ -19,15 +19,15 @@ import (
 type StoragePoolReference struct {
 
 	// links
-	Links *StoragePoolReferenceLinks `json:"_links,omitempty"`
+	Links *StoragePoolReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: storage_pool_1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this storage pool reference
@@ -107,17 +107,17 @@ func (m *StoragePoolReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolReferenceLinks storage pool reference links
+// StoragePoolReferenceInlineLinks storage pool reference inline links
 //
-// swagger:model StoragePoolReferenceLinks
-type StoragePoolReferenceLinks struct {
+// swagger:model storage_pool_reference_inline__links
+type StoragePoolReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage pool reference links
-func (m *StoragePoolReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool reference inline links
+func (m *StoragePoolReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *StoragePoolReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePoolReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *StoragePoolReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this storage pool reference links based on the context it is used
-func (m *StoragePoolReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool reference inline links based on the context it is used
+func (m *StoragePoolReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *StoragePoolReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *StoragePoolReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *StoragePoolReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *StoragePoolReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePoolReferenceLinks
+func (m *StoragePoolReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePoolReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

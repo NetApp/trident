@@ -68,7 +68,7 @@ type VolumeModifyParams struct {
 
 	   Specifies whether the FlexClone volume splits the data blocks by matching its parent storage tier. This option is applicable only if the tiering policy and the tiering minimum cooling days of the parent volume and the FlexClone volume are the same.
 	*/
-	CloneMatchParentStorageTierQueryParameter *bool
+	CloneMatchParentStorageTier *bool
 
 	/* Info.
 
@@ -80,55 +80,55 @@ type VolumeModifyParams struct {
 
 	   When this option is "on", the filer performs additional work at boot time if it finds that there has been any potential data loss due to an NVRAM failure. In such situations, it causes the invalidation of all NFS file handles on all volumes affected by the problem so that client-side users are forced to remount the affected file system (and thus not continue to use potentially incorrect data). It is also possible to specify a set of files per volume that are renamed in such cases. The filer sends error messages to the console whenever such problems are found.
 	*/
-	NvfailQueryParameter *string
+	Nvfail *string
 
 	/* PreserveLunIds.
 
 	   Specifies whether LUN IDs need to be preserved during a Snapshot copy restore operation.
 	*/
-	PreserveLunIDsQueryParameter *bool
+	PreserveLunIds *bool
 
 	/* RestoreToByteCount.
 
 	   Number of bytes to restore from the source file, in multiples of 4096.
 	*/
-	RestoreToByteCountQueryParameter *float64
+	RestoreToByteCount *float64
 
 	/* RestoreToPath.
 
 	   Path to the file which is restored from the Snapshot copy.
 	*/
-	RestoreToPathQueryParameter *string
+	RestoreToPath *string
 
 	/* RestoreToRestorePath.
 
 	   Specifies the destination location inside the volume where the file is restored.
 	*/
-	RestoreToRestorePathQueryParameter *string
+	RestoreToRestorePath *string
 
 	/* RestoreToSnapshotName.
 
 	   Name of the Snapshot copy to restore volume to the point in time the Snapshot copy was taken.
 	*/
-	RestoreToSnapshotNameQueryParameter *string
+	RestoreToSnapshotName *string
 
 	/* RestoreToSnapshotUUID.
 
 	   UUID of the Snapshot copy to restore volume to the point in time the Snapshot copy was taken.
 	*/
-	RestoreToSnapshotUUIDQueryParameter *string
+	RestoreToSnapshotUUID *string
 
 	/* RestoreToStartByte.
 
 	   Starting byte offset of the source file, in multiples of 4096.
 	*/
-	RestoreToStartByteQueryParameter *float64
+	RestoreToStartByte *float64
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScheduledSnapshotNamingScheme.
 
@@ -139,7 +139,7 @@ type VolumeModifyParams struct {
 
 	     Default: "create_time"
 	*/
-	ScheduledSnapshotNamingSchemeQueryParameter *string
+	ScheduledSnapshotNamingScheme *string
 
 	/* SizingMethod.
 
@@ -150,7 +150,7 @@ type VolumeModifyParams struct {
 
 	     Default: "use_existing_resources"
 	*/
-	SizingMethodQueryParameter *string
+	SizingMethod *string
 
 	/* SnapshotDirectoryAccessEnabled.
 
@@ -158,19 +158,19 @@ type VolumeModifyParams struct {
 
 	   Default: true
 	*/
-	SnapshotDirectoryAccessEnabledQueryParameter *bool
+	SnapshotDirectoryAccessEnabled *bool
 
 	/* UUID.
 
 	   Unique identifier of the volume.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	/* ValidateOnly.
 
 	   Validate the operation and its parameters, without actually performing the operation.
 	*/
-	ValidateOnlyQueryParameter *bool
+	ValidateOnly *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -190,23 +190,23 @@ func (o *VolumeModifyParams) WithDefaults() *VolumeModifyParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeModifyParams) SetDefaults() {
 	var (
-		preserveLunIDsQueryParameterDefault = bool(false)
+		preserveLunIdsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 
-		scheduledSnapshotNamingSchemeQueryParameterDefault = string("create_time")
+		scheduledSnapshotNamingSchemeDefault = string("create_time")
 
-		sizingMethodQueryParameterDefault = string("use_existing_resources")
+		sizingMethodDefault = string("use_existing_resources")
 
-		snapshotDirectoryAccessEnabledQueryParameterDefault = bool(true)
+		snapshotDirectoryAccessEnabledDefault = bool(true)
 	)
 
 	val := VolumeModifyParams{
-		PreserveLunIDsQueryParameter:                 &preserveLunIDsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:                  &returnTimeoutQueryParameterDefault,
-		ScheduledSnapshotNamingSchemeQueryParameter:  &scheduledSnapshotNamingSchemeQueryParameterDefault,
-		SizingMethodQueryParameter:                   &sizingMethodQueryParameterDefault,
-		SnapshotDirectoryAccessEnabledQueryParameter: &snapshotDirectoryAccessEnabledQueryParameterDefault,
+		PreserveLunIds:                 &preserveLunIdsDefault,
+		ReturnTimeout:                  &returnTimeoutDefault,
+		ScheduledSnapshotNamingScheme:  &scheduledSnapshotNamingSchemeDefault,
+		SizingMethod:                   &sizingMethodDefault,
+		SnapshotDirectoryAccessEnabled: &snapshotDirectoryAccessEnabledDefault,
 	}
 
 	val.timeout = o.timeout
@@ -248,15 +248,15 @@ func (o *VolumeModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCloneMatchParentStorageTierQueryParameter adds the cloneMatchParentStorageTier to the volume modify params
-func (o *VolumeModifyParams) WithCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier *bool) *VolumeModifyParams {
-	o.SetCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier)
+// WithCloneMatchParentStorageTier adds the cloneMatchParentStorageTier to the volume modify params
+func (o *VolumeModifyParams) WithCloneMatchParentStorageTier(cloneMatchParentStorageTier *bool) *VolumeModifyParams {
+	o.SetCloneMatchParentStorageTier(cloneMatchParentStorageTier)
 	return o
 }
 
-// SetCloneMatchParentStorageTierQueryParameter adds the cloneMatchParentStorageTier to the volume modify params
-func (o *VolumeModifyParams) SetCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier *bool) {
-	o.CloneMatchParentStorageTierQueryParameter = cloneMatchParentStorageTier
+// SetCloneMatchParentStorageTier adds the cloneMatchParentStorageTier to the volume modify params
+func (o *VolumeModifyParams) SetCloneMatchParentStorageTier(cloneMatchParentStorageTier *bool) {
+	o.CloneMatchParentStorageTier = cloneMatchParentStorageTier
 }
 
 // WithInfo adds the info to the volume modify params
@@ -270,158 +270,158 @@ func (o *VolumeModifyParams) SetInfo(info *models.Volume) {
 	o.Info = info
 }
 
-// WithNvfailQueryParameter adds the nvfail to the volume modify params
-func (o *VolumeModifyParams) WithNvfailQueryParameter(nvfail *string) *VolumeModifyParams {
-	o.SetNvfailQueryParameter(nvfail)
+// WithNvfail adds the nvfail to the volume modify params
+func (o *VolumeModifyParams) WithNvfail(nvfail *string) *VolumeModifyParams {
+	o.SetNvfail(nvfail)
 	return o
 }
 
-// SetNvfailQueryParameter adds the nvfail to the volume modify params
-func (o *VolumeModifyParams) SetNvfailQueryParameter(nvfail *string) {
-	o.NvfailQueryParameter = nvfail
+// SetNvfail adds the nvfail to the volume modify params
+func (o *VolumeModifyParams) SetNvfail(nvfail *string) {
+	o.Nvfail = nvfail
 }
 
-// WithPreserveLunIDsQueryParameter adds the preserveLunIds to the volume modify params
-func (o *VolumeModifyParams) WithPreserveLunIDsQueryParameter(preserveLunIds *bool) *VolumeModifyParams {
-	o.SetPreserveLunIDsQueryParameter(preserveLunIds)
+// WithPreserveLunIds adds the preserveLunIds to the volume modify params
+func (o *VolumeModifyParams) WithPreserveLunIds(preserveLunIds *bool) *VolumeModifyParams {
+	o.SetPreserveLunIds(preserveLunIds)
 	return o
 }
 
-// SetPreserveLunIDsQueryParameter adds the preserveLunIds to the volume modify params
-func (o *VolumeModifyParams) SetPreserveLunIDsQueryParameter(preserveLunIds *bool) {
-	o.PreserveLunIDsQueryParameter = preserveLunIds
+// SetPreserveLunIds adds the preserveLunIds to the volume modify params
+func (o *VolumeModifyParams) SetPreserveLunIds(preserveLunIds *bool) {
+	o.PreserveLunIds = preserveLunIds
 }
 
-// WithRestoreToByteCountQueryParameter adds the restoreToByteCount to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToByteCountQueryParameter(restoreToByteCount *float64) *VolumeModifyParams {
-	o.SetRestoreToByteCountQueryParameter(restoreToByteCount)
+// WithRestoreToByteCount adds the restoreToByteCount to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToByteCount(restoreToByteCount *float64) *VolumeModifyParams {
+	o.SetRestoreToByteCount(restoreToByteCount)
 	return o
 }
 
-// SetRestoreToByteCountQueryParameter adds the restoreToByteCount to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToByteCountQueryParameter(restoreToByteCount *float64) {
-	o.RestoreToByteCountQueryParameter = restoreToByteCount
+// SetRestoreToByteCount adds the restoreToByteCount to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToByteCount(restoreToByteCount *float64) {
+	o.RestoreToByteCount = restoreToByteCount
 }
 
-// WithRestoreToPathQueryParameter adds the restoreToPath to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToPathQueryParameter(restoreToPath *string) *VolumeModifyParams {
-	o.SetRestoreToPathQueryParameter(restoreToPath)
+// WithRestoreToPath adds the restoreToPath to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToPath(restoreToPath *string) *VolumeModifyParams {
+	o.SetRestoreToPath(restoreToPath)
 	return o
 }
 
-// SetRestoreToPathQueryParameter adds the restoreToPath to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToPathQueryParameter(restoreToPath *string) {
-	o.RestoreToPathQueryParameter = restoreToPath
+// SetRestoreToPath adds the restoreToPath to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToPath(restoreToPath *string) {
+	o.RestoreToPath = restoreToPath
 }
 
-// WithRestoreToRestorePathQueryParameter adds the restoreToRestorePath to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToRestorePathQueryParameter(restoreToRestorePath *string) *VolumeModifyParams {
-	o.SetRestoreToRestorePathQueryParameter(restoreToRestorePath)
+// WithRestoreToRestorePath adds the restoreToRestorePath to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToRestorePath(restoreToRestorePath *string) *VolumeModifyParams {
+	o.SetRestoreToRestorePath(restoreToRestorePath)
 	return o
 }
 
-// SetRestoreToRestorePathQueryParameter adds the restoreToRestorePath to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToRestorePathQueryParameter(restoreToRestorePath *string) {
-	o.RestoreToRestorePathQueryParameter = restoreToRestorePath
+// SetRestoreToRestorePath adds the restoreToRestorePath to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToRestorePath(restoreToRestorePath *string) {
+	o.RestoreToRestorePath = restoreToRestorePath
 }
 
-// WithRestoreToSnapshotNameQueryParameter adds the restoreToSnapshotName to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToSnapshotNameQueryParameter(restoreToSnapshotName *string) *VolumeModifyParams {
-	o.SetRestoreToSnapshotNameQueryParameter(restoreToSnapshotName)
+// WithRestoreToSnapshotName adds the restoreToSnapshotName to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToSnapshotName(restoreToSnapshotName *string) *VolumeModifyParams {
+	o.SetRestoreToSnapshotName(restoreToSnapshotName)
 	return o
 }
 
-// SetRestoreToSnapshotNameQueryParameter adds the restoreToSnapshotName to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToSnapshotNameQueryParameter(restoreToSnapshotName *string) {
-	o.RestoreToSnapshotNameQueryParameter = restoreToSnapshotName
+// SetRestoreToSnapshotName adds the restoreToSnapshotName to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToSnapshotName(restoreToSnapshotName *string) {
+	o.RestoreToSnapshotName = restoreToSnapshotName
 }
 
-// WithRestoreToSnapshotUUIDQueryParameter adds the restoreToSnapshotUUID to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToSnapshotUUIDQueryParameter(restoreToSnapshotUUID *string) *VolumeModifyParams {
-	o.SetRestoreToSnapshotUUIDQueryParameter(restoreToSnapshotUUID)
+// WithRestoreToSnapshotUUID adds the restoreToSnapshotUUID to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToSnapshotUUID(restoreToSnapshotUUID *string) *VolumeModifyParams {
+	o.SetRestoreToSnapshotUUID(restoreToSnapshotUUID)
 	return o
 }
 
-// SetRestoreToSnapshotUUIDQueryParameter adds the restoreToSnapshotUuid to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToSnapshotUUIDQueryParameter(restoreToSnapshotUUID *string) {
-	o.RestoreToSnapshotUUIDQueryParameter = restoreToSnapshotUUID
+// SetRestoreToSnapshotUUID adds the restoreToSnapshotUuid to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToSnapshotUUID(restoreToSnapshotUUID *string) {
+	o.RestoreToSnapshotUUID = restoreToSnapshotUUID
 }
 
-// WithRestoreToStartByteQueryParameter adds the restoreToStartByte to the volume modify params
-func (o *VolumeModifyParams) WithRestoreToStartByteQueryParameter(restoreToStartByte *float64) *VolumeModifyParams {
-	o.SetRestoreToStartByteQueryParameter(restoreToStartByte)
+// WithRestoreToStartByte adds the restoreToStartByte to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToStartByte(restoreToStartByte *float64) *VolumeModifyParams {
+	o.SetRestoreToStartByte(restoreToStartByte)
 	return o
 }
 
-// SetRestoreToStartByteQueryParameter adds the restoreToStartByte to the volume modify params
-func (o *VolumeModifyParams) SetRestoreToStartByteQueryParameter(restoreToStartByte *float64) {
-	o.RestoreToStartByteQueryParameter = restoreToStartByte
+// SetRestoreToStartByte adds the restoreToStartByte to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToStartByte(restoreToStartByte *float64) {
+	o.RestoreToStartByte = restoreToStartByte
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume modify params
-func (o *VolumeModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the volume modify params
+func (o *VolumeModifyParams) WithReturnTimeout(returnTimeout *int64) *VolumeModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume modify params
-func (o *VolumeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the volume modify params
+func (o *VolumeModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScheduledSnapshotNamingSchemeQueryParameter adds the scheduledSnapshotNamingScheme to the volume modify params
-func (o *VolumeModifyParams) WithScheduledSnapshotNamingSchemeQueryParameter(scheduledSnapshotNamingScheme *string) *VolumeModifyParams {
-	o.SetScheduledSnapshotNamingSchemeQueryParameter(scheduledSnapshotNamingScheme)
+// WithScheduledSnapshotNamingScheme adds the scheduledSnapshotNamingScheme to the volume modify params
+func (o *VolumeModifyParams) WithScheduledSnapshotNamingScheme(scheduledSnapshotNamingScheme *string) *VolumeModifyParams {
+	o.SetScheduledSnapshotNamingScheme(scheduledSnapshotNamingScheme)
 	return o
 }
 
-// SetScheduledSnapshotNamingSchemeQueryParameter adds the scheduledSnapshotNamingScheme to the volume modify params
-func (o *VolumeModifyParams) SetScheduledSnapshotNamingSchemeQueryParameter(scheduledSnapshotNamingScheme *string) {
-	o.ScheduledSnapshotNamingSchemeQueryParameter = scheduledSnapshotNamingScheme
+// SetScheduledSnapshotNamingScheme adds the scheduledSnapshotNamingScheme to the volume modify params
+func (o *VolumeModifyParams) SetScheduledSnapshotNamingScheme(scheduledSnapshotNamingScheme *string) {
+	o.ScheduledSnapshotNamingScheme = scheduledSnapshotNamingScheme
 }
 
-// WithSizingMethodQueryParameter adds the sizingMethod to the volume modify params
-func (o *VolumeModifyParams) WithSizingMethodQueryParameter(sizingMethod *string) *VolumeModifyParams {
-	o.SetSizingMethodQueryParameter(sizingMethod)
+// WithSizingMethod adds the sizingMethod to the volume modify params
+func (o *VolumeModifyParams) WithSizingMethod(sizingMethod *string) *VolumeModifyParams {
+	o.SetSizingMethod(sizingMethod)
 	return o
 }
 
-// SetSizingMethodQueryParameter adds the sizingMethod to the volume modify params
-func (o *VolumeModifyParams) SetSizingMethodQueryParameter(sizingMethod *string) {
-	o.SizingMethodQueryParameter = sizingMethod
+// SetSizingMethod adds the sizingMethod to the volume modify params
+func (o *VolumeModifyParams) SetSizingMethod(sizingMethod *string) {
+	o.SizingMethod = sizingMethod
 }
 
-// WithSnapshotDirectoryAccessEnabledQueryParameter adds the snapshotDirectoryAccessEnabled to the volume modify params
-func (o *VolumeModifyParams) WithSnapshotDirectoryAccessEnabledQueryParameter(snapshotDirectoryAccessEnabled *bool) *VolumeModifyParams {
-	o.SetSnapshotDirectoryAccessEnabledQueryParameter(snapshotDirectoryAccessEnabled)
+// WithSnapshotDirectoryAccessEnabled adds the snapshotDirectoryAccessEnabled to the volume modify params
+func (o *VolumeModifyParams) WithSnapshotDirectoryAccessEnabled(snapshotDirectoryAccessEnabled *bool) *VolumeModifyParams {
+	o.SetSnapshotDirectoryAccessEnabled(snapshotDirectoryAccessEnabled)
 	return o
 }
 
-// SetSnapshotDirectoryAccessEnabledQueryParameter adds the snapshotDirectoryAccessEnabled to the volume modify params
-func (o *VolumeModifyParams) SetSnapshotDirectoryAccessEnabledQueryParameter(snapshotDirectoryAccessEnabled *bool) {
-	o.SnapshotDirectoryAccessEnabledQueryParameter = snapshotDirectoryAccessEnabled
+// SetSnapshotDirectoryAccessEnabled adds the snapshotDirectoryAccessEnabled to the volume modify params
+func (o *VolumeModifyParams) SetSnapshotDirectoryAccessEnabled(snapshotDirectoryAccessEnabled *bool) {
+	o.SnapshotDirectoryAccessEnabled = snapshotDirectoryAccessEnabled
 }
 
-// WithUUIDPathParameter adds the uuid to the volume modify params
-func (o *VolumeModifyParams) WithUUIDPathParameter(uuid string) *VolumeModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the volume modify params
+func (o *VolumeModifyParams) WithUUID(uuid string) *VolumeModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the volume modify params
-func (o *VolumeModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the volume modify params
+func (o *VolumeModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
-// WithValidateOnlyQueryParameter adds the validateOnly to the volume modify params
-func (o *VolumeModifyParams) WithValidateOnlyQueryParameter(validateOnly *bool) *VolumeModifyParams {
-	o.SetValidateOnlyQueryParameter(validateOnly)
+// WithValidateOnly adds the validateOnly to the volume modify params
+func (o *VolumeModifyParams) WithValidateOnly(validateOnly *bool) *VolumeModifyParams {
+	o.SetValidateOnly(validateOnly)
 	return o
 }
 
-// SetValidateOnlyQueryParameter adds the validateOnly to the volume modify params
-func (o *VolumeModifyParams) SetValidateOnlyQueryParameter(validateOnly *bool) {
-	o.ValidateOnlyQueryParameter = validateOnly
+// SetValidateOnly adds the validateOnly to the volume modify params
+func (o *VolumeModifyParams) SetValidateOnly(validateOnly *bool) {
+	o.ValidateOnly = validateOnly
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -432,13 +432,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.CloneMatchParentStorageTierQueryParameter != nil {
+	if o.CloneMatchParentStorageTier != nil {
 
 		// query param clone.match_parent_storage_tier
 		var qrCloneMatchParentStorageTier bool
 
-		if o.CloneMatchParentStorageTierQueryParameter != nil {
-			qrCloneMatchParentStorageTier = *o.CloneMatchParentStorageTierQueryParameter
+		if o.CloneMatchParentStorageTier != nil {
+			qrCloneMatchParentStorageTier = *o.CloneMatchParentStorageTier
 		}
 		qCloneMatchParentStorageTier := swag.FormatBool(qrCloneMatchParentStorageTier)
 		if qCloneMatchParentStorageTier != "" {
@@ -454,13 +454,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.NvfailQueryParameter != nil {
+	if o.Nvfail != nil {
 
 		// query param nvfail
 		var qrNvfail string
 
-		if o.NvfailQueryParameter != nil {
-			qrNvfail = *o.NvfailQueryParameter
+		if o.Nvfail != nil {
+			qrNvfail = *o.Nvfail
 		}
 		qNvfail := qrNvfail
 		if qNvfail != "" {
@@ -471,13 +471,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.PreserveLunIDsQueryParameter != nil {
+	if o.PreserveLunIds != nil {
 
 		// query param preserve_lun_ids
 		var qrPreserveLunIds bool
 
-		if o.PreserveLunIDsQueryParameter != nil {
-			qrPreserveLunIds = *o.PreserveLunIDsQueryParameter
+		if o.PreserveLunIds != nil {
+			qrPreserveLunIds = *o.PreserveLunIds
 		}
 		qPreserveLunIds := swag.FormatBool(qrPreserveLunIds)
 		if qPreserveLunIds != "" {
@@ -488,13 +488,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToByteCountQueryParameter != nil {
+	if o.RestoreToByteCount != nil {
 
 		// query param restore_to.byte_count
 		var qrRestoreToByteCount float64
 
-		if o.RestoreToByteCountQueryParameter != nil {
-			qrRestoreToByteCount = *o.RestoreToByteCountQueryParameter
+		if o.RestoreToByteCount != nil {
+			qrRestoreToByteCount = *o.RestoreToByteCount
 		}
 		qRestoreToByteCount := swag.FormatFloat64(qrRestoreToByteCount)
 		if qRestoreToByteCount != "" {
@@ -505,13 +505,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToPathQueryParameter != nil {
+	if o.RestoreToPath != nil {
 
 		// query param restore_to.path
 		var qrRestoreToPath string
 
-		if o.RestoreToPathQueryParameter != nil {
-			qrRestoreToPath = *o.RestoreToPathQueryParameter
+		if o.RestoreToPath != nil {
+			qrRestoreToPath = *o.RestoreToPath
 		}
 		qRestoreToPath := qrRestoreToPath
 		if qRestoreToPath != "" {
@@ -522,13 +522,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToRestorePathQueryParameter != nil {
+	if o.RestoreToRestorePath != nil {
 
 		// query param restore_to.restore_path
 		var qrRestoreToRestorePath string
 
-		if o.RestoreToRestorePathQueryParameter != nil {
-			qrRestoreToRestorePath = *o.RestoreToRestorePathQueryParameter
+		if o.RestoreToRestorePath != nil {
+			qrRestoreToRestorePath = *o.RestoreToRestorePath
 		}
 		qRestoreToRestorePath := qrRestoreToRestorePath
 		if qRestoreToRestorePath != "" {
@@ -539,13 +539,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToSnapshotNameQueryParameter != nil {
+	if o.RestoreToSnapshotName != nil {
 
 		// query param restore_to.snapshot.name
 		var qrRestoreToSnapshotName string
 
-		if o.RestoreToSnapshotNameQueryParameter != nil {
-			qrRestoreToSnapshotName = *o.RestoreToSnapshotNameQueryParameter
+		if o.RestoreToSnapshotName != nil {
+			qrRestoreToSnapshotName = *o.RestoreToSnapshotName
 		}
 		qRestoreToSnapshotName := qrRestoreToSnapshotName
 		if qRestoreToSnapshotName != "" {
@@ -556,13 +556,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToSnapshotUUIDQueryParameter != nil {
+	if o.RestoreToSnapshotUUID != nil {
 
 		// query param restore_to.snapshot.uuid
 		var qrRestoreToSnapshotUUID string
 
-		if o.RestoreToSnapshotUUIDQueryParameter != nil {
-			qrRestoreToSnapshotUUID = *o.RestoreToSnapshotUUIDQueryParameter
+		if o.RestoreToSnapshotUUID != nil {
+			qrRestoreToSnapshotUUID = *o.RestoreToSnapshotUUID
 		}
 		qRestoreToSnapshotUUID := qrRestoreToSnapshotUUID
 		if qRestoreToSnapshotUUID != "" {
@@ -573,13 +573,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.RestoreToStartByteQueryParameter != nil {
+	if o.RestoreToStartByte != nil {
 
 		// query param restore_to.start_byte
 		var qrRestoreToStartByte float64
 
-		if o.RestoreToStartByteQueryParameter != nil {
-			qrRestoreToStartByte = *o.RestoreToStartByteQueryParameter
+		if o.RestoreToStartByte != nil {
+			qrRestoreToStartByte = *o.RestoreToStartByte
 		}
 		qRestoreToStartByte := swag.FormatFloat64(qrRestoreToStartByte)
 		if qRestoreToStartByte != "" {
@@ -590,13 +590,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -607,13 +607,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ScheduledSnapshotNamingSchemeQueryParameter != nil {
+	if o.ScheduledSnapshotNamingScheme != nil {
 
 		// query param scheduled_snapshot_naming_scheme
 		var qrScheduledSnapshotNamingScheme string
 
-		if o.ScheduledSnapshotNamingSchemeQueryParameter != nil {
-			qrScheduledSnapshotNamingScheme = *o.ScheduledSnapshotNamingSchemeQueryParameter
+		if o.ScheduledSnapshotNamingScheme != nil {
+			qrScheduledSnapshotNamingScheme = *o.ScheduledSnapshotNamingScheme
 		}
 		qScheduledSnapshotNamingScheme := qrScheduledSnapshotNamingScheme
 		if qScheduledSnapshotNamingScheme != "" {
@@ -624,13 +624,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.SizingMethodQueryParameter != nil {
+	if o.SizingMethod != nil {
 
 		// query param sizing_method
 		var qrSizingMethod string
 
-		if o.SizingMethodQueryParameter != nil {
-			qrSizingMethod = *o.SizingMethodQueryParameter
+		if o.SizingMethod != nil {
+			qrSizingMethod = *o.SizingMethod
 		}
 		qSizingMethod := qrSizingMethod
 		if qSizingMethod != "" {
@@ -641,13 +641,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.SnapshotDirectoryAccessEnabledQueryParameter != nil {
+	if o.SnapshotDirectoryAccessEnabled != nil {
 
 		// query param snapshot_directory_access_enabled
 		var qrSnapshotDirectoryAccessEnabled bool
 
-		if o.SnapshotDirectoryAccessEnabledQueryParameter != nil {
-			qrSnapshotDirectoryAccessEnabled = *o.SnapshotDirectoryAccessEnabledQueryParameter
+		if o.SnapshotDirectoryAccessEnabled != nil {
+			qrSnapshotDirectoryAccessEnabled = *o.SnapshotDirectoryAccessEnabled
 		}
 		qSnapshotDirectoryAccessEnabled := swag.FormatBool(qrSnapshotDirectoryAccessEnabled)
 		if qSnapshotDirectoryAccessEnabled != "" {
@@ -659,17 +659,17 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
-	if o.ValidateOnlyQueryParameter != nil {
+	if o.ValidateOnly != nil {
 
 		// query param validate_only
 		var qrValidateOnly bool
 
-		if o.ValidateOnlyQueryParameter != nil {
-			qrValidateOnly = *o.ValidateOnlyQueryParameter
+		if o.ValidateOnly != nil {
+			qrValidateOnly = *o.ValidateOnly
 		}
 		qValidateOnly := swag.FormatBool(qrValidateOnly)
 		if qValidateOnly != "" {

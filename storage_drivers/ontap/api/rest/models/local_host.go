@@ -21,28 +21,28 @@ import (
 type LocalHost struct {
 
 	// links
-	Links *LocalHostLinks `json:"_links,omitempty"`
+	Links *LocalHostInlineLinks `json:"_links,omitempty"`
 
 	// IPv4/IPv6 address in dotted form.
 	// Example: 123.123.123.123
-	Address string `json:"address,omitempty"`
-
-	// The list of aliases.
-	// Example: ["host1.sales.foo.com","host2.sakes.foo.com"]
-	Aliases []string `json:"aliases,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// Canonical hostname.
 	// Example: host.sales.foo.com
 	// Max Length: 255
 	// Min Length: 1
-	Hostname string `json:"hostname,omitempty"`
+	Hostname *string `json:"hostname,omitempty"`
+
+	// The list of aliases.
+	// Example: ["host1.sales.foo.com","host2.sakes.foo.com"]
+	LocalHostInlineAliases []*string `json:"aliases,omitempty"`
 
 	// owner
-	Owner *LocalHostOwner `json:"owner,omitempty"`
+	Owner *LocalHostInlineOwner `json:"owner,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 }
 
 // Validate validates this local host
@@ -93,11 +93,11 @@ func (m *LocalHost) validateHostname(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("hostname", "body", m.Hostname, 1); err != nil {
+	if err := validate.MinLength("hostname", "body", *m.Hostname, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("hostname", "body", m.Hostname, 255); err != nil {
+	if err := validate.MaxLength("hostname", "body", *m.Hostname, 255); err != nil {
 		return err
 	}
 
@@ -170,7 +170,7 @@ func (m *LocalHost) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -241,17 +241,17 @@ func (m *LocalHost) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalHostLinks local host links
+// LocalHostInlineLinks local host inline links
 //
-// swagger:model LocalHostLinks
-type LocalHostLinks struct {
+// swagger:model local_host_inline__links
+type LocalHostInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local host links
-func (m *LocalHostLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local host inline links
+func (m *LocalHostInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -264,7 +264,7 @@ func (m *LocalHostLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalHostInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -281,8 +281,8 @@ func (m *LocalHostLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local host links based on the context it is used
-func (m *LocalHostLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local host inline links based on the context it is used
+func (m *LocalHostInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -295,7 +295,7 @@ func (m *LocalHostLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LocalHostLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -310,7 +310,7 @@ func (m *LocalHostLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *LocalHostLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalHostInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -318,8 +318,8 @@ func (m *LocalHostLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalHostLinks) UnmarshalBinary(b []byte) error {
-	var res LocalHostLinks
+func (m *LocalHostInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalHostInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -327,27 +327,27 @@ func (m *LocalHostLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalHostOwner local host owner
+// LocalHostInlineOwner local host inline owner
 //
-// swagger:model LocalHostOwner
-type LocalHostOwner struct {
+// swagger:model local_host_inline_owner
+type LocalHostInlineOwner struct {
 
 	// links
-	Links *LocalHostOwnerLinks `json:"_links,omitempty"`
+	Links *LocalHostInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this local host owner
-func (m *LocalHostOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this local host inline owner
+func (m *LocalHostInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -360,7 +360,7 @@ func (m *LocalHostOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostOwner) validateLinks(formats strfmt.Registry) error {
+func (m *LocalHostInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -377,8 +377,8 @@ func (m *LocalHostOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local host owner based on the context it is used
-func (m *LocalHostOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local host inline owner based on the context it is used
+func (m *LocalHostInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -391,7 +391,7 @@ func (m *LocalHostOwner) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LocalHostOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -406,7 +406,7 @@ func (m *LocalHostOwner) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *LocalHostOwner) MarshalBinary() ([]byte, error) {
+func (m *LocalHostInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -414,8 +414,8 @@ func (m *LocalHostOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalHostOwner) UnmarshalBinary(b []byte) error {
-	var res LocalHostOwner
+func (m *LocalHostInlineOwner) UnmarshalBinary(b []byte) error {
+	var res LocalHostInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -423,17 +423,17 @@ func (m *LocalHostOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalHostOwnerLinks local host owner links
+// LocalHostInlineOwnerInlineLinks local host inline owner inline links
 //
-// swagger:model LocalHostOwnerLinks
-type LocalHostOwnerLinks struct {
+// swagger:model local_host_inline_owner_inline__links
+type LocalHostInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local host owner links
-func (m *LocalHostOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local host inline owner inline links
+func (m *LocalHostInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -446,7 +446,7 @@ func (m *LocalHostOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalHostOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalHostInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -463,8 +463,8 @@ func (m *LocalHostOwnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local host owner links based on the context it is used
-func (m *LocalHostOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local host inline owner inline links based on the context it is used
+func (m *LocalHostInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -477,7 +477,7 @@ func (m *LocalHostOwnerLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *LocalHostOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalHostInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -492,7 +492,7 @@ func (m *LocalHostOwnerLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *LocalHostOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalHostInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -500,8 +500,8 @@ func (m *LocalHostOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalHostOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res LocalHostOwnerLinks
+func (m *LocalHostInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalHostInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

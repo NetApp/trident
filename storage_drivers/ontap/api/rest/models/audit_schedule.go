@@ -21,42 +21,42 @@ import (
 type AuditSchedule struct {
 
 	// Specifies the day of the month schedule to rotate audit log. Leave empty for all.
-	Days []int64 `json:"days,omitempty"`
+	AuditScheduleInlineDays []*int64 `json:"days,omitempty"`
 
 	// Specifies the hourly schedule to rotate audit log. Leave empty for all.
-	Hours []*int64 `json:"hours,omitempty"`
+	AuditScheduleInlineHours []*int64 `json:"hours,omitempty"`
 
 	// Specifies the minutes schedule to rotate the audit log.
-	Minutes []*int64 `json:"minutes,omitempty"`
+	AuditScheduleInlineMinutes []*int64 `json:"minutes,omitempty"`
 
 	// Specifies the months schedule to rotate audit log. Leave empty for all.
-	Months []int64 `json:"months,omitempty"`
+	AuditScheduleInlineMonths []*int64 `json:"months,omitempty"`
 
 	// Specifies the weekdays schedule to rotate audit log. Leave empty for all.
-	Weekdays []*int64 `json:"weekdays,omitempty"`
+	AuditScheduleInlineWeekdays []*int64 `json:"weekdays,omitempty"`
 }
 
 // Validate validates this audit schedule
 func (m *AuditSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDays(formats); err != nil {
+	if err := m.validateAuditScheduleInlineDays(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateHours(formats); err != nil {
+	if err := m.validateAuditScheduleInlineHours(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateMinutes(formats); err != nil {
+	if err := m.validateAuditScheduleInlineMinutes(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateMonths(formats); err != nil {
+	if err := m.validateAuditScheduleInlineMonths(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateWeekdays(formats); err != nil {
+	if err := m.validateAuditScheduleInlineWeekdays(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,41 +66,21 @@ func (m *AuditSchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AuditSchedule) validateDays(formats strfmt.Registry) error {
-	if swag.IsZero(m.Days) { // not required
+func (m *AuditSchedule) validateAuditScheduleInlineDays(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditScheduleInlineDays) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Days); i++ {
-
-		if err := validate.MinimumInt("days"+"."+strconv.Itoa(i), "body", m.Days[i], 1, false); err != nil {
-			return err
-		}
-
-		if err := validate.MaximumInt("days"+"."+strconv.Itoa(i), "body", m.Days[i], 31, false); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *AuditSchedule) validateHours(formats strfmt.Registry) error {
-	if swag.IsZero(m.Hours) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Hours); i++ {
-		if swag.IsZero(m.Hours[i]) { // not required
+	for i := 0; i < len(m.AuditScheduleInlineDays); i++ {
+		if swag.IsZero(m.AuditScheduleInlineDays[i]) { // not required
 			continue
 		}
 
-		if err := validate.MinimumInt("hours"+"."+strconv.Itoa(i), "body", *m.Hours[i], 0, false); err != nil {
+		if err := validate.MinimumInt("days"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineDays[i], 1, false); err != nil {
 			return err
 		}
 
-		if err := validate.MaximumInt("hours"+"."+strconv.Itoa(i), "body", *m.Hours[i], 23, false); err != nil {
+		if err := validate.MaximumInt("days"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineDays[i], 31, false); err != nil {
 			return err
 		}
 
@@ -109,41 +89,21 @@ func (m *AuditSchedule) validateHours(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AuditSchedule) validateMinutes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Minutes) { // not required
+func (m *AuditSchedule) validateAuditScheduleInlineHours(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditScheduleInlineHours) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Minutes); i++ {
-		if swag.IsZero(m.Minutes[i]) { // not required
+	for i := 0; i < len(m.AuditScheduleInlineHours); i++ {
+		if swag.IsZero(m.AuditScheduleInlineHours[i]) { // not required
 			continue
 		}
 
-		if err := validate.MinimumInt("minutes"+"."+strconv.Itoa(i), "body", *m.Minutes[i], 0, false); err != nil {
+		if err := validate.MinimumInt("hours"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineHours[i], 0, false); err != nil {
 			return err
 		}
 
-		if err := validate.MaximumInt("minutes"+"."+strconv.Itoa(i), "body", *m.Minutes[i], 59, false); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *AuditSchedule) validateMonths(formats strfmt.Registry) error {
-	if swag.IsZero(m.Months) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Months); i++ {
-
-		if err := validate.MinimumInt("months"+"."+strconv.Itoa(i), "body", m.Months[i], 1, false); err != nil {
-			return err
-		}
-
-		if err := validate.MaximumInt("months"+"."+strconv.Itoa(i), "body", m.Months[i], 12, false); err != nil {
+		if err := validate.MaximumInt("hours"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineHours[i], 23, false); err != nil {
 			return err
 		}
 
@@ -152,21 +112,67 @@ func (m *AuditSchedule) validateMonths(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AuditSchedule) validateWeekdays(formats strfmt.Registry) error {
-	if swag.IsZero(m.Weekdays) { // not required
+func (m *AuditSchedule) validateAuditScheduleInlineMinutes(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditScheduleInlineMinutes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Weekdays); i++ {
-		if swag.IsZero(m.Weekdays[i]) { // not required
+	for i := 0; i < len(m.AuditScheduleInlineMinutes); i++ {
+		if swag.IsZero(m.AuditScheduleInlineMinutes[i]) { // not required
 			continue
 		}
 
-		if err := validate.MinimumInt("weekdays"+"."+strconv.Itoa(i), "body", *m.Weekdays[i], 0, false); err != nil {
+		if err := validate.MinimumInt("minutes"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineMinutes[i], 0, false); err != nil {
 			return err
 		}
 
-		if err := validate.MaximumInt("weekdays"+"."+strconv.Itoa(i), "body", *m.Weekdays[i], 6, false); err != nil {
+		if err := validate.MaximumInt("minutes"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineMinutes[i], 59, false); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AuditSchedule) validateAuditScheduleInlineMonths(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditScheduleInlineMonths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AuditScheduleInlineMonths); i++ {
+		if swag.IsZero(m.AuditScheduleInlineMonths[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinimumInt("months"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineMonths[i], 1, false); err != nil {
+			return err
+		}
+
+		if err := validate.MaximumInt("months"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineMonths[i], 12, false); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AuditSchedule) validateAuditScheduleInlineWeekdays(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditScheduleInlineWeekdays) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AuditScheduleInlineWeekdays); i++ {
+		if swag.IsZero(m.AuditScheduleInlineWeekdays[i]) { // not required
+			continue
+		}
+
+		if err := validate.MinimumInt("weekdays"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineWeekdays[i], 0, false); err != nil {
+			return err
+		}
+
+		if err := validate.MaximumInt("weekdays"+"."+strconv.Itoa(i), "body", *m.AuditScheduleInlineWeekdays[i], 6, false); err != nil {
 			return err
 		}
 

@@ -19,11 +19,11 @@ type Cn struct {
 
 	// RFC 2256 cn attribute used by RFC 2307 when working with groups.
 	// Example: cn
-	Group string `json:"group,omitempty"`
+	Group *string `json:"group,omitempty"`
 
 	// RFC 2256 cn attribute used by RFC 2307 when working with netgroups.
 	// Example: name
-	Netgroup string `json:"netgroup,omitempty"`
+	Netgroup *string `json:"netgroup,omitempty"`
 }
 
 // Validate validates this cn

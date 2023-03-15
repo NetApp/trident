@@ -52,6 +52,10 @@ ScheduleCreateCreated describes a response with status code 201, with default he
 Created
 */
 type ScheduleCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this schedule create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *ScheduleCreateCreated) String() string {
 }
 
 func (o *ScheduleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

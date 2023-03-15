@@ -66,61 +66,61 @@ type VscanServerStatusGetParams struct {
 
 	   Filter by disconnected_reason
 	*/
-	DisconnectedReasonQueryParameter *string
+	DisconnectedReason *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceIPAddress.
 
 	   Filter by interface.ip.address
 	*/
-	InterfaceIPAddressQueryParameter *string
+	InterfaceIPAddress *string
 
 	/* InterfaceName.
 
 	   Filter by interface.name
 	*/
-	InterfaceNameQueryParameter *string
+	InterfaceName *string
 
 	/* InterfaceUUID.
 
 	   Filter by interface.uuid
 	*/
-	InterfaceUUIDQueryParameter *string
+	InterfaceUUID *string
 
 	/* IP.
 
 	   Filter by ip
 	*/
-	IPQueryParameter *string
+	IP *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type VscanServerStatusGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,49 +136,49 @@ type VscanServerStatusGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UpdateTime.
 
 	   Filter by update_time
 	*/
-	UpdateTimeQueryParameter *string
+	UpdateTime *string
 
 	/* Vendor.
 
 	   Filter by vendor
 	*/
-	VendorQueryParameter *string
+	Vendor *string
 
 	/* Version.
 
 	   Filter by version
 	*/
-	VersionQueryParameter *string
+	Version *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *VscanServerStatusGetParams) WithDefaults() *VscanServerStatusGetParams 
 // All values with no default are reset to their zero value.
 func (o *VscanServerStatusGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VscanServerStatusGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *VscanServerStatusGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDisconnectedReasonQueryParameter adds the disconnectedReason to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithDisconnectedReasonQueryParameter(disconnectedReason *string) *VscanServerStatusGetParams {
-	o.SetDisconnectedReasonQueryParameter(disconnectedReason)
+// WithDisconnectedReason adds the disconnectedReason to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithDisconnectedReason(disconnectedReason *string) *VscanServerStatusGetParams {
+	o.SetDisconnectedReason(disconnectedReason)
 	return o
 }
 
-// SetDisconnectedReasonQueryParameter adds the disconnectedReason to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetDisconnectedReasonQueryParameter(disconnectedReason *string) {
-	o.DisconnectedReasonQueryParameter = disconnectedReason
+// SetDisconnectedReason adds the disconnectedReason to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetDisconnectedReason(disconnectedReason *string) {
+	o.DisconnectedReason = disconnectedReason
 }
 
-// WithFieldsQueryParameter adds the fields to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithFieldsQueryParameter(fields []string) *VscanServerStatusGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithFields(fields []string) *VscanServerStatusGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceIPAddressQueryParameter adds the interfaceIPAddress to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithInterfaceIPAddressQueryParameter(interfaceIPAddress *string) *VscanServerStatusGetParams {
-	o.SetInterfaceIPAddressQueryParameter(interfaceIPAddress)
+// WithInterfaceIPAddress adds the interfaceIPAddress to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceIPAddress(interfaceIPAddress *string) *VscanServerStatusGetParams {
+	o.SetInterfaceIPAddress(interfaceIPAddress)
 	return o
 }
 
-// SetInterfaceIPAddressQueryParameter adds the interfaceIpAddress to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetInterfaceIPAddressQueryParameter(interfaceIPAddress *string) {
-	o.InterfaceIPAddressQueryParameter = interfaceIPAddress
+// SetInterfaceIPAddress adds the interfaceIpAddress to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceIPAddress(interfaceIPAddress *string) {
+	o.InterfaceIPAddress = interfaceIPAddress
 }
 
-// WithInterfaceNameQueryParameter adds the interfaceName to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *VscanServerStatusGetParams {
-	o.SetInterfaceNameQueryParameter(interfaceName)
+// WithInterfaceName adds the interfaceName to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceName(interfaceName *string) *VscanServerStatusGetParams {
+	o.SetInterfaceName(interfaceName)
 	return o
 }
 
-// SetInterfaceNameQueryParameter adds the interfaceName to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
-	o.InterfaceNameQueryParameter = interfaceName
+// SetInterfaceName adds the interfaceName to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceName(interfaceName *string) {
+	o.InterfaceName = interfaceName
 }
 
-// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *VscanServerStatusGetParams {
-	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceUUID(interfaceUUID *string) *VscanServerStatusGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
-	o.InterfaceUUIDQueryParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceUUID(interfaceUUID *string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
-// WithIPQueryParameter adds the ip to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithIPQueryParameter(ip *string) *VscanServerStatusGetParams {
-	o.SetIPQueryParameter(ip)
+// WithIP adds the ip to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithIP(ip *string) *VscanServerStatusGetParams {
+	o.SetIP(ip)
 	return o
 }
 
-// SetIPQueryParameter adds the ip to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetIPQueryParameter(ip *string) {
-	o.IPQueryParameter = ip
+// SetIP adds the ip to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetIP(ip *string) {
+	o.IP = ip
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanServerStatusGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithMaxRecords(maxRecords *int64) *VscanServerStatusGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithNodeNameQueryParameter(nodeName *string) *VscanServerStatusGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithNodeName(nodeName *string) *VscanServerStatusGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *VscanServerStatusGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithNodeUUID(nodeUUID *string) *VscanServerStatusGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithOrderByQueryParameter(orderBy []string) *VscanServerStatusGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithOrderBy(orderBy []string) *VscanServerStatusGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanServerStatusGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithReturnRecords(returnRecords *bool) *VscanServerStatusGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanServerStatusGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithReturnTimeout(returnTimeout *int64) *VscanServerStatusGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithStateQueryParameter(state *string) *VscanServerStatusGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithState(state *string) *VscanServerStatusGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSVMNameQueryParameter adds the svmName to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithSVMNameQueryParameter(svmName *string) *VscanServerStatusGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithSvmName(svmName *string) *VscanServerStatusGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *VscanServerStatusGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithSvmUUID(svmUUID *string) *VscanServerStatusGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithTypeQueryParameter(typeVar *string) *VscanServerStatusGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithType(typeVar *string) *VscanServerStatusGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUpdateTimeQueryParameter adds the updateTime to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithUpdateTimeQueryParameter(updateTime *string) *VscanServerStatusGetParams {
-	o.SetUpdateTimeQueryParameter(updateTime)
+// WithUpdateTime adds the updateTime to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithUpdateTime(updateTime *string) *VscanServerStatusGetParams {
+	o.SetUpdateTime(updateTime)
 	return o
 }
 
-// SetUpdateTimeQueryParameter adds the updateTime to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetUpdateTimeQueryParameter(updateTime *string) {
-	o.UpdateTimeQueryParameter = updateTime
+// SetUpdateTime adds the updateTime to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetUpdateTime(updateTime *string) {
+	o.UpdateTime = updateTime
 }
 
-// WithVendorQueryParameter adds the vendor to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithVendorQueryParameter(vendor *string) *VscanServerStatusGetParams {
-	o.SetVendorQueryParameter(vendor)
+// WithVendor adds the vendor to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithVendor(vendor *string) *VscanServerStatusGetParams {
+	o.SetVendor(vendor)
 	return o
 }
 
-// SetVendorQueryParameter adds the vendor to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetVendorQueryParameter(vendor *string) {
-	o.VendorQueryParameter = vendor
+// SetVendor adds the vendor to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetVendor(vendor *string) {
+	o.Vendor = vendor
 }
 
-// WithVersionQueryParameter adds the version to the vscan server status get params
-func (o *VscanServerStatusGetParams) WithVersionQueryParameter(version *string) *VscanServerStatusGetParams {
-	o.SetVersionQueryParameter(version)
+// WithVersion adds the version to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithVersion(version *string) *VscanServerStatusGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionQueryParameter adds the version to the vscan server status get params
-func (o *VscanServerStatusGetParams) SetVersionQueryParameter(version *string) {
-	o.VersionQueryParameter = version
+// SetVersion adds the version to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetVersion(version *string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.DisconnectedReasonQueryParameter != nil {
+	if o.DisconnectedReason != nil {
 
 		// query param disconnected_reason
 		var qrDisconnectedReason string
 
-		if o.DisconnectedReasonQueryParameter != nil {
-			qrDisconnectedReason = *o.DisconnectedReasonQueryParameter
+		if o.DisconnectedReason != nil {
+			qrDisconnectedReason = *o.DisconnectedReason
 		}
 		qDisconnectedReason := qrDisconnectedReason
 		if qDisconnectedReason != "" {
@@ -481,7 +481,7 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -492,13 +492,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceIPAddressQueryParameter != nil {
+	if o.InterfaceIPAddress != nil {
 
 		// query param interface.ip.address
 		var qrInterfaceIPAddress string
 
-		if o.InterfaceIPAddressQueryParameter != nil {
-			qrInterfaceIPAddress = *o.InterfaceIPAddressQueryParameter
+		if o.InterfaceIPAddress != nil {
+			qrInterfaceIPAddress = *o.InterfaceIPAddress
 		}
 		qInterfaceIPAddress := qrInterfaceIPAddress
 		if qInterfaceIPAddress != "" {
@@ -509,13 +509,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceNameQueryParameter != nil {
+	if o.InterfaceName != nil {
 
 		// query param interface.name
 		var qrInterfaceName string
 
-		if o.InterfaceNameQueryParameter != nil {
-			qrInterfaceName = *o.InterfaceNameQueryParameter
+		if o.InterfaceName != nil {
+			qrInterfaceName = *o.InterfaceName
 		}
 		qInterfaceName := qrInterfaceName
 		if qInterfaceName != "" {
@@ -526,13 +526,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.InterfaceUUIDQueryParameter != nil {
+	if o.InterfaceUUID != nil {
 
 		// query param interface.uuid
 		var qrInterfaceUUID string
 
-		if o.InterfaceUUIDQueryParameter != nil {
-			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		if o.InterfaceUUID != nil {
+			qrInterfaceUUID = *o.InterfaceUUID
 		}
 		qInterfaceUUID := qrInterfaceUUID
 		if qInterfaceUUID != "" {
@@ -543,13 +543,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IPQueryParameter != nil {
+	if o.IP != nil {
 
 		// query param ip
 		var qrIP string
 
-		if o.IPQueryParameter != nil {
-			qrIP = *o.IPQueryParameter
+		if o.IP != nil {
+			qrIP = *o.IP
 		}
 		qIP := qrIP
 		if qIP != "" {
@@ -560,13 +560,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -577,13 +577,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -594,13 +594,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -611,7 +611,7 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -622,13 +622,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -639,13 +639,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -656,13 +656,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -673,13 +673,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -690,13 +690,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -707,13 +707,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -724,13 +724,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.UpdateTimeQueryParameter != nil {
+	if o.UpdateTime != nil {
 
 		// query param update_time
 		var qrUpdateTime string
 
-		if o.UpdateTimeQueryParameter != nil {
-			qrUpdateTime = *o.UpdateTimeQueryParameter
+		if o.UpdateTime != nil {
+			qrUpdateTime = *o.UpdateTime
 		}
 		qUpdateTime := qrUpdateTime
 		if qUpdateTime != "" {
@@ -741,13 +741,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.VendorQueryParameter != nil {
+	if o.Vendor != nil {
 
 		// query param vendor
 		var qrVendor string
 
-		if o.VendorQueryParameter != nil {
-			qrVendor = *o.VendorQueryParameter
+		if o.Vendor != nil {
+			qrVendor = *o.Vendor
 		}
 		qVendor := qrVendor
 		if qVendor != "" {
@@ -758,13 +758,13 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.VersionQueryParameter != nil {
+	if o.Version != nil {
 
 		// query param version
 		var qrVersion string
 
-		if o.VersionQueryParameter != nil {
-			qrVersion = *o.VersionQueryParameter
+		if o.Version != nil {
+			qrVersion = *o.Version
 		}
 		qVersion := qrVersion
 		if qVersion != "" {
@@ -783,7 +783,7 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamVscanServerStatusGet binds the parameter fields
 func (o *VscanServerStatusGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *VscanServerStatusGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamVscanServerStatusGet binds the parameter order_by
 func (o *VscanServerStatusGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

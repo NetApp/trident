@@ -20,14 +20,14 @@ import (
 type JobResponse struct {
 
 	// links
-	Links *JobResponseLinks `json:"_links,omitempty"`
+	Links *JobResponseInlineLinks `json:"_links,omitempty"`
 
-	// num records
+	// job response inline records
+	JobResponseInlineRecords []*Job `json:"records,omitempty"`
+
+	// Number of records
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Job `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this job response
@@ -38,7 +38,7 @@ func (m *JobResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateJobResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *JobResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *JobResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *JobResponse) validateJobResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.JobResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.JobResponseInlineRecords); i++ {
+		if swag.IsZero(m.JobResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.JobResponseInlineRecords[i] != nil {
+			if err := m.JobResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *JobResponse) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateJobResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *JobResponse) contextValidateLinks(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *JobResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobResponse) contextValidateJobResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.JobResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.JobResponseInlineRecords[i] != nil {
+			if err := m.JobResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *JobResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// JobResponseLinks job response links
+// JobResponseInlineLinks job response inline links
 //
-// swagger:model JobResponseLinks
-type JobResponseLinks struct {
+// swagger:model job_response_inline__links
+type JobResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type JobResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this job response links
-func (m *JobResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this job response inline links
+func (m *JobResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *JobResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *JobResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *JobResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *JobResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *JobResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *JobResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *JobResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this job response links based on the context it is used
-func (m *JobResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this job response inline links based on the context it is used
+func (m *JobResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *JobResponseLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *JobResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *JobResponseLinks) contextValidateNext(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *JobResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *JobResponseLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *JobResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *JobResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *JobResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *JobResponseLinks) UnmarshalBinary(b []byte) error {
-	var res JobResponseLinks
+func (m *JobResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res JobResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -19,17 +19,17 @@ import (
 type LunReference struct {
 
 	// links
-	Links *LunReferenceLinks `json:"_links,omitempty"`
+	Links *LunReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
 	//
 	// Example: /vol/volume1/lun1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the LUN.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this lun reference
@@ -109,17 +109,17 @@ func (m *LunReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunReferenceLinks lun reference links
+// LunReferenceInlineLinks lun reference inline links
 //
-// swagger:model LunReferenceLinks
-type LunReferenceLinks struct {
+// swagger:model lun_reference_inline__links
+type LunReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun reference links
-func (m *LunReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun reference inline links
+func (m *LunReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -132,7 +132,7 @@ func (m *LunReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -149,8 +149,8 @@ func (m *LunReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun reference links based on the context it is used
-func (m *LunReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun reference inline links based on the context it is used
+func (m *LunReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -163,7 +163,7 @@ func (m *LunReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *LunReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -178,7 +178,7 @@ func (m *LunReferenceLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *LunReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *LunReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -186,8 +186,8 @@ func (m *LunReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res LunReferenceLinks
+func (m *LunReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

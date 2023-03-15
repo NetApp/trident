@@ -73,13 +73,13 @@ type LocalCifsGroupModifyParams struct {
 
 	   Local group SID
 	*/
-	SIDPathParameter string
+	Sid string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *LocalCifsGroupModifyParams) SetInfo(info *models.LocalCifsGroup) {
 	o.Info = info
 }
 
-// WithSIDPathParameter adds the sid to the local cifs group modify params
-func (o *LocalCifsGroupModifyParams) WithSIDPathParameter(sid string) *LocalCifsGroupModifyParams {
-	o.SetSIDPathParameter(sid)
+// WithSid adds the sid to the local cifs group modify params
+func (o *LocalCifsGroupModifyParams) WithSid(sid string) *LocalCifsGroupModifyParams {
+	o.SetSid(sid)
 	return o
 }
 
-// SetSIDPathParameter adds the sid to the local cifs group modify params
-func (o *LocalCifsGroupModifyParams) SetSIDPathParameter(sid string) {
-	o.SIDPathParameter = sid
+// SetSid adds the sid to the local cifs group modify params
+func (o *LocalCifsGroupModifyParams) SetSid(sid string) {
+	o.Sid = sid
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group modify params
-func (o *LocalCifsGroupModifyParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group modify params
+func (o *LocalCifsGroupModifyParams) WithSvmUUID(svmUUID string) *LocalCifsGroupModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group modify params
-func (o *LocalCifsGroupModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group modify params
+func (o *LocalCifsGroupModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *LocalCifsGroupModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param sid
-	if err := r.SetPathParam("sid", o.SIDPathParameter); err != nil {
+	if err := r.SetPathParam("sid", o.Sid); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

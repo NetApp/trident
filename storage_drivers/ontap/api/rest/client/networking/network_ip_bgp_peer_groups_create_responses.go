@@ -52,6 +52,10 @@ NetworkIPBgpPeerGroupsCreateCreated describes a response with status code 201, w
 Created
 */
 type NetworkIPBgpPeerGroupsCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this network Ip bgp peer groups create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *NetworkIPBgpPeerGroupsCreateCreated) String() string {
 }
 
 func (o *NetworkIPBgpPeerGroupsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

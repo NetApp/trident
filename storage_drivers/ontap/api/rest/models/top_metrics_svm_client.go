@@ -23,16 +23,16 @@ type TopMetricsSvmClient struct {
 	// IP address of the client. Both IPv4 and IPv6 IP addresses are supported.
 	// Example: 192.168.185.170
 	// Read Only: true
-	ClientIP string `json:"client_ip,omitempty"`
+	ClientIP *string `json:"client_ip,omitempty"`
 
 	// iops
-	Iops *TopMetricsSvmClientIops `json:"iops,omitempty"`
+	Iops *TopMetricsSvmClientInlineIops `json:"iops,omitempty"`
 
 	// svm
-	Svm *TopMetricsSvmClientSvm `json:"svm,omitempty"`
+	Svm *TopMetricsSvmClientInlineSvm `json:"svm,omitempty"`
 
 	// throughput
-	Throughput *TopMetricsSvmClientThroughput `json:"throughput,omitempty"`
+	Throughput *TopMetricsSvmClientInlineThroughput `json:"throughput,omitempty"`
 }
 
 // Validate validates this top metrics svm client
@@ -136,7 +136,7 @@ func (m *TopMetricsSvmClient) ContextValidate(ctx context.Context, formats strfm
 
 func (m *TopMetricsSvmClient) contextValidateClientIP(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "client_ip", "body", string(m.ClientIP)); err != nil {
+	if err := validate.ReadOnly(ctx, "client_ip", "body", m.ClientIP); err != nil {
 		return err
 	}
 
@@ -203,10 +203,10 @@ func (m *TopMetricsSvmClient) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmClientIops top metrics svm client iops
+// TopMetricsSvmClientInlineIops top metrics svm client inline iops
 //
-// swagger:model TopMetricsSvmClientIops
-type TopMetricsSvmClientIops struct {
+// swagger:model top_metrics_svm_client_inline_iops
+type TopMetricsSvmClientInlineIops struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -214,16 +214,16 @@ type TopMetricsSvmClientIops struct {
 	// Average number of read operations per second.
 	// Example: 5
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write operations per second.
 	// Example: 10
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics svm client iops
-func (m *TopMetricsSvmClientIops) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client inline iops
+func (m *TopMetricsSvmClientInlineIops) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -236,7 +236,7 @@ func (m *TopMetricsSvmClientIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmClientIops) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineIops) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -253,8 +253,8 @@ func (m *TopMetricsSvmClientIops) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client iops based on the context it is used
-func (m *TopMetricsSvmClientIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client inline iops based on the context it is used
+func (m *TopMetricsSvmClientInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -275,7 +275,7 @@ func (m *TopMetricsSvmClientIops) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *TopMetricsSvmClientIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -289,18 +289,18 @@ func (m *TopMetricsSvmClientIops) contextValidateError(ctx context.Context, form
 	return nil
 }
 
-func (m *TopMetricsSvmClientIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmClientIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -308,7 +308,7 @@ func (m *TopMetricsSvmClientIops) contextValidateWrite(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientIops) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -316,8 +316,8 @@ func (m *TopMetricsSvmClientIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientIops) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientIops
+func (m *TopMetricsSvmClientInlineIops) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -325,27 +325,27 @@ func (m *TopMetricsSvmClientIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmClientSvm top metrics svm client svm
+// TopMetricsSvmClientInlineSvm top metrics svm client inline svm
 //
-// swagger:model TopMetricsSvmClientSvm
-type TopMetricsSvmClientSvm struct {
+// swagger:model top_metrics_svm_client_inline_svm
+type TopMetricsSvmClientInlineSvm struct {
 
 	// links
-	Links *TopMetricsSvmClientSvmLinks `json:"_links,omitempty"`
+	Links *TopMetricsSvmClientInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics svm client svm
-func (m *TopMetricsSvmClientSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client inline svm
+func (m *TopMetricsSvmClientInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -358,7 +358,7 @@ func (m *TopMetricsSvmClientSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmClientSvm) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -375,8 +375,8 @@ func (m *TopMetricsSvmClientSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client svm based on the context it is used
-func (m *TopMetricsSvmClientSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client inline svm based on the context it is used
+func (m *TopMetricsSvmClientInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -389,7 +389,7 @@ func (m *TopMetricsSvmClientSvm) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *TopMetricsSvmClientSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -404,7 +404,7 @@ func (m *TopMetricsSvmClientSvm) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientSvm) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -412,8 +412,8 @@ func (m *TopMetricsSvmClientSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientSvm) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientSvm
+func (m *TopMetricsSvmClientInlineSvm) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -421,17 +421,17 @@ func (m *TopMetricsSvmClientSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmClientSvmLinks top metrics svm client svm links
+// TopMetricsSvmClientInlineSvmInlineLinks top metrics svm client inline svm inline links
 //
-// swagger:model TopMetricsSvmClientSvmLinks
-type TopMetricsSvmClientSvmLinks struct {
+// swagger:model top_metrics_svm_client_inline_svm_inline__links
+type TopMetricsSvmClientInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm client svm links
-func (m *TopMetricsSvmClientSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client inline svm inline links
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -444,7 +444,7 @@ func (m *TopMetricsSvmClientSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmClientSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -461,8 +461,8 @@ func (m *TopMetricsSvmClientSvmLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client svm links based on the context it is used
-func (m *TopMetricsSvmClientSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client inline svm inline links based on the context it is used
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -475,7 +475,7 @@ func (m *TopMetricsSvmClientSvmLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *TopMetricsSvmClientSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -490,7 +490,7 @@ func (m *TopMetricsSvmClientSvmLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -498,8 +498,8 @@ func (m *TopMetricsSvmClientSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientSvmLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientSvmLinks
+func (m *TopMetricsSvmClientInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -507,10 +507,10 @@ func (m *TopMetricsSvmClientSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmClientThroughput top metrics svm client throughput
+// TopMetricsSvmClientInlineThroughput top metrics svm client inline throughput
 //
-// swagger:model TopMetricsSvmClientThroughput
-type TopMetricsSvmClientThroughput struct {
+// swagger:model top_metrics_svm_client_inline_throughput
+type TopMetricsSvmClientInlineThroughput struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -518,16 +518,16 @@ type TopMetricsSvmClientThroughput struct {
 	// Average number of read bytes received per second.
 	// Example: 12
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write bytes received per second.
 	// Example: 2
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics svm client throughput
-func (m *TopMetricsSvmClientThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client inline throughput
+func (m *TopMetricsSvmClientInlineThroughput) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -540,7 +540,7 @@ func (m *TopMetricsSvmClientThroughput) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *TopMetricsSvmClientThroughput) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineThroughput) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -557,8 +557,8 @@ func (m *TopMetricsSvmClientThroughput) validateError(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client throughput based on the context it is used
-func (m *TopMetricsSvmClientThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client inline throughput based on the context it is used
+func (m *TopMetricsSvmClientInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -579,7 +579,7 @@ func (m *TopMetricsSvmClientThroughput) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *TopMetricsSvmClientThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -593,18 +593,18 @@ func (m *TopMetricsSvmClientThroughput) contextValidateError(ctx context.Context
 	return nil
 }
 
-func (m *TopMetricsSvmClientThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmClientThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientInlineThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -612,7 +612,7 @@ func (m *TopMetricsSvmClientThroughput) contextValidateWrite(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientThroughput) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -620,8 +620,8 @@ func (m *TopMetricsSvmClientThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientThroughput) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientThroughput
+func (m *TopMetricsSvmClientInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

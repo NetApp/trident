@@ -65,13 +65,13 @@ type LocalHostDeleteParams struct {
 
 	   The IP address.
 	*/
-	AddressPathParameter string
+	Address string
 
 	/* OwnerUUID.
 
 	   UUID of the owner to which this object belongs.
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *LocalHostDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressPathParameter adds the address to the local host delete params
-func (o *LocalHostDeleteParams) WithAddressPathParameter(address string) *LocalHostDeleteParams {
-	o.SetAddressPathParameter(address)
+// WithAddress adds the address to the local host delete params
+func (o *LocalHostDeleteParams) WithAddress(address string) *LocalHostDeleteParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressPathParameter adds the address to the local host delete params
-func (o *LocalHostDeleteParams) SetAddressPathParameter(address string) {
-	o.AddressPathParameter = address
+// SetAddress adds the address to the local host delete params
+func (o *LocalHostDeleteParams) SetAddress(address string) {
+	o.Address = address
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the local host delete params
-func (o *LocalHostDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *LocalHostDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the local host delete params
+func (o *LocalHostDeleteParams) WithOwnerUUID(ownerUUID string) *LocalHostDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the local host delete params
-func (o *LocalHostDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the local host delete params
+func (o *LocalHostDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *LocalHostDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param address
-	if err := r.SetPathParam("address", o.AddressPathParameter); err != nil {
+	if err := r.SetPathParam("address", o.Address); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

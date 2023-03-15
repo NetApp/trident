@@ -65,7 +65,7 @@ type ClusterPeerDeleteParams struct {
 
 	   Cluster peer relationship UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *ClusterPeerDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the cluster peer delete params
-func (o *ClusterPeerDeleteParams) WithUUIDPathParameter(uuid string) *ClusterPeerDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the cluster peer delete params
+func (o *ClusterPeerDeleteParams) WithUUID(uuid string) *ClusterPeerDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the cluster peer delete params
-func (o *ClusterPeerDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the cluster peer delete params
+func (o *ClusterPeerDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *ClusterPeerDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

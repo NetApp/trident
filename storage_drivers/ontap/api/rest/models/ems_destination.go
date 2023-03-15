@@ -22,24 +22,27 @@ import (
 type EmsDestination struct {
 
 	// links
-	Links *EmsDestinationLinks `json:"_links,omitempty"`
+	Links *EmsDestinationInlineLinks `json:"_links,omitempty"`
 
 	// certificate
-	Certificate *EmsDestinationCertificate `json:"certificate,omitempty"`
+	Certificate *EmsDestinationInlineCertificate `json:"certificate,omitempty"`
 
 	// connectivity
-	Connectivity *EmsDestinationConnectivity `json:"connectivity,omitempty"`
+	Connectivity *EmsDestinationInlineConnectivity `json:"connectivity,omitempty"`
 
 	// Event destination
 	// Example: administrator@mycompany.com
-	Destination string `json:"destination,omitempty"`
+	Destination *string `json:"destination,omitempty"`
 
-	// filters
-	Filters []*EmsDestinationFiltersItems0 `json:"filters,omitempty"`
+	// ems destination inline filters
+	EmsDestinationInlineFilters []*EmsDestinationInlineFiltersInlineArrayItem `json:"filters,omitempty"`
 
 	// Destination name.  Valid in POST.
 	// Example: Admin_Email
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// syslog
+	Syslog *EmsDestinationInlineSyslog `json:"syslog,omitempty"`
 
 	// Flag indicating system-defined destinations.
 	// Example: true
@@ -49,7 +52,7 @@ type EmsDestination struct {
 	// Type of destination. Valid in POST.
 	// Example: email
 	// Enum: [snmp email syslog rest_api]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this ems destination
@@ -68,7 +71,11 @@ func (m *EmsDestination) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateFilters(formats); err != nil {
+	if err := m.validateEmsDestinationInlineFilters(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSyslog(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -133,18 +140,18 @@ func (m *EmsDestination) validateConnectivity(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsDestination) validateFilters(formats strfmt.Registry) error {
-	if swag.IsZero(m.Filters) { // not required
+func (m *EmsDestination) validateEmsDestinationInlineFilters(formats strfmt.Registry) error {
+	if swag.IsZero(m.EmsDestinationInlineFilters) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Filters); i++ {
-		if swag.IsZero(m.Filters[i]) { // not required
+	for i := 0; i < len(m.EmsDestinationInlineFilters); i++ {
+		if swag.IsZero(m.EmsDestinationInlineFilters[i]) { // not required
 			continue
 		}
 
-		if m.Filters[i] != nil {
-			if err := m.Filters[i].Validate(formats); err != nil {
+		if m.EmsDestinationInlineFilters[i] != nil {
+			if err := m.EmsDestinationInlineFilters[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("filters" + "." + strconv.Itoa(i))
 				}
@@ -152,6 +159,23 @@ func (m *EmsDestination) validateFilters(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsDestination) validateSyslog(formats strfmt.Registry) error {
+	if swag.IsZero(m.Syslog) { // not required
+		return nil
+	}
+
+	if m.Syslog != nil {
+		if err := m.Syslog.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("syslog")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -226,7 +250,7 @@ func (m *EmsDestination) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -249,7 +273,11 @@ func (m *EmsDestination) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateFilters(ctx, formats); err != nil {
+	if err := m.contextValidateEmsDestinationInlineFilters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSyslog(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -305,12 +333,12 @@ func (m *EmsDestination) contextValidateConnectivity(ctx context.Context, format
 	return nil
 }
 
-func (m *EmsDestination) contextValidateFilters(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestination) contextValidateEmsDestinationInlineFilters(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Filters); i++ {
+	for i := 0; i < len(m.EmsDestinationInlineFilters); i++ {
 
-		if m.Filters[i] != nil {
-			if err := m.Filters[i].ContextValidate(ctx, formats); err != nil {
+		if m.EmsDestinationInlineFilters[i] != nil {
+			if err := m.EmsDestinationInlineFilters[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("filters" + "." + strconv.Itoa(i))
 				}
@@ -318,6 +346,20 @@ func (m *EmsDestination) contextValidateFilters(ctx context.Context, formats str
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsDestination) contextValidateSyslog(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Syslog != nil {
+		if err := m.Syslog.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("syslog")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -350,34 +392,34 @@ func (m *EmsDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationCertificate Security certificate object reference
+// EmsDestinationInlineCertificate Specifies the client-side certificate used by the ONTAP system when mutual authentication is required. This object is only applicable for __rest_api__ type destinations. Both the `ca` and `serial_number` fields must be specified when configuring a certificate in a PATCH or POST request. The `name` field is read-only and cannot be used to configure a client-side certificate.
 //
-// swagger:model EmsDestinationCertificate
-type EmsDestinationCertificate struct {
+// swagger:model ems_destination_inline_certificate
+type EmsDestinationInlineCertificate struct {
 
 	// links
-	Links *EmsDestinationCertificateLinks `json:"_links,omitempty"`
+	Links *EmsDestinationInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Client certificate issuing CA
 	// Example: VeriSign
 	// Max Length: 256
 	// Min Length: 1
-	Ca string `json:"ca,omitempty"`
+	Ca *string `json:"ca,omitempty"`
 
 	// Certificate name
 	// Example: cert1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Client certificate serial number
 	// Example: 1234567890
 	// Max Length: 40
 	// Min Length: 1
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this ems destination certificate
-func (m *EmsDestinationCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline certificate
+func (m *EmsDestinationInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -398,7 +440,7 @@ func (m *EmsDestinationCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsDestinationCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -415,40 +457,40 @@ func (m *EmsDestinationCertificate) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *EmsDestinationCertificate) validateCa(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificate) validateCa(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ca) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("certificate"+"."+"ca", "body", m.Ca, 1); err != nil {
+	if err := validate.MinLength("certificate"+"."+"ca", "body", *m.Ca, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("certificate"+"."+"ca", "body", m.Ca, 256); err != nil {
+	if err := validate.MaxLength("certificate"+"."+"ca", "body", *m.Ca, 256); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsDestinationCertificate) validateSerialNumber(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificate) validateSerialNumber(formats strfmt.Registry) error {
 	if swag.IsZero(m.SerialNumber) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("certificate"+"."+"serial_number", "body", m.SerialNumber, 1); err != nil {
+	if err := validate.MinLength("certificate"+"."+"serial_number", "body", *m.SerialNumber, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("certificate"+"."+"serial_number", "body", m.SerialNumber, 40); err != nil {
+	if err := validate.MaxLength("certificate"+"."+"serial_number", "body", *m.SerialNumber, 40); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ems destination certificate based on the context it is used
-func (m *EmsDestinationCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline certificate based on the context it is used
+func (m *EmsDestinationInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -465,7 +507,7 @@ func (m *EmsDestinationCertificate) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *EmsDestinationCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -479,9 +521,9 @@ func (m *EmsDestinationCertificate) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *EmsDestinationCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -489,7 +531,7 @@ func (m *EmsDestinationCertificate) contextValidateName(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationCertificate) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,8 +539,8 @@ func (m *EmsDestinationCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationCertificate) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationCertificate
+func (m *EmsDestinationInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -506,17 +548,17 @@ func (m *EmsDestinationCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationCertificateLinks ems destination certificate links
+// EmsDestinationInlineCertificateInlineLinks ems destination inline certificate inline links
 //
-// swagger:model EmsDestinationCertificateLinks
-type EmsDestinationCertificateLinks struct {
+// swagger:model ems_destination_inline_certificate_inline__links
+type EmsDestinationInlineCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems destination certificate links
-func (m *EmsDestinationCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline certificate inline links
+func (m *EmsDestinationInlineCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -529,7 +571,7 @@ func (m *EmsDestinationCertificateLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *EmsDestinationCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -546,8 +588,8 @@ func (m *EmsDestinationCertificateLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this ems destination certificate links based on the context it is used
-func (m *EmsDestinationCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline certificate inline links based on the context it is used
+func (m *EmsDestinationInlineCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -560,7 +602,7 @@ func (m *EmsDestinationCertificateLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *EmsDestinationCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -575,7 +617,7 @@ func (m *EmsDestinationCertificateLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -583,8 +625,8 @@ func (m *EmsDestinationCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationCertificateLinks
+func (m *EmsDestinationInlineCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -592,10 +634,10 @@ func (m *EmsDestinationCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationConnectivity ems destination connectivity
+// EmsDestinationInlineConnectivity ems destination inline connectivity
 //
-// swagger:model EmsDestinationConnectivity
-type EmsDestinationConnectivity struct {
+// swagger:model ems_destination_inline_connectivity
+type EmsDestinationInlineConnectivity struct {
 
 	// A list of errors encountered during connectivity checks.
 	// Read Only: true
@@ -605,11 +647,11 @@ type EmsDestinationConnectivity struct {
 	// Example: fail
 	// Read Only: true
 	// Enum: [success fail not_supported]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this ems destination connectivity
-func (m *EmsDestinationConnectivity) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline connectivity
+func (m *EmsDestinationInlineConnectivity) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateErrors(formats); err != nil {
@@ -626,7 +668,7 @@ func (m *EmsDestinationConnectivity) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsDestinationConnectivity) validateErrors(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineConnectivity) validateErrors(formats strfmt.Registry) error {
 	if swag.IsZero(m.Errors) { // not required
 		return nil
 	}
@@ -650,7 +692,7 @@ func (m *EmsDestinationConnectivity) validateErrors(formats strfmt.Registry) err
 	return nil
 }
 
-var emsDestinationConnectivityTypeStatePropEnum []interface{}
+var emsDestinationInlineConnectivityTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -658,66 +700,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsDestinationConnectivityTypeStatePropEnum = append(emsDestinationConnectivityTypeStatePropEnum, v)
+		emsDestinationInlineConnectivityTypeStatePropEnum = append(emsDestinationInlineConnectivityTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// EmsDestinationConnectivity
-	// EmsDestinationConnectivity
+	// ems_destination_inline_connectivity
+	// EmsDestinationInlineConnectivity
 	// state
 	// State
 	// success
 	// END DEBUGGING
-	// EmsDestinationConnectivityStateSuccess captures enum value "success"
-	EmsDestinationConnectivityStateSuccess string = "success"
+	// EmsDestinationInlineConnectivityStateSuccess captures enum value "success"
+	EmsDestinationInlineConnectivityStateSuccess string = "success"
 
 	// BEGIN DEBUGGING
-	// EmsDestinationConnectivity
-	// EmsDestinationConnectivity
+	// ems_destination_inline_connectivity
+	// EmsDestinationInlineConnectivity
 	// state
 	// State
 	// fail
 	// END DEBUGGING
-	// EmsDestinationConnectivityStateFail captures enum value "fail"
-	EmsDestinationConnectivityStateFail string = "fail"
+	// EmsDestinationInlineConnectivityStateFail captures enum value "fail"
+	EmsDestinationInlineConnectivityStateFail string = "fail"
 
 	// BEGIN DEBUGGING
-	// EmsDestinationConnectivity
-	// EmsDestinationConnectivity
+	// ems_destination_inline_connectivity
+	// EmsDestinationInlineConnectivity
 	// state
 	// State
 	// not_supported
 	// END DEBUGGING
-	// EmsDestinationConnectivityStateNotSupported captures enum value "not_supported"
-	EmsDestinationConnectivityStateNotSupported string = "not_supported"
+	// EmsDestinationInlineConnectivityStateNotSupported captures enum value "not_supported"
+	EmsDestinationInlineConnectivityStateNotSupported string = "not_supported"
 )
 
 // prop value enum
-func (m *EmsDestinationConnectivity) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsDestinationConnectivityTypeStatePropEnum, true); err != nil {
+func (m *EmsDestinationInlineConnectivity) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationInlineConnectivityTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsDestinationConnectivity) validateState(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineConnectivity) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("connectivity"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("connectivity"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ems destination connectivity based on the context it is used
-func (m *EmsDestinationConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline connectivity based on the context it is used
+func (m *EmsDestinationInlineConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateErrors(ctx, formats); err != nil {
@@ -734,7 +776,7 @@ func (m *EmsDestinationConnectivity) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *EmsDestinationConnectivity) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineConnectivity) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "connectivity"+"."+"errors", "body", []*EmsDestinationConnectivityErrorsItems0(m.Errors)); err != nil {
 		return err
@@ -756,9 +798,9 @@ func (m *EmsDestinationConnectivity) contextValidateErrors(ctx context.Context, 
 	return nil
 }
 
-func (m *EmsDestinationConnectivity) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineConnectivity) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connectivity"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -766,7 +808,7 @@ func (m *EmsDestinationConnectivity) contextValidateState(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationConnectivity) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineConnectivity) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -774,8 +816,8 @@ func (m *EmsDestinationConnectivity) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationConnectivity) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationConnectivity
+func (m *EmsDestinationInlineConnectivity) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineConnectivity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -911,24 +953,24 @@ func (m *EmsDestinationConnectivityErrorsItems0) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// EmsDestinationConnectivityErrorsItems0Message Information to be displayed to the user.
+// EmsDestinationConnectivityErrorsItems0Message ems destination connectivity errors items0 message
 //
 // swagger:model EmsDestinationConnectivityErrorsItems0Message
 type EmsDestinationConnectivityErrorsItems0Message struct {
 
 	// Message arguments
 	// Read Only: true
-	Arguments []*EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 `json:"arguments,omitempty"`
+	Arguments []*EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 `json:"arguments"`
 
 	// Unique message code.
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// User message.
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this ems destination connectivity errors items0 message
@@ -1015,7 +1057,7 @@ func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateArguments
 
 func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "message"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -1024,7 +1066,7 @@ func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateCode(ctx 
 
 func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -1056,11 +1098,11 @@ type EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this ems destination connectivity errors items0 message arguments items0
@@ -1088,7 +1130,7 @@ func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) ContextVa
 
 func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -1097,7 +1139,7 @@ func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) contextVa
 
 func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -1132,11 +1174,11 @@ type EmsDestinationConnectivityErrorsItems0Node struct {
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ems destination connectivity errors items0 node
@@ -1302,21 +1344,21 @@ func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// EmsDestinationFiltersItems0 ems destination filters items0
+// EmsDestinationInlineFiltersInlineArrayItem ems destination inline filters inline array item
 //
-// swagger:model EmsDestinationFiltersItems0
-type EmsDestinationFiltersItems0 struct {
+// swagger:model ems_destination_inline_filters_inline_array_item
+type EmsDestinationInlineFiltersInlineArrayItem struct {
 
 	// links
-	Links *EmsDestinationFiltersItems0Links `json:"_links,omitempty"`
+	Links *EmsDestinationInlineFiltersInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: important-events
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this ems destination filters items0
-func (m *EmsDestinationFiltersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline filters inline array item
+func (m *EmsDestinationInlineFiltersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1329,7 +1371,7 @@ func (m *EmsDestinationFiltersItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsDestinationFiltersItems0) validateLinks(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineFiltersInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1346,8 +1388,8 @@ func (m *EmsDestinationFiltersItems0) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this ems destination filters items0 based on the context it is used
-func (m *EmsDestinationFiltersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline filters inline array item based on the context it is used
+func (m *EmsDestinationInlineFiltersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1360,7 +1402,7 @@ func (m *EmsDestinationFiltersItems0) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *EmsDestinationFiltersItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineFiltersInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1375,7 +1417,7 @@ func (m *EmsDestinationFiltersItems0) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationFiltersItems0) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineFiltersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1383,8 +1425,8 @@ func (m *EmsDestinationFiltersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationFiltersItems0) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationFiltersItems0
+func (m *EmsDestinationInlineFiltersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineFiltersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1392,17 +1434,17 @@ func (m *EmsDestinationFiltersItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationFiltersItems0Links ems destination filters items0 links
+// EmsDestinationInlineFiltersInlineArrayItemInlineLinks ems destination inline filters inline array item inline links
 //
-// swagger:model EmsDestinationFiltersItems0Links
-type EmsDestinationFiltersItems0Links struct {
+// swagger:model ems_destination_inline_filters_inline_array_item_inline__links
+type EmsDestinationInlineFiltersInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems destination filters items0 links
-func (m *EmsDestinationFiltersItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline filters inline array item inline links
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1415,7 +1457,7 @@ func (m *EmsDestinationFiltersItems0Links) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *EmsDestinationFiltersItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1432,8 +1474,8 @@ func (m *EmsDestinationFiltersItems0Links) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this ems destination filters items0 links based on the context it is used
-func (m *EmsDestinationFiltersItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline filters inline array item inline links based on the context it is used
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1446,7 +1488,7 @@ func (m *EmsDestinationFiltersItems0Links) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *EmsDestinationFiltersItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1461,7 +1503,7 @@ func (m *EmsDestinationFiltersItems0Links) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationFiltersItems0Links) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1469,8 +1511,8 @@ func (m *EmsDestinationFiltersItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationFiltersItems0Links) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationFiltersItems0Links
+func (m *EmsDestinationInlineFiltersInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineFiltersInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1478,17 +1520,17 @@ func (m *EmsDestinationFiltersItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationLinks ems destination links
+// EmsDestinationInlineLinks ems destination inline links
 //
-// swagger:model EmsDestinationLinks
-type EmsDestinationLinks struct {
+// swagger:model ems_destination_inline__links
+type EmsDestinationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems destination links
-func (m *EmsDestinationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems destination inline links
+func (m *EmsDestinationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1501,7 +1543,7 @@ func (m *EmsDestinationLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsDestinationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsDestinationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1518,8 +1560,8 @@ func (m *EmsDestinationLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems destination links based on the context it is used
-func (m *EmsDestinationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems destination inline links based on the context it is used
+func (m *EmsDestinationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1532,7 +1574,7 @@ func (m *EmsDestinationLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *EmsDestinationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsDestinationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1547,7 +1589,7 @@ func (m *EmsDestinationLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *EmsDestinationLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsDestinationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1555,8 +1597,436 @@ func (m *EmsDestinationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsDestinationLinks) UnmarshalBinary(b []byte) error {
-	var res EmsDestinationLinks
+func (m *EmsDestinationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationInlineSyslog ems destination inline syslog
+//
+// swagger:model ems_destination_inline_syslog
+type EmsDestinationInlineSyslog struct {
+
+	// format
+	Format *EmsDestinationInlineSyslogInlineFormat `json:"format,omitempty"`
+
+	// Syslog Port.
+	// Example: 514
+	Port *int64 `json:"port,omitempty"`
+
+	// Syslog Transport Protocol.
+	// Enum: [udp_unencrypted tcp_unencrypted tcp_encrypted]
+	Transport *string `json:"transport,omitempty"`
+}
+
+// Validate validates this ems destination inline syslog
+func (m *EmsDestinationInlineSyslog) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateFormat(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransport(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslog) validateFormat(formats strfmt.Registry) error {
+	if swag.IsZero(m.Format) { // not required
+		return nil
+	}
+
+	if m.Format != nil {
+		if err := m.Format.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("syslog" + "." + "format")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var emsDestinationInlineSyslogTypeTransportPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["udp_unencrypted","tcp_unencrypted","tcp_encrypted"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		emsDestinationInlineSyslogTypeTransportPropEnum = append(emsDestinationInlineSyslogTypeTransportPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog
+	// EmsDestinationInlineSyslog
+	// transport
+	// Transport
+	// udp_unencrypted
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogTransportUDPUnencrypted captures enum value "udp_unencrypted"
+	EmsDestinationInlineSyslogTransportUDPUnencrypted string = "udp_unencrypted"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog
+	// EmsDestinationInlineSyslog
+	// transport
+	// Transport
+	// tcp_unencrypted
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogTransportTCPUnencrypted captures enum value "tcp_unencrypted"
+	EmsDestinationInlineSyslogTransportTCPUnencrypted string = "tcp_unencrypted"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog
+	// EmsDestinationInlineSyslog
+	// transport
+	// Transport
+	// tcp_encrypted
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogTransportTCPEncrypted captures enum value "tcp_encrypted"
+	EmsDestinationInlineSyslogTransportTCPEncrypted string = "tcp_encrypted"
+)
+
+// prop value enum
+func (m *EmsDestinationInlineSyslog) validateTransportEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationInlineSyslogTypeTransportPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslog) validateTransport(formats strfmt.Registry) error {
+	if swag.IsZero(m.Transport) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTransportEnum("syslog"+"."+"transport", "body", *m.Transport); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination inline syslog based on the context it is used
+func (m *EmsDestinationInlineSyslog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFormat(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslog) contextValidateFormat(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Format != nil {
+		if err := m.Format.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("syslog" + "." + "format")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationInlineSyslog) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationInlineSyslog) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineSyslog
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationInlineSyslogInlineFormat ems destination inline syslog inline format
+//
+// swagger:model ems_destination_inline_syslog_inline_format
+type EmsDestinationInlineSyslogInlineFormat struct {
+
+	// Syslog Hostname Format Override. The supported hostname formats are no_override (hostname format based on the syslog.format.message property i.e. fqdn if syslog.format.message is rfc_5424, hostname_only if syslog.format.message is legacy_netapp), fqdn (Fully Qualified Domain Name) and hostname_only.
+	//
+	// Enum: [no_override fqdn hostname_only]
+	HostnameOverride *string `json:"hostname_override,omitempty"`
+
+	// Syslog Message Format. The supported message formats are legacy_netapp (format: &lt;PRIVAL&gt;TIMESTAMP [HOSTNAME:Event-name:Event-severity]: MSG) and rfc_5424 (format: &lt;PRIVAL&gt;VERSION TIMESTAMP HOSTNAME Event-source - Event-name - MSG).
+	//
+	// Enum: [legacy_netapp rfc_5424]
+	Message *string `json:"message,omitempty"`
+
+	// Syslog Timestamp Format Override. The supported timestamp formats are no_override (timestamp format based on the syslog.format.message property i.e. rfc_3164 if syslog.format.message is legacy_netapp, iso_8601_local_time if syslog.format.message is rfc_5424), rfc_3164 (format: Mmm dd hh:mm:ss), iso_8601_local_time (format: YYYY-MM-DDThh:mm:ss+/-hh:mm) and iso_8601_utc (format: YYYY-MM-DDThh:mm:ssZ).
+	//
+	// Enum: [no_override rfc_3164 iso_8601_local_time iso_8601_utc]
+	TimestampOverride *string `json:"timestamp_override,omitempty"`
+}
+
+// Validate validates this ems destination inline syslog inline format
+func (m *EmsDestinationInlineSyslogInlineFormat) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHostnameOverride(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestampOverride(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var emsDestinationInlineSyslogInlineFormatTypeHostnameOverridePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_override","fqdn","hostname_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		emsDestinationInlineSyslogInlineFormatTypeHostnameOverridePropEnum = append(emsDestinationInlineSyslogInlineFormatTypeHostnameOverridePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// hostname_override
+	// HostnameOverride
+	// no_override
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatHostnameOverrideNoOverride captures enum value "no_override"
+	EmsDestinationInlineSyslogInlineFormatHostnameOverrideNoOverride string = "no_override"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// hostname_override
+	// HostnameOverride
+	// fqdn
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatHostnameOverrideFqdn captures enum value "fqdn"
+	EmsDestinationInlineSyslogInlineFormatHostnameOverrideFqdn string = "fqdn"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// hostname_override
+	// HostnameOverride
+	// hostname_only
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatHostnameOverrideHostnameOnly captures enum value "hostname_only"
+	EmsDestinationInlineSyslogInlineFormatHostnameOverrideHostnameOnly string = "hostname_only"
+)
+
+// prop value enum
+func (m *EmsDestinationInlineSyslogInlineFormat) validateHostnameOverrideEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationInlineSyslogInlineFormatTypeHostnameOverridePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslogInlineFormat) validateHostnameOverride(formats strfmt.Registry) error {
+	if swag.IsZero(m.HostnameOverride) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateHostnameOverrideEnum("syslog"+"."+"format"+"."+"hostname_override", "body", *m.HostnameOverride); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var emsDestinationInlineSyslogInlineFormatTypeMessagePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["legacy_netapp","rfc_5424"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		emsDestinationInlineSyslogInlineFormatTypeMessagePropEnum = append(emsDestinationInlineSyslogInlineFormatTypeMessagePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// message
+	// Message
+	// legacy_netapp
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatMessageLegacyNetapp captures enum value "legacy_netapp"
+	EmsDestinationInlineSyslogInlineFormatMessageLegacyNetapp string = "legacy_netapp"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// message
+	// Message
+	// rfc_5424
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatMessageRfc5424 captures enum value "rfc_5424"
+	EmsDestinationInlineSyslogInlineFormatMessageRfc5424 string = "rfc_5424"
+)
+
+// prop value enum
+func (m *EmsDestinationInlineSyslogInlineFormat) validateMessageEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationInlineSyslogInlineFormatTypeMessagePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslogInlineFormat) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateMessageEnum("syslog"+"."+"format"+"."+"message", "body", *m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var emsDestinationInlineSyslogInlineFormatTypeTimestampOverridePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_override","rfc_3164","iso_8601_local_time","iso_8601_utc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		emsDestinationInlineSyslogInlineFormatTypeTimestampOverridePropEnum = append(emsDestinationInlineSyslogInlineFormatTypeTimestampOverridePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// timestamp_override
+	// TimestampOverride
+	// no_override
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatTimestampOverrideNoOverride captures enum value "no_override"
+	EmsDestinationInlineSyslogInlineFormatTimestampOverrideNoOverride string = "no_override"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// timestamp_override
+	// TimestampOverride
+	// rfc_3164
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatTimestampOverrideRfc3164 captures enum value "rfc_3164"
+	EmsDestinationInlineSyslogInlineFormatTimestampOverrideRfc3164 string = "rfc_3164"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// timestamp_override
+	// TimestampOverride
+	// iso_8601_local_time
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatTimestampOverrideIso8601LocalTime captures enum value "iso_8601_local_time"
+	EmsDestinationInlineSyslogInlineFormatTimestampOverrideIso8601LocalTime string = "iso_8601_local_time"
+
+	// BEGIN DEBUGGING
+	// ems_destination_inline_syslog_inline_format
+	// EmsDestinationInlineSyslogInlineFormat
+	// timestamp_override
+	// TimestampOverride
+	// iso_8601_utc
+	// END DEBUGGING
+	// EmsDestinationInlineSyslogInlineFormatTimestampOverrideIso8601Utc captures enum value "iso_8601_utc"
+	EmsDestinationInlineSyslogInlineFormatTimestampOverrideIso8601Utc string = "iso_8601_utc"
+)
+
+// prop value enum
+func (m *EmsDestinationInlineSyslogInlineFormat) validateTimestampOverrideEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationInlineSyslogInlineFormatTypeTimestampOverridePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *EmsDestinationInlineSyslogInlineFormat) validateTimestampOverride(formats strfmt.Registry) error {
+	if swag.IsZero(m.TimestampOverride) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTimestampOverrideEnum("syslog"+"."+"format"+"."+"timestamp_override", "body", *m.TimestampOverride); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this ems destination inline syslog inline format based on context it is used
+func (m *EmsDestinationInlineSyslogInlineFormat) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationInlineSyslogInlineFormat) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationInlineSyslogInlineFormat) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationInlineSyslogInlineFormat
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

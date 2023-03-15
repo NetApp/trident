@@ -20,13 +20,14 @@ import (
 type SecurityKeystoreResponse struct {
 
 	// links
-	Links *SecurityKeystoreResponseLinks `json:"_links,omitempty"`
+	Links *SecurityKeystoreResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SecurityKeystore `json:"records,omitempty"`
+	// security keystore response inline records
+	SecurityKeystoreResponseInlineRecords []*SecurityKeystore `json:"records,omitempty"`
 }
 
 // Validate validates this security keystore response
@@ -37,7 +38,7 @@ func (m *SecurityKeystoreResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSecurityKeystoreResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SecurityKeystoreResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SecurityKeystoreResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SecurityKeystoreResponse) validateSecurityKeystoreResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityKeystoreResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SecurityKeystoreResponseInlineRecords); i++ {
+		if swag.IsZero(m.SecurityKeystoreResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SecurityKeystoreResponseInlineRecords[i] != nil {
+			if err := m.SecurityKeystoreResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SecurityKeystoreResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSecurityKeystoreResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SecurityKeystoreResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *SecurityKeystoreResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeystoreResponse) contextValidateSecurityKeystoreResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SecurityKeystoreResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SecurityKeystoreResponseInlineRecords[i] != nil {
+			if err := m.SecurityKeystoreResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SecurityKeystoreResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeystoreResponseLinks security keystore response links
+// SecurityKeystoreResponseInlineLinks security keystore response inline links
 //
-// swagger:model SecurityKeystoreResponseLinks
-type SecurityKeystoreResponseLinks struct {
+// swagger:model security_keystore_response_inline__links
+type SecurityKeystoreResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SecurityKeystoreResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security keystore response links
-func (m *SecurityKeystoreResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security keystore response inline links
+func (m *SecurityKeystoreResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SecurityKeystoreResponseLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SecurityKeystoreResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SecurityKeystoreResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SecurityKeystoreResponseLinks) validateNext(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *SecurityKeystoreResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeystoreResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SecurityKeystoreResponseLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this security keystore response links based on the context it is used
-func (m *SecurityKeystoreResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security keystore response inline links based on the context it is used
+func (m *SecurityKeystoreResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SecurityKeystoreResponseLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *SecurityKeystoreResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeystoreResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SecurityKeystoreResponseLinks) contextValidateNext(ctx context.Context,
 	return nil
 }
 
-func (m *SecurityKeystoreResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeystoreResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SecurityKeystoreResponseLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeystoreResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeystoreResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SecurityKeystoreResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeystoreResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeystoreResponseLinks
+func (m *SecurityKeystoreResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeystoreResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

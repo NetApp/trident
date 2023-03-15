@@ -19,32 +19,32 @@ import (
 type UnixUserSettings struct {
 
 	// links
-	Links *UnixUserSettingsLinks `json:"_links,omitempty"`
+	Links *UnixUserSettingsInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether or not the cache is enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Indicates whether or not the negative cache is enabled.
 	//
-	NegativeCacheEnabled bool `json:"negative_cache_enabled,omitempty"`
+	NegativeCacheEnabled *bool `json:"negative_cache_enabled,omitempty"`
 
 	// Specifies negative Time to Live, in ISO 8601 format.
 	//
 	// Example: PT5M
-	NegativeTTL string `json:"negative_ttl,omitempty"`
+	NegativeTTL *string `json:"negative_ttl,omitempty"`
 
 	// Specifies whether the propagation setting is enabled or not.
 	//
-	PropagationEnabled bool `json:"propagation_enabled,omitempty"`
+	PropagationEnabled *bool `json:"propagation_enabled,omitempty"`
 
 	// svm
-	Svm *UnixUserSettingsSvm `json:"svm,omitempty"`
+	Svm *UnixUserSettingsInlineSvm `json:"svm,omitempty"`
 
 	// Specifies Time to Live (TTL), in ISO 8601 format.
 	//
 	// Example: PT2H
-	TTL string `json:"ttl,omitempty"`
+	TTL *string `json:"ttl,omitempty"`
 }
 
 // Validate validates this unix user settings
@@ -163,17 +163,17 @@ func (m *UnixUserSettings) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserSettingsLinks unix user settings links
+// UnixUserSettingsInlineLinks unix user settings inline links
 //
-// swagger:model UnixUserSettingsLinks
-type UnixUserSettingsLinks struct {
+// swagger:model unix_user_settings_inline__links
+type UnixUserSettingsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix user settings links
-func (m *UnixUserSettingsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user settings inline links
+func (m *UnixUserSettingsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -186,7 +186,7 @@ func (m *UnixUserSettingsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserSettingsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -203,8 +203,8 @@ func (m *UnixUserSettingsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user settings links based on the context it is used
-func (m *UnixUserSettingsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user settings inline links based on the context it is used
+func (m *UnixUserSettingsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -217,7 +217,7 @@ func (m *UnixUserSettingsLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *UnixUserSettingsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -232,7 +232,7 @@ func (m *UnixUserSettingsLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserSettingsLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixUserSettingsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -240,8 +240,8 @@ func (m *UnixUserSettingsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserSettingsLinks) UnmarshalBinary(b []byte) error {
-	var res UnixUserSettingsLinks
+func (m *UnixUserSettingsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixUserSettingsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -249,27 +249,27 @@ func (m *UnixUserSettingsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserSettingsSvm unix user settings svm
+// UnixUserSettingsInlineSvm unix user settings inline svm
 //
-// swagger:model UnixUserSettingsSvm
-type UnixUserSettingsSvm struct {
+// swagger:model unix_user_settings_inline_svm
+type UnixUserSettingsInlineSvm struct {
 
 	// links
-	Links *UnixUserSettingsSvmLinks `json:"_links,omitempty"`
+	Links *UnixUserSettingsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this unix user settings svm
-func (m *UnixUserSettingsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user settings inline svm
+func (m *UnixUserSettingsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -282,7 +282,7 @@ func (m *UnixUserSettingsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserSettingsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -299,8 +299,8 @@ func (m *UnixUserSettingsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user settings svm based on the context it is used
-func (m *UnixUserSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user settings inline svm based on the context it is used
+func (m *UnixUserSettingsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -313,7 +313,7 @@ func (m *UnixUserSettingsSvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *UnixUserSettingsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -328,7 +328,7 @@ func (m *UnixUserSettingsSvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserSettingsSvm) MarshalBinary() ([]byte, error) {
+func (m *UnixUserSettingsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -336,8 +336,8 @@ func (m *UnixUserSettingsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserSettingsSvm) UnmarshalBinary(b []byte) error {
-	var res UnixUserSettingsSvm
+func (m *UnixUserSettingsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res UnixUserSettingsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -345,17 +345,17 @@ func (m *UnixUserSettingsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserSettingsSvmLinks unix user settings svm links
+// UnixUserSettingsInlineSvmInlineLinks unix user settings inline svm inline links
 //
-// swagger:model UnixUserSettingsSvmLinks
-type UnixUserSettingsSvmLinks struct {
+// swagger:model unix_user_settings_inline_svm_inline__links
+type UnixUserSettingsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix user settings svm links
-func (m *UnixUserSettingsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user settings inline svm inline links
+func (m *UnixUserSettingsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -368,7 +368,7 @@ func (m *UnixUserSettingsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -385,8 +385,8 @@ func (m *UnixUserSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user settings svm links based on the context it is used
-func (m *UnixUserSettingsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user settings inline svm inline links based on the context it is used
+func (m *UnixUserSettingsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -399,7 +399,7 @@ func (m *UnixUserSettingsSvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *UnixUserSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserSettingsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -414,7 +414,7 @@ func (m *UnixUserSettingsSvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserSettingsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixUserSettingsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -422,8 +422,8 @@ func (m *UnixUserSettingsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserSettingsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res UnixUserSettingsSvmLinks
+func (m *UnixUserSettingsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixUserSettingsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

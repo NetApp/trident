@@ -74,25 +74,25 @@ type FileDirectorySecurityACLCreateParams struct {
 
 	   path
 	*/
-	PathPathParameter string
+	Path string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -112,14 +112,14 @@ func (o *FileDirectorySecurityACLCreateParams) WithDefaults() *FileDirectorySecu
 // All values with no default are reset to their zero value.
 func (o *FileDirectorySecurityACLCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := FileDirectorySecurityACLCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -172,48 +172,48 @@ func (o *FileDirectorySecurityACLCreateParams) SetInfo(info *models.FileDirector
 	o.Info = info
 }
 
-// WithPathPathParameter adds the path to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) WithPathPathParameter(path string) *FileDirectorySecurityACLCreateParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) WithPath(path string) *FileDirectorySecurityACLCreateParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileDirectorySecurityACLCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) WithReturnRecords(returnRecords *bool) *FileDirectorySecurityACLCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FileDirectorySecurityACLCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) WithReturnTimeout(returnTimeout *int64) *FileDirectorySecurityACLCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) WithSVMUUIDPathParameter(svmUUID string) *FileDirectorySecurityACLCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) WithSvmUUID(svmUUID string) *FileDirectorySecurityACLCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the file directory security acl create params
-func (o *FileDirectorySecurityACLCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the file directory security acl create params
+func (o *FileDirectorySecurityACLCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -230,17 +230,17 @@ func (o *FileDirectorySecurityACLCreateParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -251,13 +251,13 @@ func (o *FileDirectorySecurityACLCreateParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -269,7 +269,7 @@ func (o *FileDirectorySecurityACLCreateParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

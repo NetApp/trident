@@ -25,12 +25,12 @@ type SanApplicationComponentsTiering struct {
 	// Enum: [required best_effort disallowed]
 	Control *string `json:"control,omitempty"`
 
-	// object stores
-	ObjectStores []*SanApplicationComponentsTieringObjectStoresItems0 `json:"object_stores,omitempty"`
-
 	// The storage tiering type of the application component.
 	// Enum: [all auto none snapshot_only]
 	Policy *string `json:"policy,omitempty"`
+
+	// san application components tiering inline object stores
+	SanApplicationComponentsTieringInlineObjectStores []*SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem `json:"object_stores,omitempty"`
 }
 
 // Validate validates this san application components tiering
@@ -41,11 +41,11 @@ func (m *SanApplicationComponentsTiering) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateObjectStores(formats); err != nil {
+	if err := m.validatePolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePolicy(formats); err != nil {
+	if err := m.validateSanApplicationComponentsTieringInlineObjectStores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -116,30 +116,6 @@ func (m *SanApplicationComponentsTiering) validateControl(formats strfmt.Registr
 	// value enum
 	if err := m.validateControlEnum("control", "body", *m.Control); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *SanApplicationComponentsTiering) validateObjectStores(formats strfmt.Registry) error {
-	if swag.IsZero(m.ObjectStores) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ObjectStores); i++ {
-		if swag.IsZero(m.ObjectStores[i]) { // not required
-			continue
-		}
-
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -221,11 +197,35 @@ func (m *SanApplicationComponentsTiering) validatePolicy(formats strfmt.Registry
 	return nil
 }
 
+func (m *SanApplicationComponentsTiering) validateSanApplicationComponentsTieringInlineObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.SanApplicationComponentsTieringInlineObjectStores) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SanApplicationComponentsTieringInlineObjectStores); i++ {
+		if swag.IsZero(m.SanApplicationComponentsTieringInlineObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.SanApplicationComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.SanApplicationComponentsTieringInlineObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this san application components tiering based on the context it is used
 func (m *SanApplicationComponentsTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+	if err := m.contextValidateSanApplicationComponentsTieringInlineObjectStores(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -235,12 +235,12 @@ func (m *SanApplicationComponentsTiering) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SanApplicationComponentsTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+func (m *SanApplicationComponentsTiering) contextValidateSanApplicationComponentsTieringInlineObjectStores(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ObjectStores); i++ {
+	for i := 0; i < len(m.SanApplicationComponentsTieringInlineObjectStores); i++ {
 
-		if m.ObjectStores[i] != nil {
-			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+		if m.SanApplicationComponentsTieringInlineObjectStores[i] != nil {
+			if err := m.SanApplicationComponentsTieringInlineObjectStores[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
 				}
@@ -271,19 +271,19 @@ func (m *SanApplicationComponentsTiering) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SanApplicationComponentsTieringObjectStoresItems0 san application components tiering object stores items0
+// SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem san application components tiering inline object stores inline array item
 //
-// swagger:model SanApplicationComponentsTieringObjectStoresItems0
-type SanApplicationComponentsTieringObjectStoresItems0 struct {
+// swagger:model san_application_components_tiering_inline_object_stores_inline_array_item
+type SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem struct {
 
 	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this san application components tiering object stores items0
-func (m *SanApplicationComponentsTieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this san application components tiering inline object stores inline array item
+func (m *SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -296,29 +296,29 @@ func (m *SanApplicationComponentsTieringObjectStoresItems0) Validate(formats str
 	return nil
 }
 
-func (m *SanApplicationComponentsTieringObjectStoresItems0) validateName(formats strfmt.Registry) error {
+func (m *SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 512); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this san application components tiering object stores items0 based on context it is used
-func (m *SanApplicationComponentsTieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this san application components tiering inline object stores inline array item based on context it is used
+func (m *SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SanApplicationComponentsTieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+func (m *SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -326,8 +326,8 @@ func (m *SanApplicationComponentsTieringObjectStoresItems0) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanApplicationComponentsTieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
-	var res SanApplicationComponentsTieringObjectStoresItems0
+func (m *SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SanApplicationComponentsTieringInlineObjectStoresInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

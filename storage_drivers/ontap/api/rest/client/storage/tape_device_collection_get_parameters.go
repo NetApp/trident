@@ -66,139 +66,139 @@ type TapeDeviceCollectionGetParams struct {
 
 	   Filter by alias.mapping
 	*/
-	AliasMappingQueryParameter *string
+	AliasMapping *string
 
 	/* AliasName.
 
 	   Filter by alias.name
 	*/
-	AliasNameQueryParameter *string
+	AliasName *string
 
 	/* AliasesMapping.
 
 	   Filter by aliases.mapping
 	*/
-	AliasesMappingQueryParameter *string
+	AliasesMapping *string
 
 	/* AliasesName.
 
 	   Filter by aliases.name
 	*/
-	AliasesNameQueryParameter *string
+	AliasesName *string
 
 	/* BlockNumber.
 
 	   Filter by block_number
 	*/
-	BlockNumberQueryParameter *int64
+	BlockNumber *int64
 
 	/* Density.
 
 	   Filter by density
 	*/
-	DensityQueryParameter *string
+	Density *string
 
 	/* Description.
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* DeviceID.
 
 	   Filter by device_id
 	*/
-	DeviceIDQueryParameter *string
+	DeviceID *string
 
 	/* DeviceNamesNoRewindDevice.
 
 	   Filter by device_names.no_rewind_device
 	*/
-	DeviceNamesNoRewindDeviceQueryParameter *string
+	DeviceNamesNoRewindDevice *string
 
 	/* DeviceNamesRewindDevice.
 
 	   Filter by device_names.rewind_device
 	*/
-	DeviceNamesRewindDeviceQueryParameter *string
+	DeviceNamesRewindDevice *string
 
 	/* DeviceNamesUnloadReloadDevice.
 
 	   Filter by device_names.unload_reload_device
 	*/
-	DeviceNamesUnloadReloadDeviceQueryParameter *string
+	DeviceNamesUnloadReloadDevice *string
 
 	/* DeviceState.
 
 	   Filter by device_state
 	*/
-	DeviceStateQueryParameter *string
+	DeviceState *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FileNumber.
 
 	   Filter by file_number
 	*/
-	FileNumberQueryParameter *int64
+	FileNumber *int64
 
 	/* Formats.
 
 	   Filter by formats
 	*/
-	FormatsQueryParameter *string
+	Formats *string
 
 	/* Interface.
 
 	   Filter by interface
 	*/
-	InterfaceQueryParameter *string
+	Interface *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* Online.
 
 	   Filter by online
 	*/
-	OnlineQueryParameter *bool
+	Online *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReservationType.
 
 	   Filter by reservation_type
 	*/
-	ReservationTypeQueryParameter *string
+	ReservationType *string
 
 	/* ResidualCount.
 
 	   Filter by residual_count
 	*/
-	ResidualCountQueryParameter *int64
+	ResidualCount *int64
 
 	/* ReturnRecords.
 
@@ -206,7 +206,7 @@ type TapeDeviceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -214,37 +214,37 @@ type TapeDeviceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* StoragePortName.
 
 	   Filter by storage_port.name
 	*/
-	StoragePortNameQueryParameter *string
+	StoragePortName *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* Wwnn.
 
 	   Filter by wwnn
 	*/
-	WwnnQueryParameter *string
+	Wwnn *string
 
 	/* Wwpn.
 
 	   Filter by wwpn
 	*/
-	WwpnQueryParameter *string
+	Wwpn *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -264,14 +264,14 @@ func (o *TapeDeviceCollectionGetParams) WithDefaults() *TapeDeviceCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *TapeDeviceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := TapeDeviceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -313,334 +313,334 @@ func (o *TapeDeviceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAliasMappingQueryParameter adds the aliasMapping to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithAliasMappingQueryParameter(aliasMapping *string) *TapeDeviceCollectionGetParams {
-	o.SetAliasMappingQueryParameter(aliasMapping)
+// WithAliasMapping adds the aliasMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasMapping(aliasMapping *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasMapping(aliasMapping)
 	return o
 }
 
-// SetAliasMappingQueryParameter adds the aliasMapping to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetAliasMappingQueryParameter(aliasMapping *string) {
-	o.AliasMappingQueryParameter = aliasMapping
+// SetAliasMapping adds the aliasMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasMapping(aliasMapping *string) {
+	o.AliasMapping = aliasMapping
 }
 
-// WithAliasNameQueryParameter adds the aliasName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithAliasNameQueryParameter(aliasName *string) *TapeDeviceCollectionGetParams {
-	o.SetAliasNameQueryParameter(aliasName)
+// WithAliasName adds the aliasName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasName(aliasName *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasName(aliasName)
 	return o
 }
 
-// SetAliasNameQueryParameter adds the aliasName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetAliasNameQueryParameter(aliasName *string) {
-	o.AliasNameQueryParameter = aliasName
+// SetAliasName adds the aliasName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasName(aliasName *string) {
+	o.AliasName = aliasName
 }
 
-// WithAliasesMappingQueryParameter adds the aliasesMapping to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithAliasesMappingQueryParameter(aliasesMapping *string) *TapeDeviceCollectionGetParams {
-	o.SetAliasesMappingQueryParameter(aliasesMapping)
+// WithAliasesMapping adds the aliasesMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasesMapping(aliasesMapping *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasesMapping(aliasesMapping)
 	return o
 }
 
-// SetAliasesMappingQueryParameter adds the aliasesMapping to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetAliasesMappingQueryParameter(aliasesMapping *string) {
-	o.AliasesMappingQueryParameter = aliasesMapping
+// SetAliasesMapping adds the aliasesMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasesMapping(aliasesMapping *string) {
+	o.AliasesMapping = aliasesMapping
 }
 
-// WithAliasesNameQueryParameter adds the aliasesName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithAliasesNameQueryParameter(aliasesName *string) *TapeDeviceCollectionGetParams {
-	o.SetAliasesNameQueryParameter(aliasesName)
+// WithAliasesName adds the aliasesName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasesName(aliasesName *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasesName(aliasesName)
 	return o
 }
 
-// SetAliasesNameQueryParameter adds the aliasesName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetAliasesNameQueryParameter(aliasesName *string) {
-	o.AliasesNameQueryParameter = aliasesName
+// SetAliasesName adds the aliasesName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasesName(aliasesName *string) {
+	o.AliasesName = aliasesName
 }
 
-// WithBlockNumberQueryParameter adds the blockNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithBlockNumberQueryParameter(blockNumber *int64) *TapeDeviceCollectionGetParams {
-	o.SetBlockNumberQueryParameter(blockNumber)
+// WithBlockNumber adds the blockNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithBlockNumber(blockNumber *int64) *TapeDeviceCollectionGetParams {
+	o.SetBlockNumber(blockNumber)
 	return o
 }
 
-// SetBlockNumberQueryParameter adds the blockNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetBlockNumberQueryParameter(blockNumber *int64) {
-	o.BlockNumberQueryParameter = blockNumber
+// SetBlockNumber adds the blockNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetBlockNumber(blockNumber *int64) {
+	o.BlockNumber = blockNumber
 }
 
-// WithDensityQueryParameter adds the density to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDensityQueryParameter(density *string) *TapeDeviceCollectionGetParams {
-	o.SetDensityQueryParameter(density)
+// WithDensity adds the density to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDensity(density *string) *TapeDeviceCollectionGetParams {
+	o.SetDensity(density)
 	return o
 }
 
-// SetDensityQueryParameter adds the density to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDensityQueryParameter(density *string) {
-	o.DensityQueryParameter = density
+// SetDensity adds the density to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDensity(density *string) {
+	o.Density = density
 }
 
-// WithDescriptionQueryParameter adds the description to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDescriptionQueryParameter(description *string) *TapeDeviceCollectionGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDescription(description *string) *TapeDeviceCollectionGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithDeviceIDQueryParameter adds the deviceID to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDeviceIDQueryParameter(deviceID *string) *TapeDeviceCollectionGetParams {
-	o.SetDeviceIDQueryParameter(deviceID)
+// WithDeviceID adds the deviceID to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDeviceID(deviceID *string) *TapeDeviceCollectionGetParams {
+	o.SetDeviceID(deviceID)
 	return o
 }
 
-// SetDeviceIDQueryParameter adds the deviceId to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDeviceIDQueryParameter(deviceID *string) {
-	o.DeviceIDQueryParameter = deviceID
+// SetDeviceID adds the deviceId to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDeviceID(deviceID *string) {
+	o.DeviceID = deviceID
 }
 
-// WithDeviceNamesNoRewindDeviceQueryParameter adds the deviceNamesNoRewindDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDeviceNamesNoRewindDeviceQueryParameter(deviceNamesNoRewindDevice *string) *TapeDeviceCollectionGetParams {
-	o.SetDeviceNamesNoRewindDeviceQueryParameter(deviceNamesNoRewindDevice)
+// WithDeviceNamesNoRewindDevice adds the deviceNamesNoRewindDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDeviceNamesNoRewindDevice(deviceNamesNoRewindDevice *string) *TapeDeviceCollectionGetParams {
+	o.SetDeviceNamesNoRewindDevice(deviceNamesNoRewindDevice)
 	return o
 }
 
-// SetDeviceNamesNoRewindDeviceQueryParameter adds the deviceNamesNoRewindDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDeviceNamesNoRewindDeviceQueryParameter(deviceNamesNoRewindDevice *string) {
-	o.DeviceNamesNoRewindDeviceQueryParameter = deviceNamesNoRewindDevice
+// SetDeviceNamesNoRewindDevice adds the deviceNamesNoRewindDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDeviceNamesNoRewindDevice(deviceNamesNoRewindDevice *string) {
+	o.DeviceNamesNoRewindDevice = deviceNamesNoRewindDevice
 }
 
-// WithDeviceNamesRewindDeviceQueryParameter adds the deviceNamesRewindDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDeviceNamesRewindDeviceQueryParameter(deviceNamesRewindDevice *string) *TapeDeviceCollectionGetParams {
-	o.SetDeviceNamesRewindDeviceQueryParameter(deviceNamesRewindDevice)
+// WithDeviceNamesRewindDevice adds the deviceNamesRewindDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDeviceNamesRewindDevice(deviceNamesRewindDevice *string) *TapeDeviceCollectionGetParams {
+	o.SetDeviceNamesRewindDevice(deviceNamesRewindDevice)
 	return o
 }
 
-// SetDeviceNamesRewindDeviceQueryParameter adds the deviceNamesRewindDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDeviceNamesRewindDeviceQueryParameter(deviceNamesRewindDevice *string) {
-	o.DeviceNamesRewindDeviceQueryParameter = deviceNamesRewindDevice
+// SetDeviceNamesRewindDevice adds the deviceNamesRewindDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDeviceNamesRewindDevice(deviceNamesRewindDevice *string) {
+	o.DeviceNamesRewindDevice = deviceNamesRewindDevice
 }
 
-// WithDeviceNamesUnloadReloadDeviceQueryParameter adds the deviceNamesUnloadReloadDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDeviceNamesUnloadReloadDeviceQueryParameter(deviceNamesUnloadReloadDevice *string) *TapeDeviceCollectionGetParams {
-	o.SetDeviceNamesUnloadReloadDeviceQueryParameter(deviceNamesUnloadReloadDevice)
+// WithDeviceNamesUnloadReloadDevice adds the deviceNamesUnloadReloadDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDeviceNamesUnloadReloadDevice(deviceNamesUnloadReloadDevice *string) *TapeDeviceCollectionGetParams {
+	o.SetDeviceNamesUnloadReloadDevice(deviceNamesUnloadReloadDevice)
 	return o
 }
 
-// SetDeviceNamesUnloadReloadDeviceQueryParameter adds the deviceNamesUnloadReloadDevice to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDeviceNamesUnloadReloadDeviceQueryParameter(deviceNamesUnloadReloadDevice *string) {
-	o.DeviceNamesUnloadReloadDeviceQueryParameter = deviceNamesUnloadReloadDevice
+// SetDeviceNamesUnloadReloadDevice adds the deviceNamesUnloadReloadDevice to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDeviceNamesUnloadReloadDevice(deviceNamesUnloadReloadDevice *string) {
+	o.DeviceNamesUnloadReloadDevice = deviceNamesUnloadReloadDevice
 }
 
-// WithDeviceStateQueryParameter adds the deviceState to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithDeviceStateQueryParameter(deviceState *string) *TapeDeviceCollectionGetParams {
-	o.SetDeviceStateQueryParameter(deviceState)
+// WithDeviceState adds the deviceState to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDeviceState(deviceState *string) *TapeDeviceCollectionGetParams {
+	o.SetDeviceState(deviceState)
 	return o
 }
 
-// SetDeviceStateQueryParameter adds the deviceState to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetDeviceStateQueryParameter(deviceState *string) {
-	o.DeviceStateQueryParameter = deviceState
+// SetDeviceState adds the deviceState to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDeviceState(deviceState *string) {
+	o.DeviceState = deviceState
 }
 
-// WithFieldsQueryParameter adds the fields to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithFieldsQueryParameter(fields []string) *TapeDeviceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithFields(fields []string) *TapeDeviceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFileNumberQueryParameter adds the fileNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithFileNumberQueryParameter(fileNumber *int64) *TapeDeviceCollectionGetParams {
-	o.SetFileNumberQueryParameter(fileNumber)
+// WithFileNumber adds the fileNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithFileNumber(fileNumber *int64) *TapeDeviceCollectionGetParams {
+	o.SetFileNumber(fileNumber)
 	return o
 }
 
-// SetFileNumberQueryParameter adds the fileNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetFileNumberQueryParameter(fileNumber *int64) {
-	o.FileNumberQueryParameter = fileNumber
+// SetFileNumber adds the fileNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetFileNumber(fileNumber *int64) {
+	o.FileNumber = fileNumber
 }
 
-// WithFormatsQueryParameter adds the formats to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithFormatsQueryParameter(formats *string) *TapeDeviceCollectionGetParams {
-	o.SetFormatsQueryParameter(formats)
+// WithFormats adds the formats to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithFormats(formats *string) *TapeDeviceCollectionGetParams {
+	o.SetFormats(formats)
 	return o
 }
 
-// SetFormatsQueryParameter adds the formats to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetFormatsQueryParameter(formats *string) {
-	o.FormatsQueryParameter = formats
+// SetFormats adds the formats to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetFormats(formats *string) {
+	o.Formats = formats
 }
 
-// WithInterfaceQueryParameter adds the interfaceVar to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithInterfaceQueryParameter(interfaceVar *string) *TapeDeviceCollectionGetParams {
-	o.SetInterfaceQueryParameter(interfaceVar)
+// WithInterface adds the interfaceVar to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithInterface(interfaceVar *string) *TapeDeviceCollectionGetParams {
+	o.SetInterface(interfaceVar)
 	return o
 }
 
-// SetInterfaceQueryParameter adds the interface to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetInterfaceQueryParameter(interfaceVar *string) {
-	o.InterfaceQueryParameter = interfaceVar
+// SetInterface adds the interface to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetInterface(interfaceVar *string) {
+	o.Interface = interfaceVar
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *TapeDeviceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithMaxRecords(maxRecords *int64) *TapeDeviceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *TapeDeviceCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithNodeName(nodeName *string) *TapeDeviceCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *TapeDeviceCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithNodeUUID(nodeUUID *string) *TapeDeviceCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOnlineQueryParameter adds the online to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithOnlineQueryParameter(online *bool) *TapeDeviceCollectionGetParams {
-	o.SetOnlineQueryParameter(online)
+// WithOnline adds the online to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithOnline(online *bool) *TapeDeviceCollectionGetParams {
+	o.SetOnline(online)
 	return o
 }
 
-// SetOnlineQueryParameter adds the online to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetOnlineQueryParameter(online *bool) {
-	o.OnlineQueryParameter = online
+// SetOnline adds the online to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetOnline(online *bool) {
+	o.Online = online
 }
 
-// WithOrderByQueryParameter adds the orderBy to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *TapeDeviceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithOrderBy(orderBy []string) *TapeDeviceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReservationTypeQueryParameter adds the reservationType to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithReservationTypeQueryParameter(reservationType *string) *TapeDeviceCollectionGetParams {
-	o.SetReservationTypeQueryParameter(reservationType)
+// WithReservationType adds the reservationType to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithReservationType(reservationType *string) *TapeDeviceCollectionGetParams {
+	o.SetReservationType(reservationType)
 	return o
 }
 
-// SetReservationTypeQueryParameter adds the reservationType to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetReservationTypeQueryParameter(reservationType *string) {
-	o.ReservationTypeQueryParameter = reservationType
+// SetReservationType adds the reservationType to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetReservationType(reservationType *string) {
+	o.ReservationType = reservationType
 }
 
-// WithResidualCountQueryParameter adds the residualCount to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithResidualCountQueryParameter(residualCount *int64) *TapeDeviceCollectionGetParams {
-	o.SetResidualCountQueryParameter(residualCount)
+// WithResidualCount adds the residualCount to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithResidualCount(residualCount *int64) *TapeDeviceCollectionGetParams {
+	o.SetResidualCount(residualCount)
 	return o
 }
 
-// SetResidualCountQueryParameter adds the residualCount to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetResidualCountQueryParameter(residualCount *int64) {
-	o.ResidualCountQueryParameter = residualCount
+// SetResidualCount adds the residualCount to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetResidualCount(residualCount *int64) {
+	o.ResidualCount = residualCount
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *TapeDeviceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithReturnRecords(returnRecords *bool) *TapeDeviceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TapeDeviceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *TapeDeviceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *TapeDeviceCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithSerialNumber(serialNumber *string) *TapeDeviceCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithStoragePortNameQueryParameter adds the storagePortName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithStoragePortNameQueryParameter(storagePortName *string) *TapeDeviceCollectionGetParams {
-	o.SetStoragePortNameQueryParameter(storagePortName)
+// WithStoragePortName adds the storagePortName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithStoragePortName(storagePortName *string) *TapeDeviceCollectionGetParams {
+	o.SetStoragePortName(storagePortName)
 	return o
 }
 
-// SetStoragePortNameQueryParameter adds the storagePortName to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetStoragePortNameQueryParameter(storagePortName *string) {
-	o.StoragePortNameQueryParameter = storagePortName
+// SetStoragePortName adds the storagePortName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetStoragePortName(storagePortName *string) {
+	o.StoragePortName = storagePortName
 }
 
-// WithTypeQueryParameter adds the typeVar to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithTypeQueryParameter(typeVar *string) *TapeDeviceCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithType(typeVar *string) *TapeDeviceCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithWwnnQueryParameter adds the wwnn to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithWwnnQueryParameter(wwnn *string) *TapeDeviceCollectionGetParams {
-	o.SetWwnnQueryParameter(wwnn)
+// WithWwnn adds the wwnn to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithWwnn(wwnn *string) *TapeDeviceCollectionGetParams {
+	o.SetWwnn(wwnn)
 	return o
 }
 
-// SetWwnnQueryParameter adds the wwnn to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetWwnnQueryParameter(wwnn *string) {
-	o.WwnnQueryParameter = wwnn
+// SetWwnn adds the wwnn to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetWwnn(wwnn *string) {
+	o.Wwnn = wwnn
 }
 
-// WithWwpnQueryParameter adds the wwpn to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) WithWwpnQueryParameter(wwpn *string) *TapeDeviceCollectionGetParams {
-	o.SetWwpnQueryParameter(wwpn)
+// WithWwpn adds the wwpn to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithWwpn(wwpn *string) *TapeDeviceCollectionGetParams {
+	o.SetWwpn(wwpn)
 	return o
 }
 
-// SetWwpnQueryParameter adds the wwpn to the tape device collection get params
-func (o *TapeDeviceCollectionGetParams) SetWwpnQueryParameter(wwpn *string) {
-	o.WwpnQueryParameter = wwpn
+// SetWwpn adds the wwpn to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetWwpn(wwpn *string) {
+	o.Wwpn = wwpn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -651,13 +651,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.AliasMappingQueryParameter != nil {
+	if o.AliasMapping != nil {
 
 		// query param alias.mapping
 		var qrAliasMapping string
 
-		if o.AliasMappingQueryParameter != nil {
-			qrAliasMapping = *o.AliasMappingQueryParameter
+		if o.AliasMapping != nil {
+			qrAliasMapping = *o.AliasMapping
 		}
 		qAliasMapping := qrAliasMapping
 		if qAliasMapping != "" {
@@ -668,13 +668,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.AliasNameQueryParameter != nil {
+	if o.AliasName != nil {
 
 		// query param alias.name
 		var qrAliasName string
 
-		if o.AliasNameQueryParameter != nil {
-			qrAliasName = *o.AliasNameQueryParameter
+		if o.AliasName != nil {
+			qrAliasName = *o.AliasName
 		}
 		qAliasName := qrAliasName
 		if qAliasName != "" {
@@ -685,13 +685,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.AliasesMappingQueryParameter != nil {
+	if o.AliasesMapping != nil {
 
 		// query param aliases.mapping
 		var qrAliasesMapping string
 
-		if o.AliasesMappingQueryParameter != nil {
-			qrAliasesMapping = *o.AliasesMappingQueryParameter
+		if o.AliasesMapping != nil {
+			qrAliasesMapping = *o.AliasesMapping
 		}
 		qAliasesMapping := qrAliasesMapping
 		if qAliasesMapping != "" {
@@ -702,13 +702,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.AliasesNameQueryParameter != nil {
+	if o.AliasesName != nil {
 
 		// query param aliases.name
 		var qrAliasesName string
 
-		if o.AliasesNameQueryParameter != nil {
-			qrAliasesName = *o.AliasesNameQueryParameter
+		if o.AliasesName != nil {
+			qrAliasesName = *o.AliasesName
 		}
 		qAliasesName := qrAliasesName
 		if qAliasesName != "" {
@@ -719,13 +719,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.BlockNumberQueryParameter != nil {
+	if o.BlockNumber != nil {
 
 		// query param block_number
 		var qrBlockNumber int64
 
-		if o.BlockNumberQueryParameter != nil {
-			qrBlockNumber = *o.BlockNumberQueryParameter
+		if o.BlockNumber != nil {
+			qrBlockNumber = *o.BlockNumber
 		}
 		qBlockNumber := swag.FormatInt64(qrBlockNumber)
 		if qBlockNumber != "" {
@@ -736,13 +736,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DensityQueryParameter != nil {
+	if o.Density != nil {
 
 		// query param density
 		var qrDensity string
 
-		if o.DensityQueryParameter != nil {
-			qrDensity = *o.DensityQueryParameter
+		if o.Density != nil {
+			qrDensity = *o.Density
 		}
 		qDensity := qrDensity
 		if qDensity != "" {
@@ -753,13 +753,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -770,13 +770,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeviceIDQueryParameter != nil {
+	if o.DeviceID != nil {
 
 		// query param device_id
 		var qrDeviceID string
 
-		if o.DeviceIDQueryParameter != nil {
-			qrDeviceID = *o.DeviceIDQueryParameter
+		if o.DeviceID != nil {
+			qrDeviceID = *o.DeviceID
 		}
 		qDeviceID := qrDeviceID
 		if qDeviceID != "" {
@@ -787,13 +787,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeviceNamesNoRewindDeviceQueryParameter != nil {
+	if o.DeviceNamesNoRewindDevice != nil {
 
 		// query param device_names.no_rewind_device
 		var qrDeviceNamesNoRewindDevice string
 
-		if o.DeviceNamesNoRewindDeviceQueryParameter != nil {
-			qrDeviceNamesNoRewindDevice = *o.DeviceNamesNoRewindDeviceQueryParameter
+		if o.DeviceNamesNoRewindDevice != nil {
+			qrDeviceNamesNoRewindDevice = *o.DeviceNamesNoRewindDevice
 		}
 		qDeviceNamesNoRewindDevice := qrDeviceNamesNoRewindDevice
 		if qDeviceNamesNoRewindDevice != "" {
@@ -804,13 +804,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeviceNamesRewindDeviceQueryParameter != nil {
+	if o.DeviceNamesRewindDevice != nil {
 
 		// query param device_names.rewind_device
 		var qrDeviceNamesRewindDevice string
 
-		if o.DeviceNamesRewindDeviceQueryParameter != nil {
-			qrDeviceNamesRewindDevice = *o.DeviceNamesRewindDeviceQueryParameter
+		if o.DeviceNamesRewindDevice != nil {
+			qrDeviceNamesRewindDevice = *o.DeviceNamesRewindDevice
 		}
 		qDeviceNamesRewindDevice := qrDeviceNamesRewindDevice
 		if qDeviceNamesRewindDevice != "" {
@@ -821,13 +821,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeviceNamesUnloadReloadDeviceQueryParameter != nil {
+	if o.DeviceNamesUnloadReloadDevice != nil {
 
 		// query param device_names.unload_reload_device
 		var qrDeviceNamesUnloadReloadDevice string
 
-		if o.DeviceNamesUnloadReloadDeviceQueryParameter != nil {
-			qrDeviceNamesUnloadReloadDevice = *o.DeviceNamesUnloadReloadDeviceQueryParameter
+		if o.DeviceNamesUnloadReloadDevice != nil {
+			qrDeviceNamesUnloadReloadDevice = *o.DeviceNamesUnloadReloadDevice
 		}
 		qDeviceNamesUnloadReloadDevice := qrDeviceNamesUnloadReloadDevice
 		if qDeviceNamesUnloadReloadDevice != "" {
@@ -838,13 +838,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DeviceStateQueryParameter != nil {
+	if o.DeviceState != nil {
 
 		// query param device_state
 		var qrDeviceState string
 
-		if o.DeviceStateQueryParameter != nil {
-			qrDeviceState = *o.DeviceStateQueryParameter
+		if o.DeviceState != nil {
+			qrDeviceState = *o.DeviceState
 		}
 		qDeviceState := qrDeviceState
 		if qDeviceState != "" {
@@ -855,7 +855,7 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -866,13 +866,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FileNumberQueryParameter != nil {
+	if o.FileNumber != nil {
 
 		// query param file_number
 		var qrFileNumber int64
 
-		if o.FileNumberQueryParameter != nil {
-			qrFileNumber = *o.FileNumberQueryParameter
+		if o.FileNumber != nil {
+			qrFileNumber = *o.FileNumber
 		}
 		qFileNumber := swag.FormatInt64(qrFileNumber)
 		if qFileNumber != "" {
@@ -883,13 +883,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FormatsQueryParameter != nil {
+	if o.Formats != nil {
 
 		// query param formats
 		var qrFormats string
 
-		if o.FormatsQueryParameter != nil {
-			qrFormats = *o.FormatsQueryParameter
+		if o.Formats != nil {
+			qrFormats = *o.Formats
 		}
 		qFormats := qrFormats
 		if qFormats != "" {
@@ -900,13 +900,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceQueryParameter != nil {
+	if o.Interface != nil {
 
 		// query param interface
 		var qrInterface string
 
-		if o.InterfaceQueryParameter != nil {
-			qrInterface = *o.InterfaceQueryParameter
+		if o.Interface != nil {
+			qrInterface = *o.Interface
 		}
 		qInterface := qrInterface
 		if qInterface != "" {
@@ -917,13 +917,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -934,13 +934,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -951,13 +951,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -968,13 +968,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OnlineQueryParameter != nil {
+	if o.Online != nil {
 
 		// query param online
 		var qrOnline bool
 
-		if o.OnlineQueryParameter != nil {
-			qrOnline = *o.OnlineQueryParameter
+		if o.Online != nil {
+			qrOnline = *o.Online
 		}
 		qOnline := swag.FormatBool(qrOnline)
 		if qOnline != "" {
@@ -985,7 +985,7 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -996,13 +996,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReservationTypeQueryParameter != nil {
+	if o.ReservationType != nil {
 
 		// query param reservation_type
 		var qrReservationType string
 
-		if o.ReservationTypeQueryParameter != nil {
-			qrReservationType = *o.ReservationTypeQueryParameter
+		if o.ReservationType != nil {
+			qrReservationType = *o.ReservationType
 		}
 		qReservationType := qrReservationType
 		if qReservationType != "" {
@@ -1013,13 +1013,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ResidualCountQueryParameter != nil {
+	if o.ResidualCount != nil {
 
 		// query param residual_count
 		var qrResidualCount int64
 
-		if o.ResidualCountQueryParameter != nil {
-			qrResidualCount = *o.ResidualCountQueryParameter
+		if o.ResidualCount != nil {
+			qrResidualCount = *o.ResidualCount
 		}
 		qResidualCount := swag.FormatInt64(qrResidualCount)
 		if qResidualCount != "" {
@@ -1030,13 +1030,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1047,13 +1047,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1064,13 +1064,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -1081,13 +1081,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StoragePortNameQueryParameter != nil {
+	if o.StoragePortName != nil {
 
 		// query param storage_port.name
 		var qrStoragePortName string
 
-		if o.StoragePortNameQueryParameter != nil {
-			qrStoragePortName = *o.StoragePortNameQueryParameter
+		if o.StoragePortName != nil {
+			qrStoragePortName = *o.StoragePortName
 		}
 		qStoragePortName := qrStoragePortName
 		if qStoragePortName != "" {
@@ -1098,13 +1098,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1115,13 +1115,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.WwnnQueryParameter != nil {
+	if o.Wwnn != nil {
 
 		// query param wwnn
 		var qrWwnn string
 
-		if o.WwnnQueryParameter != nil {
-			qrWwnn = *o.WwnnQueryParameter
+		if o.Wwnn != nil {
+			qrWwnn = *o.Wwnn
 		}
 		qWwnn := qrWwnn
 		if qWwnn != "" {
@@ -1132,13 +1132,13 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.WwpnQueryParameter != nil {
+	if o.Wwpn != nil {
 
 		// query param wwpn
 		var qrWwpn string
 
-		if o.WwpnQueryParameter != nil {
-			qrWwpn = *o.WwpnQueryParameter
+		if o.Wwpn != nil {
+			qrWwpn = *o.Wwpn
 		}
 		qWwpn := qrWwpn
 		if qWwpn != "" {
@@ -1157,7 +1157,7 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamTapeDeviceCollectionGet binds the parameter fields
 func (o *TapeDeviceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1174,7 +1174,7 @@ func (o *TapeDeviceCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamTapeDeviceCollectionGet binds the parameter order_by
 func (o *TapeDeviceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

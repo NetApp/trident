@@ -66,19 +66,19 @@ type TokenGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* UUID.
 
 	   Token UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *TokenGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the token get params
-func (o *TokenGetParams) WithFieldsQueryParameter(fields []string) *TokenGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the token get params
+func (o *TokenGetParams) WithFields(fields []string) *TokenGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the token get params
-func (o *TokenGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the token get params
+func (o *TokenGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the token get params
-func (o *TokenGetParams) WithNodeUUIDPathParameter(nodeUUID string) *TokenGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the token get params
+func (o *TokenGetParams) WithNodeUUID(nodeUUID string) *TokenGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the token get params
-func (o *TokenGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the token get params
+func (o *TokenGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the token get params
-func (o *TokenGetParams) WithUUIDPathParameter(uuid string) *TokenGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the token get params
+func (o *TokenGetParams) WithUUID(uuid string) *TokenGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the token get params
-func (o *TokenGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the token get params
+func (o *TokenGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *TokenGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *TokenGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *TokenGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamTokenGet binds the parameter fields
 func (o *TokenGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

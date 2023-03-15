@@ -20,10 +20,10 @@ import (
 type TopMetricsSvmClientExcludedVolume struct {
 
 	// reason
-	Reason *TopMetricsSvmClientExcludedVolumeReason `json:"reason,omitempty"`
+	Reason *TopMetricsSvmClientExcludedVolumeInlineReason `json:"reason,omitempty"`
 
 	// volume
-	Volume *TopMetricsSvmClientExcludedVolumeVolume `json:"volume,omitempty"`
+	Volume *TopMetricsSvmClientExcludedVolumeInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this top metrics svm client excluded volume
@@ -142,29 +142,29 @@ func (m *TopMetricsSvmClientExcludedVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmClientExcludedVolumeReason top metrics svm client excluded volume reason
+// TopMetricsSvmClientExcludedVolumeInlineReason top metrics svm client excluded volume inline reason
 //
-// swagger:model TopMetricsSvmClientExcludedVolumeReason
-type TopMetricsSvmClientExcludedVolumeReason struct {
+// swagger:model top_metrics_svm_client_excluded_volume_inline_reason
+type TopMetricsSvmClientExcludedVolumeInlineReason struct {
 
 	// Warning code indicating why the volume is not included in the SVM activity tracking REST API.
 	// Example: 111411207
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Details why the volume is not included in the SVM activity tracking REST API.
 	// Example: The volume is offline.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this top metrics svm client excluded volume reason
-func (m *TopMetricsSvmClientExcludedVolumeReason) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client excluded volume inline reason
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client excluded volume reason based on the context it is used
-func (m *TopMetricsSvmClientExcludedVolumeReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client excluded volume inline reason based on the context it is used
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -181,18 +181,18 @@ func (m *TopMetricsSvmClientExcludedVolumeReason) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reason"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "reason"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reason"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "reason"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (m *TopMetricsSvmClientExcludedVolumeReason) contextValidateMessage(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeReason) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *TopMetricsSvmClientExcludedVolumeReason) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeReason) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientExcludedVolumeReason
+func (m *TopMetricsSvmClientExcludedVolumeInlineReason) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientExcludedVolumeInlineReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -217,25 +217,25 @@ func (m *TopMetricsSvmClientExcludedVolumeReason) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// TopMetricsSvmClientExcludedVolumeVolume top metrics svm client excluded volume volume
+// TopMetricsSvmClientExcludedVolumeInlineVolume top metrics svm client excluded volume inline volume
 //
-// swagger:model TopMetricsSvmClientExcludedVolumeVolume
-type TopMetricsSvmClientExcludedVolumeVolume struct {
+// swagger:model top_metrics_svm_client_excluded_volume_inline_volume
+type TopMetricsSvmClientExcludedVolumeInlineVolume struct {
 
 	// links
-	Links *TopMetricsSvmClientExcludedVolumeVolumeLinks `json:"_links,omitempty"`
+	Links *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics svm client excluded volume volume
-func (m *TopMetricsSvmClientExcludedVolumeVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client excluded volume inline volume
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -248,7 +248,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeVolume) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -265,8 +265,8 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) validateLinks(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client excluded volume volume based on the context it is used
-func (m *TopMetricsSvmClientExcludedVolumeVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client excluded volume inline volume based on the context it is used
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -279,7 +279,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +294,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) contextValidateLinks(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeVolume) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -302,8 +302,8 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeVolume) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientExcludedVolumeVolume
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolume) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientExcludedVolumeInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -311,17 +311,17 @@ func (m *TopMetricsSvmClientExcludedVolumeVolume) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// TopMetricsSvmClientExcludedVolumeVolumeLinks top metrics svm client excluded volume volume links
+// TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks top metrics svm client excluded volume inline volume inline links
 //
-// swagger:model TopMetricsSvmClientExcludedVolumeVolumeLinks
-type TopMetricsSvmClientExcludedVolumeVolumeLinks struct {
+// swagger:model top_metrics_svm_client_excluded_volume_inline_volume_inline__links
+type TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm client excluded volume volume links
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm client excluded volume inline volume inline links
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -334,7 +334,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -351,8 +351,8 @@ func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) validateSelf(formats strf
 	return nil
 }
 
-// ContextValidate validate this top metrics svm client excluded volume volume links based on the context it is used
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm client excluded volume inline volume inline links based on the context it is used
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -365,7 +365,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -380,7 +380,7 @@ func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) contextValidateSelf(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -388,8 +388,8 @@ func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmClientExcludedVolumeVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmClientExcludedVolumeVolumeLinks
+func (m *TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmClientExcludedVolumeInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -21,45 +21,45 @@ import (
 type Web struct {
 
 	// links
-	Links *WebLinks `json:"_links,omitempty"`
+	Links *WebInlineLinks `json:"_links,omitempty"`
 
 	// certificate
-	Certificate *WebCertificate `json:"certificate,omitempty"`
+	Certificate *WebInlineCertificate `json:"certificate,omitempty"`
 
 	// Indicates whether client authentication is enabled.
-	ClientEnabled bool `json:"client_enabled,omitempty"`
+	ClientEnabled *bool `json:"client_enabled,omitempty"`
 
 	// csrf
-	Csrf *WebCsrf `json:"csrf,omitempty"`
+	Csrf *WebInlineCsrf `json:"csrf,omitempty"`
 
 	// Indicates whether remote clients can connect to the web services.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Indicates whether HTTP is enabled.
-	HTTPEnabled bool `json:"http_enabled,omitempty"`
+	HTTPEnabled *bool `json:"http_enabled,omitempty"`
 
 	// HTTP port for cluster-level web services.
-	HTTPPort int64 `json:"http_port,omitempty"`
+	HTTPPort *int64 `json:"http_port,omitempty"`
 
 	// HTTPS port for cluster-level web services.
-	HTTPSPort int64 `json:"https_port,omitempty"`
+	HTTPSPort *int64 `json:"https_port,omitempty"`
 
 	// Indicates whether online certificate status protocol verification is enabled.
-	OcspEnabled bool `json:"ocsp_enabled,omitempty"`
+	OcspEnabled *bool `json:"ocsp_enabled,omitempty"`
 
 	// The number of connections that can be processed concurrently from the same remote address.
 	// Example: 42
 	// Maximum: 999
 	// Minimum: 24
-	PerAddressLimit int64 `json:"per_address_limit,omitempty"`
+	PerAddressLimit *int64 `json:"per_address_limit,omitempty"`
 
 	// State of the cluster-level web services.
 	// Read Only: true
 	// Enum: [offline partial mixed online unclustered]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// The maximum size of the wait queue for connections exceeding the per-address-limit.
-	WaitQueueCapacity int64 `json:"wait_queue_capacity,omitempty"`
+	WaitQueueCapacity *int64 `json:"wait_queue_capacity,omitempty"`
 }
 
 // Validate validates this web
@@ -148,11 +148,11 @@ func (m *Web) validatePerAddressLimit(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("per_address_limit", "body", m.PerAddressLimit, 24, false); err != nil {
+	if err := validate.MinimumInt("per_address_limit", "body", *m.PerAddressLimit, 24, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("per_address_limit", "body", m.PerAddressLimit, 999, false); err != nil {
+	if err := validate.MaximumInt("per_address_limit", "body", *m.PerAddressLimit, 999, false); err != nil {
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (m *Web) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -315,7 +315,7 @@ func (m *Web) contextValidateCsrf(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Web) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -340,26 +340,26 @@ func (m *Web) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebCertificate Certificate used by cluster and node management interfaces for TLS connection requests.
+// WebInlineCertificate Certificate used by cluster and node management interfaces for TLS connection requests.
 //
-// swagger:model WebCertificate
-type WebCertificate struct {
+// swagger:model web_inline_certificate
+type WebInlineCertificate struct {
 
 	// links
-	Links *WebCertificateLinks `json:"_links,omitempty"`
+	Links *WebInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
 	// Example: cert1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this web certificate
-func (m *WebCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this web inline certificate
+func (m *WebInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -372,7 +372,7 @@ func (m *WebCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *WebInlineCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -389,8 +389,8 @@ func (m *WebCertificate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web certificate based on the context it is used
-func (m *WebCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web inline certificate based on the context it is used
+func (m *WebInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -407,7 +407,7 @@ func (m *WebCertificate) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *WebCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebInlineCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -421,9 +421,9 @@ func (m *WebCertificate) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *WebCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebInlineCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -431,7 +431,7 @@ func (m *WebCertificate) contextValidateName(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *WebCertificate) MarshalBinary() ([]byte, error) {
+func (m *WebInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -439,8 +439,8 @@ func (m *WebCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebCertificate) UnmarshalBinary(b []byte) error {
-	var res WebCertificate
+func (m *WebInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res WebInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,17 +448,17 @@ func (m *WebCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebCertificateLinks web certificate links
+// WebInlineCertificateInlineLinks web inline certificate inline links
 //
-// swagger:model WebCertificateLinks
-type WebCertificateLinks struct {
+// swagger:model web_inline_certificate_inline__links
+type WebInlineCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this web certificate links
-func (m *WebCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this web inline certificate inline links
+func (m *WebInlineCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -471,7 +471,7 @@ func (m *WebCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WebInlineCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -488,8 +488,8 @@ func (m *WebCertificateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web certificate links based on the context it is used
-func (m *WebCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web inline certificate inline links based on the context it is used
+func (m *WebInlineCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -502,7 +502,7 @@ func (m *WebCertificateLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *WebCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebInlineCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -517,7 +517,7 @@ func (m *WebCertificateLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *WebCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *WebInlineCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -525,8 +525,8 @@ func (m *WebCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res WebCertificateLinks
+func (m *WebInlineCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WebInlineCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -534,20 +534,20 @@ func (m *WebCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebCsrf web csrf
+// WebInlineCsrf web inline csrf
 //
-// swagger:model WebCsrf
-type WebCsrf struct {
+// swagger:model web_inline_csrf
+type WebInlineCsrf struct {
 
 	// Indicates whether CSRF protection is enabled.
-	ProtectionEnabled bool `json:"protection_enabled,omitempty"`
+	ProtectionEnabled *bool `json:"protection_enabled,omitempty"`
 
 	// token
-	Token *WebCsrfToken `json:"token,omitempty"`
+	Token *WebInlineCsrfInlineToken `json:"token,omitempty"`
 }
 
-// Validate validates this web csrf
-func (m *WebCsrf) Validate(formats strfmt.Registry) error {
+// Validate validates this web inline csrf
+func (m *WebInlineCsrf) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateToken(formats); err != nil {
@@ -560,7 +560,7 @@ func (m *WebCsrf) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebCsrf) validateToken(formats strfmt.Registry) error {
+func (m *WebInlineCsrf) validateToken(formats strfmt.Registry) error {
 	if swag.IsZero(m.Token) { // not required
 		return nil
 	}
@@ -577,8 +577,8 @@ func (m *WebCsrf) validateToken(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web csrf based on the context it is used
-func (m *WebCsrf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web inline csrf based on the context it is used
+func (m *WebInlineCsrf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateToken(ctx, formats); err != nil {
@@ -591,7 +591,7 @@ func (m *WebCsrf) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
-func (m *WebCsrf) contextValidateToken(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebInlineCsrf) contextValidateToken(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Token != nil {
 		if err := m.Token.ContextValidate(ctx, formats); err != nil {
@@ -606,7 +606,7 @@ func (m *WebCsrf) contextValidateToken(ctx context.Context, formats strfmt.Regis
 }
 
 // MarshalBinary interface implementation
-func (m *WebCsrf) MarshalBinary() ([]byte, error) {
+func (m *WebInlineCsrf) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -614,8 +614,8 @@ func (m *WebCsrf) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebCsrf) UnmarshalBinary(b []byte) error {
-	var res WebCsrf
+func (m *WebInlineCsrf) UnmarshalBinary(b []byte) error {
+	var res WebInlineCsrf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -623,10 +623,10 @@ func (m *WebCsrf) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebCsrfToken web csrf token
+// WebInlineCsrfInlineToken web inline csrf inline token
 //
-// swagger:model WebCsrfToken
-type WebCsrfToken struct {
+// swagger:model web_inline_csrf_inline_token
+type WebInlineCsrfInlineToken struct {
 
 	// Maximum number of concurrent CSRF tokens.
 	// Example: 120
@@ -635,14 +635,14 @@ type WebCsrfToken struct {
 	ConcurrentLimit *int64 `json:"concurrent_limit,omitempty"`
 
 	// Time for which an unused CSRF token is retained, in seconds.
-	IdleTimeout int64 `json:"idle_timeout,omitempty"`
+	IdleTimeout *int64 `json:"idle_timeout,omitempty"`
 
 	// Time for which an unused CSRF token, regardless of usage is retained, in seconds.
-	MaxTimeout int64 `json:"max_timeout,omitempty"`
+	MaxTimeout *int64 `json:"max_timeout,omitempty"`
 }
 
-// Validate validates this web csrf token
-func (m *WebCsrfToken) Validate(formats strfmt.Registry) error {
+// Validate validates this web inline csrf inline token
+func (m *WebInlineCsrfInlineToken) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConcurrentLimit(formats); err != nil {
@@ -655,7 +655,7 @@ func (m *WebCsrfToken) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebCsrfToken) validateConcurrentLimit(formats strfmt.Registry) error {
+func (m *WebInlineCsrfInlineToken) validateConcurrentLimit(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConcurrentLimit) { // not required
 		return nil
 	}
@@ -671,13 +671,13 @@ func (m *WebCsrfToken) validateConcurrentLimit(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this web csrf token based on context it is used
-func (m *WebCsrfToken) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this web inline csrf inline token based on context it is used
+func (m *WebInlineCsrfInlineToken) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *WebCsrfToken) MarshalBinary() ([]byte, error) {
+func (m *WebInlineCsrfInlineToken) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -685,8 +685,8 @@ func (m *WebCsrfToken) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebCsrfToken) UnmarshalBinary(b []byte) error {
-	var res WebCsrfToken
+func (m *WebInlineCsrfInlineToken) UnmarshalBinary(b []byte) error {
+	var res WebInlineCsrfInlineToken
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -694,17 +694,17 @@ func (m *WebCsrfToken) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebLinks web links
+// WebInlineLinks web inline links
 //
-// swagger:model WebLinks
-type WebLinks struct {
+// swagger:model web_inline__links
+type WebInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this web links
-func (m *WebLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this web inline links
+func (m *WebInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -717,7 +717,7 @@ func (m *WebLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WebLinks) validateSelf(formats strfmt.Registry) error {
+func (m *WebInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -734,8 +734,8 @@ func (m *WebLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this web links based on the context it is used
-func (m *WebLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this web inline links based on the context it is used
+func (m *WebInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -748,7 +748,7 @@ func (m *WebLinks) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *WebLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *WebInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -763,7 +763,7 @@ func (m *WebLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regis
 }
 
 // MarshalBinary interface implementation
-func (m *WebLinks) MarshalBinary() ([]byte, error) {
+func (m *WebInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -771,8 +771,8 @@ func (m *WebLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *WebLinks) UnmarshalBinary(b []byte) error {
-	var res WebLinks
+func (m *WebInlineLinks) UnmarshalBinary(b []byte) error {
+	var res WebInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

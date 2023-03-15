@@ -20,14 +20,14 @@ import (
 type NvmeInterfaceResponse struct {
 
 	// links
-	Links *NvmeInterfaceResponseLinks `json:"_links,omitempty"`
+	Links *NvmeInterfaceResponseInlineLinks `json:"_links,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*NvmeInterface `json:"records,omitempty"`
+	// nvme interface response inline records
+	NvmeInterfaceResponseInlineRecords []*NvmeInterface `json:"records,omitempty"`
 }
 
 // Validate validates this nvme interface response
@@ -38,7 +38,7 @@ func (m *NvmeInterfaceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNvmeInterfaceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *NvmeInterfaceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeInterfaceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NvmeInterfaceResponse) validateNvmeInterfaceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NvmeInterfaceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NvmeInterfaceResponseInlineRecords); i++ {
+		if swag.IsZero(m.NvmeInterfaceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NvmeInterfaceResponseInlineRecords[i] != nil {
+			if err := m.NvmeInterfaceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *NvmeInterfaceResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNvmeInterfaceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *NvmeInterfaceResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeInterfaceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeInterfaceResponse) contextValidateNvmeInterfaceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NvmeInterfaceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NvmeInterfaceResponseInlineRecords[i] != nil {
+			if err := m.NvmeInterfaceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *NvmeInterfaceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeInterfaceResponseLinks nvme interface response links
+// NvmeInterfaceResponseInlineLinks nvme interface response inline links
 //
-// swagger:model NvmeInterfaceResponseLinks
-type NvmeInterfaceResponseLinks struct {
+// swagger:model nvme_interface_response_inline__links
+type NvmeInterfaceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type NvmeInterfaceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme interface response links
-func (m *NvmeInterfaceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme interface response inline links
+func (m *NvmeInterfaceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *NvmeInterfaceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeInterfaceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NvmeInterfaceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *NvmeInterfaceResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeInterfaceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeInterfaceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *NvmeInterfaceResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this nvme interface response links based on the context it is used
-func (m *NvmeInterfaceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme interface response inline links based on the context it is used
+func (m *NvmeInterfaceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *NvmeInterfaceResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *NvmeInterfaceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeInterfaceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *NvmeInterfaceResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeInterfaceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeInterfaceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *NvmeInterfaceResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeInterfaceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *NvmeInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeInterfaceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeInterfaceResponseLinks
+func (m *NvmeInterfaceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeInterfaceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

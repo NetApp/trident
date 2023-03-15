@@ -65,13 +65,13 @@ type EmsFilterRuleDeleteParams struct {
 
 	   Filter index
 	*/
-	IndexPathParameter string
+	Index string
 
 	/* Name.
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *EmsFilterRuleDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the ems filter rule delete params
-func (o *EmsFilterRuleDeleteParams) WithIndexPathParameter(index string) *EmsFilterRuleDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the ems filter rule delete params
+func (o *EmsFilterRuleDeleteParams) WithIndex(index string) *EmsFilterRuleDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the ems filter rule delete params
-func (o *EmsFilterRuleDeleteParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the ems filter rule delete params
+func (o *EmsFilterRuleDeleteParams) SetIndex(index string) {
+	o.Index = index
 }
 
-// WithNamePathParameter adds the name to the ems filter rule delete params
-func (o *EmsFilterRuleDeleteParams) WithNamePathParameter(name string) *EmsFilterRuleDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filter rule delete params
+func (o *EmsFilterRuleDeleteParams) WithName(name string) *EmsFilterRuleDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filter rule delete params
-func (o *EmsFilterRuleDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filter rule delete params
+func (o *EmsFilterRuleDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *EmsFilterRuleDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

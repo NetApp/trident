@@ -23,7 +23,7 @@ type SwitchReference struct {
 
 	// name
 	// Example: RTP-SS01-510R03(FOC223443KQ)
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this switch reference

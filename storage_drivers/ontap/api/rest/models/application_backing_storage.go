@@ -19,29 +19,29 @@ import (
 // swagger:model application_backing_storage
 type ApplicationBackingStorage struct {
 
-	// luns
-	Luns []*ApplicationLunObject `json:"luns,omitempty"`
+	// application backing storage inline luns
+	ApplicationBackingStorageInlineLuns []*ApplicationLunObject `json:"luns,omitempty"`
 
-	// namespaces
-	Namespaces []*ApplicationNamespaceObject `json:"namespaces,omitempty"`
+	// application backing storage inline namespaces
+	ApplicationBackingStorageInlineNamespaces []*ApplicationNamespaceObject `json:"namespaces,omitempty"`
 
-	// volumes
-	Volumes []*ApplicationVolumeObject `json:"volumes,omitempty"`
+	// application backing storage inline volumes
+	ApplicationBackingStorageInlineVolumes []*ApplicationVolumeObject `json:"volumes,omitempty"`
 }
 
 // Validate validates this application backing storage
 func (m *ApplicationBackingStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateLuns(formats); err != nil {
+	if err := m.validateApplicationBackingStorageInlineLuns(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateNamespaces(formats); err != nil {
+	if err := m.validateApplicationBackingStorageInlineNamespaces(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateVolumes(formats); err != nil {
+	if err := m.validateApplicationBackingStorageInlineVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -51,18 +51,18 @@ func (m *ApplicationBackingStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationBackingStorage) validateLuns(formats strfmt.Registry) error {
-	if swag.IsZero(m.Luns) { // not required
+func (m *ApplicationBackingStorage) validateApplicationBackingStorageInlineLuns(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationBackingStorageInlineLuns) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Luns); i++ {
-		if swag.IsZero(m.Luns[i]) { // not required
+	for i := 0; i < len(m.ApplicationBackingStorageInlineLuns); i++ {
+		if swag.IsZero(m.ApplicationBackingStorageInlineLuns[i]) { // not required
 			continue
 		}
 
-		if m.Luns[i] != nil {
-			if err := m.Luns[i].Validate(formats); err != nil {
+		if m.ApplicationBackingStorageInlineLuns[i] != nil {
+			if err := m.ApplicationBackingStorageInlineLuns[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("luns" + "." + strconv.Itoa(i))
 				}
@@ -75,18 +75,18 @@ func (m *ApplicationBackingStorage) validateLuns(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ApplicationBackingStorage) validateNamespaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.Namespaces) { // not required
+func (m *ApplicationBackingStorage) validateApplicationBackingStorageInlineNamespaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationBackingStorageInlineNamespaces) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Namespaces); i++ {
-		if swag.IsZero(m.Namespaces[i]) { // not required
+	for i := 0; i < len(m.ApplicationBackingStorageInlineNamespaces); i++ {
+		if swag.IsZero(m.ApplicationBackingStorageInlineNamespaces[i]) { // not required
 			continue
 		}
 
-		if m.Namespaces[i] != nil {
-			if err := m.Namespaces[i].Validate(formats); err != nil {
+		if m.ApplicationBackingStorageInlineNamespaces[i] != nil {
+			if err := m.ApplicationBackingStorageInlineNamespaces[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("namespaces" + "." + strconv.Itoa(i))
 				}
@@ -99,18 +99,18 @@ func (m *ApplicationBackingStorage) validateNamespaces(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ApplicationBackingStorage) validateVolumes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Volumes) { // not required
+func (m *ApplicationBackingStorage) validateApplicationBackingStorageInlineVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationBackingStorageInlineVolumes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Volumes); i++ {
-		if swag.IsZero(m.Volumes[i]) { // not required
+	for i := 0; i < len(m.ApplicationBackingStorageInlineVolumes); i++ {
+		if swag.IsZero(m.ApplicationBackingStorageInlineVolumes[i]) { // not required
 			continue
 		}
 
-		if m.Volumes[i] != nil {
-			if err := m.Volumes[i].Validate(formats); err != nil {
+		if m.ApplicationBackingStorageInlineVolumes[i] != nil {
+			if err := m.ApplicationBackingStorageInlineVolumes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
 				}
@@ -127,15 +127,15 @@ func (m *ApplicationBackingStorage) validateVolumes(formats strfmt.Registry) err
 func (m *ApplicationBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateLuns(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationBackingStorageInlineLuns(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNamespaces(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationBackingStorageInlineNamespaces(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVolumes(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationBackingStorageInlineVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -145,12 +145,12 @@ func (m *ApplicationBackingStorage) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ApplicationBackingStorage) contextValidateLuns(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationBackingStorage) contextValidateApplicationBackingStorageInlineLuns(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Luns); i++ {
+	for i := 0; i < len(m.ApplicationBackingStorageInlineLuns); i++ {
 
-		if m.Luns[i] != nil {
-			if err := m.Luns[i].ContextValidate(ctx, formats); err != nil {
+		if m.ApplicationBackingStorageInlineLuns[i] != nil {
+			if err := m.ApplicationBackingStorageInlineLuns[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("luns" + "." + strconv.Itoa(i))
 				}
@@ -163,12 +163,12 @@ func (m *ApplicationBackingStorage) contextValidateLuns(ctx context.Context, for
 	return nil
 }
 
-func (m *ApplicationBackingStorage) contextValidateNamespaces(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationBackingStorage) contextValidateApplicationBackingStorageInlineNamespaces(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Namespaces); i++ {
+	for i := 0; i < len(m.ApplicationBackingStorageInlineNamespaces); i++ {
 
-		if m.Namespaces[i] != nil {
-			if err := m.Namespaces[i].ContextValidate(ctx, formats); err != nil {
+		if m.ApplicationBackingStorageInlineNamespaces[i] != nil {
+			if err := m.ApplicationBackingStorageInlineNamespaces[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("namespaces" + "." + strconv.Itoa(i))
 				}
@@ -181,12 +181,12 @@ func (m *ApplicationBackingStorage) contextValidateNamespaces(ctx context.Contex
 	return nil
 }
 
-func (m *ApplicationBackingStorage) contextValidateVolumes(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationBackingStorage) contextValidateApplicationBackingStorageInlineVolumes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Volumes); i++ {
+	for i := 0; i < len(m.ApplicationBackingStorageInlineVolumes); i++ {
 
-		if m.Volumes[i] != nil {
-			if err := m.Volumes[i].ContextValidate(ctx, formats); err != nil {
+		if m.ApplicationBackingStorageInlineVolumes[i] != nil {
+			if err := m.ApplicationBackingStorageInlineVolumes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("volumes" + "." + strconv.Itoa(i))
 				}

@@ -96,7 +96,6 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `azure_account` - Azure account if `provider_type` is _Azure_Cloud_.
 * `azure_private_key` - Azure access key if `provider_type` is _Azure_Cloud_.
 * `cap_url` - Full URL of the request to a CAP server for retrieving temporary credentials if `authentication_type` is _cap_.
-* `svm.name` or `svm.uuid` - Name or UUID of SVM if `owner` is _snapmirror_.
 * `snapmirror_use` - Use of the cloud target if `owner` is _snapmirror_: data, metadata.
 ### Recommended optional properties
 * `authentication_type` - Authentication used to access the target: _key_, _cap_, _ec2_iam_, _gcp_sa_, _azure_msi_.
@@ -104,6 +103,8 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `port` - Port number of the object store that ONTAP uses when establishing a connection.
 * `ipspace` - IPspace to use in order to reach the cloud target.
 * `use_http_proxy` - Use the HTTP proxy when connecting to the object store server.
+* `azure_sas_token` - Shared access signature to grant limited access to Azure storage account resources.
+* `svm.name` or `svm.uuid` - Name or UUID of SVM if `owner` is _snapmirror_.
 ### Default property values
 * `authentication_type`
   - _ec2_iam_ - if running in Cloud Volumes ONTAP in AWS

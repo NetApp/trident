@@ -66,19 +66,19 @@ type QtreeDeleteParams struct {
 
 	   Qtree ID
 	*/
-	IDPathParameter string
+	ID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *QtreeDeleteParams) WithDefaults() *QtreeDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *QtreeDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := QtreeDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *QtreeDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the qtree delete params
-func (o *QtreeDeleteParams) WithIDPathParameter(id string) *QtreeDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the qtree delete params
+func (o *QtreeDeleteParams) WithID(id string) *QtreeDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the qtree delete params
-func (o *QtreeDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the qtree delete params
+func (o *QtreeDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the qtree delete params
-func (o *QtreeDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QtreeDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the qtree delete params
+func (o *QtreeDeleteParams) WithReturnTimeout(returnTimeout *int64) *QtreeDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the qtree delete params
-func (o *QtreeDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the qtree delete params
+func (o *QtreeDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the qtree delete params
-func (o *QtreeDeleteParams) WithVolumeUUIDPathParameter(volumeUUID string) *QtreeDeleteParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the qtree delete params
+func (o *QtreeDeleteParams) WithVolumeUUID(volumeUUID string) *QtreeDeleteParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the qtree delete params
-func (o *QtreeDeleteParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the qtree delete params
+func (o *QtreeDeleteParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,17 +186,17 @@ func (o *QtreeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -208,7 +208,7 @@ func (o *QtreeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

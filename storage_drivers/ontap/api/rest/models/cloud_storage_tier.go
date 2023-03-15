@@ -20,11 +20,11 @@ import (
 type CloudStorageTier struct {
 
 	// cloud store
-	CloudStore *CloudStorageTierCloudStore `json:"cloud_store,omitempty"`
+	CloudStore *CloudStorageTierInlineCloudStore `json:"cloud_store,omitempty"`
 
 	// Capacity used in bytes in the cloud store by this aggregate. This is a cached value calculated every 5 minutes.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this cloud storage tier
@@ -92,7 +92,7 @@ func (m *CloudStorageTier) contextValidateCloudStore(ctx context.Context, format
 
 func (m *CloudStorageTier) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -117,25 +117,25 @@ func (m *CloudStorageTier) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudStorageTierCloudStore Cloud store
+// CloudStorageTierInlineCloudStore Cloud store
 //
-// swagger:model CloudStorageTierCloudStore
-type CloudStorageTierCloudStore struct {
+// swagger:model cloud_storage_tier_inline_cloud_store
+type CloudStorageTierInlineCloudStore struct {
 
 	// links
-	Links *CloudStorageTierCloudStoreLinks `json:"_links,omitempty"`
+	Links *CloudStorageTierInlineCloudStoreInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: store1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cloud storage tier cloud store
-func (m *CloudStorageTierCloudStore) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud storage tier inline cloud store
+func (m *CloudStorageTierInlineCloudStore) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -148,7 +148,7 @@ func (m *CloudStorageTierCloudStore) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudStorageTierCloudStore) validateLinks(formats strfmt.Registry) error {
+func (m *CloudStorageTierInlineCloudStore) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -165,8 +165,8 @@ func (m *CloudStorageTierCloudStore) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this cloud storage tier cloud store based on the context it is used
-func (m *CloudStorageTierCloudStore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud storage tier inline cloud store based on the context it is used
+func (m *CloudStorageTierInlineCloudStore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -179,7 +179,7 @@ func (m *CloudStorageTierCloudStore) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *CloudStorageTierCloudStore) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudStorageTierInlineCloudStore) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -194,7 +194,7 @@ func (m *CloudStorageTierCloudStore) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *CloudStorageTierCloudStore) MarshalBinary() ([]byte, error) {
+func (m *CloudStorageTierInlineCloudStore) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -202,8 +202,8 @@ func (m *CloudStorageTierCloudStore) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudStorageTierCloudStore) UnmarshalBinary(b []byte) error {
-	var res CloudStorageTierCloudStore
+func (m *CloudStorageTierInlineCloudStore) UnmarshalBinary(b []byte) error {
+	var res CloudStorageTierInlineCloudStore
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -211,17 +211,17 @@ func (m *CloudStorageTierCloudStore) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudStorageTierCloudStoreLinks cloud storage tier cloud store links
+// CloudStorageTierInlineCloudStoreInlineLinks cloud storage tier inline cloud store inline links
 //
-// swagger:model CloudStorageTierCloudStoreLinks
-type CloudStorageTierCloudStoreLinks struct {
+// swagger:model cloud_storage_tier_inline_cloud_store_inline__links
+type CloudStorageTierInlineCloudStoreInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud storage tier cloud store links
-func (m *CloudStorageTierCloudStoreLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud storage tier inline cloud store inline links
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -234,7 +234,7 @@ func (m *CloudStorageTierCloudStoreLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *CloudStorageTierCloudStoreLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -251,8 +251,8 @@ func (m *CloudStorageTierCloudStoreLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this cloud storage tier cloud store links based on the context it is used
-func (m *CloudStorageTierCloudStoreLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud storage tier inline cloud store inline links based on the context it is used
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -265,7 +265,7 @@ func (m *CloudStorageTierCloudStoreLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *CloudStorageTierCloudStoreLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -280,7 +280,7 @@ func (m *CloudStorageTierCloudStoreLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *CloudStorageTierCloudStoreLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -288,8 +288,8 @@ func (m *CloudStorageTierCloudStoreLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudStorageTierCloudStoreLinks) UnmarshalBinary(b []byte) error {
-	var res CloudStorageTierCloudStoreLinks
+func (m *CloudStorageTierInlineCloudStoreInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudStorageTierInlineCloudStoreInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

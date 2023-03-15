@@ -66,19 +66,19 @@ type MetroclusterSvmGetParams struct {
 
 	   Cluster ID
 	*/
-	ClusterUUIDPathParameter string
+	ClusterUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *MetroclusterSvmGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClusterUUIDPathParameter adds the clusterUUID to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) WithClusterUUIDPathParameter(clusterUUID string) *MetroclusterSvmGetParams {
-	o.SetClusterUUIDPathParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) WithClusterUUID(clusterUUID string) *MetroclusterSvmGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDPathParameter adds the clusterUuid to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) SetClusterUUIDPathParameter(clusterUUID string) {
-	o.ClusterUUIDPathParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) SetClusterUUID(clusterUUID string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterSvmGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) WithFields(fields []string) *MetroclusterSvmGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) WithSVMUUIDPathParameter(svmUUID string) *MetroclusterSvmGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) WithSvmUUID(svmUUID string) *MetroclusterSvmGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the metrocluster svm get params
-func (o *MetroclusterSvmGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the metrocluster svm get params
+func (o *MetroclusterSvmGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *MetroclusterSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param cluster.uuid
-	if err := r.SetPathParam("cluster.uuid", o.ClusterUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("cluster.uuid", o.ClusterUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *MetroclusterSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *MetroclusterSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamMetroclusterSvmGet binds the parameter fields
 func (o *MetroclusterSvmGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

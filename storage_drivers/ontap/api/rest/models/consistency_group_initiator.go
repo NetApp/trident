@@ -29,7 +29,7 @@ type ConsistencyGroupInitiator struct {
 	// Name of initiator that is a member of the initiator group.
 	//
 	// Example: iqn.1998-01.com.corp.iscsi:name1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this consistency group initiator

@@ -21,11 +21,11 @@ import (
 type ClusterNdmpProperties struct {
 
 	// links
-	Links *ClusterNdmpPropertiesLinks `json:"_links,omitempty"`
+	Links *ClusterNdmpPropertiesInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether NDMP is in node-scoped or SVM-scoped mode.
 	// Enum: [svm node]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 }
 
 // Validate validates this cluster ndmp properties
@@ -112,7 +112,7 @@ func (m *ClusterNdmpProperties) validateMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
@@ -165,17 +165,17 @@ func (m *ClusterNdmpProperties) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterNdmpPropertiesLinks cluster ndmp properties links
+// ClusterNdmpPropertiesInlineLinks cluster ndmp properties inline links
 //
-// swagger:model ClusterNdmpPropertiesLinks
-type ClusterNdmpPropertiesLinks struct {
+// swagger:model cluster_ndmp_properties_inline__links
+type ClusterNdmpPropertiesInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster ndmp properties links
-func (m *ClusterNdmpPropertiesLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ndmp properties inline links
+func (m *ClusterNdmpPropertiesInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -188,7 +188,7 @@ func (m *ClusterNdmpPropertiesLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterNdmpPropertiesLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterNdmpPropertiesInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -205,8 +205,8 @@ func (m *ClusterNdmpPropertiesLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this cluster ndmp properties links based on the context it is used
-func (m *ClusterNdmpPropertiesLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ndmp properties inline links based on the context it is used
+func (m *ClusterNdmpPropertiesInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -219,7 +219,7 @@ func (m *ClusterNdmpPropertiesLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *ClusterNdmpPropertiesLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterNdmpPropertiesInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -234,7 +234,7 @@ func (m *ClusterNdmpPropertiesLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterNdmpPropertiesLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterNdmpPropertiesInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -242,8 +242,8 @@ func (m *ClusterNdmpPropertiesLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterNdmpPropertiesLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterNdmpPropertiesLinks
+func (m *ClusterNdmpPropertiesInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterNdmpPropertiesInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

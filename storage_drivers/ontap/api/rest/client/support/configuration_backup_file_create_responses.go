@@ -52,6 +52,11 @@ ConfigurationBackupFileCreateAccepted describes a response with status code 202,
 Accepted
 */
 type ConfigurationBackupFileCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *ConfigurationBackupFileCreateAccepted) GetPayload() *models.JobLinkResp
 }
 
 func (o *ConfigurationBackupFileCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

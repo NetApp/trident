@@ -66,73 +66,73 @@ type NfsClientsGetParams struct {
 
 	   Filter by client_ip
 	*/
-	ClientIPQueryParameter *string
+	ClientIP *string
 
 	/* ExportPolicyID.
 
 	   Filter by export_policy.id
 	*/
-	ExportPolicyIDQueryParameter *int64
+	ExportPolicyID *int64
 
 	/* ExportPolicyName.
 
 	   Filter by export_policy.name
 	*/
-	ExportPolicyNameQueryParameter *string
+	ExportPolicyName *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IdleDuration.
 
 	   Filter by idle_duration
 	*/
-	IdleDurationQueryParameter *string
+	IdleDuration *string
 
 	/* LocalRequestCount.
 
 	   Filter by local_request_count
 	*/
-	LocalRequestCountQueryParameter *int64
+	LocalRequestCount *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* RemoteRequestCount.
 
 	   Filter by remote_request_count
 	*/
-	RemoteRequestCountQueryParameter *int64
+	RemoteRequestCount *int64
 
 	/* ReturnRecords.
 
@@ -140,7 +140,7 @@ type NfsClientsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -148,37 +148,43 @@ type NfsClientsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServerIP.
 
 	   Filter by server_ip
 	*/
-	ServerIPQueryParameter *string
+	ServerIP *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
+
+	/* TrunkingEnabled.
+
+	   Filter by trunking_enabled
+	*/
+	TrunkingEnabled *bool
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +204,14 @@ func (o *NfsClientsGetParams) WithDefaults() *NfsClientsGetParams {
 // All values with no default are reset to their zero value.
 func (o *NfsClientsGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NfsClientsGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +253,224 @@ func (o *NfsClientsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientIPQueryParameter adds the clientIP to the nfs clients get params
-func (o *NfsClientsGetParams) WithClientIPQueryParameter(clientIP *string) *NfsClientsGetParams {
-	o.SetClientIPQueryParameter(clientIP)
+// WithClientIP adds the clientIP to the nfs clients get params
+func (o *NfsClientsGetParams) WithClientIP(clientIP *string) *NfsClientsGetParams {
+	o.SetClientIP(clientIP)
 	return o
 }
 
-// SetClientIPQueryParameter adds the clientIp to the nfs clients get params
-func (o *NfsClientsGetParams) SetClientIPQueryParameter(clientIP *string) {
-	o.ClientIPQueryParameter = clientIP
+// SetClientIP adds the clientIp to the nfs clients get params
+func (o *NfsClientsGetParams) SetClientIP(clientIP *string) {
+	o.ClientIP = clientIP
 }
 
-// WithExportPolicyIDQueryParameter adds the exportPolicyID to the nfs clients get params
-func (o *NfsClientsGetParams) WithExportPolicyIDQueryParameter(exportPolicyID *int64) *NfsClientsGetParams {
-	o.SetExportPolicyIDQueryParameter(exportPolicyID)
+// WithExportPolicyID adds the exportPolicyID to the nfs clients get params
+func (o *NfsClientsGetParams) WithExportPolicyID(exportPolicyID *int64) *NfsClientsGetParams {
+	o.SetExportPolicyID(exportPolicyID)
 	return o
 }
 
-// SetExportPolicyIDQueryParameter adds the exportPolicyId to the nfs clients get params
-func (o *NfsClientsGetParams) SetExportPolicyIDQueryParameter(exportPolicyID *int64) {
-	o.ExportPolicyIDQueryParameter = exportPolicyID
+// SetExportPolicyID adds the exportPolicyId to the nfs clients get params
+func (o *NfsClientsGetParams) SetExportPolicyID(exportPolicyID *int64) {
+	o.ExportPolicyID = exportPolicyID
 }
 
-// WithExportPolicyNameQueryParameter adds the exportPolicyName to the nfs clients get params
-func (o *NfsClientsGetParams) WithExportPolicyNameQueryParameter(exportPolicyName *string) *NfsClientsGetParams {
-	o.SetExportPolicyNameQueryParameter(exportPolicyName)
+// WithExportPolicyName adds the exportPolicyName to the nfs clients get params
+func (o *NfsClientsGetParams) WithExportPolicyName(exportPolicyName *string) *NfsClientsGetParams {
+	o.SetExportPolicyName(exportPolicyName)
 	return o
 }
 
-// SetExportPolicyNameQueryParameter adds the exportPolicyName to the nfs clients get params
-func (o *NfsClientsGetParams) SetExportPolicyNameQueryParameter(exportPolicyName *string) {
-	o.ExportPolicyNameQueryParameter = exportPolicyName
+// SetExportPolicyName adds the exportPolicyName to the nfs clients get params
+func (o *NfsClientsGetParams) SetExportPolicyName(exportPolicyName *string) {
+	o.ExportPolicyName = exportPolicyName
 }
 
-// WithFieldsQueryParameter adds the fields to the nfs clients get params
-func (o *NfsClientsGetParams) WithFieldsQueryParameter(fields []string) *NfsClientsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nfs clients get params
+func (o *NfsClientsGetParams) WithFields(fields []string) *NfsClientsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nfs clients get params
-func (o *NfsClientsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nfs clients get params
+func (o *NfsClientsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdleDurationQueryParameter adds the idleDuration to the nfs clients get params
-func (o *NfsClientsGetParams) WithIdleDurationQueryParameter(idleDuration *string) *NfsClientsGetParams {
-	o.SetIdleDurationQueryParameter(idleDuration)
+// WithIdleDuration adds the idleDuration to the nfs clients get params
+func (o *NfsClientsGetParams) WithIdleDuration(idleDuration *string) *NfsClientsGetParams {
+	o.SetIdleDuration(idleDuration)
 	return o
 }
 
-// SetIdleDurationQueryParameter adds the idleDuration to the nfs clients get params
-func (o *NfsClientsGetParams) SetIdleDurationQueryParameter(idleDuration *string) {
-	o.IdleDurationQueryParameter = idleDuration
+// SetIdleDuration adds the idleDuration to the nfs clients get params
+func (o *NfsClientsGetParams) SetIdleDuration(idleDuration *string) {
+	o.IdleDuration = idleDuration
 }
 
-// WithLocalRequestCountQueryParameter adds the localRequestCount to the nfs clients get params
-func (o *NfsClientsGetParams) WithLocalRequestCountQueryParameter(localRequestCount *int64) *NfsClientsGetParams {
-	o.SetLocalRequestCountQueryParameter(localRequestCount)
+// WithLocalRequestCount adds the localRequestCount to the nfs clients get params
+func (o *NfsClientsGetParams) WithLocalRequestCount(localRequestCount *int64) *NfsClientsGetParams {
+	o.SetLocalRequestCount(localRequestCount)
 	return o
 }
 
-// SetLocalRequestCountQueryParameter adds the localRequestCount to the nfs clients get params
-func (o *NfsClientsGetParams) SetLocalRequestCountQueryParameter(localRequestCount *int64) {
-	o.LocalRequestCountQueryParameter = localRequestCount
+// SetLocalRequestCount adds the localRequestCount to the nfs clients get params
+func (o *NfsClientsGetParams) SetLocalRequestCount(localRequestCount *int64) {
+	o.LocalRequestCount = localRequestCount
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nfs clients get params
-func (o *NfsClientsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NfsClientsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nfs clients get params
+func (o *NfsClientsGetParams) WithMaxRecords(maxRecords *int64) *NfsClientsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nfs clients get params
-func (o *NfsClientsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nfs clients get params
+func (o *NfsClientsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the nfs clients get params
-func (o *NfsClientsGetParams) WithNodeNameQueryParameter(nodeName *string) *NfsClientsGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the nfs clients get params
+func (o *NfsClientsGetParams) WithNodeName(nodeName *string) *NfsClientsGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the nfs clients get params
-func (o *NfsClientsGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the nfs clients get params
+func (o *NfsClientsGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the nfs clients get params
-func (o *NfsClientsGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NfsClientsGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the nfs clients get params
+func (o *NfsClientsGetParams) WithNodeUUID(nodeUUID *string) *NfsClientsGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the nfs clients get params
-func (o *NfsClientsGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the nfs clients get params
+func (o *NfsClientsGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nfs clients get params
-func (o *NfsClientsGetParams) WithOrderByQueryParameter(orderBy []string) *NfsClientsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nfs clients get params
+func (o *NfsClientsGetParams) WithOrderBy(orderBy []string) *NfsClientsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nfs clients get params
-func (o *NfsClientsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nfs clients get params
+func (o *NfsClientsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the nfs clients get params
-func (o *NfsClientsGetParams) WithProtocolQueryParameter(protocol *string) *NfsClientsGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the nfs clients get params
+func (o *NfsClientsGetParams) WithProtocol(protocol *string) *NfsClientsGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the nfs clients get params
-func (o *NfsClientsGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the nfs clients get params
+func (o *NfsClientsGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithRemoteRequestCountQueryParameter adds the remoteRequestCount to the nfs clients get params
-func (o *NfsClientsGetParams) WithRemoteRequestCountQueryParameter(remoteRequestCount *int64) *NfsClientsGetParams {
-	o.SetRemoteRequestCountQueryParameter(remoteRequestCount)
+// WithRemoteRequestCount adds the remoteRequestCount to the nfs clients get params
+func (o *NfsClientsGetParams) WithRemoteRequestCount(remoteRequestCount *int64) *NfsClientsGetParams {
+	o.SetRemoteRequestCount(remoteRequestCount)
 	return o
 }
 
-// SetRemoteRequestCountQueryParameter adds the remoteRequestCount to the nfs clients get params
-func (o *NfsClientsGetParams) SetRemoteRequestCountQueryParameter(remoteRequestCount *int64) {
-	o.RemoteRequestCountQueryParameter = remoteRequestCount
+// SetRemoteRequestCount adds the remoteRequestCount to the nfs clients get params
+func (o *NfsClientsGetParams) SetRemoteRequestCount(remoteRequestCount *int64) {
+	o.RemoteRequestCount = remoteRequestCount
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nfs clients get params
-func (o *NfsClientsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NfsClientsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nfs clients get params
+func (o *NfsClientsGetParams) WithReturnRecords(returnRecords *bool) *NfsClientsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nfs clients get params
-func (o *NfsClientsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nfs clients get params
+func (o *NfsClientsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nfs clients get params
-func (o *NfsClientsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NfsClientsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nfs clients get params
+func (o *NfsClientsGetParams) WithReturnTimeout(returnTimeout *int64) *NfsClientsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nfs clients get params
-func (o *NfsClientsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nfs clients get params
+func (o *NfsClientsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerIPQueryParameter adds the serverIP to the nfs clients get params
-func (o *NfsClientsGetParams) WithServerIPQueryParameter(serverIP *string) *NfsClientsGetParams {
-	o.SetServerIPQueryParameter(serverIP)
+// WithServerIP adds the serverIP to the nfs clients get params
+func (o *NfsClientsGetParams) WithServerIP(serverIP *string) *NfsClientsGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetServerIPQueryParameter adds the serverIp to the nfs clients get params
-func (o *NfsClientsGetParams) SetServerIPQueryParameter(serverIP *string) {
-	o.ServerIPQueryParameter = serverIP
+// SetServerIP adds the serverIp to the nfs clients get params
+func (o *NfsClientsGetParams) SetServerIP(serverIP *string) {
+	o.ServerIP = serverIP
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nfs clients get params
-func (o *NfsClientsGetParams) WithSVMNameQueryParameter(svmName *string) *NfsClientsGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nfs clients get params
+func (o *NfsClientsGetParams) WithSvmName(svmName *string) *NfsClientsGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nfs clients get params
-func (o *NfsClientsGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nfs clients get params
+func (o *NfsClientsGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nfs clients get params
-func (o *NfsClientsGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NfsClientsGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs clients get params
+func (o *NfsClientsGetParams) WithSvmUUID(svmUUID *string) *NfsClientsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nfs clients get params
-func (o *NfsClientsGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs clients get params
+func (o *NfsClientsGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the nfs clients get params
-func (o *NfsClientsGetParams) WithVolumeNameQueryParameter(volumeName *string) *NfsClientsGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithTrunkingEnabled adds the trunkingEnabled to the nfs clients get params
+func (o *NfsClientsGetParams) WithTrunkingEnabled(trunkingEnabled *bool) *NfsClientsGetParams {
+	o.SetTrunkingEnabled(trunkingEnabled)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the nfs clients get params
-func (o *NfsClientsGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetTrunkingEnabled adds the trunkingEnabled to the nfs clients get params
+func (o *NfsClientsGetParams) SetTrunkingEnabled(trunkingEnabled *bool) {
+	o.TrunkingEnabled = trunkingEnabled
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the nfs clients get params
-func (o *NfsClientsGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *NfsClientsGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeName adds the volumeName to the nfs clients get params
+func (o *NfsClientsGetParams) WithVolumeName(volumeName *string) *NfsClientsGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the nfs clients get params
-func (o *NfsClientsGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeName adds the volumeName to the nfs clients get params
+func (o *NfsClientsGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
+}
+
+// WithVolumeUUID adds the volumeUUID to the nfs clients get params
+func (o *NfsClientsGetParams) WithVolumeUUID(volumeUUID *string) *NfsClientsGetParams {
+	o.SetVolumeUUID(volumeUUID)
+	return o
+}
+
+// SetVolumeUUID adds the volumeUuid to the nfs clients get params
+func (o *NfsClientsGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +481,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.ClientIPQueryParameter != nil {
+	if o.ClientIP != nil {
 
 		// query param client_ip
 		var qrClientIP string
 
-		if o.ClientIPQueryParameter != nil {
-			qrClientIP = *o.ClientIPQueryParameter
+		if o.ClientIP != nil {
+			qrClientIP = *o.ClientIP
 		}
 		qClientIP := qrClientIP
 		if qClientIP != "" {
@@ -481,13 +498,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ExportPolicyIDQueryParameter != nil {
+	if o.ExportPolicyID != nil {
 
 		// query param export_policy.id
 		var qrExportPolicyID int64
 
-		if o.ExportPolicyIDQueryParameter != nil {
-			qrExportPolicyID = *o.ExportPolicyIDQueryParameter
+		if o.ExportPolicyID != nil {
+			qrExportPolicyID = *o.ExportPolicyID
 		}
 		qExportPolicyID := swag.FormatInt64(qrExportPolicyID)
 		if qExportPolicyID != "" {
@@ -498,13 +515,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ExportPolicyNameQueryParameter != nil {
+	if o.ExportPolicyName != nil {
 
 		// query param export_policy.name
 		var qrExportPolicyName string
 
-		if o.ExportPolicyNameQueryParameter != nil {
-			qrExportPolicyName = *o.ExportPolicyNameQueryParameter
+		if o.ExportPolicyName != nil {
+			qrExportPolicyName = *o.ExportPolicyName
 		}
 		qExportPolicyName := qrExportPolicyName
 		if qExportPolicyName != "" {
@@ -515,7 +532,7 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -526,13 +543,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.IdleDurationQueryParameter != nil {
+	if o.IdleDuration != nil {
 
 		// query param idle_duration
 		var qrIdleDuration string
 
-		if o.IdleDurationQueryParameter != nil {
-			qrIdleDuration = *o.IdleDurationQueryParameter
+		if o.IdleDuration != nil {
+			qrIdleDuration = *o.IdleDuration
 		}
 		qIdleDuration := qrIdleDuration
 		if qIdleDuration != "" {
@@ -543,13 +560,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.LocalRequestCountQueryParameter != nil {
+	if o.LocalRequestCount != nil {
 
 		// query param local_request_count
 		var qrLocalRequestCount int64
 
-		if o.LocalRequestCountQueryParameter != nil {
-			qrLocalRequestCount = *o.LocalRequestCountQueryParameter
+		if o.LocalRequestCount != nil {
+			qrLocalRequestCount = *o.LocalRequestCount
 		}
 		qLocalRequestCount := swag.FormatInt64(qrLocalRequestCount)
 		if qLocalRequestCount != "" {
@@ -560,13 +577,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -577,13 +594,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -594,13 +611,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -611,7 +628,7 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -622,13 +639,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -639,13 +656,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.RemoteRequestCountQueryParameter != nil {
+	if o.RemoteRequestCount != nil {
 
 		// query param remote_request_count
 		var qrRemoteRequestCount int64
 
-		if o.RemoteRequestCountQueryParameter != nil {
-			qrRemoteRequestCount = *o.RemoteRequestCountQueryParameter
+		if o.RemoteRequestCount != nil {
+			qrRemoteRequestCount = *o.RemoteRequestCount
 		}
 		qRemoteRequestCount := swag.FormatInt64(qrRemoteRequestCount)
 		if qRemoteRequestCount != "" {
@@ -656,13 +673,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -673,13 +690,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -690,13 +707,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ServerIPQueryParameter != nil {
+	if o.ServerIP != nil {
 
 		// query param server_ip
 		var qrServerIP string
 
-		if o.ServerIPQueryParameter != nil {
-			qrServerIP = *o.ServerIPQueryParameter
+		if o.ServerIP != nil {
+			qrServerIP = *o.ServerIP
 		}
 		qServerIP := qrServerIP
 		if qServerIP != "" {
@@ -707,13 +724,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -724,13 +741,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -741,13 +758,30 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.TrunkingEnabled != nil {
+
+		// query param trunking_enabled
+		var qrTrunkingEnabled bool
+
+		if o.TrunkingEnabled != nil {
+			qrTrunkingEnabled = *o.TrunkingEnabled
+		}
+		qTrunkingEnabled := swag.FormatBool(qrTrunkingEnabled)
+		if qTrunkingEnabled != "" {
+
+			if err := r.SetQueryParam("trunking_enabled", qTrunkingEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -758,13 +792,13 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -783,7 +817,7 @@ func (o *NfsClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamNfsClientsGet binds the parameter fields
 func (o *NfsClientsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +834,7 @@ func (o *NfsClientsGetParams) bindParamFields(formats strfmt.Registry) []string 
 
 // bindParamNfsClientsGet binds the parameter order_by
 func (o *NfsClientsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

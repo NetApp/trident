@@ -20,18 +20,18 @@ import (
 type NdmpSvm struct {
 
 	// links
-	Links *NdmpSvmLinks `json:"_links,omitempty"`
-
-	// NDMP authentication types.
-	// Example: ["plaintext","challenge"]
-	AuthenticationTypes []NdmpAuthType `json:"authentication_types,omitempty"`
+	Links *NdmpSvmInlineLinks `json:"_links,omitempty"`
 
 	// Is the NDMP service enabled on the SVM?
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// NDMP authentication types.
+	// Example: ["plaintext","challenge"]
+	NdmpSvmInlineAuthenticationTypes []*NdmpAuthType `json:"authentication_types,omitempty"`
 
 	// svm
-	Svm *NdmpSvmSvm `json:"svm,omitempty"`
+	Svm *NdmpSvmInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this ndmp svm
@@ -42,7 +42,7 @@ func (m *NdmpSvm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAuthenticationTypes(formats); err != nil {
+	if err := m.validateNdmpSvmInlineAuthenticationTypes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,18 +73,23 @@ func (m *NdmpSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSvm) validateAuthenticationTypes(formats strfmt.Registry) error {
-	if swag.IsZero(m.AuthenticationTypes) { // not required
+func (m *NdmpSvm) validateNdmpSvmInlineAuthenticationTypes(formats strfmt.Registry) error {
+	if swag.IsZero(m.NdmpSvmInlineAuthenticationTypes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.AuthenticationTypes); i++ {
+	for i := 0; i < len(m.NdmpSvmInlineAuthenticationTypes); i++ {
+		if swag.IsZero(m.NdmpSvmInlineAuthenticationTypes[i]) { // not required
+			continue
+		}
 
-		if err := m.AuthenticationTypes[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+		if m.NdmpSvmInlineAuthenticationTypes[i] != nil {
+			if err := m.NdmpSvmInlineAuthenticationTypes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -117,7 +122,7 @@ func (m *NdmpSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateAuthenticationTypes(ctx, formats); err != nil {
+	if err := m.contextValidateNdmpSvmInlineAuthenticationTypes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -145,15 +150,17 @@ func (m *NdmpSvm) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *NdmpSvm) contextValidateAuthenticationTypes(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSvm) contextValidateNdmpSvmInlineAuthenticationTypes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.AuthenticationTypes); i++ {
+	for i := 0; i < len(m.NdmpSvmInlineAuthenticationTypes); i++ {
 
-		if err := m.AuthenticationTypes[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+		if m.NdmpSvmInlineAuthenticationTypes[i] != nil {
+			if err := m.NdmpSvmInlineAuthenticationTypes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -193,17 +200,17 @@ func (m *NdmpSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpSvmLinks ndmp svm links
+// NdmpSvmInlineLinks ndmp svm inline links
 //
-// swagger:model NdmpSvmLinks
-type NdmpSvmLinks struct {
+// swagger:model ndmp_svm_inline__links
+type NdmpSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp svm links
-func (m *NdmpSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp svm inline links
+func (m *NdmpSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -216,7 +223,7 @@ func (m *NdmpSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -233,8 +240,8 @@ func (m *NdmpSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp svm links based on the context it is used
-func (m *NdmpSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp svm inline links based on the context it is used
+func (m *NdmpSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -247,7 +254,7 @@ func (m *NdmpSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *NdmpSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -262,7 +269,7 @@ func (m *NdmpSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -270,8 +277,8 @@ func (m *NdmpSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpSvmLinks
+func (m *NdmpSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -279,27 +286,27 @@ func (m *NdmpSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpSvmSvm ndmp svm svm
+// NdmpSvmInlineSvm ndmp svm inline svm
 //
-// swagger:model NdmpSvmSvm
-type NdmpSvmSvm struct {
+// swagger:model ndmp_svm_inline_svm
+type NdmpSvmInlineSvm struct {
 
 	// links
-	Links *NdmpSvmSvmLinks `json:"_links,omitempty"`
+	Links *NdmpSvmInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ndmp svm svm
-func (m *NdmpSvmSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp svm inline svm
+func (m *NdmpSvmInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -312,7 +319,7 @@ func (m *NdmpSvmSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSvmSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NdmpSvmInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -329,8 +336,8 @@ func (m *NdmpSvmSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp svm svm based on the context it is used
-func (m *NdmpSvmSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp svm inline svm based on the context it is used
+func (m *NdmpSvmInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -343,7 +350,7 @@ func (m *NdmpSvmSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *NdmpSvmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSvmInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -358,7 +365,7 @@ func (m *NdmpSvmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpSvmSvm) MarshalBinary() ([]byte, error) {
+func (m *NdmpSvmInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -366,8 +373,8 @@ func (m *NdmpSvmSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpSvmSvm) UnmarshalBinary(b []byte) error {
-	var res NdmpSvmSvm
+func (m *NdmpSvmInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NdmpSvmInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -375,17 +382,17 @@ func (m *NdmpSvmSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpSvmSvmLinks ndmp svm svm links
+// NdmpSvmInlineSvmInlineLinks ndmp svm inline svm inline links
 //
-// swagger:model NdmpSvmSvmLinks
-type NdmpSvmSvmLinks struct {
+// swagger:model ndmp_svm_inline_svm_inline__links
+type NdmpSvmInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp svm svm links
-func (m *NdmpSvmSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp svm inline svm inline links
+func (m *NdmpSvmInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -398,7 +405,7 @@ func (m *NdmpSvmSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpSvmInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -415,8 +422,8 @@ func (m *NdmpSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp svm svm links based on the context it is used
-func (m *NdmpSvmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp svm inline svm inline links based on the context it is used
+func (m *NdmpSvmInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -429,7 +436,7 @@ func (m *NdmpSvmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NdmpSvmSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSvmInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -444,7 +451,7 @@ func (m *NdmpSvmSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpSvmSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpSvmInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -452,8 +459,8 @@ func (m *NdmpSvmSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpSvmSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpSvmSvmLinks
+func (m *NdmpSvmInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpSvmInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

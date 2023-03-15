@@ -21,7 +21,7 @@ import (
 type FirmwareHistoryUpdateState struct {
 
 	// worker
-	Worker *FirmwareHistoryUpdateStateWorker `json:"worker,omitempty"`
+	Worker *FirmwareHistoryUpdateStateInlineWorker `json:"worker,omitempty"`
 }
 
 // Validate validates this firmware history update state
@@ -101,25 +101,25 @@ func (m *FirmwareHistoryUpdateState) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryUpdateStateWorker firmware history update state worker
+// FirmwareHistoryUpdateStateInlineWorker firmware history update state inline worker
 //
-// swagger:model FirmwareHistoryUpdateStateWorker
-type FirmwareHistoryUpdateStateWorker struct {
+// swagger:model firmware_history_update_state_inline_worker
+type FirmwareHistoryUpdateStateInlineWorker struct {
 
 	// error
 	Error *FirmwareHistoryUpdateStateError `json:"error,omitempty"`
 
 	// node
-	Node *FirmwareHistoryUpdateStateWorkerNode `json:"node,omitempty"`
+	Node *FirmwareHistoryUpdateStateInlineWorkerInlineNode `json:"node,omitempty"`
 
 	// The state of each worker that a node is controlling.
 	// Example: waiting_to_retry
 	// Enum: [idle working complete failed waiting_to_retry]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this firmware history update state worker
-func (m *FirmwareHistoryUpdateStateWorker) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history update state inline worker
+func (m *FirmwareHistoryUpdateStateInlineWorker) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -140,7 +140,7 @@ func (m *FirmwareHistoryUpdateStateWorker) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorker) validateError(formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorker) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -157,7 +157,7 @@ func (m *FirmwareHistoryUpdateStateWorker) validateError(formats strfmt.Registry
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorker) validateNode(formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorker) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -174,7 +174,7 @@ func (m *FirmwareHistoryUpdateStateWorker) validateNode(formats strfmt.Registry)
 	return nil
 }
 
-var firmwareHistoryUpdateStateWorkerTypeStatePropEnum []interface{}
+var firmwareHistoryUpdateStateInlineWorkerTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -182,86 +182,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		firmwareHistoryUpdateStateWorkerTypeStatePropEnum = append(firmwareHistoryUpdateStateWorkerTypeStatePropEnum, v)
+		firmwareHistoryUpdateStateInlineWorkerTypeStatePropEnum = append(firmwareHistoryUpdateStateInlineWorkerTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FirmwareHistoryUpdateStateWorker
-	// FirmwareHistoryUpdateStateWorker
+	// firmware_history_update_state_inline_worker
+	// FirmwareHistoryUpdateStateInlineWorker
 	// state
 	// State
 	// idle
 	// END DEBUGGING
-	// FirmwareHistoryUpdateStateWorkerStateIdle captures enum value "idle"
-	FirmwareHistoryUpdateStateWorkerStateIdle string = "idle"
+	// FirmwareHistoryUpdateStateInlineWorkerStateIdle captures enum value "idle"
+	FirmwareHistoryUpdateStateInlineWorkerStateIdle string = "idle"
 
 	// BEGIN DEBUGGING
-	// FirmwareHistoryUpdateStateWorker
-	// FirmwareHistoryUpdateStateWorker
+	// firmware_history_update_state_inline_worker
+	// FirmwareHistoryUpdateStateInlineWorker
 	// state
 	// State
 	// working
 	// END DEBUGGING
-	// FirmwareHistoryUpdateStateWorkerStateWorking captures enum value "working"
-	FirmwareHistoryUpdateStateWorkerStateWorking string = "working"
+	// FirmwareHistoryUpdateStateInlineWorkerStateWorking captures enum value "working"
+	FirmwareHistoryUpdateStateInlineWorkerStateWorking string = "working"
 
 	// BEGIN DEBUGGING
-	// FirmwareHistoryUpdateStateWorker
-	// FirmwareHistoryUpdateStateWorker
+	// firmware_history_update_state_inline_worker
+	// FirmwareHistoryUpdateStateInlineWorker
 	// state
 	// State
 	// complete
 	// END DEBUGGING
-	// FirmwareHistoryUpdateStateWorkerStateComplete captures enum value "complete"
-	FirmwareHistoryUpdateStateWorkerStateComplete string = "complete"
+	// FirmwareHistoryUpdateStateInlineWorkerStateComplete captures enum value "complete"
+	FirmwareHistoryUpdateStateInlineWorkerStateComplete string = "complete"
 
 	// BEGIN DEBUGGING
-	// FirmwareHistoryUpdateStateWorker
-	// FirmwareHistoryUpdateStateWorker
+	// firmware_history_update_state_inline_worker
+	// FirmwareHistoryUpdateStateInlineWorker
 	// state
 	// State
 	// failed
 	// END DEBUGGING
-	// FirmwareHistoryUpdateStateWorkerStateFailed captures enum value "failed"
-	FirmwareHistoryUpdateStateWorkerStateFailed string = "failed"
+	// FirmwareHistoryUpdateStateInlineWorkerStateFailed captures enum value "failed"
+	FirmwareHistoryUpdateStateInlineWorkerStateFailed string = "failed"
 
 	// BEGIN DEBUGGING
-	// FirmwareHistoryUpdateStateWorker
-	// FirmwareHistoryUpdateStateWorker
+	// firmware_history_update_state_inline_worker
+	// FirmwareHistoryUpdateStateInlineWorker
 	// state
 	// State
 	// waiting_to_retry
 	// END DEBUGGING
-	// FirmwareHistoryUpdateStateWorkerStateWaitingToRetry captures enum value "waiting_to_retry"
-	FirmwareHistoryUpdateStateWorkerStateWaitingToRetry string = "waiting_to_retry"
+	// FirmwareHistoryUpdateStateInlineWorkerStateWaitingToRetry captures enum value "waiting_to_retry"
+	FirmwareHistoryUpdateStateInlineWorkerStateWaitingToRetry string = "waiting_to_retry"
 )
 
 // prop value enum
-func (m *FirmwareHistoryUpdateStateWorker) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, firmwareHistoryUpdateStateWorkerTypeStatePropEnum, true); err != nil {
+func (m *FirmwareHistoryUpdateStateInlineWorker) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, firmwareHistoryUpdateStateInlineWorkerTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorker) validateState(formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorker) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("worker"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("worker"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this firmware history update state worker based on the context it is used
-func (m *FirmwareHistoryUpdateStateWorker) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history update state inline worker based on the context it is used
+func (m *FirmwareHistoryUpdateStateInlineWorker) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -278,7 +278,7 @@ func (m *FirmwareHistoryUpdateStateWorker) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorker) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorker) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -292,7 +292,7 @@ func (m *FirmwareHistoryUpdateStateWorker) contextValidateError(ctx context.Cont
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorker) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorker) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -307,7 +307,7 @@ func (m *FirmwareHistoryUpdateStateWorker) contextValidateNode(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorker) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryUpdateStateInlineWorker) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -315,8 +315,8 @@ func (m *FirmwareHistoryUpdateStateWorker) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorker) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryUpdateStateWorker
+func (m *FirmwareHistoryUpdateStateInlineWorker) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryUpdateStateInlineWorker
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -324,25 +324,25 @@ func (m *FirmwareHistoryUpdateStateWorker) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryUpdateStateWorkerNode firmware history update state worker node
+// FirmwareHistoryUpdateStateInlineWorkerInlineNode firmware history update state inline worker inline node
 //
-// swagger:model FirmwareHistoryUpdateStateWorkerNode
-type FirmwareHistoryUpdateStateWorkerNode struct {
+// swagger:model firmware_history_update_state_inline_worker_inline_node
+type FirmwareHistoryUpdateStateInlineWorkerInlineNode struct {
 
 	// links
-	Links *FirmwareHistoryUpdateStateWorkerNodeLinks `json:"_links,omitempty"`
+	Links *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this firmware history update state worker node
-func (m *FirmwareHistoryUpdateStateWorkerNode) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history update state inline worker inline node
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -355,7 +355,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorkerNode) validateLinks(formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -372,8 +372,8 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this firmware history update state worker node based on the context it is used
-func (m *FirmwareHistoryUpdateStateWorkerNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history update state inline worker inline node based on the context it is used
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -386,7 +386,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorkerNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -401,7 +401,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) contextValidateLinks(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorkerNode) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -409,8 +409,8 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorkerNode) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryUpdateStateWorkerNode
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNode) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryUpdateStateInlineWorkerInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -418,17 +418,17 @@ func (m *FirmwareHistoryUpdateStateWorkerNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FirmwareHistoryUpdateStateWorkerNodeLinks firmware history update state worker node links
+// FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks firmware history update state inline worker inline node inline links
 //
-// swagger:model FirmwareHistoryUpdateStateWorkerNodeLinks
-type FirmwareHistoryUpdateStateWorkerNodeLinks struct {
+// swagger:model firmware_history_update_state_inline_worker_inline_node_inline__links
+type FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this firmware history update state worker node links
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this firmware history update state inline worker inline node inline links
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -441,7 +441,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -458,8 +458,8 @@ func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this firmware history update state worker node links based on the context it is used
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this firmware history update state inline worker inline node inline links based on the context it is used
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -472,7 +472,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -487,7 +487,7 @@ func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -495,8 +495,8 @@ func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *FirmwareHistoryUpdateStateWorkerNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FirmwareHistoryUpdateStateWorkerNodeLinks
+func (m *FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FirmwareHistoryUpdateStateInlineWorkerInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

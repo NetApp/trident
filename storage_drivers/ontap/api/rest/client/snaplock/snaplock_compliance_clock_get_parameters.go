@@ -66,13 +66,13 @@ type SnaplockComplianceClockGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnaplockComplianceClockGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) WithFieldsQueryParameter(fields []string) *SnaplockComplianceClockGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) WithFields(fields []string) *SnaplockComplianceClockGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) WithNodeUUIDPathParameter(nodeUUID string) *SnaplockComplianceClockGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) WithNodeUUID(nodeUUID string) *SnaplockComplianceClockGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnaplockComplianceClockGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnaplockComplianceClockGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnaplockComplianceClockGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnaplockComplianceClockGet binds the parameter fields
 func (o *SnaplockComplianceClockGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

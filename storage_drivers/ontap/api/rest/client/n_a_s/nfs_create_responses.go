@@ -52,6 +52,11 @@ NfsCreateCreated describes a response with status code 201, with default header 
 Created
 */
 type NfsCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.NfsServiceResponse
 }
 
@@ -93,6 +98,13 @@ func (o *NfsCreateCreated) GetPayload() *models.NfsServiceResponse {
 }
 
 func (o *NfsCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.NfsServiceResponse)
 

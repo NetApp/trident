@@ -23,10 +23,11 @@ type StoragePoolPatch struct {
 	Job *JobLink `json:"job,omitempty"`
 
 	// Number of shared storage pools in the cluster.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*StoragePool `json:"records,omitempty"`
+	// storage pool patch inline records
+	StoragePoolPatchInlineRecords []*StoragePool `json:"records,omitempty"`
 }
 
 // Validate validates this storage pool patch
@@ -37,7 +38,7 @@ func (m *StoragePoolPatch) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateStoragePoolPatchInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *StoragePoolPatch) validateJob(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolPatch) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *StoragePoolPatch) validateStoragePoolPatchInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePoolPatchInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.StoragePoolPatchInlineRecords); i++ {
+		if swag.IsZero(m.StoragePoolPatchInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.StoragePoolPatchInlineRecords[i] != nil {
+			if err := m.StoragePoolPatchInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *StoragePoolPatch) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateStoragePoolPatchInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *StoragePoolPatch) contextValidateJob(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *StoragePoolPatch) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolPatch) contextValidateStoragePoolPatchInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.StoragePoolPatchInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.StoragePoolPatchInlineRecords[i] != nil {
+			if err := m.StoragePoolPatchInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

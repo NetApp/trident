@@ -22,11 +22,11 @@ type Server struct {
 
 	// Windows Internet Name Server (WINS) address which manages and maps the NetBIOS name of the CIFS server to their network IP addresses. The IP addresses are IPv4 addresses.
 	// Example: 10.224.65.20
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// Specifies the state of the WINS server.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this server
@@ -92,7 +92,7 @@ func (m *Server) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

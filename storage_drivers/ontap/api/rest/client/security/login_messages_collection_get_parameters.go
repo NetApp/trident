@@ -66,31 +66,31 @@ type LoginMessagesCollectionGetParams struct {
 
 	   Filter by banner
 	*/
-	BannerQueryParameter *string
+	Banner *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Message.
 
 	   Filter by message
 	*/
-	MessageQueryParameter *string
+	Message *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type LoginMessagesCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,37 +106,37 @@ type LoginMessagesCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* ShowClusterMessage.
 
 	   Filter by show_cluster_message
 	*/
-	ShowClusterMessageQueryParameter *bool
+	ShowClusterMessage *bool
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *LoginMessagesCollectionGetParams) WithDefaults() *LoginMessagesCollecti
 // All values with no default are reset to their zero value.
 func (o *LoginMessagesCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LoginMessagesCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *LoginMessagesCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBannerQueryParameter adds the banner to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithBannerQueryParameter(banner *string) *LoginMessagesCollectionGetParams {
-	o.SetBannerQueryParameter(banner)
+// WithBanner adds the banner to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithBanner(banner *string) *LoginMessagesCollectionGetParams {
+	o.SetBanner(banner)
 	return o
 }
 
-// SetBannerQueryParameter adds the banner to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetBannerQueryParameter(banner *string) {
-	o.BannerQueryParameter = banner
+// SetBanner adds the banner to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetBanner(banner *string) {
+	o.Banner = banner
 }
 
-// WithFieldsQueryParameter adds the fields to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithFieldsQueryParameter(fields []string) *LoginMessagesCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithFields(fields []string) *LoginMessagesCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LoginMessagesCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithMaxRecords(maxRecords *int64) *LoginMessagesCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMessageQueryParameter adds the message to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithMessageQueryParameter(message *string) *LoginMessagesCollectionGetParams {
-	o.SetMessageQueryParameter(message)
+// WithMessage adds the message to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithMessage(message *string) *LoginMessagesCollectionGetParams {
+	o.SetMessage(message)
 	return o
 }
 
-// SetMessageQueryParameter adds the message to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetMessageQueryParameter(message *string) {
-	o.MessageQueryParameter = message
+// SetMessage adds the message to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetMessage(message *string) {
+	o.Message = message
 }
 
-// WithOrderByQueryParameter adds the orderBy to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LoginMessagesCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithOrderBy(orderBy []string) *LoginMessagesCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LoginMessagesCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithReturnRecords(returnRecords *bool) *LoginMessagesCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LoginMessagesCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LoginMessagesCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithScopeQueryParameter(scope *string) *LoginMessagesCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithScope(scope *string) *LoginMessagesCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithShowClusterMessageQueryParameter adds the showClusterMessage to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithShowClusterMessageQueryParameter(showClusterMessage *bool) *LoginMessagesCollectionGetParams {
-	o.SetShowClusterMessageQueryParameter(showClusterMessage)
+// WithShowClusterMessage adds the showClusterMessage to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithShowClusterMessage(showClusterMessage *bool) *LoginMessagesCollectionGetParams {
+	o.SetShowClusterMessage(showClusterMessage)
 	return o
 }
 
-// SetShowClusterMessageQueryParameter adds the showClusterMessage to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetShowClusterMessageQueryParameter(showClusterMessage *bool) {
-	o.ShowClusterMessageQueryParameter = showClusterMessage
+// SetShowClusterMessage adds the showClusterMessage to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetShowClusterMessage(showClusterMessage *bool) {
+	o.ShowClusterMessage = showClusterMessage
 }
 
-// WithSVMNameQueryParameter adds the svmName to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *LoginMessagesCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithSvmName(svmName *string) *LoginMessagesCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *LoginMessagesCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithSvmUUID(svmUUID *string) *LoginMessagesCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) WithUUIDQueryParameter(uuid *string) *LoginMessagesCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) WithUUID(uuid *string) *LoginMessagesCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the login messages collection get params
-func (o *LoginMessagesCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the login messages collection get params
+func (o *LoginMessagesCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.BannerQueryParameter != nil {
+	if o.Banner != nil {
 
 		// query param banner
 		var qrBanner string
 
-		if o.BannerQueryParameter != nil {
-			qrBanner = *o.BannerQueryParameter
+		if o.Banner != nil {
+			qrBanner = *o.Banner
 		}
 		qBanner := qrBanner
 		if qBanner != "" {
@@ -362,7 +362,7 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,13 +390,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MessageQueryParameter != nil {
+	if o.Message != nil {
 
 		// query param message
 		var qrMessage string
 
-		if o.MessageQueryParameter != nil {
-			qrMessage = *o.MessageQueryParameter
+		if o.Message != nil {
+			qrMessage = *o.Message
 		}
 		qMessage := qrMessage
 		if qMessage != "" {
@@ -407,7 +407,7 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +435,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +452,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -469,13 +469,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ShowClusterMessageQueryParameter != nil {
+	if o.ShowClusterMessage != nil {
 
 		// query param show_cluster_message
 		var qrShowClusterMessage bool
 
-		if o.ShowClusterMessageQueryParameter != nil {
-			qrShowClusterMessage = *o.ShowClusterMessageQueryParameter
+		if o.ShowClusterMessage != nil {
+			qrShowClusterMessage = *o.ShowClusterMessage
 		}
 		qShowClusterMessage := swag.FormatBool(qrShowClusterMessage)
 		if qShowClusterMessage != "" {
@@ -486,13 +486,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -503,13 +503,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -520,13 +520,13 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -545,7 +545,7 @@ func (o *LoginMessagesCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamLoginMessagesCollectionGet binds the parameter fields
 func (o *LoginMessagesCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *LoginMessagesCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamLoginMessagesCollectionGet binds the parameter order_by
 func (o *LoginMessagesCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -20,18 +20,18 @@ import (
 type LocalUserMembership struct {
 
 	// links
-	Links *LocalUserMembershipLinks `json:"_links,omitempty"`
+	Links *LocalUserMembershipInlineLinks `json:"_links,omitempty"`
 
 	// Local group name. The maximum supported length of a group name is 256 characters.
 	//
 	// Example: SMB_SERVER01\\group
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The security ID of the local group which uniquely identifies the group. The group SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
-	Sid string `json:"sid,omitempty"`
+	Sid *string `json:"sid,omitempty"`
 }
 
 // Validate validates this local user membership
@@ -74,7 +74,7 @@ func (m *LocalUserMembership) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
@@ -127,17 +127,17 @@ func (m *LocalUserMembership) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalUserMembershipLinks local user membership links
+// LocalUserMembershipInlineLinks local user membership inline links
 //
-// swagger:model LocalUserMembershipLinks
-type LocalUserMembershipLinks struct {
+// swagger:model local_user_membership_inline__links
+type LocalUserMembershipInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local user membership links
-func (m *LocalUserMembershipLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local user membership inline links
+func (m *LocalUserMembershipInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -150,7 +150,7 @@ func (m *LocalUserMembershipLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalUserMembershipLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalUserMembershipInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -167,8 +167,8 @@ func (m *LocalUserMembershipLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local user membership links based on the context it is used
-func (m *LocalUserMembershipLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local user membership inline links based on the context it is used
+func (m *LocalUserMembershipInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -181,7 +181,7 @@ func (m *LocalUserMembershipLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *LocalUserMembershipLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalUserMembershipInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -196,7 +196,7 @@ func (m *LocalUserMembershipLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *LocalUserMembershipLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalUserMembershipInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -204,8 +204,8 @@ func (m *LocalUserMembershipLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalUserMembershipLinks) UnmarshalBinary(b []byte) error {
-	var res LocalUserMembershipLinks
+func (m *LocalUserMembershipInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalUserMembershipInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

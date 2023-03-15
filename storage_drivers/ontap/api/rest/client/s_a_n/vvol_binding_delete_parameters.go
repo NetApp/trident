@@ -67,21 +67,21 @@ type VvolBindingDeleteParams struct {
 	   Forces deletion of the binding regardless of the reference count value.
 
 	*/
-	DeleteAllReferencesQueryParameter *bool
+	DeleteAllReferences *bool
 
 	/* ProtocolEndpointUUID.
 
 	   The unique identifier of the class `protocol_endpoint` LUN.
 
 	*/
-	ProtocolEndpointUUIDPathParameter string
+	ProtocolEndpointUUID string
 
 	/* VvolUUID.
 
 	   The unique identifier of the class `vvol` LUN.
 
 	*/
-	VvolUUIDPathParameter string
+	VvolUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -101,11 +101,11 @@ func (o *VvolBindingDeleteParams) WithDefaults() *VvolBindingDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *VvolBindingDeleteParams) SetDefaults() {
 	var (
-		deleteAllReferencesQueryParameterDefault = bool(false)
+		deleteAllReferencesDefault = bool(false)
 	)
 
 	val := VvolBindingDeleteParams{
-		DeleteAllReferencesQueryParameter: &deleteAllReferencesQueryParameterDefault,
+		DeleteAllReferences: &deleteAllReferencesDefault,
 	}
 
 	val.timeout = o.timeout
@@ -147,37 +147,37 @@ func (o *VvolBindingDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeleteAllReferencesQueryParameter adds the deleteAllReferences to the vvol binding delete params
-func (o *VvolBindingDeleteParams) WithDeleteAllReferencesQueryParameter(deleteAllReferences *bool) *VvolBindingDeleteParams {
-	o.SetDeleteAllReferencesQueryParameter(deleteAllReferences)
+// WithDeleteAllReferences adds the deleteAllReferences to the vvol binding delete params
+func (o *VvolBindingDeleteParams) WithDeleteAllReferences(deleteAllReferences *bool) *VvolBindingDeleteParams {
+	o.SetDeleteAllReferences(deleteAllReferences)
 	return o
 }
 
-// SetDeleteAllReferencesQueryParameter adds the deleteAllReferences to the vvol binding delete params
-func (o *VvolBindingDeleteParams) SetDeleteAllReferencesQueryParameter(deleteAllReferences *bool) {
-	o.DeleteAllReferencesQueryParameter = deleteAllReferences
+// SetDeleteAllReferences adds the deleteAllReferences to the vvol binding delete params
+func (o *VvolBindingDeleteParams) SetDeleteAllReferences(deleteAllReferences *bool) {
+	o.DeleteAllReferences = deleteAllReferences
 }
 
-// WithProtocolEndpointUUIDPathParameter adds the protocolEndpointUUID to the vvol binding delete params
-func (o *VvolBindingDeleteParams) WithProtocolEndpointUUIDPathParameter(protocolEndpointUUID string) *VvolBindingDeleteParams {
-	o.SetProtocolEndpointUUIDPathParameter(protocolEndpointUUID)
+// WithProtocolEndpointUUID adds the protocolEndpointUUID to the vvol binding delete params
+func (o *VvolBindingDeleteParams) WithProtocolEndpointUUID(protocolEndpointUUID string) *VvolBindingDeleteParams {
+	o.SetProtocolEndpointUUID(protocolEndpointUUID)
 	return o
 }
 
-// SetProtocolEndpointUUIDPathParameter adds the protocolEndpointUuid to the vvol binding delete params
-func (o *VvolBindingDeleteParams) SetProtocolEndpointUUIDPathParameter(protocolEndpointUUID string) {
-	o.ProtocolEndpointUUIDPathParameter = protocolEndpointUUID
+// SetProtocolEndpointUUID adds the protocolEndpointUuid to the vvol binding delete params
+func (o *VvolBindingDeleteParams) SetProtocolEndpointUUID(protocolEndpointUUID string) {
+	o.ProtocolEndpointUUID = protocolEndpointUUID
 }
 
-// WithVvolUUIDPathParameter adds the vvolUUID to the vvol binding delete params
-func (o *VvolBindingDeleteParams) WithVvolUUIDPathParameter(vvolUUID string) *VvolBindingDeleteParams {
-	o.SetVvolUUIDPathParameter(vvolUUID)
+// WithVvolUUID adds the vvolUUID to the vvol binding delete params
+func (o *VvolBindingDeleteParams) WithVvolUUID(vvolUUID string) *VvolBindingDeleteParams {
+	o.SetVvolUUID(vvolUUID)
 	return o
 }
 
-// SetVvolUUIDPathParameter adds the vvolUuid to the vvol binding delete params
-func (o *VvolBindingDeleteParams) SetVvolUUIDPathParameter(vvolUUID string) {
-	o.VvolUUIDPathParameter = vvolUUID
+// SetVvolUUID adds the vvolUuid to the vvol binding delete params
+func (o *VvolBindingDeleteParams) SetVvolUUID(vvolUUID string) {
+	o.VvolUUID = vvolUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -188,13 +188,13 @@ func (o *VvolBindingDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.DeleteAllReferencesQueryParameter != nil {
+	if o.DeleteAllReferences != nil {
 
 		// query param delete_all_references
 		var qrDeleteAllReferences bool
 
-		if o.DeleteAllReferencesQueryParameter != nil {
-			qrDeleteAllReferences = *o.DeleteAllReferencesQueryParameter
+		if o.DeleteAllReferences != nil {
+			qrDeleteAllReferences = *o.DeleteAllReferences
 		}
 		qDeleteAllReferences := swag.FormatBool(qrDeleteAllReferences)
 		if qDeleteAllReferences != "" {
@@ -206,12 +206,12 @@ func (o *VvolBindingDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param protocol_endpoint.uuid
-	if err := r.SetPathParam("protocol_endpoint.uuid", o.ProtocolEndpointUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("protocol_endpoint.uuid", o.ProtocolEndpointUUID); err != nil {
 		return err
 	}
 
 	// path param vvol.uuid
-	if err := r.SetPathParam("vvol.uuid", o.VvolUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("vvol.uuid", o.VvolUUID); err != nil {
 		return err
 	}
 

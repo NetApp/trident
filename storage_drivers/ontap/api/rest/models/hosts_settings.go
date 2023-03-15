@@ -19,33 +19,33 @@ import (
 type HostsSettings struct {
 
 	// links
-	Links *HostsSettingsLinks `json:"_links,omitempty"`
+	Links *HostsSettingsInlineLinks `json:"_links,omitempty"`
 
 	// Specifies whether TTL is based on the DNS or host settings. If enabled, TTL from DNS is used.
 	//
 	// Example: true
-	DNSTTLEnabled bool `json:"dns_ttl_enabled,omitempty"`
+	DNSTTLEnabled *bool `json:"dns_ttl_enabled,omitempty"`
 
 	// Indicates whether or not the cache is enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Indicates whether or not the negative cache is enabled.
 	//
-	NegativeCacheEnabled bool `json:"negative_cache_enabled,omitempty"`
+	NegativeCacheEnabled *bool `json:"negative_cache_enabled,omitempty"`
 
 	// Specifies negative Time to Live, in ISO 8601 format.
 	//
 	// Example: PT5M
-	NegativeTTL string `json:"negative_ttl,omitempty"`
+	NegativeTTL *string `json:"negative_ttl,omitempty"`
 
 	// svm
-	Svm *HostsSettingsSvm `json:"svm,omitempty"`
+	Svm *HostsSettingsInlineSvm `json:"svm,omitempty"`
 
 	// Specifies Time to Live (TTL), in ISO 8601 format.
 	//
 	// Example: PT24H
-	TTL string `json:"ttl,omitempty"`
+	TTL *string `json:"ttl,omitempty"`
 }
 
 // Validate validates this hosts settings
@@ -164,17 +164,17 @@ func (m *HostsSettings) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HostsSettingsLinks hosts settings links
+// HostsSettingsInlineLinks hosts settings inline links
 //
-// swagger:model HostsSettingsLinks
-type HostsSettingsLinks struct {
+// swagger:model hosts_settings_inline__links
+type HostsSettingsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this hosts settings links
-func (m *HostsSettingsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this hosts settings inline links
+func (m *HostsSettingsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *HostsSettingsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HostsSettingsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *HostsSettingsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -204,8 +204,8 @@ func (m *HostsSettingsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this hosts settings links based on the context it is used
-func (m *HostsSettingsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this hosts settings inline links based on the context it is used
+func (m *HostsSettingsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *HostsSettingsLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *HostsSettingsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -233,7 +233,7 @@ func (m *HostsSettingsLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *HostsSettingsLinks) MarshalBinary() ([]byte, error) {
+func (m *HostsSettingsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -241,8 +241,8 @@ func (m *HostsSettingsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HostsSettingsLinks) UnmarshalBinary(b []byte) error {
-	var res HostsSettingsLinks
+func (m *HostsSettingsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res HostsSettingsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -250,27 +250,27 @@ func (m *HostsSettingsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HostsSettingsSvm hosts settings svm
+// HostsSettingsInlineSvm hosts settings inline svm
 //
-// swagger:model HostsSettingsSvm
-type HostsSettingsSvm struct {
+// swagger:model hosts_settings_inline_svm
+type HostsSettingsInlineSvm struct {
 
 	// links
-	Links *HostsSettingsSvmLinks `json:"_links,omitempty"`
+	Links *HostsSettingsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this hosts settings svm
-func (m *HostsSettingsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this hosts settings inline svm
+func (m *HostsSettingsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -283,7 +283,7 @@ func (m *HostsSettingsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HostsSettingsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *HostsSettingsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -300,8 +300,8 @@ func (m *HostsSettingsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this hosts settings svm based on the context it is used
-func (m *HostsSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this hosts settings inline svm based on the context it is used
+func (m *HostsSettingsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -314,7 +314,7 @@ func (m *HostsSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *HostsSettingsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -329,7 +329,7 @@ func (m *HostsSettingsSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *HostsSettingsSvm) MarshalBinary() ([]byte, error) {
+func (m *HostsSettingsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -337,8 +337,8 @@ func (m *HostsSettingsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HostsSettingsSvm) UnmarshalBinary(b []byte) error {
-	var res HostsSettingsSvm
+func (m *HostsSettingsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res HostsSettingsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -346,17 +346,17 @@ func (m *HostsSettingsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HostsSettingsSvmLinks hosts settings svm links
+// HostsSettingsInlineSvmInlineLinks hosts settings inline svm inline links
 //
-// swagger:model HostsSettingsSvmLinks
-type HostsSettingsSvmLinks struct {
+// swagger:model hosts_settings_inline_svm_inline__links
+type HostsSettingsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this hosts settings svm links
-func (m *HostsSettingsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this hosts settings inline svm inline links
+func (m *HostsSettingsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -369,7 +369,7 @@ func (m *HostsSettingsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HostsSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *HostsSettingsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -386,8 +386,8 @@ func (m *HostsSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this hosts settings svm links based on the context it is used
-func (m *HostsSettingsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this hosts settings inline svm inline links based on the context it is used
+func (m *HostsSettingsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -400,7 +400,7 @@ func (m *HostsSettingsSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *HostsSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *HostsSettingsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -415,7 +415,7 @@ func (m *HostsSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *HostsSettingsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *HostsSettingsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -423,8 +423,8 @@ func (m *HostsSettingsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HostsSettingsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res HostsSettingsSvmLinks
+func (m *HostsSettingsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res HostsSettingsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

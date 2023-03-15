@@ -22,27 +22,27 @@ import (
 type FcLogin struct {
 
 	// links
-	Links *FcLoginLinks `json:"_links,omitempty"`
+	Links *FcLoginInlineLinks `json:"_links,omitempty"`
 
 	// The initiator groups in which the initiator is a member.
 	//
 	// Read Only: true
-	Igroups []*FcLoginIgroupsItems0 `json:"igroups,omitempty"`
+	FcLoginInlineIgroups []*FcLoginInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
 
 	// initiator
-	Initiator *FcLoginInitiator `json:"initiator,omitempty"`
+	Initiator *FcLoginInlineInitiator `json:"initiator,omitempty"`
 
 	// interface
-	Interface *FcLoginInterface `json:"interface,omitempty"`
+	Interface *FcLoginInlineInterface `json:"interface,omitempty"`
 
 	// The data protocol used to perform the login.
 	//
 	// Read Only: true
 	// Enum: [fc_nvme fcp]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
-	Svm *FcLoginSvm `json:"svm,omitempty"`
+	Svm *FcLoginInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this fc login
@@ -53,7 +53,7 @@ func (m *FcLogin) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIgroups(formats); err != nil {
+	if err := m.validateFcLoginInlineIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -96,18 +96,18 @@ func (m *FcLogin) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLogin) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
+func (m *FcLogin) validateFcLoginInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcLoginInlineIgroups) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
+	for i := 0; i < len(m.FcLoginInlineIgroups); i++ {
+		if swag.IsZero(m.FcLoginInlineIgroups[i]) { // not required
 			continue
 		}
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
+		if m.FcLoginInlineIgroups[i] != nil {
+			if err := m.FcLoginInlineIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -203,7 +203,7 @@ func (m *FcLogin) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -235,7 +235,7 @@ func (m *FcLogin) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateFcLoginInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -275,16 +275,16 @@ func (m *FcLogin) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcLogin) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLogin) contextValidateFcLoginInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroups", "body", []*FcLoginIgroupsItems0(m.Igroups)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroups", "body", []*FcLoginInlineIgroupsInlineArrayItem(m.FcLoginInlineIgroups)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
+	for i := 0; i < len(m.FcLoginInlineIgroups); i++ {
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcLoginInlineIgroups[i] != nil {
+			if err := m.FcLoginInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -327,7 +327,7 @@ func (m *FcLogin) contextValidateInterface(ctx context.Context, formats strfmt.R
 
 func (m *FcLogin) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 
@@ -366,29 +366,29 @@ func (m *FcLogin) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginIgroupsItems0 fc login igroups items0
+// FcLoginInlineIgroupsInlineArrayItem fc login inline igroups inline array item
 //
-// swagger:model FcLoginIgroupsItems0
-type FcLoginIgroupsItems0 struct {
+// swagger:model fc_login_inline_igroups_inline_array_item
+type FcLoginInlineIgroupsInlineArrayItem struct {
 
 	// links
-	Links *FcLoginIgroupsItems0Links `json:"_links,omitempty"`
+	Links *FcLoginInlineIgroupsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fc login igroups items0
-func (m *FcLoginIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline igroups inline array item
+func (m *FcLoginInlineIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -405,7 +405,7 @@ func (m *FcLoginIgroupsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginIgroupsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *FcLoginInlineIgroupsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -422,24 +422,24 @@ func (m *FcLoginIgroupsItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginIgroupsItems0) validateName(formats strfmt.Registry) error {
+func (m *FcLoginInlineIgroupsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this fc login igroups items0 based on the context it is used
-func (m *FcLoginIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline igroups inline array item based on the context it is used
+func (m *FcLoginInlineIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -452,7 +452,7 @@ func (m *FcLoginIgroupsItems0) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcLoginIgroupsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineIgroupsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -467,7 +467,7 @@ func (m *FcLoginIgroupsItems0) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -475,8 +475,8 @@ func (m *FcLoginIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res FcLoginIgroupsItems0
+func (m *FcLoginInlineIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -484,17 +484,17 @@ func (m *FcLoginIgroupsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginIgroupsItems0Links fc login igroups items0 links
+// FcLoginInlineIgroupsInlineArrayItemInlineLinks fc login inline igroups inline array item inline links
 //
-// swagger:model FcLoginIgroupsItems0Links
-type FcLoginIgroupsItems0Links struct {
+// swagger:model fc_login_inline_igroups_inline_array_item_inline__links
+type FcLoginInlineIgroupsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc login igroups items0 links
-func (m *FcLoginIgroupsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline igroups inline array item inline links
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -507,7 +507,7 @@ func (m *FcLoginIgroupsItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginIgroupsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -524,8 +524,8 @@ func (m *FcLoginIgroupsItems0Links) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fc login igroups items0 links based on the context it is used
-func (m *FcLoginIgroupsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline igroups inline array item inline links based on the context it is used
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -538,7 +538,7 @@ func (m *FcLoginIgroupsItems0Links) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FcLoginIgroupsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -553,7 +553,7 @@ func (m *FcLoginIgroupsItems0Links) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginIgroupsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -561,8 +561,8 @@ func (m *FcLoginIgroupsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginIgroupsItems0Links) UnmarshalBinary(b []byte) error {
-	var res FcLoginIgroupsItems0Links
+func (m *FcLoginInlineIgroupsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineIgroupsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -570,21 +570,21 @@ func (m *FcLoginIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginInitiator Information about the logged in FC initiator.
+// FcLoginInlineInitiator Information about the logged in FC initiator.
 //
-// swagger:model FcLoginInitiator
-type FcLoginInitiator struct {
+// swagger:model fc_login_inline_initiator
+type FcLoginInlineInitiator struct {
 
 	// The logged in initiator world wide port name (WWPN) aliases.
 	//
 	// Read Only: true
-	Aliases []string `json:"aliases,omitempty"`
+	Aliases []*string `json:"aliases,omitempty"`
 
 	// A comment available for use by the administrator. This is modifiable from the initiator REST endpoint directly. See [`PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_modify).
 	//
 	// Example: This is an FC initiator for host 5
 	// Read Only: true
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// The port address of the initiator's FC port.<br/>
 	// Each port in an FC switched fabric has its own unique port address for routing purposes. The port address is assigned by a switch in the fabric when that port logs in to the fabric. This property refers to the address given by a switch to the initiator port.<br/>
@@ -593,28 +593,28 @@ type FcLoginInitiator struct {
 	//
 	// Example: 5060A
 	// Read Only: true
-	PortAddress string `json:"port_address,omitempty"`
+	PortAddress *string `json:"port_address,omitempty"`
 
 	// The logged in initiator world wide node name (WWNN).
 	//
 	// Example: 2f:a0:00:a0:98:0b:56:13
 	// Read Only: true
-	Wwnn string `json:"wwnn,omitempty"`
+	Wwnn *string `json:"wwnn,omitempty"`
 
 	// The logged in initiator WWPN.
 	//
 	// Example: 2f:a0:00:a0:98:0b:56:13
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this fc login initiator
-func (m *FcLoginInitiator) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline initiator
+func (m *FcLoginInlineInitiator) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login initiator based on the context it is used
-func (m *FcLoginInitiator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline initiator based on the context it is used
+func (m *FcLoginInlineInitiator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAliases(ctx, formats); err != nil {
@@ -643,15 +643,15 @@ func (m *FcLoginInitiator) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcLoginInitiator) contextValidateAliases(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInitiator) contextValidateAliases(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"aliases", "body", []string(m.Aliases)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"aliases", "body", []*string(m.Aliases)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Aliases); i++ {
 
-		if err := validate.ReadOnly(ctx, "initiator"+"."+"aliases"+"."+strconv.Itoa(i), "body", string(m.Aliases[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "initiator"+"."+"aliases"+"."+strconv.Itoa(i), "body", m.Aliases[i]); err != nil {
 			return err
 		}
 
@@ -660,36 +660,36 @@ func (m *FcLoginInitiator) contextValidateAliases(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcLoginInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", string(m.Comment)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", m.Comment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcLoginInitiator) contextValidatePortAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInitiator) contextValidatePortAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"port_address", "body", string(m.PortAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"port_address", "body", m.PortAddress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcLoginInitiator) contextValidateWwnn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInitiator) contextValidateWwnn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"wwnn", "body", string(m.Wwnn)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"wwnn", "body", m.Wwnn); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcLoginInitiator) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInitiator) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -697,7 +697,7 @@ func (m *FcLoginInitiator) contextValidateWwpn(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginInitiator) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineInitiator) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -705,8 +705,8 @@ func (m *FcLoginInitiator) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginInitiator) UnmarshalBinary(b []byte) error {
-	var res FcLoginInitiator
+func (m *FcLoginInlineInitiator) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineInitiator
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -714,33 +714,33 @@ func (m *FcLoginInitiator) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginInterface An FC interface.
+// FcLoginInlineInterface An FC interface.
 //
-// swagger:model FcLoginInterface
-type FcLoginInterface struct {
+// swagger:model fc_login_inline_interface
+type FcLoginInlineInterface struct {
 
 	// links
-	Links *FcLoginInterfaceLinks `json:"_links,omitempty"`
+	Links *FcLoginInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the FC interface.
 	//
 	// Example: fc_lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the FC interface.
 	//
 	// Example: 3a09ab42-4da1-32cf-9d35-3385a6101a0b
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The WWPN of the FC interface.
 	//
 	// Example: 20:00:00:50:56:b4:13:a8
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this fc login interface
-func (m *FcLoginInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline interface
+func (m *FcLoginInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -753,7 +753,7 @@ func (m *FcLoginInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginInterface) validateLinks(formats strfmt.Registry) error {
+func (m *FcLoginInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -770,8 +770,8 @@ func (m *FcLoginInterface) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login interface based on the context it is used
-func (m *FcLoginInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline interface based on the context it is used
+func (m *FcLoginInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -788,7 +788,7 @@ func (m *FcLoginInterface) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcLoginInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -802,9 +802,9 @@ func (m *FcLoginInterface) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FcLoginInterface) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInterface) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -812,7 +812,7 @@ func (m *FcLoginInterface) contextValidateWwpn(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginInterface) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -820,8 +820,8 @@ func (m *FcLoginInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginInterface) UnmarshalBinary(b []byte) error {
-	var res FcLoginInterface
+func (m *FcLoginInlineInterface) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -829,17 +829,17 @@ func (m *FcLoginInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginInterfaceLinks fc login interface links
+// FcLoginInlineInterfaceInlineLinks fc login inline interface inline links
 //
-// swagger:model FcLoginInterfaceLinks
-type FcLoginInterfaceLinks struct {
+// swagger:model fc_login_inline_interface_inline__links
+type FcLoginInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc login interface links
-func (m *FcLoginInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline interface inline links
+func (m *FcLoginInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -852,7 +852,7 @@ func (m *FcLoginInterfaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcLoginInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -869,8 +869,8 @@ func (m *FcLoginInterfaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login interface links based on the context it is used
-func (m *FcLoginInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline interface inline links based on the context it is used
+func (m *FcLoginInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -883,7 +883,7 @@ func (m *FcLoginInterfaceLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FcLoginInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -898,7 +898,7 @@ func (m *FcLoginInterfaceLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -906,8 +906,8 @@ func (m *FcLoginInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res FcLoginInterfaceLinks
+func (m *FcLoginInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -915,10 +915,10 @@ func (m *FcLoginInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginLinks fc login links
+// FcLoginInlineLinks fc login inline links
 //
-// swagger:model FcLoginLinks
-type FcLoginLinks struct {
+// swagger:model fc_login_inline__links
+type FcLoginInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -927,8 +927,8 @@ type FcLoginLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc login links
-func (m *FcLoginLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline links
+func (m *FcLoginInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -945,7 +945,7 @@ func (m *FcLoginLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcLoginInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -962,7 +962,7 @@ func (m *FcLoginLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcLoginInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -979,8 +979,8 @@ func (m *FcLoginLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login links based on the context it is used
-func (m *FcLoginLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline links based on the context it is used
+func (m *FcLoginInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -997,7 +997,7 @@ func (m *FcLoginLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcLoginLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -1011,7 +1011,7 @@ func (m *FcLoginLinks) contextValidateNext(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcLoginLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1026,7 +1026,7 @@ func (m *FcLoginLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginLinks) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1034,8 +1034,8 @@ func (m *FcLoginLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginLinks) UnmarshalBinary(b []byte) error {
-	var res FcLoginLinks
+func (m *FcLoginInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1043,27 +1043,27 @@ func (m *FcLoginLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginSvm fc login svm
+// FcLoginInlineSvm fc login inline svm
 //
-// swagger:model FcLoginSvm
-type FcLoginSvm struct {
+// swagger:model fc_login_inline_svm
+type FcLoginInlineSvm struct {
 
 	// links
-	Links *FcLoginSvmLinks `json:"_links,omitempty"`
+	Links *FcLoginInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fc login svm
-func (m *FcLoginSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline svm
+func (m *FcLoginInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1076,7 +1076,7 @@ func (m *FcLoginSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FcLoginInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1093,8 +1093,8 @@ func (m *FcLoginSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login svm based on the context it is used
-func (m *FcLoginSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline svm based on the context it is used
+func (m *FcLoginInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1107,7 +1107,7 @@ func (m *FcLoginSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *FcLoginSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1122,7 +1122,7 @@ func (m *FcLoginSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginSvm) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1130,8 +1130,8 @@ func (m *FcLoginSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginSvm) UnmarshalBinary(b []byte) error {
-	var res FcLoginSvm
+func (m *FcLoginInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1139,17 +1139,17 @@ func (m *FcLoginSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcLoginSvmLinks fc login svm links
+// FcLoginInlineSvmInlineLinks fc login inline svm inline links
 //
-// swagger:model FcLoginSvmLinks
-type FcLoginSvmLinks struct {
+// swagger:model fc_login_inline_svm_inline__links
+type FcLoginInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc login svm links
-func (m *FcLoginSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc login inline svm inline links
+func (m *FcLoginInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1162,7 +1162,7 @@ func (m *FcLoginSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcLoginSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcLoginInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1179,8 +1179,8 @@ func (m *FcLoginSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc login svm links based on the context it is used
-func (m *FcLoginSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc login inline svm inline links based on the context it is used
+func (m *FcLoginInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1193,7 +1193,7 @@ func (m *FcLoginSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FcLoginSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcLoginInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1208,7 +1208,7 @@ func (m *FcLoginSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FcLoginSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FcLoginInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1216,8 +1216,8 @@ func (m *FcLoginSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcLoginSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FcLoginSvmLinks
+func (m *FcLoginInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcLoginInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

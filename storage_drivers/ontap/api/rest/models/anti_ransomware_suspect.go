@@ -20,16 +20,16 @@ import (
 type AntiRansomwareSuspect struct {
 
 	// links
-	Links *AntiRansomwareSuspectLinks `json:"_links,omitempty"`
+	Links *AntiRansomwareSuspectInlineLinks `json:"_links,omitempty"`
 
 	// file
-	File *AntiRansomwareSuspectFile `json:"file,omitempty"`
+	File *AntiRansomwareSuspectInlineFile `json:"file,omitempty"`
 
 	// Specifies whether the suspected ransomware activity is a false positive or not. This parameter is only used when making a DELETE call.
 	IsFalsePositive *bool `json:"is_false_positive,omitempty"`
 
 	// volume
-	Volume *AntiRansomwareSuspectVolume `json:"volume,omitempty"`
+	Volume *AntiRansomwareSuspectInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this anti ransomware suspect
@@ -187,26 +187,26 @@ func (m *AntiRansomwareSuspect) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareSuspectFile anti ransomware suspect file
+// AntiRansomwareSuspectInlineFile anti ransomware suspect inline file
 //
-// swagger:model AntiRansomwareSuspectFile
-type AntiRansomwareSuspectFile struct {
+// swagger:model anti_ransomware_suspect_inline_file
+type AntiRansomwareSuspectInlineFile struct {
 
 	// File format of the suspected file.
 	// Example: pdf
-	Format string `json:"format,omitempty"`
+	Format *string `json:"format,omitempty"`
 
 	// Name of the suspected file.
 	// Example: test_file
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Path of the suspected file.
 	// Example: d1/d2/d3
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Reason behind this file bieng suspected
 	// Example: High Entropy
-	Reason string `json:"reason,omitempty"`
+	Reason *string `json:"reason,omitempty"`
 
 	// Time when the file was detected as a potential suspect in date-time format.
 	// Example: 2021-05-12T11:00:16-04:00
@@ -215,8 +215,8 @@ type AntiRansomwareSuspectFile struct {
 	SuspectTime *strfmt.DateTime `json:"suspect_time,omitempty"`
 }
 
-// Validate validates this anti ransomware suspect file
-func (m *AntiRansomwareSuspectFile) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware suspect inline file
+func (m *AntiRansomwareSuspectInlineFile) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSuspectTime(formats); err != nil {
@@ -229,7 +229,7 @@ func (m *AntiRansomwareSuspectFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AntiRansomwareSuspectFile) validateSuspectTime(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineFile) validateSuspectTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.SuspectTime) { // not required
 		return nil
 	}
@@ -241,8 +241,8 @@ func (m *AntiRansomwareSuspectFile) validateSuspectTime(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this anti ransomware suspect file based on the context it is used
-func (m *AntiRansomwareSuspectFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware suspect inline file based on the context it is used
+func (m *AntiRansomwareSuspectInlineFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSuspectTime(ctx, formats); err != nil {
@@ -255,7 +255,7 @@ func (m *AntiRansomwareSuspectFile) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *AntiRansomwareSuspectFile) contextValidateSuspectTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineFile) contextValidateSuspectTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "file"+"."+"suspect_time", "body", m.SuspectTime); err != nil {
 		return err
@@ -265,7 +265,7 @@ func (m *AntiRansomwareSuspectFile) contextValidateSuspectTime(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareSuspectFile) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareSuspectInlineFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -273,8 +273,8 @@ func (m *AntiRansomwareSuspectFile) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareSuspectFile) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareSuspectFile
+func (m *AntiRansomwareSuspectInlineFile) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareSuspectInlineFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -282,17 +282,17 @@ func (m *AntiRansomwareSuspectFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareSuspectLinks anti ransomware suspect links
+// AntiRansomwareSuspectInlineLinks anti ransomware suspect inline links
 //
-// swagger:model AntiRansomwareSuspectLinks
-type AntiRansomwareSuspectLinks struct {
+// swagger:model anti_ransomware_suspect_inline__links
+type AntiRansomwareSuspectInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this anti ransomware suspect links
-func (m *AntiRansomwareSuspectLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware suspect inline links
+func (m *AntiRansomwareSuspectInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -305,7 +305,7 @@ func (m *AntiRansomwareSuspectLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AntiRansomwareSuspectLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -322,8 +322,8 @@ func (m *AntiRansomwareSuspectLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this anti ransomware suspect links based on the context it is used
-func (m *AntiRansomwareSuspectLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware suspect inline links based on the context it is used
+func (m *AntiRansomwareSuspectInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -336,7 +336,7 @@ func (m *AntiRansomwareSuspectLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *AntiRansomwareSuspectLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -351,7 +351,7 @@ func (m *AntiRansomwareSuspectLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareSuspectLinks) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareSuspectInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -359,8 +359,8 @@ func (m *AntiRansomwareSuspectLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareSuspectLinks) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareSuspectLinks
+func (m *AntiRansomwareSuspectInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareSuspectInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -368,25 +368,25 @@ func (m *AntiRansomwareSuspectLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareSuspectVolume anti ransomware suspect volume
+// AntiRansomwareSuspectInlineVolume anti ransomware suspect inline volume
 //
-// swagger:model AntiRansomwareSuspectVolume
-type AntiRansomwareSuspectVolume struct {
+// swagger:model anti_ransomware_suspect_inline_volume
+type AntiRansomwareSuspectInlineVolume struct {
 
 	// links
-	Links *AntiRansomwareSuspectVolumeLinks `json:"_links,omitempty"`
+	Links *AntiRansomwareSuspectInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this anti ransomware suspect volume
-func (m *AntiRansomwareSuspectVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware suspect inline volume
+func (m *AntiRansomwareSuspectInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -399,7 +399,7 @@ func (m *AntiRansomwareSuspectVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AntiRansomwareSuspectVolume) validateLinks(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -416,8 +416,8 @@ func (m *AntiRansomwareSuspectVolume) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this anti ransomware suspect volume based on the context it is used
-func (m *AntiRansomwareSuspectVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware suspect inline volume based on the context it is used
+func (m *AntiRansomwareSuspectInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -430,7 +430,7 @@ func (m *AntiRansomwareSuspectVolume) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *AntiRansomwareSuspectVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -445,7 +445,7 @@ func (m *AntiRansomwareSuspectVolume) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareSuspectVolume) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareSuspectInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -453,8 +453,8 @@ func (m *AntiRansomwareSuspectVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareSuspectVolume) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareSuspectVolume
+func (m *AntiRansomwareSuspectInlineVolume) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareSuspectInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -462,17 +462,17 @@ func (m *AntiRansomwareSuspectVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareSuspectVolumeLinks anti ransomware suspect volume links
+// AntiRansomwareSuspectInlineVolumeInlineLinks anti ransomware suspect inline volume inline links
 //
-// swagger:model AntiRansomwareSuspectVolumeLinks
-type AntiRansomwareSuspectVolumeLinks struct {
+// swagger:model anti_ransomware_suspect_inline_volume_inline__links
+type AntiRansomwareSuspectInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this anti ransomware suspect volume links
-func (m *AntiRansomwareSuspectVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware suspect inline volume inline links
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -485,7 +485,7 @@ func (m *AntiRansomwareSuspectVolumeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *AntiRansomwareSuspectVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -502,8 +502,8 @@ func (m *AntiRansomwareSuspectVolumeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this anti ransomware suspect volume links based on the context it is used
-func (m *AntiRansomwareSuspectVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware suspect inline volume inline links based on the context it is used
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -516,7 +516,7 @@ func (m *AntiRansomwareSuspectVolumeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *AntiRansomwareSuspectVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -531,7 +531,7 @@ func (m *AntiRansomwareSuspectVolumeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareSuspectVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -539,8 +539,8 @@ func (m *AntiRansomwareSuspectVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareSuspectVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareSuspectVolumeLinks
+func (m *AntiRansomwareSuspectInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareSuspectInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

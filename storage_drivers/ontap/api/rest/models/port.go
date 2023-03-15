@@ -22,80 +22,84 @@ import (
 type Port struct {
 
 	// links
-	Links *PortLinks `json:"_links,omitempty"`
+	Links *PortInlineLinks `json:"_links,omitempty"`
 
 	// broadcast domain
-	BroadcastDomain *PortBroadcastDomain `json:"broadcast_domain,omitempty"`
+	BroadcastDomain *PortInlineBroadcastDomain `json:"broadcast_domain,omitempty"`
 
 	// enabled
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Number of interfaces hosted. This field is only applicable for cluster administrators. No value is returned for SVM administrators. If the node hosting a port is not healthy no value will be returned.
 	// Read Only: true
-	InterfaceCount int64 `json:"interface_count,omitempty"`
+	InterfaceCount *int64 `json:"interface_count,omitempty"`
 
 	// lag
-	Lag *PortLag `json:"lag,omitempty"`
+	Lag *PortInlineLag `json:"lag,omitempty"`
 
 	// mac address
 	// Example: 01:02:03:04:05:06
 	// Read Only: true
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// metric
-	Metric *PortMetric `json:"metric,omitempty"`
+	Metric *PortInlineMetric `json:"metric,omitempty"`
 
 	// MTU of the port in bytes. Set by broadcast domain.
 	// Example: 1500
 	// Read Only: true
 	// Minimum: 68
-	Mtu int64 `json:"mtu,omitempty"`
+	Mtu *int64 `json:"mtu,omitempty"`
 
 	// Portname, such as e0a, e1b-100 (VLAN on Ethernet), a0c (LAG/ifgrp), a0d-200 (VLAN on LAG/ifgrp), e0a.pv1 (p-VLAN, in select environments only)
 	// Example: e1b
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *PortNode `json:"node,omitempty"`
+	Node *PortInlineNode `json:"node,omitempty"`
+
+	// Discovered devices
+	// Read Only: true
+	PortInlineDiscoveredDevices []*PortInlineDiscoveredDevicesInlineArrayItem `json:"discovered_devices,omitempty"`
+
+	// Reachable broadcast domains.
+	// Read Only: true
+	PortInlineReachableBroadcastDomains []*PortInlineReachableBroadcastDomainsInlineArrayItem `json:"reachable_broadcast_domains,omitempty"`
 
 	// Supported RDMA offload protocols
 	// Read Only: true
-	RdmaProtocols []string `json:"rdma_protocols,omitempty"`
+	RdmaProtocols []*string `json:"rdma_protocols,omitempty"`
 
 	// Reachability status of the port. Enum value "ok" is the only acceptable value for a PATCH request to repair a port.
 	// Example: ok
 	// Enum: [ok repairable not_repairable]
-	Reachability string `json:"reachability,omitempty"`
-
-	// Reachable broadcast domains.
-	// Read Only: true
-	ReachableBroadcastDomains []*PortReachableBroadcastDomainsItems0 `json:"reachable_broadcast_domains,omitempty"`
+	Reachability *string `json:"reachability,omitempty"`
 
 	// Link speed in Mbps
 	// Example: 1000
 	// Read Only: true
-	Speed int64 `json:"speed,omitempty"`
+	Speed *int64 `json:"speed,omitempty"`
 
 	// Operational state of the port. The state is set to 'down' if the operational state of the port is down. The state is set to 'up' if the link state of the port is up and the port is healthy. The state is set to 'up' if the link state of the port is up and configured to ignore health status. The state is 'degraded' if the link state of the port is up, and the port is not healthy.
 	// Read Only: true
 	// Enum: [up down degraded]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *PortStatisticsType `json:"statistics,omitempty"`
+	Statistics *PortInlineStatistics `json:"statistics,omitempty"`
 
 	// Type of physical or virtual port
 	// Enum: [vlan physical lag pvlan]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Port UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// vlan
-	Vlan *PortVlan `json:"vlan,omitempty"`
+	Vlan *PortInlineVlan `json:"vlan,omitempty"`
 }
 
 // Validate validates this port
@@ -126,15 +130,19 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validatePortInlineDiscoveredDevices(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortInlineReachableBroadcastDomains(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateRdmaProtocols(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateReachability(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateReachableBroadcastDomains(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -233,7 +241,7 @@ func (m *Port) validateMtu(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("mtu", "body", m.Mtu, 68, false); err != nil {
+	if err := validate.MinimumInt("mtu", "body", *m.Mtu, 68, false); err != nil {
 		return err
 	}
 
@@ -252,6 +260,54 @@ func (m *Port) validateNode(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Port) validatePortInlineDiscoveredDevices(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortInlineDiscoveredDevices) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PortInlineDiscoveredDevices); i++ {
+		if swag.IsZero(m.PortInlineDiscoveredDevices[i]) { // not required
+			continue
+		}
+
+		if m.PortInlineDiscoveredDevices[i] != nil {
+			if err := m.PortInlineDiscoveredDevices[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("discovered_devices" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Port) validatePortInlineReachableBroadcastDomains(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortInlineReachableBroadcastDomains) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PortInlineReachableBroadcastDomains); i++ {
+		if swag.IsZero(m.PortInlineReachableBroadcastDomains[i]) { // not required
+			continue
+		}
+
+		if m.PortInlineReachableBroadcastDomains[i] != nil {
+			if err := m.PortInlineReachableBroadcastDomains[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("reachable_broadcast_domains" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -282,9 +338,12 @@ func (m *Port) validateRdmaProtocols(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.RdmaProtocols); i++ {
+		if swag.IsZero(m.RdmaProtocols[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", m.RdmaProtocols[i]); err != nil {
+		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", *m.RdmaProtocols[i]); err != nil {
 			return err
 		}
 
@@ -352,32 +411,8 @@ func (m *Port) validateReachability(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateReachabilityEnum("reachability", "body", m.Reachability); err != nil {
+	if err := m.validateReachabilityEnum("reachability", "body", *m.Reachability); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Port) validateReachableBroadcastDomains(formats strfmt.Registry) error {
-	if swag.IsZero(m.ReachableBroadcastDomains) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ReachableBroadcastDomains); i++ {
-		if swag.IsZero(m.ReachableBroadcastDomains[i]) { // not required
-			continue
-		}
-
-		if m.ReachableBroadcastDomains[i] != nil {
-			if err := m.ReachableBroadcastDomains[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("reachable_broadcast_domains" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -442,7 +477,7 @@ func (m *Port) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -535,7 +570,7 @@ func (m *Port) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -599,11 +634,15 @@ func (m *Port) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRdmaProtocols(ctx, formats); err != nil {
+	if err := m.contextValidatePortInlineDiscoveredDevices(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateReachableBroadcastDomains(ctx, formats); err != nil {
+	if err := m.contextValidatePortInlineReachableBroadcastDomains(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRdmaProtocols(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -663,7 +702,7 @@ func (m *Port) contextValidateBroadcastDomain(ctx context.Context, formats strfm
 
 func (m *Port) contextValidateInterfaceCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface_count", "body", int64(m.InterfaceCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface_count", "body", m.InterfaceCount); err != nil {
 		return err
 	}
 
@@ -686,7 +725,7 @@ func (m *Port) contextValidateLag(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Port) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mac_address", "body", string(m.MacAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "mac_address", "body", m.MacAddress); err != nil {
 		return err
 	}
 
@@ -709,7 +748,7 @@ func (m *Port) contextValidateMetric(ctx context.Context, formats strfmt.Registr
 
 func (m *Port) contextValidateMtu(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mtu", "body", int64(m.Mtu)); err != nil {
+	if err := validate.ReadOnly(ctx, "mtu", "body", m.Mtu); err != nil {
 		return err
 	}
 
@@ -718,7 +757,7 @@ func (m *Port) contextValidateMtu(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Port) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -739,25 +778,38 @@ func (m *Port) contextValidateNode(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *Port) contextValidateRdmaProtocols(ctx context.Context, formats strfmt.Registry) error {
+func (m *Port) contextValidatePortInlineDiscoveredDevices(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rdma_protocols", "body", []string(m.RdmaProtocols)); err != nil {
+	if err := validate.ReadOnly(ctx, "discovered_devices", "body", []*PortInlineDiscoveredDevicesInlineArrayItem(m.PortInlineDiscoveredDevices)); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(m.PortInlineDiscoveredDevices); i++ {
+
+		if m.PortInlineDiscoveredDevices[i] != nil {
+			if err := m.PortInlineDiscoveredDevices[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("discovered_devices" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func (m *Port) contextValidateReachableBroadcastDomains(ctx context.Context, formats strfmt.Registry) error {
+func (m *Port) contextValidatePortInlineReachableBroadcastDomains(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reachable_broadcast_domains", "body", []*PortReachableBroadcastDomainsItems0(m.ReachableBroadcastDomains)); err != nil {
+	if err := validate.ReadOnly(ctx, "reachable_broadcast_domains", "body", []*PortInlineReachableBroadcastDomainsInlineArrayItem(m.PortInlineReachableBroadcastDomains)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.ReachableBroadcastDomains); i++ {
+	for i := 0; i < len(m.PortInlineReachableBroadcastDomains); i++ {
 
-		if m.ReachableBroadcastDomains[i] != nil {
-			if err := m.ReachableBroadcastDomains[i].ContextValidate(ctx, formats); err != nil {
+		if m.PortInlineReachableBroadcastDomains[i] != nil {
+			if err := m.PortInlineReachableBroadcastDomains[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("reachable_broadcast_domains" + "." + strconv.Itoa(i))
 				}
@@ -770,9 +822,18 @@ func (m *Port) contextValidateReachableBroadcastDomains(ctx context.Context, for
 	return nil
 }
 
+func (m *Port) contextValidateRdmaProtocols(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rdma_protocols", "body", []*string(m.RdmaProtocols)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Port) contextValidateSpeed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "speed", "body", int64(m.Speed)); err != nil {
+	if err := validate.ReadOnly(ctx, "speed", "body", m.Speed); err != nil {
 		return err
 	}
 
@@ -781,7 +842,7 @@ func (m *Port) contextValidateSpeed(ctx context.Context, formats strfmt.Registry
 
 func (m *Port) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -804,7 +865,7 @@ func (m *Port) contextValidateStatistics(ctx context.Context, formats strfmt.Reg
 
 func (m *Port) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -843,28 +904,28 @@ func (m *Port) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortBroadcastDomain Broadcast domain UUID along with a readable name. Either the UUID or both names may be provided on input.
+// PortInlineBroadcastDomain Broadcast domain UUID along with a readable name. Either the UUID or both names may be provided on input.
 //
-// swagger:model PortBroadcastDomain
-type PortBroadcastDomain struct {
+// swagger:model port_inline_broadcast_domain
+type PortInlineBroadcastDomain struct {
 
 	// links
-	Links *PortBroadcastDomainLinks `json:"_links,omitempty"`
+	Links *PortInlineBroadcastDomainInlineLinks `json:"_links,omitempty"`
 
 	// ipspace
-	Ipspace *PortBroadcastDomainIpspace `json:"ipspace,omitempty"`
+	Ipspace *PortInlineBroadcastDomainInlineIpspace `json:"ipspace,omitempty"`
 
 	// Name of the broadcast domain, scoped to its IPspace
 	// Example: bd1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Broadcast domain UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this port broadcast domain
-func (m *PortBroadcastDomain) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline broadcast domain
+func (m *PortInlineBroadcastDomain) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -881,7 +942,7 @@ func (m *PortBroadcastDomain) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortBroadcastDomain) validateLinks(formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomain) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -898,7 +959,7 @@ func (m *PortBroadcastDomain) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortBroadcastDomain) validateIpspace(formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomain) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
 	}
@@ -915,8 +976,8 @@ func (m *PortBroadcastDomain) validateIpspace(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port broadcast domain based on the context it is used
-func (m *PortBroadcastDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline broadcast domain based on the context it is used
+func (m *PortInlineBroadcastDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -933,7 +994,7 @@ func (m *PortBroadcastDomain) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *PortBroadcastDomain) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomain) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -947,7 +1008,7 @@ func (m *PortBroadcastDomain) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *PortBroadcastDomain) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomain) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipspace != nil {
 		if err := m.Ipspace.ContextValidate(ctx, formats); err != nil {
@@ -962,7 +1023,7 @@ func (m *PortBroadcastDomain) contextValidateIpspace(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *PortBroadcastDomain) MarshalBinary() ([]byte, error) {
+func (m *PortInlineBroadcastDomain) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -970,8 +1031,8 @@ func (m *PortBroadcastDomain) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortBroadcastDomain) UnmarshalBinary(b []byte) error {
-	var res PortBroadcastDomain
+func (m *PortInlineBroadcastDomain) UnmarshalBinary(b []byte) error {
+	var res PortInlineBroadcastDomain
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -979,28 +1040,28 @@ func (m *PortBroadcastDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortBroadcastDomainIpspace port broadcast domain ipspace
+// PortInlineBroadcastDomainInlineIpspace port inline broadcast domain inline ipspace
 //
-// swagger:model PortBroadcastDomainIpspace
-type PortBroadcastDomainIpspace struct {
+// swagger:model port_inline_broadcast_domain_inline_ipspace
+type PortInlineBroadcastDomainInlineIpspace struct {
 
 	// Name of the broadcast domain's IPspace
 	// Example: ipspace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this port broadcast domain ipspace
-func (m *PortBroadcastDomainIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline broadcast domain inline ipspace
+func (m *PortInlineBroadcastDomainInlineIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port broadcast domain ipspace based on context it is used
-func (m *PortBroadcastDomainIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline broadcast domain inline ipspace based on context it is used
+func (m *PortInlineBroadcastDomainInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortBroadcastDomainIpspace) MarshalBinary() ([]byte, error) {
+func (m *PortInlineBroadcastDomainInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1008,8 +1069,8 @@ func (m *PortBroadcastDomainIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortBroadcastDomainIpspace) UnmarshalBinary(b []byte) error {
-	var res PortBroadcastDomainIpspace
+func (m *PortInlineBroadcastDomainInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res PortInlineBroadcastDomainInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1017,17 +1078,17 @@ func (m *PortBroadcastDomainIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortBroadcastDomainLinks port broadcast domain links
+// PortInlineBroadcastDomainInlineLinks port inline broadcast domain inline links
 //
-// swagger:model PortBroadcastDomainLinks
-type PortBroadcastDomainLinks struct {
+// swagger:model port_inline_broadcast_domain_inline__links
+type PortInlineBroadcastDomainInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port broadcast domain links
-func (m *PortBroadcastDomainLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline broadcast domain inline links
+func (m *PortInlineBroadcastDomainInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1040,7 +1101,7 @@ func (m *PortBroadcastDomainLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortBroadcastDomainLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomainInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1057,8 +1118,8 @@ func (m *PortBroadcastDomainLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port broadcast domain links based on the context it is used
-func (m *PortBroadcastDomainLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline broadcast domain inline links based on the context it is used
+func (m *PortInlineBroadcastDomainInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1071,7 +1132,7 @@ func (m *PortBroadcastDomainLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *PortBroadcastDomainLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineBroadcastDomainInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1086,7 +1147,7 @@ func (m *PortBroadcastDomainLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *PortBroadcastDomainLinks) MarshalBinary() ([]byte, error) {
+func (m *PortInlineBroadcastDomainInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1094,8 +1155,8 @@ func (m *PortBroadcastDomainLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortBroadcastDomainLinks) UnmarshalBinary(b []byte) error {
-	var res PortBroadcastDomainLinks
+func (m *PortInlineBroadcastDomainInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineBroadcastDomainInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1103,10 +1164,245 @@ func (m *PortBroadcastDomainLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLag port lag
+// PortInlineDiscoveredDevicesInlineArrayItem port inline discovered devices inline array item
 //
-// swagger:model PortLag
-type PortLag struct {
+// swagger:model port_inline_discovered_devices_inline_array_item
+type PortInlineDiscoveredDevicesInlineArrayItem struct {
+
+	// The list of the capabilities of the discovered device.
+	// Example: ["router","switch"]
+	Capabilities []*string `json:"capabilities"`
+
+	// Identifier associated with this specific discovered device, useful for locating the device in a data center.
+	ChassisID *string `json:"chassis_id,omitempty"`
+
+	// The IP addresses on the discovered device.
+	// Example: ["192.168.100.24","192.168.100.26"]
+	IPAddresses []*IPAddressReadonly `json:"ip_addresses"`
+
+	// Name of the discovered device.
+	// Example: ETY-R1S4-510Q13.datacenter.example.com
+	Name *string `json:"name,omitempty"`
+
+	// Hardware platform of the discovered device.
+	// Example: 93180YC-EX
+	Platform *string `json:"platform,omitempty"`
+
+	// The protocol used to identify the discovered device. This can have a value of CDP or LLDP.
+	// Example: cdp
+	// Enum: [cdp lldp]
+	Protocol *string `json:"protocol,omitempty"`
+
+	// The number of seconds until the discovered device entry expires and is removed.
+	RemainingHoldTime *int64 `json:"remaining_hold_time,omitempty"`
+
+	// The name of the remote port on the discovered device. The format is dependent on the reporting device.
+	// Example: FastEthernet0/12
+	RemotePort *string `json:"remote_port,omitempty"`
+
+	// Additional name used to identifiy a specific piece of equipment.
+	SystemName *string `json:"system_name,omitempty"`
+
+	// The version of the software running on the discovered device.
+	// Example: Cisco Nexus Operating System (NX-OS) Software, Version 8.1
+	Version *string `json:"version,omitempty"`
+}
+
+// Validate validates this port inline discovered devices inline array item
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCapabilities(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPAddresses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var portInlineDiscoveredDevicesInlineArrayItemCapabilitiesItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["router","transparent_bridge","source_route_bridge","switch","host","igmp","repeater","phone"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portInlineDiscoveredDevicesInlineArrayItemCapabilitiesItemsEnum = append(portInlineDiscoveredDevicesInlineArrayItemCapabilitiesItemsEnum, v)
+	}
+}
+
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) validateCapabilitiesItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineDiscoveredDevicesInlineArrayItemCapabilitiesItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) validateCapabilities(formats strfmt.Registry) error {
+	if swag.IsZero(m.Capabilities) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Capabilities); i++ {
+		if swag.IsZero(m.Capabilities[i]) { // not required
+			continue
+		}
+
+		// value enum
+		if err := m.validateCapabilitiesItemsEnum("capabilities"+"."+strconv.Itoa(i), "body", *m.Capabilities[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) validateIPAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPAddresses) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.IPAddresses); i++ {
+		if swag.IsZero(m.IPAddresses[i]) { // not required
+			continue
+		}
+
+		if m.IPAddresses[i] != nil {
+			if err := m.IPAddresses[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var portInlineDiscoveredDevicesInlineArrayItemTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cdp","lldp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portInlineDiscoveredDevicesInlineArrayItemTypeProtocolPropEnum = append(portInlineDiscoveredDevicesInlineArrayItemTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// port_inline_discovered_devices_inline_array_item
+	// PortInlineDiscoveredDevicesInlineArrayItem
+	// protocol
+	// Protocol
+	// cdp
+	// END DEBUGGING
+	// PortInlineDiscoveredDevicesInlineArrayItemProtocolCdp captures enum value "cdp"
+	PortInlineDiscoveredDevicesInlineArrayItemProtocolCdp string = "cdp"
+
+	// BEGIN DEBUGGING
+	// port_inline_discovered_devices_inline_array_item
+	// PortInlineDiscoveredDevicesInlineArrayItem
+	// protocol
+	// Protocol
+	// lldp
+	// END DEBUGGING
+	// PortInlineDiscoveredDevicesInlineArrayItemProtocolLldp captures enum value "lldp"
+	PortInlineDiscoveredDevicesInlineArrayItemProtocolLldp string = "lldp"
+)
+
+// prop value enum
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineDiscoveredDevicesInlineArrayItemTypeProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) validateProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(m.Protocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port inline discovered devices inline array item based on the context it is used
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIPAddresses(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) contextValidateIPAddresses(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.IPAddresses); i++ {
+
+		if m.IPAddresses[i] != nil {
+			if err := m.IPAddresses[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ip_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortInlineDiscoveredDevicesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PortInlineDiscoveredDevicesInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortInlineLag port inline lag
+//
+// swagger:model port_inline_lag
+type PortInlineLag struct {
 
 	// Active ports of a LAG (ifgrp). (Some member ports may be inactive.)
 	// Read Only: true
@@ -1114,18 +1410,18 @@ type PortLag struct {
 
 	// Policy for mapping flows to ports for outbound packets through a LAG (ifgrp).
 	// Enum: [port ip mac sequential]
-	DistributionPolicy string `json:"distribution_policy,omitempty"`
+	DistributionPolicy *string `json:"distribution_policy,omitempty"`
 
 	// Array of ports belonging to the LAG, regardless of their state.
 	MemberPorts []*PortLagMemberPortsItems0 `json:"member_ports,omitempty"`
 
 	// Determines how the ports interact with the switch.
 	// Enum: [multimode_lacp multimode singlemode]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 }
 
-// Validate validates this port lag
-func (m *PortLag) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline lag
+func (m *PortInlineLag) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateActivePorts(formats); err != nil {
@@ -1150,7 +1446,7 @@ func (m *PortLag) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortLag) validateActivePorts(formats strfmt.Registry) error {
+func (m *PortInlineLag) validateActivePorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.ActivePorts) { // not required
 		return nil
 	}
@@ -1174,7 +1470,7 @@ func (m *PortLag) validateActivePorts(formats strfmt.Registry) error {
 	return nil
 }
 
-var portLagTypeDistributionPolicyPropEnum []interface{}
+var portInlineLagTypeDistributionPolicyPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1182,75 +1478,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		portLagTypeDistributionPolicyPropEnum = append(portLagTypeDistributionPolicyPropEnum, v)
+		portInlineLagTypeDistributionPolicyPropEnum = append(portInlineLagTypeDistributionPolicyPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// distribution_policy
 	// DistributionPolicy
 	// port
 	// END DEBUGGING
-	// PortLagDistributionPolicyPort captures enum value "port"
-	PortLagDistributionPolicyPort string = "port"
+	// PortInlineLagDistributionPolicyPort captures enum value "port"
+	PortInlineLagDistributionPolicyPort string = "port"
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// distribution_policy
 	// DistributionPolicy
 	// ip
 	// END DEBUGGING
-	// PortLagDistributionPolicyIP captures enum value "ip"
-	PortLagDistributionPolicyIP string = "ip"
+	// PortInlineLagDistributionPolicyIP captures enum value "ip"
+	PortInlineLagDistributionPolicyIP string = "ip"
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// distribution_policy
 	// DistributionPolicy
 	// mac
 	// END DEBUGGING
-	// PortLagDistributionPolicyMac captures enum value "mac"
-	PortLagDistributionPolicyMac string = "mac"
+	// PortInlineLagDistributionPolicyMac captures enum value "mac"
+	PortInlineLagDistributionPolicyMac string = "mac"
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// distribution_policy
 	// DistributionPolicy
 	// sequential
 	// END DEBUGGING
-	// PortLagDistributionPolicySequential captures enum value "sequential"
-	PortLagDistributionPolicySequential string = "sequential"
+	// PortInlineLagDistributionPolicySequential captures enum value "sequential"
+	PortInlineLagDistributionPolicySequential string = "sequential"
 )
 
 // prop value enum
-func (m *PortLag) validateDistributionPolicyEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, portLagTypeDistributionPolicyPropEnum, true); err != nil {
+func (m *PortInlineLag) validateDistributionPolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineLagTypeDistributionPolicyPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PortLag) validateDistributionPolicy(formats strfmt.Registry) error {
+func (m *PortInlineLag) validateDistributionPolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.DistributionPolicy) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDistributionPolicyEnum("lag"+"."+"distribution_policy", "body", m.DistributionPolicy); err != nil {
+	if err := m.validateDistributionPolicyEnum("lag"+"."+"distribution_policy", "body", *m.DistributionPolicy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PortLag) validateMemberPorts(formats strfmt.Registry) error {
+func (m *PortInlineLag) validateMemberPorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.MemberPorts) { // not required
 		return nil
 	}
@@ -1274,7 +1570,7 @@ func (m *PortLag) validateMemberPorts(formats strfmt.Registry) error {
 	return nil
 }
 
-var portLagTypeModePropEnum []interface{}
+var portInlineLagTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1282,66 +1578,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		portLagTypeModePropEnum = append(portLagTypeModePropEnum, v)
+		portInlineLagTypeModePropEnum = append(portInlineLagTypeModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// mode
 	// Mode
 	// multimode_lacp
 	// END DEBUGGING
-	// PortLagModeMultimodeLacp captures enum value "multimode_lacp"
-	PortLagModeMultimodeLacp string = "multimode_lacp"
+	// PortInlineLagModeMultimodeLacp captures enum value "multimode_lacp"
+	PortInlineLagModeMultimodeLacp string = "multimode_lacp"
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// mode
 	// Mode
 	// multimode
 	// END DEBUGGING
-	// PortLagModeMultimode captures enum value "multimode"
-	PortLagModeMultimode string = "multimode"
+	// PortInlineLagModeMultimode captures enum value "multimode"
+	PortInlineLagModeMultimode string = "multimode"
 
 	// BEGIN DEBUGGING
-	// PortLag
-	// PortLag
+	// port_inline_lag
+	// PortInlineLag
 	// mode
 	// Mode
 	// singlemode
 	// END DEBUGGING
-	// PortLagModeSinglemode captures enum value "singlemode"
-	PortLagModeSinglemode string = "singlemode"
+	// PortInlineLagModeSinglemode captures enum value "singlemode"
+	PortInlineLagModeSinglemode string = "singlemode"
 )
 
 // prop value enum
-func (m *PortLag) validateModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, portLagTypeModePropEnum, true); err != nil {
+func (m *PortInlineLag) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineLagTypeModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PortLag) validateMode(formats strfmt.Registry) error {
+func (m *PortInlineLag) validateMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModeEnum("lag"+"."+"mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("lag"+"."+"mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this port lag based on the context it is used
-func (m *PortLag) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline lag based on the context it is used
+func (m *PortInlineLag) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateActivePorts(ctx, formats); err != nil {
@@ -1358,7 +1654,7 @@ func (m *PortLag) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
-func (m *PortLag) contextValidateActivePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineLag) contextValidateActivePorts(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "lag"+"."+"active_ports", "body", []*PortLagActivePortsItems0(m.ActivePorts)); err != nil {
 		return err
@@ -1380,7 +1676,7 @@ func (m *PortLag) contextValidateActivePorts(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *PortLag) contextValidateMemberPorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineLag) contextValidateMemberPorts(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.MemberPorts); i++ {
 
@@ -1399,7 +1695,7 @@ func (m *PortLag) contextValidateMemberPorts(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *PortLag) MarshalBinary() ([]byte, error) {
+func (m *PortInlineLag) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1407,8 +1703,8 @@ func (m *PortLag) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortLag) UnmarshalBinary(b []byte) error {
-	var res PortLag
+func (m *PortInlineLag) UnmarshalBinary(b []byte) error {
+	var res PortInlineLag
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1426,14 +1722,14 @@ type PortLagActivePortsItems0 struct {
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
 	Node *PortLagActivePortsItems0Node `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this port lag active ports items0
@@ -1645,7 +1941,7 @@ type PortLagActivePortsItems0Node struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this port lag active ports items0 node
@@ -1686,14 +1982,14 @@ type PortLagMemberPortsItems0 struct {
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
 	Node *PortLagMemberPortsItems0Node `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this port lag member ports items0
@@ -1905,7 +2201,7 @@ type PortLagMemberPortsItems0Node struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this port lag member ports items0 node
@@ -1936,17 +2232,17 @@ func (m *PortLagMemberPortsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLinks port links
+// PortInlineLinks port inline links
 //
-// swagger:model PortLinks
-type PortLinks struct {
+// swagger:model port_inline__links
+type PortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port links
-func (m *PortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline links
+func (m *PortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1959,7 +2255,7 @@ func (m *PortLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1976,8 +2272,8 @@ func (m *PortLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port links based on the context it is used
-func (m *PortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline links based on the context it is used
+func (m *PortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1990,7 +2286,7 @@ func (m *PortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *PortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2005,7 +2301,7 @@ func (m *PortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *PortLinks) MarshalBinary() ([]byte, error) {
+func (m *PortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2013,8 +2309,8 @@ func (m *PortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortLinks) UnmarshalBinary(b []byte) error {
-	var res PortLinks
+func (m *PortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2022,27 +2318,27 @@ func (m *PortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortMetric The most recent sample of I/O metrics for the port.
+// PortInlineMetric The most recent sample of I/O metrics for the port.
 //
-// swagger:model PortMetric
-type PortMetric struct {
+// swagger:model port_inline_metric
+type PortInlineMetric struct {
 
 	// links
-	Links *PortMetricLinks `json:"_links,omitempty"`
+	Links *PortInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PortMetricThroughput `json:"throughput,omitempty"`
+	Throughput *PortInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2050,8 +2346,8 @@ type PortMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this port metric
-func (m *PortMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline metric
+func (m *PortInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2080,7 +2376,7 @@ func (m *PortMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortMetric) validateLinks(formats strfmt.Registry) error {
+func (m *PortInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2097,7 +2393,7 @@ func (m *PortMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var portMetricTypeDurationPropEnum []interface{}
+var portInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2105,95 +2401,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		portMetricTypeDurationPropEnum = append(portMetricTypeDurationPropEnum, v)
+		portInlineMetricTypeDurationPropEnum = append(portInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PortMetricDurationPT15S captures enum value "PT15S"
-	PortMetricDurationPT15S string = "PT15S"
+	// PortInlineMetricDurationPT15S captures enum value "PT15S"
+	PortInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PortMetricDurationPT4M captures enum value "PT4M"
-	PortMetricDurationPT4M string = "PT4M"
+	// PortInlineMetricDurationPT4M captures enum value "PT4M"
+	PortInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PortMetricDurationPT30M captures enum value "PT30M"
-	PortMetricDurationPT30M string = "PT30M"
+	// PortInlineMetricDurationPT30M captures enum value "PT30M"
+	PortInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PortMetricDurationPT2H captures enum value "PT2H"
-	PortMetricDurationPT2H string = "PT2H"
+	// PortInlineMetricDurationPT2H captures enum value "PT2H"
+	PortInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PortMetricDurationP1D captures enum value "P1D"
-	PortMetricDurationP1D string = "P1D"
+	// PortInlineMetricDurationP1D captures enum value "P1D"
+	PortInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PortMetricDurationPT5M captures enum value "PT5M"
-	PortMetricDurationPT5M string = "PT5M"
+	// PortInlineMetricDurationPT5M captures enum value "PT5M"
+	PortInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PortMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, portMetricTypeDurationPropEnum, true); err != nil {
+func (m *PortInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PortMetric) validateDuration(formats strfmt.Registry) error {
+func (m *PortInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var portMetricTypeStatusPropEnum []interface{}
+var portInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2201,135 +2497,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		portMetricTypeStatusPropEnum = append(portMetricTypeStatusPropEnum, v)
+		portInlineMetricTypeStatusPropEnum = append(portInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PortMetricStatusOk captures enum value "ok"
-	PortMetricStatusOk string = "ok"
+	// PortInlineMetricStatusOk captures enum value "ok"
+	PortInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PortMetricStatusError captures enum value "error"
-	PortMetricStatusError string = "error"
+	// PortInlineMetricStatusError captures enum value "error"
+	PortInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PortMetricStatusPartialNoData captures enum value "partial_no_data"
-	PortMetricStatusPartialNoData string = "partial_no_data"
+	// PortInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	PortInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PortMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	PortMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// PortInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PortInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PortMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	PortMetricStatusPartialNoResponse string = "partial_no_response"
+	// PortInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	PortInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PortMetricStatusPartialOtherError captures enum value "partial_other_error"
-	PortMetricStatusPartialOtherError string = "partial_other_error"
+	// PortInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	PortInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PortMetricStatusNegativeDelta captures enum value "negative_delta"
-	PortMetricStatusNegativeDelta string = "negative_delta"
+	// PortInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	PortInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PortMetricStatusBackfilledData captures enum value "backfilled_data"
-	PortMetricStatusBackfilledData string = "backfilled_data"
+	// PortInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	PortInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PortMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PortMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PortInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PortInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PortMetric
-	// PortMetric
+	// port_inline_metric
+	// PortInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PortMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PortMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// PortInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PortInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *PortMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, portMetricTypeStatusPropEnum, true); err != nil {
+func (m *PortInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PortMetric) validateStatus(formats strfmt.Registry) error {
+func (m *PortInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PortMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *PortInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -2346,7 +2642,7 @@ func (m *PortMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *PortInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2358,8 +2654,8 @@ func (m *PortMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port metric based on the context it is used
-func (m *PortMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline metric based on the context it is used
+func (m *PortInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2376,7 +2672,7 @@ func (m *PortMetric) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *PortMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2390,7 +2686,7 @@ func (m *PortMetric) contextValidateLinks(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *PortMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -2405,7 +2701,7 @@ func (m *PortMetric) contextValidateThroughput(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *PortMetric) MarshalBinary() ([]byte, error) {
+func (m *PortInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2413,8 +2709,8 @@ func (m *PortMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortMetric) UnmarshalBinary(b []byte) error {
-	var res PortMetric
+func (m *PortInlineMetric) UnmarshalBinary(b []byte) error {
+	var res PortInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2422,17 +2718,17 @@ func (m *PortMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortMetricLinks port metric links
+// PortInlineMetricInlineLinks port inline metric inline links
 //
-// swagger:model PortMetricLinks
-type PortMetricLinks struct {
+// swagger:model port_inline_metric_inline__links
+type PortInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port metric links
-func (m *PortMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline metric inline links
+func (m *PortInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2445,7 +2741,7 @@ func (m *PortMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2462,8 +2758,8 @@ func (m *PortMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port metric links based on the context it is used
-func (m *PortMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline metric inline links based on the context it is used
+func (m *PortInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2476,7 +2772,7 @@ func (m *PortMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *PortMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2491,7 +2787,7 @@ func (m *PortMetricLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *PortMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *PortInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2499,8 +2795,8 @@ func (m *PortMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortMetricLinks) UnmarshalBinary(b []byte) error {
-	var res PortMetricLinks
+func (m *PortInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2508,36 +2804,36 @@ func (m *PortMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortMetricThroughput The rate of throughput bytes per second observed at the interface.
+// PortInlineMetricInlineThroughput The rate of throughput bytes per second observed at the interface.
 //
-// swagger:model PortMetricThroughput
-type PortMetricThroughput struct {
+// swagger:model port_inline_metric_inline_throughput
+type PortInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this port metric throughput
-func (m *PortMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline metric inline throughput
+func (m *PortInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port metric throughput based on context it is used
-func (m *PortMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline metric inline throughput based on context it is used
+func (m *PortInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *PortInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2545,8 +2841,8 @@ func (m *PortMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res PortMetricThroughput
+func (m *PortInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PortInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2554,25 +2850,25 @@ func (m *PortMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortNode port node
+// PortInlineNode port inline node
 //
-// swagger:model PortNode
-type PortNode struct {
+// swagger:model port_inline_node
+type PortInlineNode struct {
 
 	// links
-	Links *PortNodeLinks `json:"_links,omitempty"`
+	Links *PortInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this port node
-func (m *PortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline node
+func (m *PortInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2585,7 +2881,7 @@ func (m *PortNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortNode) validateLinks(formats strfmt.Registry) error {
+func (m *PortInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2602,8 +2898,8 @@ func (m *PortNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port node based on the context it is used
-func (m *PortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline node based on the context it is used
+func (m *PortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2616,7 +2912,7 @@ func (m *PortNode) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *PortNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2631,7 +2927,7 @@ func (m *PortNode) contextValidateLinks(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *PortNode) MarshalBinary() ([]byte, error) {
+func (m *PortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2639,8 +2935,8 @@ func (m *PortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortNode) UnmarshalBinary(b []byte) error {
-	var res PortNode
+func (m *PortInlineNode) UnmarshalBinary(b []byte) error {
+	var res PortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2648,17 +2944,17 @@ func (m *PortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortNodeLinks port node links
+// PortInlineNodeInlineLinks port inline node inline links
 //
-// swagger:model PortNodeLinks
-type PortNodeLinks struct {
+// swagger:model port_inline_node_inline__links
+type PortInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port node links
-func (m *PortNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline node inline links
+func (m *PortInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2671,7 +2967,7 @@ func (m *PortNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2688,8 +2984,8 @@ func (m *PortNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port node links based on the context it is used
-func (m *PortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline node inline links based on the context it is used
+func (m *PortInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2702,7 +2998,7 @@ func (m *PortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *PortNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2717,7 +3013,7 @@ func (m *PortNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *PortNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *PortInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2725,8 +3021,8 @@ func (m *PortNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortNodeLinks) UnmarshalBinary(b []byte) error {
-	var res PortNodeLinks
+func (m *PortInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2734,28 +3030,28 @@ func (m *PortNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortReachableBroadcastDomainsItems0 Broadcast domain UUID along with a readable name. Either the UUID or both names may be provided on input.
+// PortInlineReachableBroadcastDomainsInlineArrayItem Broadcast domain UUID along with a readable name. Either the UUID or both names may be provided on input.
 //
-// swagger:model PortReachableBroadcastDomainsItems0
-type PortReachableBroadcastDomainsItems0 struct {
+// swagger:model port_inline_reachable_broadcast_domains_inline_array_item
+type PortInlineReachableBroadcastDomainsInlineArrayItem struct {
 
 	// links
-	Links *PortReachableBroadcastDomainsItems0Links `json:"_links,omitempty"`
+	Links *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// ipspace
-	Ipspace *PortReachableBroadcastDomainsItems0Ipspace `json:"ipspace,omitempty"`
+	Ipspace *PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace `json:"ipspace,omitempty"`
 
 	// Name of the broadcast domain, scoped to its IPspace
 	// Example: bd1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Broadcast domain UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this port reachable broadcast domains items0
-func (m *PortReachableBroadcastDomainsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline reachable broadcast domains inline array item
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2772,7 +3068,7 @@ func (m *PortReachableBroadcastDomainsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2789,7 +3085,7 @@ func (m *PortReachableBroadcastDomainsItems0) validateLinks(formats strfmt.Regis
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0) validateIpspace(formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
 	}
@@ -2806,8 +3102,8 @@ func (m *PortReachableBroadcastDomainsItems0) validateIpspace(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this port reachable broadcast domains items0 based on the context it is used
-func (m *PortReachableBroadcastDomainsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline reachable broadcast domains inline array item based on the context it is used
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2824,7 +3120,7 @@ func (m *PortReachableBroadcastDomainsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2838,7 +3134,7 @@ func (m *PortReachableBroadcastDomainsItems0) contextValidateLinks(ctx context.C
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipspace != nil {
 		if err := m.Ipspace.ContextValidate(ctx, formats); err != nil {
@@ -2853,7 +3149,7 @@ func (m *PortReachableBroadcastDomainsItems0) contextValidateIpspace(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0) MarshalBinary() ([]byte, error) {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2861,8 +3157,8 @@ func (m *PortReachableBroadcastDomainsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0) UnmarshalBinary(b []byte) error {
-	var res PortReachableBroadcastDomainsItems0
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PortInlineReachableBroadcastDomainsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2870,28 +3166,28 @@ func (m *PortReachableBroadcastDomainsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortReachableBroadcastDomainsItems0Ipspace port reachable broadcast domains items0 ipspace
+// PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace port inline reachable broadcast domains inline array item inline ipspace
 //
-// swagger:model PortReachableBroadcastDomainsItems0Ipspace
-type PortReachableBroadcastDomainsItems0Ipspace struct {
+// swagger:model port_inline_reachable_broadcast_domains_inline_array_item_inline_ipspace
+type PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace struct {
 
 	// Name of the broadcast domain's IPspace
 	// Example: ipspace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this port reachable broadcast domains items0 ipspace
-func (m *PortReachableBroadcastDomainsItems0Ipspace) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline reachable broadcast domains inline array item inline ipspace
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port reachable broadcast domains items0 ipspace based on context it is used
-func (m *PortReachableBroadcastDomainsItems0Ipspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline reachable broadcast domains inline array item inline ipspace based on context it is used
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0Ipspace) MarshalBinary() ([]byte, error) {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2899,8 +3195,8 @@ func (m *PortReachableBroadcastDomainsItems0Ipspace) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0Ipspace) UnmarshalBinary(b []byte) error {
-	var res PortReachableBroadcastDomainsItems0Ipspace
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res PortInlineReachableBroadcastDomainsInlineArrayItemInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2908,17 +3204,17 @@ func (m *PortReachableBroadcastDomainsItems0Ipspace) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// PortReachableBroadcastDomainsItems0Links port reachable broadcast domains items0 links
+// PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks port inline reachable broadcast domains inline array item inline links
 //
-// swagger:model PortReachableBroadcastDomainsItems0Links
-type PortReachableBroadcastDomainsItems0Links struct {
+// swagger:model port_inline_reachable_broadcast_domains_inline_array_item_inline__links
+type PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port reachable broadcast domains items0 links
-func (m *PortReachableBroadcastDomainsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline reachable broadcast domains inline array item inline links
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2931,7 +3227,7 @@ func (m *PortReachableBroadcastDomainsItems0Links) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2948,8 +3244,8 @@ func (m *PortReachableBroadcastDomainsItems0Links) validateSelf(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this port reachable broadcast domains items0 links based on the context it is used
-func (m *PortReachableBroadcastDomainsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline reachable broadcast domains inline array item inline links based on the context it is used
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2962,7 +3258,7 @@ func (m *PortReachableBroadcastDomainsItems0Links) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *PortReachableBroadcastDomainsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2977,7 +3273,7 @@ func (m *PortReachableBroadcastDomainsItems0Links) contextValidateSelf(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2985,8 +3281,8 @@ func (m *PortReachableBroadcastDomainsItems0Links) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortReachableBroadcastDomainsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PortReachableBroadcastDomainsItems0Links
+func (m *PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineReachableBroadcastDomainsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2994,21 +3290,21 @@ func (m *PortReachableBroadcastDomainsItems0Links) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// PortStatisticsType The real time I/O statistics for the port.
+// PortInlineStatistics The real time I/O statistics for the port.
 //
-// swagger:model PortStatisticsType
-type PortStatisticsType struct {
+// swagger:model port_inline_statistics
+type PortInlineStatistics struct {
 
 	// device
-	Device *PortStatisticsTypeDeviceType `json:"device,omitempty"`
+	Device *PortInlineStatisticsInlineDevice `json:"device,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *PortStatisticsTypeThroughputRawType `json:"throughput_raw,omitempty"`
+	ThroughputRaw *PortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the throughput_raw performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -3016,8 +3312,8 @@ type PortStatisticsType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this port statistics type
-func (m *PortStatisticsType) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline statistics
+func (m *PortInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDevice(formats); err != nil {
@@ -3042,7 +3338,7 @@ func (m *PortStatisticsType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortStatisticsType) validateDevice(formats strfmt.Registry) error {
+func (m *PortInlineStatistics) validateDevice(formats strfmt.Registry) error {
 	if swag.IsZero(m.Device) { // not required
 		return nil
 	}
@@ -3059,7 +3355,7 @@ func (m *PortStatisticsType) validateDevice(formats strfmt.Registry) error {
 	return nil
 }
 
-var portStatisticsTypeTypeStatusPropEnum []interface{}
+var portInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3067,135 +3363,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		portStatisticsTypeTypeStatusPropEnum = append(portStatisticsTypeTypeStatusPropEnum, v)
+		portInlineStatisticsTypeStatusPropEnum = append(portInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PortStatisticsTypeStatusOk captures enum value "ok"
-	PortStatisticsTypeStatusOk string = "ok"
+	// PortInlineStatisticsStatusOk captures enum value "ok"
+	PortInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PortStatisticsTypeStatusError captures enum value "error"
-	PortStatisticsTypeStatusError string = "error"
+	// PortInlineStatisticsStatusError captures enum value "error"
+	PortInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PortStatisticsTypeStatusPartialNoData captures enum value "partial_no_data"
-	PortStatisticsTypeStatusPartialNoData string = "partial_no_data"
+	// PortInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	PortInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PortStatisticsTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	PortStatisticsTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// PortInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PortInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PortStatisticsTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	PortStatisticsTypeStatusPartialNoResponse string = "partial_no_response"
+	// PortInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	PortInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PortStatisticsTypeStatusPartialOtherError captures enum value "partial_other_error"
-	PortStatisticsTypeStatusPartialOtherError string = "partial_other_error"
+	// PortInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	PortInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PortStatisticsTypeStatusNegativeDelta captures enum value "negative_delta"
-	PortStatisticsTypeStatusNegativeDelta string = "negative_delta"
+	// PortInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	PortInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PortStatisticsTypeStatusBackfilledData captures enum value "backfilled_data"
-	PortStatisticsTypeStatusBackfilledData string = "backfilled_data"
+	// PortInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	PortInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PortStatisticsTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PortStatisticsTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PortInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PortInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PortStatisticsType
-	// PortStatisticsType
+	// port_inline_statistics
+	// PortInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PortStatisticsTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PortStatisticsTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// PortInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PortInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *PortStatisticsType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, portStatisticsTypeTypeStatusPropEnum, true); err != nil {
+func (m *PortInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PortStatisticsType) validateStatus(formats strfmt.Registry) error {
+func (m *PortInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PortStatisticsType) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *PortInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -3212,7 +3508,7 @@ func (m *PortStatisticsType) validateThroughputRaw(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *PortStatisticsType) validateTimestamp(formats strfmt.Registry) error {
+func (m *PortInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3224,8 +3520,8 @@ func (m *PortStatisticsType) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port statistics type based on the context it is used
-func (m *PortStatisticsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline statistics based on the context it is used
+func (m *PortInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDevice(ctx, formats); err != nil {
@@ -3242,7 +3538,7 @@ func (m *PortStatisticsType) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *PortStatisticsType) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineStatistics) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Device != nil {
 		if err := m.Device.ContextValidate(ctx, formats); err != nil {
@@ -3256,7 +3552,7 @@ func (m *PortStatisticsType) contextValidateDevice(ctx context.Context, formats 
 	return nil
 }
 
-func (m *PortStatisticsType) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -3271,7 +3567,7 @@ func (m *PortStatisticsType) contextValidateThroughputRaw(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsType) MarshalBinary() ([]byte, error) {
+func (m *PortInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3279,8 +3575,8 @@ func (m *PortStatisticsType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsType) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsType
+func (m *PortInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res PortInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3288,17 +3584,17 @@ func (m *PortStatisticsType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortStatisticsTypeDeviceType Device-related counters for the port object. These counters are applicable at the lowest layer of the networking stack. These values can be used to calculate both transmit and receive packet and error rates by comparing two samples taken at different times and calculating the increase in counter value divided by the elapsed time between the two samples.
+// PortInlineStatisticsInlineDevice Device-related counters for the port object. These counters are applicable at the lowest layer of the networking stack. These values can be used to calculate both transmit and receive packet and error rates by comparing two samples taken at different times and calculating the increase in counter value divided by the elapsed time between the two samples.
 //
-// swagger:model PortStatisticsTypeDeviceType
-type PortStatisticsTypeDeviceType struct {
+// swagger:model port_inline_statistics_inline_device
+type PortInlineStatisticsInlineDevice struct {
 
 	// The number of link state changes from up to down seen on the device.
 	// Example: 3
-	LinkDownCountRaw int64 `json:"link_down_count_raw,omitempty"`
+	LinkDownCountRaw *int64 `json:"link_down_count_raw,omitempty"`
 
 	// receive raw
-	ReceiveRaw *PortStatisticsTypeDeviceTypeReceiveRawType `json:"receive_raw,omitempty"`
+	ReceiveRaw *PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
 	// Example: 2017-01-25T11:20:13Z
@@ -3306,11 +3602,11 @@ type PortStatisticsTypeDeviceType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transmit raw
-	TransmitRaw *PortStatisticsTypeDeviceTypeTransmitRawType `json:"transmit_raw,omitempty"`
+	TransmitRaw *PortInlineStatisticsInlineDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
 }
 
-// Validate validates this port statistics type device type
-func (m *PortStatisticsTypeDeviceType) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline statistics inline device
+func (m *PortInlineStatisticsInlineDevice) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReceiveRaw(formats); err != nil {
@@ -3331,7 +3627,7 @@ func (m *PortStatisticsTypeDeviceType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortStatisticsTypeDeviceType) validateReceiveRaw(formats strfmt.Registry) error {
+func (m *PortInlineStatisticsInlineDevice) validateReceiveRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ReceiveRaw) { // not required
 		return nil
 	}
@@ -3348,7 +3644,7 @@ func (m *PortStatisticsTypeDeviceType) validateReceiveRaw(formats strfmt.Registr
 	return nil
 }
 
-func (m *PortStatisticsTypeDeviceType) validateTimestamp(formats strfmt.Registry) error {
+func (m *PortInlineStatisticsInlineDevice) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3360,7 +3656,7 @@ func (m *PortStatisticsTypeDeviceType) validateTimestamp(formats strfmt.Registry
 	return nil
 }
 
-func (m *PortStatisticsTypeDeviceType) validateTransmitRaw(formats strfmt.Registry) error {
+func (m *PortInlineStatisticsInlineDevice) validateTransmitRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.TransmitRaw) { // not required
 		return nil
 	}
@@ -3377,8 +3673,8 @@ func (m *PortStatisticsTypeDeviceType) validateTransmitRaw(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this port statistics type device type based on the context it is used
-func (m *PortStatisticsTypeDeviceType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline statistics inline device based on the context it is used
+func (m *PortInlineStatisticsInlineDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReceiveRaw(ctx, formats); err != nil {
@@ -3395,7 +3691,7 @@ func (m *PortStatisticsTypeDeviceType) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *PortStatisticsTypeDeviceType) contextValidateReceiveRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineStatisticsInlineDevice) contextValidateReceiveRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ReceiveRaw != nil {
 		if err := m.ReceiveRaw.ContextValidate(ctx, formats); err != nil {
@@ -3409,7 +3705,7 @@ func (m *PortStatisticsTypeDeviceType) contextValidateReceiveRaw(ctx context.Con
 	return nil
 }
 
-func (m *PortStatisticsTypeDeviceType) contextValidateTransmitRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineStatisticsInlineDevice) contextValidateTransmitRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TransmitRaw != nil {
 		if err := m.TransmitRaw.ContextValidate(ctx, formats); err != nil {
@@ -3424,7 +3720,7 @@ func (m *PortStatisticsTypeDeviceType) contextValidateTransmitRaw(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceType) MarshalBinary() ([]byte, error) {
+func (m *PortInlineStatisticsInlineDevice) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3432,8 +3728,8 @@ func (m *PortStatisticsTypeDeviceType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceType) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsTypeDeviceType
+func (m *PortInlineStatisticsInlineDevice) UnmarshalBinary(b []byte) error {
+	var res PortInlineStatisticsInlineDevice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3441,36 +3737,36 @@ func (m *PortStatisticsTypeDeviceType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortStatisticsTypeDeviceTypeReceiveRawType Packet receive counters for the Ethernet port.
+// PortInlineStatisticsInlineDeviceInlineReceiveRaw Packet receive counters for the Ethernet port.
 //
-// swagger:model PortStatisticsTypeDeviceTypeReceiveRawType
-type PortStatisticsTypeDeviceTypeReceiveRawType struct {
+// swagger:model port_inline_statistics_inline_device_inline_receive_raw
+type PortInlineStatisticsInlineDeviceInlineReceiveRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this port statistics type device type receive raw type
-func (m *PortStatisticsTypeDeviceTypeReceiveRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline statistics inline device inline receive raw
+func (m *PortInlineStatisticsInlineDeviceInlineReceiveRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port statistics type device type receive raw type based on context it is used
-func (m *PortStatisticsTypeDeviceTypeReceiveRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline statistics inline device inline receive raw based on context it is used
+func (m *PortInlineStatisticsInlineDeviceInlineReceiveRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceTypeReceiveRawType) MarshalBinary() ([]byte, error) {
+func (m *PortInlineStatisticsInlineDeviceInlineReceiveRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3478,8 +3774,8 @@ func (m *PortStatisticsTypeDeviceTypeReceiveRawType) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceTypeReceiveRawType) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsTypeDeviceTypeReceiveRawType
+func (m *PortInlineStatisticsInlineDeviceInlineReceiveRaw) UnmarshalBinary(b []byte) error {
+	var res PortInlineStatisticsInlineDeviceInlineReceiveRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3487,36 +3783,36 @@ func (m *PortStatisticsTypeDeviceTypeReceiveRawType) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// PortStatisticsTypeDeviceTypeTransmitRawType Packet transmit counters for the Ethernet port.
+// PortInlineStatisticsInlineDeviceInlineTransmitRaw Packet transmit counters for the Ethernet port.
 //
-// swagger:model PortStatisticsTypeDeviceTypeTransmitRawType
-type PortStatisticsTypeDeviceTypeTransmitRawType struct {
+// swagger:model port_inline_statistics_inline_device_inline_transmit_raw
+type PortInlineStatisticsInlineDeviceInlineTransmitRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this port statistics type device type transmit raw type
-func (m *PortStatisticsTypeDeviceTypeTransmitRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline statistics inline device inline transmit raw
+func (m *PortInlineStatisticsInlineDeviceInlineTransmitRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port statistics type device type transmit raw type based on context it is used
-func (m *PortStatisticsTypeDeviceTypeTransmitRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline statistics inline device inline transmit raw based on context it is used
+func (m *PortInlineStatisticsInlineDeviceInlineTransmitRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceTypeTransmitRawType) MarshalBinary() ([]byte, error) {
+func (m *PortInlineStatisticsInlineDeviceInlineTransmitRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3524,8 +3820,8 @@ func (m *PortStatisticsTypeDeviceTypeTransmitRawType) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsTypeDeviceTypeTransmitRawType) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsTypeDeviceTypeTransmitRawType
+func (m *PortInlineStatisticsInlineDeviceInlineTransmitRaw) UnmarshalBinary(b []byte) error {
+	var res PortInlineStatisticsInlineDeviceInlineTransmitRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3533,36 +3829,36 @@ func (m *PortStatisticsTypeDeviceTypeTransmitRawType) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// PortStatisticsTypeThroughputRawType Throughput bytes observed at the port object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// PortInlineStatisticsInlineThroughputRaw Throughput bytes observed at the port object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model PortStatisticsTypeThroughputRawType
-type PortStatisticsTypeThroughputRawType struct {
+// swagger:model port_inline_statistics_inline_throughput_raw
+type PortInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this port statistics type throughput raw type
-func (m *PortStatisticsTypeThroughputRawType) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline statistics inline throughput raw
+func (m *PortInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port statistics type throughput raw type based on context it is used
-func (m *PortStatisticsTypeThroughputRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline statistics inline throughput raw based on context it is used
+func (m *PortInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsTypeThroughputRawType) MarshalBinary() ([]byte, error) {
+func (m *PortInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3570,8 +3866,8 @@ func (m *PortStatisticsTypeThroughputRawType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsTypeThroughputRawType) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsTypeThroughputRawType
+func (m *PortInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res PortInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3579,13 +3875,13 @@ func (m *PortStatisticsTypeThroughputRawType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortVlan port vlan
+// PortInlineVlan port inline vlan
 //
-// swagger:model PortVlan
-type PortVlan struct {
+// swagger:model port_inline_vlan
+type PortInlineVlan struct {
 
 	// base port
-	BasePort *PortVlanBasePort `json:"base_port,omitempty"`
+	BasePort *PortInlineVlanInlineBasePort `json:"base_port,omitempty"`
 
 	// VLAN ID
 	// Example: 100
@@ -3594,8 +3890,8 @@ type PortVlan struct {
 	Tag *int64 `json:"tag,omitempty"`
 }
 
-// Validate validates this port vlan
-func (m *PortVlan) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline vlan
+func (m *PortInlineVlan) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBasePort(formats); err != nil {
@@ -3612,7 +3908,7 @@ func (m *PortVlan) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortVlan) validateBasePort(formats strfmt.Registry) error {
+func (m *PortInlineVlan) validateBasePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.BasePort) { // not required
 		return nil
 	}
@@ -3629,7 +3925,7 @@ func (m *PortVlan) validateBasePort(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortVlan) validateTag(formats strfmt.Registry) error {
+func (m *PortInlineVlan) validateTag(formats strfmt.Registry) error {
 	if swag.IsZero(m.Tag) { // not required
 		return nil
 	}
@@ -3645,8 +3941,8 @@ func (m *PortVlan) validateTag(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port vlan based on the context it is used
-func (m *PortVlan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline vlan based on the context it is used
+func (m *PortInlineVlan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBasePort(ctx, formats); err != nil {
@@ -3659,7 +3955,7 @@ func (m *PortVlan) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *PortVlan) contextValidateBasePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineVlan) contextValidateBasePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BasePort != nil {
 		if err := m.BasePort.ContextValidate(ctx, formats); err != nil {
@@ -3674,7 +3970,7 @@ func (m *PortVlan) contextValidateBasePort(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *PortVlan) MarshalBinary() ([]byte, error) {
+func (m *PortInlineVlan) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3682,8 +3978,8 @@ func (m *PortVlan) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortVlan) UnmarshalBinary(b []byte) error {
-	var res PortVlan
+func (m *PortInlineVlan) UnmarshalBinary(b []byte) error {
+	var res PortInlineVlan
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3691,28 +3987,28 @@ func (m *PortVlan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortVlanBasePort port vlan base port
+// PortInlineVlanInlineBasePort port inline vlan inline base port
 //
-// swagger:model PortVlanBasePort
-type PortVlanBasePort struct {
+// swagger:model port_inline_vlan_inline_base_port
+type PortInlineVlanInlineBasePort struct {
 
 	// links
-	Links *PortVlanBasePortLinks `json:"_links,omitempty"`
+	Links *PortInlineVlanInlineBasePortInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *PortVlanBasePortNode `json:"node,omitempty"`
+	Node *PortInlineVlanInlineBasePortInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this port vlan base port
-func (m *PortVlanBasePort) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline vlan inline base port
+func (m *PortInlineVlanInlineBasePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3729,7 +4025,7 @@ func (m *PortVlanBasePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortVlanBasePort) validateLinks(formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3746,7 +4042,7 @@ func (m *PortVlanBasePort) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortVlanBasePort) validateNode(formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -3763,8 +4059,8 @@ func (m *PortVlanBasePort) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port vlan base port based on the context it is used
-func (m *PortVlanBasePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline vlan inline base port based on the context it is used
+func (m *PortInlineVlanInlineBasePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3781,7 +4077,7 @@ func (m *PortVlanBasePort) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *PortVlanBasePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3795,7 +4091,7 @@ func (m *PortVlanBasePort) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *PortVlanBasePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -3810,7 +4106,7 @@ func (m *PortVlanBasePort) contextValidateNode(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *PortVlanBasePort) MarshalBinary() ([]byte, error) {
+func (m *PortInlineVlanInlineBasePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3818,8 +4114,8 @@ func (m *PortVlanBasePort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortVlanBasePort) UnmarshalBinary(b []byte) error {
-	var res PortVlanBasePort
+func (m *PortInlineVlanInlineBasePort) UnmarshalBinary(b []byte) error {
+	var res PortInlineVlanInlineBasePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3827,17 +4123,17 @@ func (m *PortVlanBasePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortVlanBasePortLinks port vlan base port links
+// PortInlineVlanInlineBasePortInlineLinks port inline vlan inline base port inline links
 //
-// swagger:model PortVlanBasePortLinks
-type PortVlanBasePortLinks struct {
+// swagger:model port_inline_vlan_inline_base_port_inline__links
+type PortInlineVlanInlineBasePortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this port vlan base port links
-func (m *PortVlanBasePortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline vlan inline base port inline links
+func (m *PortInlineVlanInlineBasePortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3850,7 +4146,7 @@ func (m *PortVlanBasePortLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortVlanBasePortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3867,8 +4163,8 @@ func (m *PortVlanBasePortLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this port vlan base port links based on the context it is used
-func (m *PortVlanBasePortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this port inline vlan inline base port inline links based on the context it is used
+func (m *PortInlineVlanInlineBasePortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3881,7 +4177,7 @@ func (m *PortVlanBasePortLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *PortVlanBasePortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortInlineVlanInlineBasePortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3896,7 +4192,7 @@ func (m *PortVlanBasePortLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *PortVlanBasePortLinks) MarshalBinary() ([]byte, error) {
+func (m *PortInlineVlanInlineBasePortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3904,8 +4200,8 @@ func (m *PortVlanBasePortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortVlanBasePortLinks) UnmarshalBinary(b []byte) error {
-	var res PortVlanBasePortLinks
+func (m *PortInlineVlanInlineBasePortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortInlineVlanInlineBasePortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3913,28 +4209,28 @@ func (m *PortVlanBasePortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortVlanBasePortNode port vlan base port node
+// PortInlineVlanInlineBasePortInlineNode port inline vlan inline base port inline node
 //
-// swagger:model PortVlanBasePortNode
-type PortVlanBasePortNode struct {
+// swagger:model port_inline_vlan_inline_base_port_inline_node
+type PortInlineVlanInlineBasePortInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this port vlan base port node
-func (m *PortVlanBasePortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this port inline vlan inline base port inline node
+func (m *PortInlineVlanInlineBasePortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port vlan base port node based on context it is used
-func (m *PortVlanBasePortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port inline vlan inline base port inline node based on context it is used
+func (m *PortInlineVlanInlineBasePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortVlanBasePortNode) MarshalBinary() ([]byte, error) {
+func (m *PortInlineVlanInlineBasePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3942,8 +4238,8 @@ func (m *PortVlanBasePortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortVlanBasePortNode) UnmarshalBinary(b []byte) error {
-	var res PortVlanBasePortNode
+func (m *PortInlineVlanInlineBasePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res PortInlineVlanInlineBasePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

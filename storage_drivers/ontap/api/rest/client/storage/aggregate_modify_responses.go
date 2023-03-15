@@ -58,7 +58,7 @@ AggregateModifyOK describes a response with status code 200, with default header
 OK
 */
 type AggregateModifyOK struct {
-	Payload *models.AggregatePatch
+	Payload *models.AggregateSimulate
 }
 
 // IsSuccess returns true when this aggregate modify o k response has a 2xx status code
@@ -94,13 +94,13 @@ func (o *AggregateModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
 }
 
-func (o *AggregateModifyOK) GetPayload() *models.AggregatePatch {
+func (o *AggregateModifyOK) GetPayload() *models.AggregateSimulate {
 	return o.Payload
 }
 
 func (o *AggregateModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.AggregatePatch)
+	o.Payload = new(models.AggregateSimulate)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -121,7 +121,7 @@ AggregateModifyAccepted describes a response with status code 202, with default 
 Accepted
 */
 type AggregateModifyAccepted struct {
-	Payload *models.AggregatePatch
+	Payload *models.AggregateSimulate
 }
 
 // IsSuccess returns true when this aggregate modify accepted response has a 2xx status code
@@ -157,13 +157,13 @@ func (o *AggregateModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
 }
 
-func (o *AggregateModifyAccepted) GetPayload() *models.AggregatePatch {
+func (o *AggregateModifyAccepted) GetPayload() *models.AggregateSimulate {
 	return o.Payload
 }
 
 func (o *AggregateModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.AggregatePatch)
+	o.Payload = new(models.AggregateSimulate)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -234,6 +234,13 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 787282 | RAID group must be specified on a disk addition to an aggregate with mixed RAID types. |
 | 787283 | RAID group must be specified on a disk addition to a Flash Pool aggregate. |
 | 787284 | The specified RAID group uses capacity from one or more storage pools. |
+| 787287 | Cannot add physical SSD cache because aggregate uses cache capacity from a storage pool. |
+| 787288 | Cannot add storage pool units because aggregate uses physical SSD cache. |
+| 787289 | Incorrect raid_group specified during first time addition of physical SSD cache to an aggregate. |
+| 787291 | Cannot specify RAID group which is located on the aggregate primary tier. |
+| 787293 | Cannot specify RAID group which is located on the aggregate cache tier. |
+| 787294 | This query is only allowed during the modification of the specific fields. |
+| 787295 | The storage pool allocation units count is required. |
 | 1258699 | Cannot use all the disks specified for the requested operation. |
 | 1263500 | Operation will lead to creation of new raid group. |
 | 1263501 | Operation will exceed half of the maximum volume sizes allowed on the node. |

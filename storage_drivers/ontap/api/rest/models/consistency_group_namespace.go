@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -27,7 +26,7 @@ type ConsistencyGroupNamespace struct {
 	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -52,27 +51,31 @@ type ConsistencyGroupNamespace struct {
 	// NVMe namespaces do not support rename, or movement between volumes.
 	//
 	// Example: /vol/volume1/qtree1/namespace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The operating system type of the NVMe namespace.<br/>
 	// Required in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//
 	// Enum: [aix linux vmware windows]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// provisioning options
-	ProvisioningOptions *ConsistencyGroupNamespaceProvisioningOptions `json:"provisioning_options,omitempty"`
+	ProvisioningOptions *ConsistencyGroupNamespaceInlineProvisioningOptions `json:"provisioning_options,omitempty"`
 
-	// The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-	// There is an added cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
-	//
-	SubsystemMap []*ConsistencyGroupNamespaceSubsystemMapItems0 `json:"subsystem_map,omitempty"`
+	// space
+	Space *ConsistencyGroupNamespaceInlineSpace `json:"space,omitempty"`
+
+	// status
+	Status *ConsistencyGroupNamespaceInlineStatus `json:"status,omitempty"`
+
+	// subsystem map
+	SubsystemMap *ConsistencyGroupNamespaceInlineSubsystemMap `json:"subsystem_map,omitempty"`
 
 	// The unique identifier of the NVMe namespace.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group namespace
@@ -92,6 +95,14 @@ func (m *ConsistencyGroupNamespace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProvisioningOptions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSpace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -202,7 +213,7 @@ func (m *ConsistencyGroupNamespace) validateOsType(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -226,25 +237,52 @@ func (m *ConsistencyGroupNamespace) validateProvisioningOptions(formats strfmt.R
 	return nil
 }
 
+func (m *ConsistencyGroupNamespace) validateSpace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Space) { // not required
+		return nil
+	}
+
+	if m.Space != nil {
+		if err := m.Space.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespace) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupNamespace) validateSubsystemMap(formats strfmt.Registry) error {
 	if swag.IsZero(m.SubsystemMap) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.SubsystemMap); i++ {
-		if swag.IsZero(m.SubsystemMap[i]) { // not required
-			continue
-		}
-
-		if m.SubsystemMap[i] != nil {
-			if err := m.SubsystemMap[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("subsystem_map" + "." + strconv.Itoa(i))
-				}
-				return err
+	if m.SubsystemMap != nil {
+		if err := m.SubsystemMap.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subsystem_map")
 			}
+			return err
 		}
-
 	}
 
 	return nil
@@ -263,6 +301,14 @@ func (m *ConsistencyGroupNamespace) ContextValidate(ctx context.Context, formats
 	}
 
 	if err := m.contextValidateProvisioningOptions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -312,19 +358,43 @@ func (m *ConsistencyGroupNamespace) contextValidateProvisioningOptions(ctx conte
 	return nil
 }
 
+func (m *ConsistencyGroupNamespace) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Space != nil {
+		if err := m.Space.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespace) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ConsistencyGroupNamespace) contextValidateSubsystemMap(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.SubsystemMap); i++ {
-
-		if m.SubsystemMap[i] != nil {
-			if err := m.SubsystemMap[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("subsystem_map" + "." + strconv.Itoa(i))
-				}
-				return err
+	if m.SubsystemMap != nil {
+		if err := m.SubsystemMap.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subsystem_map")
 			}
+			return err
 		}
-
 	}
 
 	return nil
@@ -332,7 +402,7 @@ func (m *ConsistencyGroupNamespace) contextValidateSubsystemMap(ctx context.Cont
 
 func (m *ConsistencyGroupNamespace) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -357,21 +427,21 @@ func (m *ConsistencyGroupNamespace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupNamespaceProvisioningOptions Options that are applied to the operation.
+// ConsistencyGroupNamespaceInlineProvisioningOptions Options that are applied to the operation.
 //
-// swagger:model ConsistencyGroupNamespaceProvisioningOptions
-type ConsistencyGroupNamespaceProvisioningOptions struct {
+// swagger:model consistency_group_namespace_inline_provisioning_options
+type ConsistencyGroupNamespaceInlineProvisioningOptions struct {
 
 	// Operation to perform
 	// Enum: [create]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 }
 
-// Validate validates this consistency group namespace provisioning options
-func (m *ConsistencyGroupNamespaceProvisioningOptions) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group namespace inline provisioning options
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAction(formats); err != nil {
@@ -384,7 +454,7 @@ func (m *ConsistencyGroupNamespaceProvisioningOptions) Validate(formats strfmt.R
 	return nil
 }
 
-var consistencyGroupNamespaceProvisioningOptionsTypeActionPropEnum []interface{}
+var consistencyGroupNamespaceInlineProvisioningOptionsTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -392,51 +462,51 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupNamespaceProvisioningOptionsTypeActionPropEnum = append(consistencyGroupNamespaceProvisioningOptionsTypeActionPropEnum, v)
+		consistencyGroupNamespaceInlineProvisioningOptionsTypeActionPropEnum = append(consistencyGroupNamespaceInlineProvisioningOptionsTypeActionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupNamespaceProvisioningOptions
-	// ConsistencyGroupNamespaceProvisioningOptions
+	// consistency_group_namespace_inline_provisioning_options
+	// ConsistencyGroupNamespaceInlineProvisioningOptions
 	// action
 	// Action
 	// create
 	// END DEBUGGING
-	// ConsistencyGroupNamespaceProvisioningOptionsActionCreate captures enum value "create"
-	ConsistencyGroupNamespaceProvisioningOptionsActionCreate string = "create"
+	// ConsistencyGroupNamespaceInlineProvisioningOptionsActionCreate captures enum value "create"
+	ConsistencyGroupNamespaceInlineProvisioningOptionsActionCreate string = "create"
 )
 
 // prop value enum
-func (m *ConsistencyGroupNamespaceProvisioningOptions) validateActionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupNamespaceProvisioningOptionsTypeActionPropEnum, true); err != nil {
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) validateActionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNamespaceInlineProvisioningOptionsTypeActionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupNamespaceProvisioningOptions) validateAction(formats strfmt.Registry) error {
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) validateAction(formats strfmt.Registry) error {
 	if swag.IsZero(m.Action) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateActionEnum("provisioning_options"+"."+"action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("provisioning_options"+"."+"action", "body", *m.Action); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this consistency group namespace provisioning options based on context it is used
-func (m *ConsistencyGroupNamespaceProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group namespace inline provisioning options based on context it is used
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupNamespaceProvisioningOptions) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -444,8 +514,8 @@ func (m *ConsistencyGroupNamespaceProvisioningOptions) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupNamespaceProvisioningOptions) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupNamespaceProvisioningOptions
+func (m *ConsistencyGroupNamespaceInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNamespaceInlineProvisioningOptions
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -453,35 +523,456 @@ func (m *ConsistencyGroupNamespaceProvisioningOptions) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// ConsistencyGroupNamespaceSubsystemMapItems0 The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-// There is an added cost to retrieving property values for `subsystem_map`.
+// ConsistencyGroupNamespaceInlineSpace The storage space related properties of the NVMe namespace.
+//
+// swagger:model consistency_group_namespace_inline_space
+type ConsistencyGroupNamespaceInlineSpace struct {
+
+	// The size of blocks in the namespace, in bytes.<br/>
+	// Valid in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
+	//  Valid in POST.
+	//
+	// Enum: [512 4096]
+	BlockSize *int64 `json:"block_size,omitempty"`
+
+	// guarantee
+	Guarantee *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee `json:"guarantee,omitempty"`
+
+	// The total provisioned size of the NVMe namespace. Valid in POST and PATCH. The NVMe namespace size can be increased but not reduced using the REST interface.<br/>
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The maximum size is variable with respect to large NVMe namespace support in ONTAP. If large namespaces are supported, the maximum size is 128 TB (140737488355328 bytes) and if not supported, the maximum size is just under 16 TB (17557557870592 bytes). The minimum size supported is always 4096 bytes.<br/>
+	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
+	//
+	// Example: 1073741824
+	// Maximum: 1.40737488355328e+14
+	// Minimum: 4096
+	Size *int64 `json:"size,omitempty"`
+
+	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
+	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
+	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
+	//
+	Used *int64 `json:"used,omitempty"`
+}
+
+// Validate validates this consistency group namespace inline space
+func (m *ConsistencyGroupNamespaceInlineSpace) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBlockSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateGuarantee(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var consistencyGroupNamespaceInlineSpaceTypeBlockSizePropEnum []interface{}
+
+func init() {
+	var res []int64
+	if err := json.Unmarshal([]byte(`[512,4096]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupNamespaceInlineSpaceTypeBlockSizePropEnum = append(consistencyGroupNamespaceInlineSpaceTypeBlockSizePropEnum, v)
+	}
+}
+
+// prop value enum
+func (m *ConsistencyGroupNamespaceInlineSpace) validateBlockSizeEnum(path, location string, value int64) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNamespaceInlineSpaceTypeBlockSizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpace) validateBlockSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockSize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBlockSizeEnum("space"+"."+"block_size", "body", *m.BlockSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpace) validateGuarantee(formats strfmt.Registry) error {
+	if swag.IsZero(m.Guarantee) { // not required
+		return nil
+	}
+
+	if m.Guarantee != nil {
+		if err := m.Guarantee.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpace) validateSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.Size) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("space"+"."+"size", "body", *m.Size, 4096, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("space"+"."+"size", "body", *m.Size, 1.40737488355328e+14, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group namespace inline space based on the context it is used
+func (m *ConsistencyGroupNamespaceInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSpace) contextValidateGuarantee(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Guarantee != nil {
+		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineSpace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineSpace) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNamespaceInlineSpace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupNamespaceInlineSpaceInlineGuarantee Properties that request and report the space guarantee for the NVMe namespace.
+//
+// swagger:model consistency_group_namespace_inline_space_inline_guarantee
+type ConsistencyGroupNamespaceInlineSpaceInlineGuarantee struct {
+
+	// The requested space reservation policy for the NVMe namespace. If _true_, a space reservation is requested for the namespace; if _false_, the namespace is thin provisioned. Guaranteeing a space reservation request for a namespace requires that the volume in which the namespace resides also be space reserved and that the fractional reserve for the volume be 100%.<br/>
+	// The space reservation policy for an NVMe namespace is determined by ONTAP.
+	//
+	Requested *bool `json:"requested,omitempty"`
+
+	// Reports if the NVMe namespace is space guaranteed.<br/>
+	// This property is _true_ if a space guarantee is requested and the containing volume and aggregate support the request. This property is _false_ if a space guarantee is not requested or if a space guarantee is requested and either the containing volume and aggregate do not support the request.
+	//
+	Reserved *bool `json:"reserved,omitempty"`
+}
+
+// Validate validates this consistency group namespace inline space inline guarantee
+func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this consistency group namespace inline space inline guarantee based on context it is used
+func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineSpaceInlineGuarantee) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNamespaceInlineSpaceInlineGuarantee
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupNamespaceInlineStatus Status information about the NVMe namespace.
+//
+// swagger:model consistency_group_namespace_inline_status
+type ConsistencyGroupNamespaceInlineStatus struct {
+
+	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
+	//
+	// Enum: [online aggregate_offline volume_offline]
+	ContainerState *string `json:"container_state,omitempty"`
+
+	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	//
+	Mapped *bool `json:"mapped,omitempty"`
+
+	// Reports if the NVMe namespace allows only read access.
+	//
+	ReadOnly *bool `json:"read_only,omitempty"`
+
+	// The state of the NVMe namespace. Normal states for a namespace are _online_ and _offline_. Other states indicate errors.
+	//
+	// Example: online
+	// Enum: [nvfail offline online space_error]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this consistency group namespace inline status
+func (m *ConsistencyGroupNamespaceInlineStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateContainerState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var consistencyGroupNamespaceInlineStatusTypeContainerStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["online","aggregate_offline","volume_offline"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupNamespaceInlineStatusTypeContainerStatePropEnum = append(consistencyGroupNamespaceInlineStatusTypeContainerStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// container_state
+	// ContainerState
+	// online
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusContainerStateOnline captures enum value "online"
+	ConsistencyGroupNamespaceInlineStatusContainerStateOnline string = "online"
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// container_state
+	// ContainerState
+	// aggregate_offline
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusContainerStateAggregateOffline captures enum value "aggregate_offline"
+	ConsistencyGroupNamespaceInlineStatusContainerStateAggregateOffline string = "aggregate_offline"
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// container_state
+	// ContainerState
+	// volume_offline
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusContainerStateVolumeOffline captures enum value "volume_offline"
+	ConsistencyGroupNamespaceInlineStatusContainerStateVolumeOffline string = "volume_offline"
+)
+
+// prop value enum
+func (m *ConsistencyGroupNamespaceInlineStatus) validateContainerStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNamespaceInlineStatusTypeContainerStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineStatus) validateContainerState(formats strfmt.Registry) error {
+	if swag.IsZero(m.ContainerState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateContainerStateEnum("status"+"."+"container_state", "body", *m.ContainerState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var consistencyGroupNamespaceInlineStatusTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["nvfail","offline","online","space_error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupNamespaceInlineStatusTypeStatePropEnum = append(consistencyGroupNamespaceInlineStatusTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// state
+	// State
+	// nvfail
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusStateNvfail captures enum value "nvfail"
+	ConsistencyGroupNamespaceInlineStatusStateNvfail string = "nvfail"
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// state
+	// State
+	// offline
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusStateOffline captures enum value "offline"
+	ConsistencyGroupNamespaceInlineStatusStateOffline string = "offline"
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// state
+	// State
+	// online
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusStateOnline captures enum value "online"
+	ConsistencyGroupNamespaceInlineStatusStateOnline string = "online"
+
+	// BEGIN DEBUGGING
+	// consistency_group_namespace_inline_status
+	// ConsistencyGroupNamespaceInlineStatus
+	// state
+	// State
+	// space_error
+	// END DEBUGGING
+	// ConsistencyGroupNamespaceInlineStatusStateSpaceError captures enum value "space_error"
+	ConsistencyGroupNamespaceInlineStatusStateSpaceError string = "space_error"
+)
+
+// prop value enum
+func (m *ConsistencyGroupNamespaceInlineStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupNamespaceInlineStatusTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineStatus) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this consistency group namespace inline status based on context it is used
+func (m *ConsistencyGroupNamespaceInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupNamespaceInlineStatus) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNamespaceInlineStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupNamespaceInlineSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
+// There is an added computational cost to retrieving property values for `subsystem_map`.
 // They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
 //
-// swagger:model ConsistencyGroupNamespaceSubsystemMapItems0
-type ConsistencyGroupNamespaceSubsystemMapItems0 struct {
+// swagger:model consistency_group_namespace_inline_subsystem_map
+type ConsistencyGroupNamespaceInlineSubsystemMap struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
-	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
+	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
-	Anagrpid string `json:"anagrpid,omitempty"`
+	// Read Only: true
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
-	Nsid string `json:"nsid,omitempty"`
+	// Read Only: true
+	Nsid *string `json:"nsid,omitempty"`
 
 	// The NVMe subsystem to which the NVMe namespace is mapped.
 	//
-	Subsystem *NvmeSubsystemReference `json:"subsystem,omitempty"`
+	Subsystem *ConsistencyGroupNvmeSubsystem `json:"subsystem,omitempty"`
 }
 
-// Validate validates this consistency group namespace subsystem map items0
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group namespace inline subsystem map
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -498,7 +989,7 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -506,7 +997,7 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateLinks(formats strf
 	if m.Links != nil {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
+				return ve.ValidateName("subsystem_map" + "." + "_links")
 			}
 			return err
 		}
@@ -515,7 +1006,7 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateLinks(formats strf
 	return nil
 }
 
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateSubsystem(formats strfmt.Registry) error {
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
 	}
@@ -523,7 +1014,7 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateSubsystem(formats 
 	if m.Subsystem != nil {
 		if err := m.Subsystem.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("subsystem")
+				return ve.ValidateName("subsystem_map" + "." + "subsystem")
 			}
 			return err
 		}
@@ -532,11 +1023,19 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) validateSubsystem(formats 
 	return nil
 }
 
-// ContextValidate validate this consistency group namespace subsystem map items0 based on the context it is used
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group namespace inline subsystem map based on the context it is used
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAnagrpid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNsid(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -550,12 +1049,12 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
+				return ve.ValidateName("subsystem_map" + "." + "_links")
 			}
 			return err
 		}
@@ -564,12 +1063,30 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) contextValidateLinks(ctx c
 	return nil
 }
 
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"anagrpid", "body", m.Anagrpid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subsystem_map"+"."+"nsid", "body", m.Nsid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Subsystem != nil {
 		if err := m.Subsystem.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("subsystem")
+				return ve.ValidateName("subsystem_map" + "." + "subsystem")
 			}
 			return err
 		}
@@ -579,7 +1096,7 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) contextValidateSubsystem(c
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -587,8 +1104,8 @@ func (m *ConsistencyGroupNamespaceSubsystemMapItems0) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupNamespaceSubsystemMapItems0) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupNamespaceSubsystemMapItems0
+func (m *ConsistencyGroupNamespaceInlineSubsystemMap) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupNamespaceInlineSubsystemMap
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

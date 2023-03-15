@@ -74,7 +74,7 @@ type NetworkEthernetPortsCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *NetworkEthernetPortsCreateParams) WithDefaults() *NetworkEthernetPortsC
 // All values with no default are reset to their zero value.
 func (o *NetworkEthernetPortsCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := NetworkEthernetPortsCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *NetworkEthernetPortsCreateParams) SetInfo(info *models.Port) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ethernet ports create params
-func (o *NetworkEthernetPortsCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkEthernetPortsCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ethernet ports create params
+func (o *NetworkEthernetPortsCreateParams) WithReturnRecords(returnRecords *bool) *NetworkEthernetPortsCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ethernet ports create params
-func (o *NetworkEthernetPortsCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ethernet ports create params
+func (o *NetworkEthernetPortsCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *NetworkEthernetPortsCreateParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

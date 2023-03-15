@@ -75,14 +75,14 @@ type NvmeSubsystemHostCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -102,11 +102,11 @@ func (o *NvmeSubsystemHostCreateParams) WithDefaults() *NvmeSubsystemHostCreateP
 // All values with no default are reset to their zero value.
 func (o *NvmeSubsystemHostCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := NvmeSubsystemHostCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -159,26 +159,26 @@ func (o *NvmeSubsystemHostCreateParams) SetInfo(info *models.NvmeSubsystemHost) 
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeSubsystemHostCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) WithReturnRecords(returnRecords *bool) *NvmeSubsystemHostCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemHostCreateParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemHostCreateParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,13 +194,13 @@ func (o *NvmeSubsystemHostCreateParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -212,7 +212,7 @@ func (o *NvmeSubsystemHostCreateParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 

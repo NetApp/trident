@@ -34,7 +34,7 @@ type AntiRansomwareVolumeAttackDetectionParameters struct {
 
 	// Specifies the percentage of surge in the file create rate up to which it is considered normal behavior.
 	// Example: 100
-	FileCreateOpRateSurgeNotifyPercent int64 `json:"file_create_op_rate_surge_notify_percent,omitempty"`
+	FileCreateOpRateSurgeNotifyPercent *int64 `json:"file_create_op_rate_surge_notify_percent,omitempty"`
 
 	// Specifies the percentage of surge in the file delete rate up to which it is considered normal behavior.
 	FileDeleteOpRateSurgeNotifyPercent *int64 `json:"file_delete_op_rate_surge_notify_percent,omitempty"`

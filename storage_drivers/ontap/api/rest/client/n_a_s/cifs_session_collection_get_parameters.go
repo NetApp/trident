@@ -66,115 +66,115 @@ type CifsSessionCollectionGetParams struct {
 
 	   Filter by authentication
 	*/
-	AuthenticationQueryParameter *string
+	Authentication *string
 
 	/* ClientIP.
 
 	   Filter by client_ip
 	*/
-	ClientIPQueryParameter *string
+	ClientIP *string
 
 	/* ConnectedDuration.
 
 	   Filter by connected_duration
 	*/
-	ConnectedDurationQueryParameter *string
+	ConnectedDuration *string
 
 	/* ConnectionCount.
 
 	   Filter by connection_count
 	*/
-	ConnectionCountQueryParameter *int64
+	ConnectionCount *int64
 
 	/* ConnectionID.
 
 	   Filter by connection_id
 	*/
-	ConnectionIDQueryParameter *int64
+	ConnectionID *int64
 
 	/* ContinuousAvailability.
 
 	   Filter by continuous_availability
 	*/
-	ContinuousAvailabilityQueryParameter *string
+	ContinuousAvailability *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Identifier.
 
 	   Filter by identifier
 	*/
-	IdentifierQueryParameter *int64
+	Identifier *int64
 
 	/* IdleDuration.
 
 	   Filter by idle_duration
 	*/
-	IdleDurationQueryParameter *string
+	IdleDuration *string
 
 	/* LargeMtu.
 
 	   Filter by large_mtu
 	*/
-	LargeMtuQueryParameter *bool
+	LargeMtu *bool
 
 	/* MappedUnixUser.
 
 	   Filter by mapped_unix_user
 	*/
-	MappedUnixUserQueryParameter *string
+	MappedUnixUser *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OpenFiles.
 
 	   Filter by open_files
 	*/
-	OpenFilesQueryParameter *int64
+	OpenFiles *int64
 
 	/* OpenOther.
 
 	   Filter by open_other
 	*/
-	OpenOtherQueryParameter *int64
+	OpenOther *int64
 
 	/* OpenShares.
 
 	   Filter by open_shares
 	*/
-	OpenSharesQueryParameter *int64
+	OpenShares *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -182,7 +182,7 @@ type CifsSessionCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -190,55 +190,55 @@ type CifsSessionCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServerIP.
 
 	   Filter by server_ip
 	*/
-	ServerIPQueryParameter *string
+	ServerIP *string
 
 	/* SmbEncryption.
 
 	   Filter by smb_encryption
 	*/
-	SmbEncryptionQueryParameter *string
+	SmbEncryption *string
 
 	/* SmbSigning.
 
 	   Filter by smb_signing
 	*/
-	SmbSigningQueryParameter *bool
+	SmbSigning *bool
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* User.
 
 	   Filter by user
 	*/
-	UserQueryParameter *string
+	User *string
 
 	/* VolumesName.
 
 	   Filter by volumes.name
 	*/
-	VolumesNameQueryParameter *string
+	VolumesName *string
 
 	/* VolumesUUID.
 
 	   Filter by volumes.uuid
 	*/
-	VolumesUUIDQueryParameter *string
+	VolumesUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -258,14 +258,14 @@ func (o *CifsSessionCollectionGetParams) WithDefaults() *CifsSessionCollectionGe
 // All values with no default are reset to their zero value.
 func (o *CifsSessionCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsSessionCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -307,323 +307,323 @@ func (o *CifsSessionCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationQueryParameter adds the authentication to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithAuthenticationQueryParameter(authentication *string) *CifsSessionCollectionGetParams {
-	o.SetAuthenticationQueryParameter(authentication)
+// WithAuthentication adds the authentication to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithAuthentication(authentication *string) *CifsSessionCollectionGetParams {
+	o.SetAuthentication(authentication)
 	return o
 }
 
-// SetAuthenticationQueryParameter adds the authentication to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetAuthenticationQueryParameter(authentication *string) {
-	o.AuthenticationQueryParameter = authentication
+// SetAuthentication adds the authentication to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetAuthentication(authentication *string) {
+	o.Authentication = authentication
 }
 
-// WithClientIPQueryParameter adds the clientIP to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithClientIPQueryParameter(clientIP *string) *CifsSessionCollectionGetParams {
-	o.SetClientIPQueryParameter(clientIP)
+// WithClientIP adds the clientIP to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithClientIP(clientIP *string) *CifsSessionCollectionGetParams {
+	o.SetClientIP(clientIP)
 	return o
 }
 
-// SetClientIPQueryParameter adds the clientIp to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetClientIPQueryParameter(clientIP *string) {
-	o.ClientIPQueryParameter = clientIP
+// SetClientIP adds the clientIp to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetClientIP(clientIP *string) {
+	o.ClientIP = clientIP
 }
 
-// WithConnectedDurationQueryParameter adds the connectedDuration to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithConnectedDurationQueryParameter(connectedDuration *string) *CifsSessionCollectionGetParams {
-	o.SetConnectedDurationQueryParameter(connectedDuration)
+// WithConnectedDuration adds the connectedDuration to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithConnectedDuration(connectedDuration *string) *CifsSessionCollectionGetParams {
+	o.SetConnectedDuration(connectedDuration)
 	return o
 }
 
-// SetConnectedDurationQueryParameter adds the connectedDuration to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetConnectedDurationQueryParameter(connectedDuration *string) {
-	o.ConnectedDurationQueryParameter = connectedDuration
+// SetConnectedDuration adds the connectedDuration to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetConnectedDuration(connectedDuration *string) {
+	o.ConnectedDuration = connectedDuration
 }
 
-// WithConnectionCountQueryParameter adds the connectionCount to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithConnectionCountQueryParameter(connectionCount *int64) *CifsSessionCollectionGetParams {
-	o.SetConnectionCountQueryParameter(connectionCount)
+// WithConnectionCount adds the connectionCount to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithConnectionCount(connectionCount *int64) *CifsSessionCollectionGetParams {
+	o.SetConnectionCount(connectionCount)
 	return o
 }
 
-// SetConnectionCountQueryParameter adds the connectionCount to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetConnectionCountQueryParameter(connectionCount *int64) {
-	o.ConnectionCountQueryParameter = connectionCount
+// SetConnectionCount adds the connectionCount to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetConnectionCount(connectionCount *int64) {
+	o.ConnectionCount = connectionCount
 }
 
-// WithConnectionIDQueryParameter adds the connectionID to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithConnectionIDQueryParameter(connectionID *int64) *CifsSessionCollectionGetParams {
-	o.SetConnectionIDQueryParameter(connectionID)
+// WithConnectionID adds the connectionID to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithConnectionID(connectionID *int64) *CifsSessionCollectionGetParams {
+	o.SetConnectionID(connectionID)
 	return o
 }
 
-// SetConnectionIDQueryParameter adds the connectionId to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetConnectionIDQueryParameter(connectionID *int64) {
-	o.ConnectionIDQueryParameter = connectionID
+// SetConnectionID adds the connectionId to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetConnectionID(connectionID *int64) {
+	o.ConnectionID = connectionID
 }
 
-// WithContinuousAvailabilityQueryParameter adds the continuousAvailability to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithContinuousAvailabilityQueryParameter(continuousAvailability *string) *CifsSessionCollectionGetParams {
-	o.SetContinuousAvailabilityQueryParameter(continuousAvailability)
+// WithContinuousAvailability adds the continuousAvailability to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithContinuousAvailability(continuousAvailability *string) *CifsSessionCollectionGetParams {
+	o.SetContinuousAvailability(continuousAvailability)
 	return o
 }
 
-// SetContinuousAvailabilityQueryParameter adds the continuousAvailability to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetContinuousAvailabilityQueryParameter(continuousAvailability *string) {
-	o.ContinuousAvailabilityQueryParameter = continuousAvailability
+// SetContinuousAvailability adds the continuousAvailability to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetContinuousAvailability(continuousAvailability *string) {
+	o.ContinuousAvailability = continuousAvailability
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsSessionCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithFields(fields []string) *CifsSessionCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentifierQueryParameter adds the identifier to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithIdentifierQueryParameter(identifier *int64) *CifsSessionCollectionGetParams {
-	o.SetIdentifierQueryParameter(identifier)
+// WithIdentifier adds the identifier to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithIdentifier(identifier *int64) *CifsSessionCollectionGetParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierQueryParameter adds the identifier to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetIdentifierQueryParameter(identifier *int64) {
-	o.IdentifierQueryParameter = identifier
+// SetIdentifier adds the identifier to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetIdentifier(identifier *int64) {
+	o.Identifier = identifier
 }
 
-// WithIdleDurationQueryParameter adds the idleDuration to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithIdleDurationQueryParameter(idleDuration *string) *CifsSessionCollectionGetParams {
-	o.SetIdleDurationQueryParameter(idleDuration)
+// WithIdleDuration adds the idleDuration to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithIdleDuration(idleDuration *string) *CifsSessionCollectionGetParams {
+	o.SetIdleDuration(idleDuration)
 	return o
 }
 
-// SetIdleDurationQueryParameter adds the idleDuration to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetIdleDurationQueryParameter(idleDuration *string) {
-	o.IdleDurationQueryParameter = idleDuration
+// SetIdleDuration adds the idleDuration to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetIdleDuration(idleDuration *string) {
+	o.IdleDuration = idleDuration
 }
 
-// WithLargeMtuQueryParameter adds the largeMtu to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithLargeMtuQueryParameter(largeMtu *bool) *CifsSessionCollectionGetParams {
-	o.SetLargeMtuQueryParameter(largeMtu)
+// WithLargeMtu adds the largeMtu to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithLargeMtu(largeMtu *bool) *CifsSessionCollectionGetParams {
+	o.SetLargeMtu(largeMtu)
 	return o
 }
 
-// SetLargeMtuQueryParameter adds the largeMtu to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetLargeMtuQueryParameter(largeMtu *bool) {
-	o.LargeMtuQueryParameter = largeMtu
+// SetLargeMtu adds the largeMtu to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetLargeMtu(largeMtu *bool) {
+	o.LargeMtu = largeMtu
 }
 
-// WithMappedUnixUserQueryParameter adds the mappedUnixUser to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithMappedUnixUserQueryParameter(mappedUnixUser *string) *CifsSessionCollectionGetParams {
-	o.SetMappedUnixUserQueryParameter(mappedUnixUser)
+// WithMappedUnixUser adds the mappedUnixUser to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithMappedUnixUser(mappedUnixUser *string) *CifsSessionCollectionGetParams {
+	o.SetMappedUnixUser(mappedUnixUser)
 	return o
 }
 
-// SetMappedUnixUserQueryParameter adds the mappedUnixUser to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetMappedUnixUserQueryParameter(mappedUnixUser *string) {
-	o.MappedUnixUserQueryParameter = mappedUnixUser
+// SetMappedUnixUser adds the mappedUnixUser to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetMappedUnixUser(mappedUnixUser *string) {
+	o.MappedUnixUser = mappedUnixUser
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsSessionCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsSessionCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *CifsSessionCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithNodeName(nodeName *string) *CifsSessionCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *CifsSessionCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithNodeUUID(nodeUUID *string) *CifsSessionCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOpenFilesQueryParameter adds the openFiles to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithOpenFilesQueryParameter(openFiles *int64) *CifsSessionCollectionGetParams {
-	o.SetOpenFilesQueryParameter(openFiles)
+// WithOpenFiles adds the openFiles to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithOpenFiles(openFiles *int64) *CifsSessionCollectionGetParams {
+	o.SetOpenFiles(openFiles)
 	return o
 }
 
-// SetOpenFilesQueryParameter adds the openFiles to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetOpenFilesQueryParameter(openFiles *int64) {
-	o.OpenFilesQueryParameter = openFiles
+// SetOpenFiles adds the openFiles to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetOpenFiles(openFiles *int64) {
+	o.OpenFiles = openFiles
 }
 
-// WithOpenOtherQueryParameter adds the openOther to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithOpenOtherQueryParameter(openOther *int64) *CifsSessionCollectionGetParams {
-	o.SetOpenOtherQueryParameter(openOther)
+// WithOpenOther adds the openOther to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithOpenOther(openOther *int64) *CifsSessionCollectionGetParams {
+	o.SetOpenOther(openOther)
 	return o
 }
 
-// SetOpenOtherQueryParameter adds the openOther to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetOpenOtherQueryParameter(openOther *int64) {
-	o.OpenOtherQueryParameter = openOther
+// SetOpenOther adds the openOther to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetOpenOther(openOther *int64) {
+	o.OpenOther = openOther
 }
 
-// WithOpenSharesQueryParameter adds the openShares to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithOpenSharesQueryParameter(openShares *int64) *CifsSessionCollectionGetParams {
-	o.SetOpenSharesQueryParameter(openShares)
+// WithOpenShares adds the openShares to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithOpenShares(openShares *int64) *CifsSessionCollectionGetParams {
+	o.SetOpenShares(openShares)
 	return o
 }
 
-// SetOpenSharesQueryParameter adds the openShares to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetOpenSharesQueryParameter(openShares *int64) {
-	o.OpenSharesQueryParameter = openShares
+// SetOpenShares adds the openShares to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetOpenShares(openShares *int64) {
+	o.OpenShares = openShares
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsSessionCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithOrderBy(orderBy []string) *CifsSessionCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithProtocolQueryParameter(protocol *string) *CifsSessionCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithProtocol(protocol *string) *CifsSessionCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsSessionCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsSessionCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsSessionCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsSessionCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerIPQueryParameter adds the serverIP to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithServerIPQueryParameter(serverIP *string) *CifsSessionCollectionGetParams {
-	o.SetServerIPQueryParameter(serverIP)
+// WithServerIP adds the serverIP to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithServerIP(serverIP *string) *CifsSessionCollectionGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetServerIPQueryParameter adds the serverIp to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetServerIPQueryParameter(serverIP *string) {
-	o.ServerIPQueryParameter = serverIP
+// SetServerIP adds the serverIp to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetServerIP(serverIP *string) {
+	o.ServerIP = serverIP
 }
 
-// WithSmbEncryptionQueryParameter adds the smbEncryption to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithSmbEncryptionQueryParameter(smbEncryption *string) *CifsSessionCollectionGetParams {
-	o.SetSmbEncryptionQueryParameter(smbEncryption)
+// WithSmbEncryption adds the smbEncryption to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithSmbEncryption(smbEncryption *string) *CifsSessionCollectionGetParams {
+	o.SetSmbEncryption(smbEncryption)
 	return o
 }
 
-// SetSmbEncryptionQueryParameter adds the smbEncryption to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetSmbEncryptionQueryParameter(smbEncryption *string) {
-	o.SmbEncryptionQueryParameter = smbEncryption
+// SetSmbEncryption adds the smbEncryption to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetSmbEncryption(smbEncryption *string) {
+	o.SmbEncryption = smbEncryption
 }
 
-// WithSmbSigningQueryParameter adds the smbSigning to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithSmbSigningQueryParameter(smbSigning *bool) *CifsSessionCollectionGetParams {
-	o.SetSmbSigningQueryParameter(smbSigning)
+// WithSmbSigning adds the smbSigning to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithSmbSigning(smbSigning *bool) *CifsSessionCollectionGetParams {
+	o.SetSmbSigning(smbSigning)
 	return o
 }
 
-// SetSmbSigningQueryParameter adds the smbSigning to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetSmbSigningQueryParameter(smbSigning *bool) {
-	o.SmbSigningQueryParameter = smbSigning
+// SetSmbSigning adds the smbSigning to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetSmbSigning(smbSigning *bool) {
+	o.SmbSigning = smbSigning
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsSessionCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithSvmName(svmName *string) *CifsSessionCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsSessionCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsSessionCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUserQueryParameter adds the user to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithUserQueryParameter(user *string) *CifsSessionCollectionGetParams {
-	o.SetUserQueryParameter(user)
+// WithUser adds the user to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithUser(user *string) *CifsSessionCollectionGetParams {
+	o.SetUser(user)
 	return o
 }
 
-// SetUserQueryParameter adds the user to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetUserQueryParameter(user *string) {
-	o.UserQueryParameter = user
+// SetUser adds the user to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetUser(user *string) {
+	o.User = user
 }
 
-// WithVolumesNameQueryParameter adds the volumesName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithVolumesNameQueryParameter(volumesName *string) *CifsSessionCollectionGetParams {
-	o.SetVolumesNameQueryParameter(volumesName)
+// WithVolumesName adds the volumesName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithVolumesName(volumesName *string) *CifsSessionCollectionGetParams {
+	o.SetVolumesName(volumesName)
 	return o
 }
 
-// SetVolumesNameQueryParameter adds the volumesName to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetVolumesNameQueryParameter(volumesName *string) {
-	o.VolumesNameQueryParameter = volumesName
+// SetVolumesName adds the volumesName to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetVolumesName(volumesName *string) {
+	o.VolumesName = volumesName
 }
 
-// WithVolumesUUIDQueryParameter adds the volumesUUID to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) WithVolumesUUIDQueryParameter(volumesUUID *string) *CifsSessionCollectionGetParams {
-	o.SetVolumesUUIDQueryParameter(volumesUUID)
+// WithVolumesUUID adds the volumesUUID to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) WithVolumesUUID(volumesUUID *string) *CifsSessionCollectionGetParams {
+	o.SetVolumesUUID(volumesUUID)
 	return o
 }
 
-// SetVolumesUUIDQueryParameter adds the volumesUuid to the cifs session collection get params
-func (o *CifsSessionCollectionGetParams) SetVolumesUUIDQueryParameter(volumesUUID *string) {
-	o.VolumesUUIDQueryParameter = volumesUUID
+// SetVolumesUUID adds the volumesUuid to the cifs session collection get params
+func (o *CifsSessionCollectionGetParams) SetVolumesUUID(volumesUUID *string) {
+	o.VolumesUUID = volumesUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -634,13 +634,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.AuthenticationQueryParameter != nil {
+	if o.Authentication != nil {
 
 		// query param authentication
 		var qrAuthentication string
 
-		if o.AuthenticationQueryParameter != nil {
-			qrAuthentication = *o.AuthenticationQueryParameter
+		if o.Authentication != nil {
+			qrAuthentication = *o.Authentication
 		}
 		qAuthentication := qrAuthentication
 		if qAuthentication != "" {
@@ -651,13 +651,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ClientIPQueryParameter != nil {
+	if o.ClientIP != nil {
 
 		// query param client_ip
 		var qrClientIP string
 
-		if o.ClientIPQueryParameter != nil {
-			qrClientIP = *o.ClientIPQueryParameter
+		if o.ClientIP != nil {
+			qrClientIP = *o.ClientIP
 		}
 		qClientIP := qrClientIP
 		if qClientIP != "" {
@@ -668,13 +668,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ConnectedDurationQueryParameter != nil {
+	if o.ConnectedDuration != nil {
 
 		// query param connected_duration
 		var qrConnectedDuration string
 
-		if o.ConnectedDurationQueryParameter != nil {
-			qrConnectedDuration = *o.ConnectedDurationQueryParameter
+		if o.ConnectedDuration != nil {
+			qrConnectedDuration = *o.ConnectedDuration
 		}
 		qConnectedDuration := qrConnectedDuration
 		if qConnectedDuration != "" {
@@ -685,13 +685,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ConnectionCountQueryParameter != nil {
+	if o.ConnectionCount != nil {
 
 		// query param connection_count
 		var qrConnectionCount int64
 
-		if o.ConnectionCountQueryParameter != nil {
-			qrConnectionCount = *o.ConnectionCountQueryParameter
+		if o.ConnectionCount != nil {
+			qrConnectionCount = *o.ConnectionCount
 		}
 		qConnectionCount := swag.FormatInt64(qrConnectionCount)
 		if qConnectionCount != "" {
@@ -702,13 +702,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ConnectionIDQueryParameter != nil {
+	if o.ConnectionID != nil {
 
 		// query param connection_id
 		var qrConnectionID int64
 
-		if o.ConnectionIDQueryParameter != nil {
-			qrConnectionID = *o.ConnectionIDQueryParameter
+		if o.ConnectionID != nil {
+			qrConnectionID = *o.ConnectionID
 		}
 		qConnectionID := swag.FormatInt64(qrConnectionID)
 		if qConnectionID != "" {
@@ -719,13 +719,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ContinuousAvailabilityQueryParameter != nil {
+	if o.ContinuousAvailability != nil {
 
 		// query param continuous_availability
 		var qrContinuousAvailability string
 
-		if o.ContinuousAvailabilityQueryParameter != nil {
-			qrContinuousAvailability = *o.ContinuousAvailabilityQueryParameter
+		if o.ContinuousAvailability != nil {
+			qrContinuousAvailability = *o.ContinuousAvailability
 		}
 		qContinuousAvailability := qrContinuousAvailability
 		if qContinuousAvailability != "" {
@@ -736,7 +736,7 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -747,13 +747,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IdentifierQueryParameter != nil {
+	if o.Identifier != nil {
 
 		// query param identifier
 		var qrIdentifier int64
 
-		if o.IdentifierQueryParameter != nil {
-			qrIdentifier = *o.IdentifierQueryParameter
+		if o.Identifier != nil {
+			qrIdentifier = *o.Identifier
 		}
 		qIdentifier := swag.FormatInt64(qrIdentifier)
 		if qIdentifier != "" {
@@ -764,13 +764,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IdleDurationQueryParameter != nil {
+	if o.IdleDuration != nil {
 
 		// query param idle_duration
 		var qrIdleDuration string
 
-		if o.IdleDurationQueryParameter != nil {
-			qrIdleDuration = *o.IdleDurationQueryParameter
+		if o.IdleDuration != nil {
+			qrIdleDuration = *o.IdleDuration
 		}
 		qIdleDuration := qrIdleDuration
 		if qIdleDuration != "" {
@@ -781,13 +781,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LargeMtuQueryParameter != nil {
+	if o.LargeMtu != nil {
 
 		// query param large_mtu
 		var qrLargeMtu bool
 
-		if o.LargeMtuQueryParameter != nil {
-			qrLargeMtu = *o.LargeMtuQueryParameter
+		if o.LargeMtu != nil {
+			qrLargeMtu = *o.LargeMtu
 		}
 		qLargeMtu := swag.FormatBool(qrLargeMtu)
 		if qLargeMtu != "" {
@@ -798,13 +798,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MappedUnixUserQueryParameter != nil {
+	if o.MappedUnixUser != nil {
 
 		// query param mapped_unix_user
 		var qrMappedUnixUser string
 
-		if o.MappedUnixUserQueryParameter != nil {
-			qrMappedUnixUser = *o.MappedUnixUserQueryParameter
+		if o.MappedUnixUser != nil {
+			qrMappedUnixUser = *o.MappedUnixUser
 		}
 		qMappedUnixUser := qrMappedUnixUser
 		if qMappedUnixUser != "" {
@@ -815,13 +815,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -832,13 +832,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -849,13 +849,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -866,13 +866,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OpenFilesQueryParameter != nil {
+	if o.OpenFiles != nil {
 
 		// query param open_files
 		var qrOpenFiles int64
 
-		if o.OpenFilesQueryParameter != nil {
-			qrOpenFiles = *o.OpenFilesQueryParameter
+		if o.OpenFiles != nil {
+			qrOpenFiles = *o.OpenFiles
 		}
 		qOpenFiles := swag.FormatInt64(qrOpenFiles)
 		if qOpenFiles != "" {
@@ -883,13 +883,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OpenOtherQueryParameter != nil {
+	if o.OpenOther != nil {
 
 		// query param open_other
 		var qrOpenOther int64
 
-		if o.OpenOtherQueryParameter != nil {
-			qrOpenOther = *o.OpenOtherQueryParameter
+		if o.OpenOther != nil {
+			qrOpenOther = *o.OpenOther
 		}
 		qOpenOther := swag.FormatInt64(qrOpenOther)
 		if qOpenOther != "" {
@@ -900,13 +900,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OpenSharesQueryParameter != nil {
+	if o.OpenShares != nil {
 
 		// query param open_shares
 		var qrOpenShares int64
 
-		if o.OpenSharesQueryParameter != nil {
-			qrOpenShares = *o.OpenSharesQueryParameter
+		if o.OpenShares != nil {
+			qrOpenShares = *o.OpenShares
 		}
 		qOpenShares := swag.FormatInt64(qrOpenShares)
 		if qOpenShares != "" {
@@ -917,7 +917,7 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -928,13 +928,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -945,13 +945,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -962,13 +962,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -979,13 +979,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ServerIPQueryParameter != nil {
+	if o.ServerIP != nil {
 
 		// query param server_ip
 		var qrServerIP string
 
-		if o.ServerIPQueryParameter != nil {
-			qrServerIP = *o.ServerIPQueryParameter
+		if o.ServerIP != nil {
+			qrServerIP = *o.ServerIP
 		}
 		qServerIP := qrServerIP
 		if qServerIP != "" {
@@ -996,13 +996,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SmbEncryptionQueryParameter != nil {
+	if o.SmbEncryption != nil {
 
 		// query param smb_encryption
 		var qrSmbEncryption string
 
-		if o.SmbEncryptionQueryParameter != nil {
-			qrSmbEncryption = *o.SmbEncryptionQueryParameter
+		if o.SmbEncryption != nil {
+			qrSmbEncryption = *o.SmbEncryption
 		}
 		qSmbEncryption := qrSmbEncryption
 		if qSmbEncryption != "" {
@@ -1013,13 +1013,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SmbSigningQueryParameter != nil {
+	if o.SmbSigning != nil {
 
 		// query param smb_signing
 		var qrSmbSigning bool
 
-		if o.SmbSigningQueryParameter != nil {
-			qrSmbSigning = *o.SmbSigningQueryParameter
+		if o.SmbSigning != nil {
+			qrSmbSigning = *o.SmbSigning
 		}
 		qSmbSigning := swag.FormatBool(qrSmbSigning)
 		if qSmbSigning != "" {
@@ -1030,13 +1030,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1047,13 +1047,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1064,13 +1064,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UserQueryParameter != nil {
+	if o.User != nil {
 
 		// query param user
 		var qrUser string
 
-		if o.UserQueryParameter != nil {
-			qrUser = *o.UserQueryParameter
+		if o.User != nil {
+			qrUser = *o.User
 		}
 		qUser := qrUser
 		if qUser != "" {
@@ -1081,13 +1081,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumesNameQueryParameter != nil {
+	if o.VolumesName != nil {
 
 		// query param volumes.name
 		var qrVolumesName string
 
-		if o.VolumesNameQueryParameter != nil {
-			qrVolumesName = *o.VolumesNameQueryParameter
+		if o.VolumesName != nil {
+			qrVolumesName = *o.VolumesName
 		}
 		qVolumesName := qrVolumesName
 		if qVolumesName != "" {
@@ -1098,13 +1098,13 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumesUUIDQueryParameter != nil {
+	if o.VolumesUUID != nil {
 
 		// query param volumes.uuid
 		var qrVolumesUUID string
 
-		if o.VolumesUUIDQueryParameter != nil {
-			qrVolumesUUID = *o.VolumesUUIDQueryParameter
+		if o.VolumesUUID != nil {
+			qrVolumesUUID = *o.VolumesUUID
 		}
 		qVolumesUUID := qrVolumesUUID
 		if qVolumesUUID != "" {
@@ -1123,7 +1123,7 @@ func (o *CifsSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCifsSessionCollectionGet binds the parameter fields
 func (o *CifsSessionCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1140,7 +1140,7 @@ func (o *CifsSessionCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamCifsSessionCollectionGet binds the parameter order_by
 func (o *CifsSessionCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

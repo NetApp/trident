@@ -66,19 +66,19 @@ type SnapshotPolicyScheduleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ScheduleUUID.
 
 	   Snapshot copy policy schedule ID
 	*/
-	ScheduleUUIDPathParameter string
+	ScheduleUUID string
 
 	/* SnapshotPolicyUUID.
 
 	   Snapshot copy policy UUID
 	*/
-	SnapshotPolicyUUIDPathParameter string
+	SnapshotPolicyUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SnapshotPolicyScheduleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) WithFieldsQueryParameter(fields []string) *SnapshotPolicyScheduleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) WithFields(fields []string) *SnapshotPolicyScheduleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithScheduleUUIDPathParameter adds the scheduleUUID to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) WithScheduleUUIDPathParameter(scheduleUUID string) *SnapshotPolicyScheduleGetParams {
-	o.SetScheduleUUIDPathParameter(scheduleUUID)
+// WithScheduleUUID adds the scheduleUUID to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) WithScheduleUUID(scheduleUUID string) *SnapshotPolicyScheduleGetParams {
+	o.SetScheduleUUID(scheduleUUID)
 	return o
 }
 
-// SetScheduleUUIDPathParameter adds the scheduleUuid to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) SetScheduleUUIDPathParameter(scheduleUUID string) {
-	o.ScheduleUUIDPathParameter = scheduleUUID
+// SetScheduleUUID adds the scheduleUuid to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) SetScheduleUUID(scheduleUUID string) {
+	o.ScheduleUUID = scheduleUUID
 }
 
-// WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) WithSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) *SnapshotPolicyScheduleGetParams {
-	o.SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID)
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID string) *SnapshotPolicyScheduleGetParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
 	return o
 }
 
-// SetSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUuid to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) {
-	o.SnapshotPolicyUUIDPathParameter = snapshotPolicyUUID
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param schedule.uuid
-	if err := r.SetPathParam("schedule.uuid", o.ScheduleUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("schedule.uuid", o.ScheduleUUID); err != nil {
 		return err
 	}
 
 	// path param snapshot_policy.uuid
-	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSnapshotPolicyScheduleGet binds the parameter fields
 func (o *SnapshotPolicyScheduleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

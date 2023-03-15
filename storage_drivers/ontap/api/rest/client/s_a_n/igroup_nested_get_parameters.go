@@ -66,21 +66,21 @@ type IgroupNestedGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupUUID.
 
 	   The unique identifier of the parent initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* UUID.
 
 	   The unique identifier of the nested initiator group.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *IgroupNestedGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the igroup nested get params
-func (o *IgroupNestedGetParams) WithFieldsQueryParameter(fields []string) *IgroupNestedGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the igroup nested get params
+func (o *IgroupNestedGetParams) WithFields(fields []string) *IgroupNestedGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the igroup nested get params
-func (o *IgroupNestedGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the igroup nested get params
+func (o *IgroupNestedGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup nested get params
-func (o *IgroupNestedGetParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupNestedGetParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup nested get params
+func (o *IgroupNestedGetParams) WithIgroupUUID(igroupUUID string) *IgroupNestedGetParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup nested get params
-func (o *IgroupNestedGetParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup nested get params
+func (o *IgroupNestedGetParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the igroup nested get params
-func (o *IgroupNestedGetParams) WithUUIDPathParameter(uuid string) *IgroupNestedGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the igroup nested get params
+func (o *IgroupNestedGetParams) WithUUID(uuid string) *IgroupNestedGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the igroup nested get params
-func (o *IgroupNestedGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the igroup nested get params
+func (o *IgroupNestedGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *IgroupNestedGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *IgroupNestedGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *IgroupNestedGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamIgroupNestedGet binds the parameter fields
 func (o *IgroupNestedGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

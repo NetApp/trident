@@ -22,10 +22,10 @@ import (
 type LunMap struct {
 
 	// links
-	Links *LunMapLinks `json:"_links,omitempty"`
+	Links *LunMapInlineLinks `json:"_links,omitempty"`
 
 	// igroup
-	Igroup *LunMapIgroup `json:"igroup,omitempty"`
+	Igroup *LunMapInlineIgroup `json:"igroup,omitempty"`
 
 	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
 	//
@@ -35,17 +35,17 @@ type LunMap struct {
 	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 
 	// lun
-	Lun *LunMapLun `json:"lun,omitempty"`
+	Lun *LunMapInlineLun `json:"lun,omitempty"`
 
 	// The cluster nodes from which network paths to the mapped LUNs are advertised via the SAN protocols as part of the Selective LUN Map (SLM) feature of ONTAP.<br/>
 	// When a LUN map is created, the cluster node hosting the LUN and its high availability (HA) partner are set as the default reporting node. In POST, the property `additional_reporting_node` may be used to add an additional node and its HA partner.<br/>
 	// For further information, see [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes).
 	//
 	// Read Only: true
-	ReportingNodes []*LunMapReportingNodesItems0 `json:"reporting_nodes,omitempty"`
+	LunMapInlineReportingNodes []*LunMapInlineReportingNodesInlineArrayItem `json:"reporting_nodes,omitempty"`
 
 	// svm
-	Svm *LunMapSvm `json:"svm,omitempty"`
+	Svm *LunMapInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this lun map
@@ -68,7 +68,7 @@ func (m *LunMap) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateReportingNodes(formats); err != nil {
+	if err := m.validateLunMapInlineReportingNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -149,18 +149,18 @@ func (m *LunMap) validateLun(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMap) validateReportingNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.ReportingNodes) { // not required
+func (m *LunMap) validateLunMapInlineReportingNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.LunMapInlineReportingNodes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.ReportingNodes); i++ {
-		if swag.IsZero(m.ReportingNodes[i]) { // not required
+	for i := 0; i < len(m.LunMapInlineReportingNodes); i++ {
+		if swag.IsZero(m.LunMapInlineReportingNodes[i]) { // not required
 			continue
 		}
 
-		if m.ReportingNodes[i] != nil {
-			if err := m.ReportingNodes[i].Validate(formats); err != nil {
+		if m.LunMapInlineReportingNodes[i] != nil {
+			if err := m.LunMapInlineReportingNodes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("reporting_nodes" + "." + strconv.Itoa(i))
 				}
@@ -206,7 +206,7 @@ func (m *LunMap) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateReportingNodes(ctx, formats); err != nil {
+	if err := m.contextValidateLunMapInlineReportingNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -262,16 +262,16 @@ func (m *LunMap) contextValidateLun(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *LunMap) contextValidateReportingNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMap) contextValidateLunMapInlineReportingNodes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reporting_nodes", "body", []*LunMapReportingNodesItems0(m.ReportingNodes)); err != nil {
+	if err := validate.ReadOnly(ctx, "reporting_nodes", "body", []*LunMapInlineReportingNodesInlineArrayItem(m.LunMapInlineReportingNodes)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.ReportingNodes); i++ {
+	for i := 0; i < len(m.LunMapInlineReportingNodes); i++ {
 
-		if m.ReportingNodes[i] != nil {
-			if err := m.ReportingNodes[i].ContextValidate(ctx, formats); err != nil {
+		if m.LunMapInlineReportingNodes[i] != nil {
+			if err := m.LunMapInlineReportingNodes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("reporting_nodes" + "." + strconv.Itoa(i))
 				}
@@ -316,44 +316,44 @@ func (m *LunMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapIgroup The initiator group to which the LUN is mapped. Required in POST by supplying either the `igroup.uuid`, `igroup.name`, or both.
+// LunMapInlineIgroup The initiator group to which the LUN is mapped. Required in POST by supplying either the `igroup.uuid`, `igroup.name`, or both.
 //
-// swagger:model LunMapIgroup
-type LunMapIgroup struct {
+// swagger:model lun_map_inline_igroup
+type LunMapInlineIgroup struct {
 
 	// links
-	Links *LunMapIgroupLinks `json:"_links,omitempty"`
+	Links *LunMapInlineIgroupInlineLinks `json:"_links,omitempty"`
 
 	// The initiators that are members of the initiator group.
 	//
 	// Read Only: true
-	Initiators []string `json:"initiators,omitempty"`
+	Initiators []*string `json:"initiators,omitempty"`
 
 	// The name of the initiator group. Valid in POST.
 	//
 	// Example: igroup1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system.
 	//
 	// Read Only: true
 	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group.
 	//
 	// Read Only: true
 	// Enum: [fcp iscsi mixed]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// The unique identifier of the initiator group. Valid in POST.
 	//
 	// Example: 1ad8544d-8cd1-91e0-9e1c-723478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this lun map igroup
-func (m *LunMapIgroup) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline igroup
+func (m *LunMapInlineIgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -374,7 +374,7 @@ func (m *LunMapIgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapIgroup) validateLinks(formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -391,7 +391,7 @@ func (m *LunMapIgroup) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var lunMapIgroupTypeOsTypePropEnum []interface{}
+var lunMapInlineIgroupTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -399,135 +399,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		lunMapIgroupTypeOsTypePropEnum = append(lunMapIgroupTypeOsTypePropEnum, v)
+		lunMapInlineIgroupTypeOsTypePropEnum = append(lunMapInlineIgroupTypeOsTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// aix
 	// END DEBUGGING
-	// LunMapIgroupOsTypeAix captures enum value "aix"
-	LunMapIgroupOsTypeAix string = "aix"
+	// LunMapInlineIgroupOsTypeAix captures enum value "aix"
+	LunMapInlineIgroupOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// hpux
 	// END DEBUGGING
-	// LunMapIgroupOsTypeHpux captures enum value "hpux"
-	LunMapIgroupOsTypeHpux string = "hpux"
+	// LunMapInlineIgroupOsTypeHpux captures enum value "hpux"
+	LunMapInlineIgroupOsTypeHpux string = "hpux"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// hyper_v
 	// END DEBUGGING
-	// LunMapIgroupOsTypeHyperv captures enum value "hyper_v"
-	LunMapIgroupOsTypeHyperv string = "hyper_v"
+	// LunMapInlineIgroupOsTypeHyperv captures enum value "hyper_v"
+	LunMapInlineIgroupOsTypeHyperv string = "hyper_v"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// linux
 	// END DEBUGGING
-	// LunMapIgroupOsTypeLinux captures enum value "linux"
-	LunMapIgroupOsTypeLinux string = "linux"
+	// LunMapInlineIgroupOsTypeLinux captures enum value "linux"
+	LunMapInlineIgroupOsTypeLinux string = "linux"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// netware
 	// END DEBUGGING
-	// LunMapIgroupOsTypeNetware captures enum value "netware"
-	LunMapIgroupOsTypeNetware string = "netware"
+	// LunMapInlineIgroupOsTypeNetware captures enum value "netware"
+	LunMapInlineIgroupOsTypeNetware string = "netware"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// openvms
 	// END DEBUGGING
-	// LunMapIgroupOsTypeOpenvms captures enum value "openvms"
-	LunMapIgroupOsTypeOpenvms string = "openvms"
+	// LunMapInlineIgroupOsTypeOpenvms captures enum value "openvms"
+	LunMapInlineIgroupOsTypeOpenvms string = "openvms"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// solaris
 	// END DEBUGGING
-	// LunMapIgroupOsTypeSolaris captures enum value "solaris"
-	LunMapIgroupOsTypeSolaris string = "solaris"
+	// LunMapInlineIgroupOsTypeSolaris captures enum value "solaris"
+	LunMapInlineIgroupOsTypeSolaris string = "solaris"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// vmware
 	// END DEBUGGING
-	// LunMapIgroupOsTypeVmware captures enum value "vmware"
-	LunMapIgroupOsTypeVmware string = "vmware"
+	// LunMapInlineIgroupOsTypeVmware captures enum value "vmware"
+	LunMapInlineIgroupOsTypeVmware string = "vmware"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// windows
 	// END DEBUGGING
-	// LunMapIgroupOsTypeWindows captures enum value "windows"
-	LunMapIgroupOsTypeWindows string = "windows"
+	// LunMapInlineIgroupOsTypeWindows captures enum value "windows"
+	LunMapInlineIgroupOsTypeWindows string = "windows"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// os_type
 	// OsType
 	// xen
 	// END DEBUGGING
-	// LunMapIgroupOsTypeXen captures enum value "xen"
-	LunMapIgroupOsTypeXen string = "xen"
+	// LunMapInlineIgroupOsTypeXen captures enum value "xen"
+	LunMapInlineIgroupOsTypeXen string = "xen"
 )
 
 // prop value enum
-func (m *LunMapIgroup) validateOsTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, lunMapIgroupTypeOsTypePropEnum, true); err != nil {
+func (m *LunMapInlineIgroup) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunMapInlineIgroupTypeOsTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *LunMapIgroup) validateOsType(formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) validateOsType(formats strfmt.Registry) error {
 	if swag.IsZero(m.OsType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("igroup"+"."+"os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("igroup"+"."+"os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var lunMapIgroupTypeProtocolPropEnum []interface{}
+var lunMapInlineIgroupTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -535,66 +535,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		lunMapIgroupTypeProtocolPropEnum = append(lunMapIgroupTypeProtocolPropEnum, v)
+		lunMapInlineIgroupTypeProtocolPropEnum = append(lunMapInlineIgroupTypeProtocolPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// protocol
 	// Protocol
 	// fcp
 	// END DEBUGGING
-	// LunMapIgroupProtocolFcp captures enum value "fcp"
-	LunMapIgroupProtocolFcp string = "fcp"
+	// LunMapInlineIgroupProtocolFcp captures enum value "fcp"
+	LunMapInlineIgroupProtocolFcp string = "fcp"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// protocol
 	// Protocol
 	// iscsi
 	// END DEBUGGING
-	// LunMapIgroupProtocolIscsi captures enum value "iscsi"
-	LunMapIgroupProtocolIscsi string = "iscsi"
+	// LunMapInlineIgroupProtocolIscsi captures enum value "iscsi"
+	LunMapInlineIgroupProtocolIscsi string = "iscsi"
 
 	// BEGIN DEBUGGING
-	// LunMapIgroup
-	// LunMapIgroup
+	// lun_map_inline_igroup
+	// LunMapInlineIgroup
 	// protocol
 	// Protocol
 	// mixed
 	// END DEBUGGING
-	// LunMapIgroupProtocolMixed captures enum value "mixed"
-	LunMapIgroupProtocolMixed string = "mixed"
+	// LunMapInlineIgroupProtocolMixed captures enum value "mixed"
+	LunMapInlineIgroupProtocolMixed string = "mixed"
 )
 
 // prop value enum
-func (m *LunMapIgroup) validateProtocolEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, lunMapIgroupTypeProtocolPropEnum, true); err != nil {
+func (m *LunMapInlineIgroup) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunMapInlineIgroupTypeProtocolPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *LunMapIgroup) validateProtocol(formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) validateProtocol(formats strfmt.Registry) error {
 	if swag.IsZero(m.Protocol) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("igroup"+"."+"protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("igroup"+"."+"protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this lun map igroup based on the context it is used
-func (m *LunMapIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline igroup based on the context it is used
+func (m *LunMapInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -619,7 +619,7 @@ func (m *LunMapIgroup) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *LunMapIgroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -633,15 +633,15 @@ func (m *LunMapIgroup) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *LunMapIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators", "body", []string(m.Initiators)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators", "body", []*string(m.Initiators)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Initiators); i++ {
 
-		if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators"+"."+strconv.Itoa(i), "body", string(m.Initiators[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators"+"."+strconv.Itoa(i), "body", m.Initiators[i]); err != nil {
 			return err
 		}
 
@@ -650,18 +650,18 @@ func (m *LunMapIgroup) contextValidateInitiators(ctx context.Context, formats st
 	return nil
 }
 
-func (m *LunMapIgroup) contextValidateOsType(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) contextValidateOsType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"os_type", "body", string(m.OsType)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"os_type", "body", m.OsType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LunMapIgroup) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineIgroup) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 
@@ -669,7 +669,7 @@ func (m *LunMapIgroup) contextValidateProtocol(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapIgroup) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineIgroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -677,8 +677,8 @@ func (m *LunMapIgroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapIgroup) UnmarshalBinary(b []byte) error {
-	var res LunMapIgroup
+func (m *LunMapInlineIgroup) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineIgroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -686,17 +686,17 @@ func (m *LunMapIgroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapIgroupLinks lun map igroup links
+// LunMapInlineIgroupInlineLinks lun map inline igroup inline links
 //
-// swagger:model LunMapIgroupLinks
-type LunMapIgroupLinks struct {
+// swagger:model lun_map_inline_igroup_inline__links
+type LunMapInlineIgroupInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map igroup links
-func (m *LunMapIgroupLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline igroup inline links
+func (m *LunMapInlineIgroupInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -709,7 +709,7 @@ func (m *LunMapIgroupLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapIgroupLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineIgroupInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -726,8 +726,8 @@ func (m *LunMapIgroupLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map igroup links based on the context it is used
-func (m *LunMapIgroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline igroup inline links based on the context it is used
+func (m *LunMapInlineIgroupInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -740,7 +740,7 @@ func (m *LunMapIgroupLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *LunMapIgroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineIgroupInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -755,7 +755,7 @@ func (m *LunMapIgroupLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapIgroupLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineIgroupInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -763,8 +763,8 @@ func (m *LunMapIgroupLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapIgroupLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapIgroupLinks
+func (m *LunMapInlineIgroupInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineIgroupInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -772,17 +772,17 @@ func (m *LunMapIgroupLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapLinks lun map links
+// LunMapInlineLinks lun map inline links
 //
-// swagger:model LunMapLinks
-type LunMapLinks struct {
+// swagger:model lun_map_inline__links
+type LunMapInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map links
-func (m *LunMapLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline links
+func (m *LunMapInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -795,7 +795,7 @@ func (m *LunMapLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -812,8 +812,8 @@ func (m *LunMapLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map links based on the context it is used
-func (m *LunMapLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline links based on the context it is used
+func (m *LunMapInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -826,7 +826,7 @@ func (m *LunMapLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *LunMapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -841,7 +841,7 @@ func (m *LunMapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -849,8 +849,8 @@ func (m *LunMapLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapLinks
+func (m *LunMapInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -858,30 +858,30 @@ func (m *LunMapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapLun The LUN to which the initiator group is mapped. Required in POST by supplying either the `lun.uuid`, `lun.name`, or both.
+// LunMapInlineLun The LUN to which the initiator group is mapped. Required in POST by supplying either the `lun.uuid`, `lun.name`, or both.
 //
-// swagger:model LunMapLun
-type LunMapLun struct {
+// swagger:model lun_map_inline_lun
+type LunMapInlineLun struct {
 
 	// links
-	Links *LunMapLunLinks `json:"_links,omitempty"`
+	Links *LunMapInlineLunInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the LUN composed of a \"/vol\" prefix, the volume name, the (optional) qtree name, and file name of the LUN. Valid in POST.
 	//
 	// Example: /vol/volume1/qtree1/lun1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *LunMapLunNode `json:"node,omitempty"`
+	Node *LunMapInlineLunInlineNode `json:"node,omitempty"`
 
 	// The unique identifier of the LUN. Valid in POST.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this lun map lun
-func (m *LunMapLun) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline lun
+func (m *LunMapInlineLun) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -898,7 +898,7 @@ func (m *LunMapLun) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLun) validateLinks(formats strfmt.Registry) error {
+func (m *LunMapInlineLun) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -915,7 +915,7 @@ func (m *LunMapLun) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLun) validateNode(formats strfmt.Registry) error {
+func (m *LunMapInlineLun) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -932,8 +932,8 @@ func (m *LunMapLun) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map lun based on the context it is used
-func (m *LunMapLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline lun based on the context it is used
+func (m *LunMapInlineLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -950,7 +950,7 @@ func (m *LunMapLun) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *LunMapLun) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLun) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -964,7 +964,7 @@ func (m *LunMapLun) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LunMapLun) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLun) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -979,7 +979,7 @@ func (m *LunMapLun) contextValidateNode(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapLun) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineLun) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -987,8 +987,8 @@ func (m *LunMapLun) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapLun) UnmarshalBinary(b []byte) error {
-	var res LunMapLun
+func (m *LunMapInlineLun) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLun
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -996,17 +996,17 @@ func (m *LunMapLun) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapLunLinks lun map lun links
+// LunMapInlineLunInlineLinks lun map inline lun inline links
 //
-// swagger:model LunMapLunLinks
-type LunMapLunLinks struct {
+// swagger:model lun_map_inline_lun_inline__links
+type LunMapInlineLunInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map lun links
-func (m *LunMapLunLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline lun inline links
+func (m *LunMapInlineLunInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1019,7 +1019,7 @@ func (m *LunMapLunLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLunLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1036,8 +1036,8 @@ func (m *LunMapLunLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map lun links based on the context it is used
-func (m *LunMapLunLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline lun inline links based on the context it is used
+func (m *LunMapInlineLunInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1050,7 +1050,7 @@ func (m *LunMapLunLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LunMapLunLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1065,7 +1065,7 @@ func (m *LunMapLunLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapLunLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineLunInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1073,8 +1073,8 @@ func (m *LunMapLunLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapLunLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapLunLinks
+func (m *LunMapInlineLunInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLunInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1082,29 +1082,29 @@ func (m *LunMapLunLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapLunNode The LUN node.
+// LunMapInlineLunInlineNode The LUN node.
 //
-// swagger:model LunMapLunNode
-type LunMapLunNode struct {
+// swagger:model lun_map_inline_lun_inline_node
+type LunMapInlineLunInlineNode struct {
 
 	// links
-	Links *LunMapLunNodeLinks `json:"_links,omitempty"`
+	Links *LunMapInlineLunInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// The name the LUN's node.
 	//
 	// Example: node1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the LUN node.
 	//
 	// Example: 1cf8aa42-8cd1-12e0-a11c-423468563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this lun map lun node
-func (m *LunMapLunNode) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline lun inline node
+func (m *LunMapInlineLunInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1117,7 +1117,7 @@ func (m *LunMapLunNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLunNode) validateLinks(formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1134,8 +1134,8 @@ func (m *LunMapLunNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map lun node based on the context it is used
-func (m *LunMapLunNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline lun inline node based on the context it is used
+func (m *LunMapInlineLunInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1156,7 +1156,7 @@ func (m *LunMapLunNode) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *LunMapLunNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1170,18 +1170,18 @@ func (m *LunMapLunNode) contextValidateLinks(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *LunMapLunNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lun"+"."+"node"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "lun"+"."+"node"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LunMapLunNode) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNode) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lun"+"."+"node"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "lun"+"."+"node"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1189,7 +1189,7 @@ func (m *LunMapLunNode) contextValidateUUID(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapLunNode) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineLunInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1197,8 +1197,8 @@ func (m *LunMapLunNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapLunNode) UnmarshalBinary(b []byte) error {
-	var res LunMapLunNode
+func (m *LunMapInlineLunInlineNode) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLunInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1206,17 +1206,17 @@ func (m *LunMapLunNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapLunNodeLinks lun map lun node links
+// LunMapInlineLunInlineNodeInlineLinks lun map inline lun inline node inline links
 //
-// swagger:model LunMapLunNodeLinks
-type LunMapLunNodeLinks struct {
+// swagger:model lun_map_inline_lun_inline_node_inline__links
+type LunMapInlineLunInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map lun node links
-func (m *LunMapLunNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline lun inline node inline links
+func (m *LunMapInlineLunInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1229,7 +1229,7 @@ func (m *LunMapLunNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapLunNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1246,8 +1246,8 @@ func (m *LunMapLunNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map lun node links based on the context it is used
-func (m *LunMapLunNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline lun inline node inline links based on the context it is used
+func (m *LunMapInlineLunInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1260,7 +1260,7 @@ func (m *LunMapLunNodeLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *LunMapLunNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineLunInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1275,7 +1275,7 @@ func (m *LunMapLunNodeLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapLunNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineLunInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1283,8 +1283,8 @@ func (m *LunMapLunNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapLunNodeLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapLunNodeLinks
+func (m *LunMapInlineLunInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineLunInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1292,29 +1292,29 @@ func (m *LunMapLunNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapReportingNodesItems0 A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
+// LunMapInlineReportingNodesInlineArrayItem A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
 //
-// swagger:model LunMapReportingNodesItems0
-type LunMapReportingNodesItems0 struct {
+// swagger:model lun_map_inline_reporting_nodes_inline_array_item
+type LunMapInlineReportingNodesInlineArrayItem struct {
 
 	// links
-	Links *LunMapReportingNodesItems0Links `json:"_links,omitempty"`
+	Links *LunMapInlineReportingNodesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the node.<br/>
 	// Either `uuid` or `name` are required in POST.
 	//
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the node.<br/>
 	// Either `uuid` or `name` are required in POST.
 	//
 	// Example: 5ac8eb9c-4e32-dbaa-57ca-fb905976f54e
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this lun map reporting nodes items0
-func (m *LunMapReportingNodesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline reporting nodes inline array item
+func (m *LunMapInlineReportingNodesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1327,7 +1327,7 @@ func (m *LunMapReportingNodesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1344,8 +1344,8 @@ func (m *LunMapReportingNodesItems0) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this lun map reporting nodes items0 based on the context it is used
-func (m *LunMapReportingNodesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline reporting nodes inline array item based on the context it is used
+func (m *LunMapInlineReportingNodesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1358,7 +1358,7 @@ func (m *LunMapReportingNodesItems0) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1373,7 +1373,7 @@ func (m *LunMapReportingNodesItems0) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapReportingNodesItems0) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineReportingNodesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1381,8 +1381,8 @@ func (m *LunMapReportingNodesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapReportingNodesItems0) UnmarshalBinary(b []byte) error {
-	var res LunMapReportingNodesItems0
+func (m *LunMapInlineReportingNodesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineReportingNodesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1390,10 +1390,10 @@ func (m *LunMapReportingNodesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapReportingNodesItems0Links lun map reporting nodes items0 links
+// LunMapInlineReportingNodesInlineArrayItemInlineLinks lun map inline reporting nodes inline array item inline links
 //
-// swagger:model LunMapReportingNodesItems0Links
-type LunMapReportingNodesItems0Links struct {
+// swagger:model lun_map_inline_reporting_nodes_inline_array_item_inline__links
+type LunMapInlineReportingNodesInlineArrayItemInlineLinks struct {
 
 	// node
 	Node *Href `json:"node,omitempty"`
@@ -1402,8 +1402,8 @@ type LunMapReportingNodesItems0Links struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map reporting nodes items0 links
-func (m *LunMapReportingNodesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline reporting nodes inline array item inline links
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -1420,7 +1420,7 @@ func (m *LunMapReportingNodesItems0Links) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0Links) validateNode(formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1437,7 +1437,7 @@ func (m *LunMapReportingNodesItems0Links) validateNode(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1454,8 +1454,8 @@ func (m *LunMapReportingNodesItems0Links) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this lun map reporting nodes items0 links based on the context it is used
-func (m *LunMapReportingNodesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline reporting nodes inline array item inline links based on the context it is used
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -1472,7 +1472,7 @@ func (m *LunMapReportingNodesItems0Links) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0Links) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1486,7 +1486,7 @@ func (m *LunMapReportingNodesItems0Links) contextValidateNode(ctx context.Contex
 	return nil
 }
 
-func (m *LunMapReportingNodesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1501,7 +1501,7 @@ func (m *LunMapReportingNodesItems0Links) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapReportingNodesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1509,8 +1509,8 @@ func (m *LunMapReportingNodesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapReportingNodesItems0Links) UnmarshalBinary(b []byte) error {
-	var res LunMapReportingNodesItems0Links
+func (m *LunMapInlineReportingNodesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineReportingNodesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1518,27 +1518,27 @@ func (m *LunMapReportingNodesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapSvm lun map svm
+// LunMapInlineSvm lun map inline svm
 //
-// swagger:model LunMapSvm
-type LunMapSvm struct {
+// swagger:model lun_map_inline_svm
+type LunMapInlineSvm struct {
 
 	// links
-	Links *LunMapSvmLinks `json:"_links,omitempty"`
+	Links *LunMapInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this lun map svm
-func (m *LunMapSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline svm
+func (m *LunMapInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1551,7 +1551,7 @@ func (m *LunMapSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapSvm) validateLinks(formats strfmt.Registry) error {
+func (m *LunMapInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1568,8 +1568,8 @@ func (m *LunMapSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map svm based on the context it is used
-func (m *LunMapSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline svm based on the context it is used
+func (m *LunMapInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1582,7 +1582,7 @@ func (m *LunMapSvm) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *LunMapSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1597,7 +1597,7 @@ func (m *LunMapSvm) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapSvm) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1605,8 +1605,8 @@ func (m *LunMapSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapSvm) UnmarshalBinary(b []byte) error {
-	var res LunMapSvm
+func (m *LunMapInlineSvm) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1614,17 +1614,17 @@ func (m *LunMapSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapSvmLinks lun map svm links
+// LunMapInlineSvmInlineLinks lun map inline svm inline links
 //
-// swagger:model LunMapSvmLinks
-type LunMapSvmLinks struct {
+// swagger:model lun_map_inline_svm_inline__links
+type LunMapInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map svm links
-func (m *LunMapSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map inline svm inline links
+func (m *LunMapInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1637,7 +1637,7 @@ func (m *LunMapSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunMapSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1654,8 +1654,8 @@ func (m *LunMapSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this lun map svm links based on the context it is used
-func (m *LunMapSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map inline svm inline links based on the context it is used
+func (m *LunMapInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1668,7 +1668,7 @@ func (m *LunMapSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LunMapSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1683,7 +1683,7 @@ func (m *LunMapSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1691,8 +1691,8 @@ func (m *LunMapSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapSvmLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapSvmLinks
+func (m *LunMapInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

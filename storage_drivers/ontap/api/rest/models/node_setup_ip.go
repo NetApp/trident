@@ -19,7 +19,7 @@ import (
 type NodeSetupIP struct {
 
 	// address
-	Address IPAddress `json:"address,omitempty"`
+	Address *IPAddress `json:"address,omitempty"`
 }
 
 // Validate validates this node setup ip
@@ -41,11 +41,13 @@ func (m *NodeSetupIP) validateAddress(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -67,11 +69,13 @@ func (m *NodeSetupIP) ContextValidate(ctx context.Context, formats strfmt.Regist
 
 func (m *NodeSetupIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

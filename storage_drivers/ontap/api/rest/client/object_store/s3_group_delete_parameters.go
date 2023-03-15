@@ -65,13 +65,13 @@ type S3GroupDeleteParams struct {
 
 	   Group identifier that identifies the unique group.
 	*/
-	IDPathParameter string
+	ID string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *S3GroupDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the s3 group delete params
-func (o *S3GroupDeleteParams) WithIDPathParameter(id string) *S3GroupDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the s3 group delete params
+func (o *S3GroupDeleteParams) WithID(id string) *S3GroupDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the s3 group delete params
-func (o *S3GroupDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the s3 group delete params
+func (o *S3GroupDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 group delete params
-func (o *S3GroupDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *S3GroupDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 group delete params
+func (o *S3GroupDeleteParams) WithSvmUUID(svmUUID string) *S3GroupDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 group delete params
-func (o *S3GroupDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 group delete params
+func (o *S3GroupDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *S3GroupDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

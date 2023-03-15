@@ -23,7 +23,7 @@ type VsiOnSan struct {
 
 	// datastore
 	// Required: true
-	Datastore *VsiOnSanDatastore `json:"datastore"`
+	Datastore *VsiOnSanInlineDatastore `json:"datastore"`
 
 	// The name of the hypervisor hosting the application.
 	// Required: true
@@ -36,13 +36,13 @@ type VsiOnSan struct {
 	// Min Length: 1
 	IgroupName *string `json:"igroup_name"`
 
+	// protection type
+	ProtectionType *VsiOnSanInlineProtectionType `json:"protection_type,omitempty"`
+
 	// The list of initiator groups to create.
 	// Max Items: 1
 	// Min Items: 0
-	NewIgroups []*VsiOnSanNewIgroups `json:"new_igroups,omitempty"`
-
-	// protection type
-	ProtectionType *VsiOnSanProtectionType `json:"protection_type,omitempty"`
+	VsiOnSanInlineNewIgroups []*VsiOnSanNewIgroups `json:"new_igroups,omitempty"`
 }
 
 // Validate validates this vsi on san
@@ -61,11 +61,11 @@ func (m *VsiOnSan) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNewIgroups(formats); err != nil {
+	if err := m.validateProtectionType(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateProtectionType(formats); err != nil {
+	if err := m.validateVsiOnSanInlineNewIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,40 +177,6 @@ func (m *VsiOnSan) validateIgroupName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnSan) validateNewIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.NewIgroups) { // not required
-		return nil
-	}
-
-	iNewIgroupsSize := int64(len(m.NewIgroups))
-
-	if err := validate.MinItems("new_igroups", "body", iNewIgroupsSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("new_igroups", "body", iNewIgroupsSize, 1); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-		if swag.IsZero(m.NewIgroups[i]) { // not required
-			continue
-		}
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *VsiOnSan) validateProtectionType(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProtectionType) { // not required
 		return nil
@@ -228,6 +194,40 @@ func (m *VsiOnSan) validateProtectionType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VsiOnSan) validateVsiOnSanInlineNewIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.VsiOnSanInlineNewIgroups) { // not required
+		return nil
+	}
+
+	iVsiOnSanInlineNewIgroupsSize := int64(len(m.VsiOnSanInlineNewIgroups))
+
+	if err := validate.MinItems("new_igroups", "body", iVsiOnSanInlineNewIgroupsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("new_igroups", "body", iVsiOnSanInlineNewIgroupsSize, 1); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.VsiOnSanInlineNewIgroups); i++ {
+		if swag.IsZero(m.VsiOnSanInlineNewIgroups[i]) { // not required
+			continue
+		}
+
+		if m.VsiOnSanInlineNewIgroups[i] != nil {
+			if err := m.VsiOnSanInlineNewIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this vsi on san based on the context it is used
 func (m *VsiOnSan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -236,11 +236,11 @@ func (m *VsiOnSan) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
+	if err := m.contextValidateVsiOnSanInlineNewIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -264,24 +264,6 @@ func (m *VsiOnSan) contextValidateDatastore(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *VsiOnSan) contextValidateNewIgroups(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *VsiOnSan) contextValidateProtectionType(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProtectionType != nil {
@@ -291,6 +273,24 @@ func (m *VsiOnSan) contextValidateProtectionType(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VsiOnSan) contextValidateVsiOnSanInlineNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VsiOnSanInlineNewIgroups); i++ {
+
+		if m.VsiOnSanInlineNewIgroups[i] != nil {
+			if err := m.VsiOnSanInlineNewIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -314,26 +314,26 @@ func (m *VsiOnSan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnSanDatastore vsi on san datastore
+// VsiOnSanInlineDatastore vsi on san inline datastore
 //
-// swagger:model VsiOnSanDatastore
-type VsiOnSanDatastore struct {
+// swagger:model vsi_on_san_inline_datastore
+type VsiOnSanInlineDatastore struct {
 
 	// The number of datastores to support.
 	// Maximum: 16
 	// Minimum: 1
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The size of the datastore. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *VsiOnSanDatastoreStorageService `json:"storage_service,omitempty"`
+	StorageService *VsiOnSanInlineDatastoreInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this vsi on san datastore
-func (m *VsiOnSanDatastore) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on san inline datastore
+func (m *VsiOnSanInlineDatastore) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCount(formats); err != nil {
@@ -354,23 +354,23 @@ func (m *VsiOnSanDatastore) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnSanDatastore) validateCount(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineDatastore) validateCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.Count) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("datastore"+"."+"count", "body", m.Count, 1, false); err != nil {
+	if err := validate.MinimumInt("datastore"+"."+"count", "body", *m.Count, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("datastore"+"."+"count", "body", m.Count, 16, false); err != nil {
+	if err := validate.MaximumInt("datastore"+"."+"count", "body", *m.Count, 16, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VsiOnSanDatastore) validateSize(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineDatastore) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("datastore"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -379,7 +379,7 @@ func (m *VsiOnSanDatastore) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VsiOnSanDatastore) validateStorageService(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineDatastore) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -396,8 +396,8 @@ func (m *VsiOnSanDatastore) validateStorageService(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this vsi on san datastore based on the context it is used
-func (m *VsiOnSanDatastore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vsi on san inline datastore based on the context it is used
+func (m *VsiOnSanInlineDatastore) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -410,7 +410,7 @@ func (m *VsiOnSanDatastore) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *VsiOnSanDatastore) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *VsiOnSanInlineDatastore) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -425,7 +425,7 @@ func (m *VsiOnSanDatastore) contextValidateStorageService(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnSanDatastore) MarshalBinary() ([]byte, error) {
+func (m *VsiOnSanInlineDatastore) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -433,8 +433,8 @@ func (m *VsiOnSanDatastore) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnSanDatastore) UnmarshalBinary(b []byte) error {
-	var res VsiOnSanDatastore
+func (m *VsiOnSanInlineDatastore) UnmarshalBinary(b []byte) error {
+	var res VsiOnSanInlineDatastore
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -442,18 +442,18 @@ func (m *VsiOnSanDatastore) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnSanDatastoreStorageService vsi on san datastore storage service
+// VsiOnSanInlineDatastoreInlineStorageService vsi on san inline datastore inline storage service
 //
-// swagger:model VsiOnSanDatastoreStorageService
-type VsiOnSanDatastoreStorageService struct {
+// swagger:model vsi_on_san_inline_datastore_inline_storage_service
+type VsiOnSanInlineDatastoreInlineStorageService struct {
 
 	// The storage service of the datastore.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this vsi on san datastore storage service
-func (m *VsiOnSanDatastoreStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on san inline datastore inline storage service
+func (m *VsiOnSanInlineDatastoreInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -466,7 +466,7 @@ func (m *VsiOnSanDatastoreStorageService) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-var vsiOnSanDatastoreStorageServiceTypeNamePropEnum []interface{}
+var vsiOnSanInlineDatastoreInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -474,52 +474,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnSanDatastoreStorageServiceTypeNamePropEnum = append(vsiOnSanDatastoreStorageServiceTypeNamePropEnum, v)
+		vsiOnSanInlineDatastoreInlineStorageServiceTypeNamePropEnum = append(vsiOnSanInlineDatastoreInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnSanDatastoreStorageService
-	// VsiOnSanDatastoreStorageService
+	// vsi_on_san_inline_datastore_inline_storage_service
+	// VsiOnSanInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// VsiOnSanDatastoreStorageServiceNameExtreme captures enum value "extreme"
-	VsiOnSanDatastoreStorageServiceNameExtreme string = "extreme"
+	// VsiOnSanInlineDatastoreInlineStorageServiceNameExtreme captures enum value "extreme"
+	VsiOnSanInlineDatastoreInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// VsiOnSanDatastoreStorageService
-	// VsiOnSanDatastoreStorageService
+	// vsi_on_san_inline_datastore_inline_storage_service
+	// VsiOnSanInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// VsiOnSanDatastoreStorageServiceNamePerformance captures enum value "performance"
-	VsiOnSanDatastoreStorageServiceNamePerformance string = "performance"
+	// VsiOnSanInlineDatastoreInlineStorageServiceNamePerformance captures enum value "performance"
+	VsiOnSanInlineDatastoreInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// VsiOnSanDatastoreStorageService
-	// VsiOnSanDatastoreStorageService
+	// vsi_on_san_inline_datastore_inline_storage_service
+	// VsiOnSanInlineDatastoreInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// VsiOnSanDatastoreStorageServiceNameValue captures enum value "value"
-	VsiOnSanDatastoreStorageServiceNameValue string = "value"
+	// VsiOnSanInlineDatastoreInlineStorageServiceNameValue captures enum value "value"
+	VsiOnSanInlineDatastoreInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *VsiOnSanDatastoreStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnSanDatastoreStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *VsiOnSanInlineDatastoreInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnSanInlineDatastoreInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnSanDatastoreStorageService) validateName(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineDatastoreInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -532,13 +532,13 @@ func (m *VsiOnSanDatastoreStorageService) validateName(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validates this vsi on san datastore storage service based on context it is used
-func (m *VsiOnSanDatastoreStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vsi on san inline datastore inline storage service based on context it is used
+func (m *VsiOnSanInlineDatastoreInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnSanDatastoreStorageService) MarshalBinary() ([]byte, error) {
+func (m *VsiOnSanInlineDatastoreInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -546,8 +546,8 @@ func (m *VsiOnSanDatastoreStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnSanDatastoreStorageService) UnmarshalBinary(b []byte) error {
-	var res VsiOnSanDatastoreStorageService
+func (m *VsiOnSanInlineDatastoreInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res VsiOnSanInlineDatastoreInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -555,22 +555,22 @@ func (m *VsiOnSanDatastoreStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VsiOnSanProtectionType vsi on san protection type
+// VsiOnSanInlineProtectionType vsi on san inline protection type
 //
-// swagger:model VsiOnSanProtectionType
-type VsiOnSanProtectionType struct {
+// swagger:model vsi_on_san_inline_protection_type
+type VsiOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this vsi on san protection type
-func (m *VsiOnSanProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this vsi on san inline protection type
+func (m *VsiOnSanInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -587,7 +587,7 @@ func (m *VsiOnSanProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var vsiOnSanProtectionTypeTypeLocalRpoPropEnum []interface{}
+var vsiOnSanInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -595,55 +595,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnSanProtectionTypeTypeLocalRpoPropEnum = append(vsiOnSanProtectionTypeTypeLocalRpoPropEnum, v)
+		vsiOnSanInlineProtectionTypeTypeLocalRpoPropEnum = append(vsiOnSanInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnSanProtectionType
-	// VsiOnSanProtectionType
+	// vsi_on_san_inline_protection_type
+	// VsiOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// VsiOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
-	VsiOnSanProtectionTypeLocalRpoHourly string = "hourly"
+	// VsiOnSanInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	VsiOnSanInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// VsiOnSanProtectionType
-	// VsiOnSanProtectionType
+	// vsi_on_san_inline_protection_type
+	// VsiOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// VsiOnSanProtectionTypeLocalRpoNone captures enum value "none"
-	VsiOnSanProtectionTypeLocalRpoNone string = "none"
+	// VsiOnSanInlineProtectionTypeLocalRpoNone captures enum value "none"
+	VsiOnSanInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *VsiOnSanProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnSanProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *VsiOnSanInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnSanInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnSanProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var vsiOnSanProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var vsiOnSanInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -651,61 +651,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		vsiOnSanProtectionTypeTypeRemoteRpoPropEnum = append(vsiOnSanProtectionTypeTypeRemoteRpoPropEnum, v)
+		vsiOnSanInlineProtectionTypeTypeRemoteRpoPropEnum = append(vsiOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VsiOnSanProtectionType
-	// VsiOnSanProtectionType
+	// vsi_on_san_inline_protection_type
+	// VsiOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// VsiOnSanProtectionTypeRemoteRpoNone captures enum value "none"
-	VsiOnSanProtectionTypeRemoteRpoNone string = "none"
+	// VsiOnSanInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	VsiOnSanInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// VsiOnSanProtectionType
-	// VsiOnSanProtectionType
+	// vsi_on_san_inline_protection_type
+	// VsiOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// VsiOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
-	VsiOnSanProtectionTypeRemoteRpoZero string = "zero"
+	// VsiOnSanInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	VsiOnSanInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *VsiOnSanProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, vsiOnSanProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *VsiOnSanInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vsiOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VsiOnSanProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *VsiOnSanInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vsi on san protection type based on context it is used
-func (m *VsiOnSanProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vsi on san inline protection type based on context it is used
+func (m *VsiOnSanInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VsiOnSanProtectionType) MarshalBinary() ([]byte, error) {
+func (m *VsiOnSanInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -713,8 +713,8 @@ func (m *VsiOnSanProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VsiOnSanProtectionType) UnmarshalBinary(b []byte) error {
-	var res VsiOnSanProtectionType
+func (m *VsiOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res VsiOnSanInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,55 +66,55 @@ type QosWorkloadCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* File.
 
 	   Filter by file
 	*/
-	FileQueryParameter *string
+	File *string
 
 	/* Lun.
 
 	   Filter by lun
 	*/
-	LunQueryParameter *string
+	Lun *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PolicyName.
 
 	   Filter by policy.name
 	*/
-	PolicyNameQueryParameter *string
+	PolicyName *string
 
 	/* PolicyUUID.
 
 	   Filter by policy.uuid
 	*/
-	PolicyUUIDQueryParameter *string
+	PolicyUUID *string
 
 	/* Qtree.
 
 	   Filter by qtree
 	*/
-	QtreeQueryParameter *string
+	Qtree *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type QosWorkloadCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,43 +130,43 @@ type QosWorkloadCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* Volume.
 
 	   Filter by volume
 	*/
-	VolumeQueryParameter *string
+	Volume *string
 
 	/* Wid.
 
 	   Filter by wid
 	*/
-	WIDQueryParameter *int64
+	Wid *int64
 
 	/* WorkloadClass.
 
 	   Filter by workload_class
 	*/
-	WorkloadClassQueryParameter *string
+	WorkloadClass *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -186,14 +186,14 @@ func (o *QosWorkloadCollectionGetParams) WithDefaults() *QosWorkloadCollectionGe
 // All values with no default are reset to their zero value.
 func (o *QosWorkloadCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := QosWorkloadCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -235,191 +235,191 @@ func (o *QosWorkloadCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithFieldsQueryParameter(fields []string) *QosWorkloadCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithFields(fields []string) *QosWorkloadCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFileQueryParameter adds the file to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithFileQueryParameter(file *string) *QosWorkloadCollectionGetParams {
-	o.SetFileQueryParameter(file)
+// WithFile adds the file to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithFile(file *string) *QosWorkloadCollectionGetParams {
+	o.SetFile(file)
 	return o
 }
 
-// SetFileQueryParameter adds the file to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetFileQueryParameter(file *string) {
-	o.FileQueryParameter = file
+// SetFile adds the file to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetFile(file *string) {
+	o.File = file
 }
 
-// WithLunQueryParameter adds the lun to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithLunQueryParameter(lun *string) *QosWorkloadCollectionGetParams {
-	o.SetLunQueryParameter(lun)
+// WithLun adds the lun to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithLun(lun *string) *QosWorkloadCollectionGetParams {
+	o.SetLun(lun)
 	return o
 }
 
-// SetLunQueryParameter adds the lun to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetLunQueryParameter(lun *string) {
-	o.LunQueryParameter = lun
+// SetLun adds the lun to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetLun(lun *string) {
+	o.Lun = lun
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QosWorkloadCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithMaxRecords(maxRecords *int64) *QosWorkloadCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithNameQueryParameter(name *string) *QosWorkloadCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithName(name *string) *QosWorkloadCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QosWorkloadCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithOrderBy(orderBy []string) *QosWorkloadCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPolicyNameQueryParameter adds the policyName to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithPolicyNameQueryParameter(policyName *string) *QosWorkloadCollectionGetParams {
-	o.SetPolicyNameQueryParameter(policyName)
+// WithPolicyName adds the policyName to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithPolicyName(policyName *string) *QosWorkloadCollectionGetParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNameQueryParameter adds the policyName to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetPolicyNameQueryParameter(policyName *string) {
-	o.PolicyNameQueryParameter = policyName
+// SetPolicyName adds the policyName to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetPolicyName(policyName *string) {
+	o.PolicyName = policyName
 }
 
-// WithPolicyUUIDQueryParameter adds the policyUUID to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithPolicyUUIDQueryParameter(policyUUID *string) *QosWorkloadCollectionGetParams {
-	o.SetPolicyUUIDQueryParameter(policyUUID)
+// WithPolicyUUID adds the policyUUID to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithPolicyUUID(policyUUID *string) *QosWorkloadCollectionGetParams {
+	o.SetPolicyUUID(policyUUID)
 	return o
 }
 
-// SetPolicyUUIDQueryParameter adds the policyUuid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetPolicyUUIDQueryParameter(policyUUID *string) {
-	o.PolicyUUIDQueryParameter = policyUUID
+// SetPolicyUUID adds the policyUuid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetPolicyUUID(policyUUID *string) {
+	o.PolicyUUID = policyUUID
 }
 
-// WithQtreeQueryParameter adds the qtree to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithQtreeQueryParameter(qtree *string) *QosWorkloadCollectionGetParams {
-	o.SetQtreeQueryParameter(qtree)
+// WithQtree adds the qtree to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithQtree(qtree *string) *QosWorkloadCollectionGetParams {
+	o.SetQtree(qtree)
 	return o
 }
 
-// SetQtreeQueryParameter adds the qtree to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetQtreeQueryParameter(qtree *string) {
-	o.QtreeQueryParameter = qtree
+// SetQtree adds the qtree to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetQtree(qtree *string) {
+	o.Qtree = qtree
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QosWorkloadCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithReturnRecords(returnRecords *bool) *QosWorkloadCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QosWorkloadCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QosWorkloadCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *QosWorkloadCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithSvmName(svmName *string) *QosWorkloadCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *QosWorkloadCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithSvmUUID(svmUUID *string) *QosWorkloadCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithUUIDQueryParameter(uuid *string) *QosWorkloadCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithUUID(uuid *string) *QosWorkloadCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVolumeQueryParameter adds the volume to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithVolumeQueryParameter(volume *string) *QosWorkloadCollectionGetParams {
-	o.SetVolumeQueryParameter(volume)
+// WithVolume adds the volume to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithVolume(volume *string) *QosWorkloadCollectionGetParams {
+	o.SetVolume(volume)
 	return o
 }
 
-// SetVolumeQueryParameter adds the volume to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetVolumeQueryParameter(volume *string) {
-	o.VolumeQueryParameter = volume
+// SetVolume adds the volume to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetVolume(volume *string) {
+	o.Volume = volume
 }
 
-// WithWIDQueryParameter adds the wid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithWIDQueryParameter(wid *int64) *QosWorkloadCollectionGetParams {
-	o.SetWIDQueryParameter(wid)
+// WithWid adds the wid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithWid(wid *int64) *QosWorkloadCollectionGetParams {
+	o.SetWid(wid)
 	return o
 }
 
-// SetWIDQueryParameter adds the wid to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetWIDQueryParameter(wid *int64) {
-	o.WIDQueryParameter = wid
+// SetWid adds the wid to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetWid(wid *int64) {
+	o.Wid = wid
 }
 
-// WithWorkloadClassQueryParameter adds the workloadClass to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) WithWorkloadClassQueryParameter(workloadClass *string) *QosWorkloadCollectionGetParams {
-	o.SetWorkloadClassQueryParameter(workloadClass)
+// WithWorkloadClass adds the workloadClass to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithWorkloadClass(workloadClass *string) *QosWorkloadCollectionGetParams {
+	o.SetWorkloadClass(workloadClass)
 	return o
 }
 
-// SetWorkloadClassQueryParameter adds the workloadClass to the qos workload collection get params
-func (o *QosWorkloadCollectionGetParams) SetWorkloadClassQueryParameter(workloadClass *string) {
-	o.WorkloadClassQueryParameter = workloadClass
+// SetWorkloadClass adds the workloadClass to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetWorkloadClass(workloadClass *string) {
+	o.WorkloadClass = workloadClass
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -430,7 +430,7 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -441,13 +441,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FileQueryParameter != nil {
+	if o.File != nil {
 
 		// query param file
 		var qrFile string
 
-		if o.FileQueryParameter != nil {
-			qrFile = *o.FileQueryParameter
+		if o.File != nil {
+			qrFile = *o.File
 		}
 		qFile := qrFile
 		if qFile != "" {
@@ -458,13 +458,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LunQueryParameter != nil {
+	if o.Lun != nil {
 
 		// query param lun
 		var qrLun string
 
-		if o.LunQueryParameter != nil {
-			qrLun = *o.LunQueryParameter
+		if o.Lun != nil {
+			qrLun = *o.Lun
 		}
 		qLun := qrLun
 		if qLun != "" {
@@ -475,13 +475,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -509,7 +509,7 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -520,13 +520,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.PolicyNameQueryParameter != nil {
+	if o.PolicyName != nil {
 
 		// query param policy.name
 		var qrPolicyName string
 
-		if o.PolicyNameQueryParameter != nil {
-			qrPolicyName = *o.PolicyNameQueryParameter
+		if o.PolicyName != nil {
+			qrPolicyName = *o.PolicyName
 		}
 		qPolicyName := qrPolicyName
 		if qPolicyName != "" {
@@ -537,13 +537,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.PolicyUUIDQueryParameter != nil {
+	if o.PolicyUUID != nil {
 
 		// query param policy.uuid
 		var qrPolicyUUID string
 
-		if o.PolicyUUIDQueryParameter != nil {
-			qrPolicyUUID = *o.PolicyUUIDQueryParameter
+		if o.PolicyUUID != nil {
+			qrPolicyUUID = *o.PolicyUUID
 		}
 		qPolicyUUID := qrPolicyUUID
 		if qPolicyUUID != "" {
@@ -554,13 +554,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.QtreeQueryParameter != nil {
+	if o.Qtree != nil {
 
 		// query param qtree
 		var qrQtree string
 
-		if o.QtreeQueryParameter != nil {
-			qrQtree = *o.QtreeQueryParameter
+		if o.Qtree != nil {
+			qrQtree = *o.Qtree
 		}
 		qQtree := qrQtree
 		if qQtree != "" {
@@ -571,13 +571,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -588,13 +588,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -605,13 +605,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -622,13 +622,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -639,13 +639,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -656,13 +656,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumeQueryParameter != nil {
+	if o.Volume != nil {
 
 		// query param volume
 		var qrVolume string
 
-		if o.VolumeQueryParameter != nil {
-			qrVolume = *o.VolumeQueryParameter
+		if o.Volume != nil {
+			qrVolume = *o.Volume
 		}
 		qVolume := qrVolume
 		if qVolume != "" {
@@ -673,13 +673,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.WIDQueryParameter != nil {
+	if o.Wid != nil {
 
 		// query param wid
 		var qrWid int64
 
-		if o.WIDQueryParameter != nil {
-			qrWid = *o.WIDQueryParameter
+		if o.Wid != nil {
+			qrWid = *o.Wid
 		}
 		qWid := swag.FormatInt64(qrWid)
 		if qWid != "" {
@@ -690,13 +690,13 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.WorkloadClassQueryParameter != nil {
+	if o.WorkloadClass != nil {
 
 		// query param workload_class
 		var qrWorkloadClass string
 
-		if o.WorkloadClassQueryParameter != nil {
-			qrWorkloadClass = *o.WorkloadClassQueryParameter
+		if o.WorkloadClass != nil {
+			qrWorkloadClass = *o.WorkloadClass
 		}
 		qWorkloadClass := qrWorkloadClass
 		if qWorkloadClass != "" {
@@ -715,7 +715,7 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamQosWorkloadCollectionGet binds the parameter fields
 func (o *QosWorkloadCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -732,7 +732,7 @@ func (o *QosWorkloadCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamQosWorkloadCollectionGet binds the parameter order_by
 func (o *QosWorkloadCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

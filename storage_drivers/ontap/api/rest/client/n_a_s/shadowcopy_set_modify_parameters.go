@@ -73,7 +73,7 @@ type ShadowcopySetModifyParams struct {
 
 	   Storage shadowcopy set ID.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *ShadowcopySetModifyParams) SetInfo(info *models.ShadowcopySet) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the shadowcopy set modify params
-func (o *ShadowcopySetModifyParams) WithUUIDPathParameter(uuid string) *ShadowcopySetModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the shadowcopy set modify params
+func (o *ShadowcopySetModifyParams) WithUUID(uuid string) *ShadowcopySetModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the shadowcopy set modify params
-func (o *ShadowcopySetModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the shadowcopy set modify params
+func (o *ShadowcopySetModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *ShadowcopySetModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

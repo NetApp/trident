@@ -19,16 +19,16 @@ import (
 type NdmpPassword struct {
 
 	// links
-	Links *NdmpPasswordLinks `json:"_links,omitempty"`
+	Links *NdmpPasswordInlineLinks `json:"_links,omitempty"`
 
 	// NDMP Password
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// svm
-	Svm *NdmpPasswordSvm `json:"svm,omitempty"`
+	Svm *NdmpPasswordInlineSvm `json:"svm,omitempty"`
 
 	// NDMP user
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this ndmp password
@@ -147,17 +147,17 @@ func (m *NdmpPassword) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpPasswordLinks ndmp password links
+// NdmpPasswordInlineLinks ndmp password inline links
 //
-// swagger:model NdmpPasswordLinks
-type NdmpPasswordLinks struct {
+// swagger:model ndmp_password_inline__links
+type NdmpPasswordInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp password links
-func (m *NdmpPasswordLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp password inline links
+func (m *NdmpPasswordInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -170,7 +170,7 @@ func (m *NdmpPasswordLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpPasswordLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -187,8 +187,8 @@ func (m *NdmpPasswordLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp password links based on the context it is used
-func (m *NdmpPasswordLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp password inline links based on the context it is used
+func (m *NdmpPasswordInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -201,7 +201,7 @@ func (m *NdmpPasswordLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NdmpPasswordLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -216,7 +216,7 @@ func (m *NdmpPasswordLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpPasswordLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpPasswordInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -224,8 +224,8 @@ func (m *NdmpPasswordLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpPasswordLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpPasswordLinks
+func (m *NdmpPasswordInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpPasswordInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -233,27 +233,27 @@ func (m *NdmpPasswordLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpPasswordSvm ndmp password svm
+// NdmpPasswordInlineSvm ndmp password inline svm
 //
-// swagger:model NdmpPasswordSvm
-type NdmpPasswordSvm struct {
+// swagger:model ndmp_password_inline_svm
+type NdmpPasswordInlineSvm struct {
 
 	// links
-	Links *NdmpPasswordSvmLinks `json:"_links,omitempty"`
+	Links *NdmpPasswordInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ndmp password svm
-func (m *NdmpPasswordSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp password inline svm
+func (m *NdmpPasswordInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -266,7 +266,7 @@ func (m *NdmpPasswordSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpPasswordSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -283,8 +283,8 @@ func (m *NdmpPasswordSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp password svm based on the context it is used
-func (m *NdmpPasswordSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp password inline svm based on the context it is used
+func (m *NdmpPasswordInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -297,7 +297,7 @@ func (m *NdmpPasswordSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NdmpPasswordSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -312,7 +312,7 @@ func (m *NdmpPasswordSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpPasswordSvm) MarshalBinary() ([]byte, error) {
+func (m *NdmpPasswordInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -320,8 +320,8 @@ func (m *NdmpPasswordSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpPasswordSvm) UnmarshalBinary(b []byte) error {
-	var res NdmpPasswordSvm
+func (m *NdmpPasswordInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NdmpPasswordInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -329,17 +329,17 @@ func (m *NdmpPasswordSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpPasswordSvmLinks ndmp password svm links
+// NdmpPasswordInlineSvmInlineLinks ndmp password inline svm inline links
 //
-// swagger:model NdmpPasswordSvmLinks
-type NdmpPasswordSvmLinks struct {
+// swagger:model ndmp_password_inline_svm_inline__links
+type NdmpPasswordInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp password svm links
-func (m *NdmpPasswordSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp password inline svm inline links
+func (m *NdmpPasswordInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -352,7 +352,7 @@ func (m *NdmpPasswordSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpPasswordSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -369,8 +369,8 @@ func (m *NdmpPasswordSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp password svm links based on the context it is used
-func (m *NdmpPasswordSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp password inline svm inline links based on the context it is used
+func (m *NdmpPasswordInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -383,7 +383,7 @@ func (m *NdmpPasswordSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NdmpPasswordSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpPasswordInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *NdmpPasswordSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpPasswordSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpPasswordInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -406,8 +406,8 @@ func (m *NdmpPasswordSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpPasswordSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpPasswordSvmLinks
+func (m *NdmpPasswordInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpPasswordInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

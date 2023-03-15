@@ -66,79 +66,79 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Filter by authentication_type
 	*/
-	AuthenticationTypeQueryParameter *string
+	AuthenticationType *string
 
 	/* ChapInboundUser.
 
 	   Filter by chap.inbound.user
 	*/
-	ChapInboundUserQueryParameter *string
+	ChapInboundUser *string
 
 	/* ChapOutboundUser.
 
 	   Filter by chap.outbound.user
 	*/
-	ChapOutboundUserQueryParameter *string
+	ChapOutboundUser *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Initiator.
 
 	   Filter by initiator
 	*/
-	InitiatorQueryParameter *string
+	Initiator *string
 
 	/* InitiatorAddressMasksAddress.
 
 	   Filter by initiator_address.masks.address
 	*/
-	InitiatorAddressMasksAddressQueryParameter *string
+	InitiatorAddressMasksAddress *string
 
 	/* InitiatorAddressMasksFamily.
 
 	   Filter by initiator_address.masks.family
 	*/
-	InitiatorAddressMasksFamilyQueryParameter *string
+	InitiatorAddressMasksFamily *string
 
 	/* InitiatorAddressMasksNetmask.
 
 	   Filter by initiator_address.masks.netmask
 	*/
-	InitiatorAddressMasksNetmaskQueryParameter *string
+	InitiatorAddressMasksNetmask *string
 
 	/* InitiatorAddressRangesEnd.
 
 	   Filter by initiator_address.ranges.end
 	*/
-	InitiatorAddressRangesEndQueryParameter *string
+	InitiatorAddressRangesEnd *string
 
 	/* InitiatorAddressRangesFamily.
 
 	   Filter by initiator_address.ranges.family
 	*/
-	InitiatorAddressRangesFamilyQueryParameter *string
+	InitiatorAddressRangesFamily *string
 
 	/* InitiatorAddressRangesStart.
 
 	   Filter by initiator_address.ranges.start
 	*/
-	InitiatorAddressRangesStartQueryParameter *string
+	InitiatorAddressRangesStart *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,19 +154,19 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -186,14 +186,14 @@ func (o *IscsiCredentialsCollectionGetParams) WithDefaults() *IscsiCredentialsCo
 // All values with no default are reset to their zero value.
 func (o *IscsiCredentialsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IscsiCredentialsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -235,191 +235,191 @@ func (o *IscsiCredentialsCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithAuthenticationTypeQueryParameter adds the authenticationType to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithAuthenticationTypeQueryParameter(authenticationType *string) *IscsiCredentialsCollectionGetParams {
-	o.SetAuthenticationTypeQueryParameter(authenticationType)
+// WithAuthenticationType adds the authenticationType to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithAuthenticationType(authenticationType *string) *IscsiCredentialsCollectionGetParams {
+	o.SetAuthenticationType(authenticationType)
 	return o
 }
 
-// SetAuthenticationTypeQueryParameter adds the authenticationType to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetAuthenticationTypeQueryParameter(authenticationType *string) {
-	o.AuthenticationTypeQueryParameter = authenticationType
+// SetAuthenticationType adds the authenticationType to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetAuthenticationType(authenticationType *string) {
+	o.AuthenticationType = authenticationType
 }
 
-// WithChapInboundUserQueryParameter adds the chapInboundUser to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithChapInboundUserQueryParameter(chapInboundUser *string) *IscsiCredentialsCollectionGetParams {
-	o.SetChapInboundUserQueryParameter(chapInboundUser)
+// WithChapInboundUser adds the chapInboundUser to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithChapInboundUser(chapInboundUser *string) *IscsiCredentialsCollectionGetParams {
+	o.SetChapInboundUser(chapInboundUser)
 	return o
 }
 
-// SetChapInboundUserQueryParameter adds the chapInboundUser to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetChapInboundUserQueryParameter(chapInboundUser *string) {
-	o.ChapInboundUserQueryParameter = chapInboundUser
+// SetChapInboundUser adds the chapInboundUser to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetChapInboundUser(chapInboundUser *string) {
+	o.ChapInboundUser = chapInboundUser
 }
 
-// WithChapOutboundUserQueryParameter adds the chapOutboundUser to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithChapOutboundUserQueryParameter(chapOutboundUser *string) *IscsiCredentialsCollectionGetParams {
-	o.SetChapOutboundUserQueryParameter(chapOutboundUser)
+// WithChapOutboundUser adds the chapOutboundUser to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithChapOutboundUser(chapOutboundUser *string) *IscsiCredentialsCollectionGetParams {
+	o.SetChapOutboundUser(chapOutboundUser)
 	return o
 }
 
-// SetChapOutboundUserQueryParameter adds the chapOutboundUser to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetChapOutboundUserQueryParameter(chapOutboundUser *string) {
-	o.ChapOutboundUserQueryParameter = chapOutboundUser
+// SetChapOutboundUser adds the chapOutboundUser to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetChapOutboundUser(chapOutboundUser *string) {
+	o.ChapOutboundUser = chapOutboundUser
 }
 
-// WithFieldsQueryParameter adds the fields to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithFieldsQueryParameter(fields []string) *IscsiCredentialsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithFields(fields []string) *IscsiCredentialsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInitiatorQueryParameter adds the initiator to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorQueryParameter(initiator *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorQueryParameter(initiator)
+// WithInitiator adds the initiator to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiator(initiator *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiator(initiator)
 	return o
 }
 
-// SetInitiatorQueryParameter adds the initiator to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorQueryParameter(initiator *string) {
-	o.InitiatorQueryParameter = initiator
+// SetInitiator adds the initiator to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiator(initiator *string) {
+	o.Initiator = initiator
 }
 
-// WithInitiatorAddressMasksAddressQueryParameter adds the initiatorAddressMasksAddress to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksAddressQueryParameter(initiatorAddressMasksAddress *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressMasksAddressQueryParameter(initiatorAddressMasksAddress)
+// WithInitiatorAddressMasksAddress adds the initiatorAddressMasksAddress to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksAddress(initiatorAddressMasksAddress *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressMasksAddress(initiatorAddressMasksAddress)
 	return o
 }
 
-// SetInitiatorAddressMasksAddressQueryParameter adds the initiatorAddressMasksAddress to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksAddressQueryParameter(initiatorAddressMasksAddress *string) {
-	o.InitiatorAddressMasksAddressQueryParameter = initiatorAddressMasksAddress
+// SetInitiatorAddressMasksAddress adds the initiatorAddressMasksAddress to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksAddress(initiatorAddressMasksAddress *string) {
+	o.InitiatorAddressMasksAddress = initiatorAddressMasksAddress
 }
 
-// WithInitiatorAddressMasksFamilyQueryParameter adds the initiatorAddressMasksFamily to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksFamilyQueryParameter(initiatorAddressMasksFamily *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressMasksFamilyQueryParameter(initiatorAddressMasksFamily)
+// WithInitiatorAddressMasksFamily adds the initiatorAddressMasksFamily to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksFamily(initiatorAddressMasksFamily *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressMasksFamily(initiatorAddressMasksFamily)
 	return o
 }
 
-// SetInitiatorAddressMasksFamilyQueryParameter adds the initiatorAddressMasksFamily to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksFamilyQueryParameter(initiatorAddressMasksFamily *string) {
-	o.InitiatorAddressMasksFamilyQueryParameter = initiatorAddressMasksFamily
+// SetInitiatorAddressMasksFamily adds the initiatorAddressMasksFamily to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksFamily(initiatorAddressMasksFamily *string) {
+	o.InitiatorAddressMasksFamily = initiatorAddressMasksFamily
 }
 
-// WithInitiatorAddressMasksNetmaskQueryParameter adds the initiatorAddressMasksNetmask to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksNetmaskQueryParameter(initiatorAddressMasksNetmask *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressMasksNetmaskQueryParameter(initiatorAddressMasksNetmask)
+// WithInitiatorAddressMasksNetmask adds the initiatorAddressMasksNetmask to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressMasksNetmask(initiatorAddressMasksNetmask *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressMasksNetmask(initiatorAddressMasksNetmask)
 	return o
 }
 
-// SetInitiatorAddressMasksNetmaskQueryParameter adds the initiatorAddressMasksNetmask to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksNetmaskQueryParameter(initiatorAddressMasksNetmask *string) {
-	o.InitiatorAddressMasksNetmaskQueryParameter = initiatorAddressMasksNetmask
+// SetInitiatorAddressMasksNetmask adds the initiatorAddressMasksNetmask to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressMasksNetmask(initiatorAddressMasksNetmask *string) {
+	o.InitiatorAddressMasksNetmask = initiatorAddressMasksNetmask
 }
 
-// WithInitiatorAddressRangesEndQueryParameter adds the initiatorAddressRangesEnd to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesEndQueryParameter(initiatorAddressRangesEnd *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressRangesEndQueryParameter(initiatorAddressRangesEnd)
+// WithInitiatorAddressRangesEnd adds the initiatorAddressRangesEnd to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesEnd(initiatorAddressRangesEnd *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressRangesEnd(initiatorAddressRangesEnd)
 	return o
 }
 
-// SetInitiatorAddressRangesEndQueryParameter adds the initiatorAddressRangesEnd to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesEndQueryParameter(initiatorAddressRangesEnd *string) {
-	o.InitiatorAddressRangesEndQueryParameter = initiatorAddressRangesEnd
+// SetInitiatorAddressRangesEnd adds the initiatorAddressRangesEnd to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesEnd(initiatorAddressRangesEnd *string) {
+	o.InitiatorAddressRangesEnd = initiatorAddressRangesEnd
 }
 
-// WithInitiatorAddressRangesFamilyQueryParameter adds the initiatorAddressRangesFamily to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesFamilyQueryParameter(initiatorAddressRangesFamily *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressRangesFamilyQueryParameter(initiatorAddressRangesFamily)
+// WithInitiatorAddressRangesFamily adds the initiatorAddressRangesFamily to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesFamily(initiatorAddressRangesFamily *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressRangesFamily(initiatorAddressRangesFamily)
 	return o
 }
 
-// SetInitiatorAddressRangesFamilyQueryParameter adds the initiatorAddressRangesFamily to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesFamilyQueryParameter(initiatorAddressRangesFamily *string) {
-	o.InitiatorAddressRangesFamilyQueryParameter = initiatorAddressRangesFamily
+// SetInitiatorAddressRangesFamily adds the initiatorAddressRangesFamily to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesFamily(initiatorAddressRangesFamily *string) {
+	o.InitiatorAddressRangesFamily = initiatorAddressRangesFamily
 }
 
-// WithInitiatorAddressRangesStartQueryParameter adds the initiatorAddressRangesStart to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesStartQueryParameter(initiatorAddressRangesStart *string) *IscsiCredentialsCollectionGetParams {
-	o.SetInitiatorAddressRangesStartQueryParameter(initiatorAddressRangesStart)
+// WithInitiatorAddressRangesStart adds the initiatorAddressRangesStart to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithInitiatorAddressRangesStart(initiatorAddressRangesStart *string) *IscsiCredentialsCollectionGetParams {
+	o.SetInitiatorAddressRangesStart(initiatorAddressRangesStart)
 	return o
 }
 
-// SetInitiatorAddressRangesStartQueryParameter adds the initiatorAddressRangesStart to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesStartQueryParameter(initiatorAddressRangesStart *string) {
-	o.InitiatorAddressRangesStartQueryParameter = initiatorAddressRangesStart
+// SetInitiatorAddressRangesStart adds the initiatorAddressRangesStart to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesStart(initiatorAddressRangesStart *string) {
+	o.InitiatorAddressRangesStart = initiatorAddressRangesStart
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IscsiCredentialsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithMaxRecords(maxRecords *int64) *IscsiCredentialsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IscsiCredentialsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithOrderBy(orderBy []string) *IscsiCredentialsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IscsiCredentialsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithReturnRecords(returnRecords *bool) *IscsiCredentialsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IscsiCredentialsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IscsiCredentialsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *IscsiCredentialsCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithSvmName(svmName *string) *IscsiCredentialsCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *IscsiCredentialsCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithSvmUUID(svmUUID *string) *IscsiCredentialsCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -430,13 +430,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.AuthenticationTypeQueryParameter != nil {
+	if o.AuthenticationType != nil {
 
 		// query param authentication_type
 		var qrAuthenticationType string
 
-		if o.AuthenticationTypeQueryParameter != nil {
-			qrAuthenticationType = *o.AuthenticationTypeQueryParameter
+		if o.AuthenticationType != nil {
+			qrAuthenticationType = *o.AuthenticationType
 		}
 		qAuthenticationType := qrAuthenticationType
 		if qAuthenticationType != "" {
@@ -447,13 +447,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ChapInboundUserQueryParameter != nil {
+	if o.ChapInboundUser != nil {
 
 		// query param chap.inbound.user
 		var qrChapInboundUser string
 
-		if o.ChapInboundUserQueryParameter != nil {
-			qrChapInboundUser = *o.ChapInboundUserQueryParameter
+		if o.ChapInboundUser != nil {
+			qrChapInboundUser = *o.ChapInboundUser
 		}
 		qChapInboundUser := qrChapInboundUser
 		if qChapInboundUser != "" {
@@ -464,13 +464,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ChapOutboundUserQueryParameter != nil {
+	if o.ChapOutboundUser != nil {
 
 		// query param chap.outbound.user
 		var qrChapOutboundUser string
 
-		if o.ChapOutboundUserQueryParameter != nil {
-			qrChapOutboundUser = *o.ChapOutboundUserQueryParameter
+		if o.ChapOutboundUser != nil {
+			qrChapOutboundUser = *o.ChapOutboundUser
 		}
 		qChapOutboundUser := qrChapOutboundUser
 		if qChapOutboundUser != "" {
@@ -481,7 +481,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -492,13 +492,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorQueryParameter != nil {
+	if o.Initiator != nil {
 
 		// query param initiator
 		var qrInitiator string
 
-		if o.InitiatorQueryParameter != nil {
-			qrInitiator = *o.InitiatorQueryParameter
+		if o.Initiator != nil {
+			qrInitiator = *o.Initiator
 		}
 		qInitiator := qrInitiator
 		if qInitiator != "" {
@@ -509,13 +509,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressMasksAddressQueryParameter != nil {
+	if o.InitiatorAddressMasksAddress != nil {
 
 		// query param initiator_address.masks.address
 		var qrInitiatorAddressMasksAddress string
 
-		if o.InitiatorAddressMasksAddressQueryParameter != nil {
-			qrInitiatorAddressMasksAddress = *o.InitiatorAddressMasksAddressQueryParameter
+		if o.InitiatorAddressMasksAddress != nil {
+			qrInitiatorAddressMasksAddress = *o.InitiatorAddressMasksAddress
 		}
 		qInitiatorAddressMasksAddress := qrInitiatorAddressMasksAddress
 		if qInitiatorAddressMasksAddress != "" {
@@ -526,13 +526,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressMasksFamilyQueryParameter != nil {
+	if o.InitiatorAddressMasksFamily != nil {
 
 		// query param initiator_address.masks.family
 		var qrInitiatorAddressMasksFamily string
 
-		if o.InitiatorAddressMasksFamilyQueryParameter != nil {
-			qrInitiatorAddressMasksFamily = *o.InitiatorAddressMasksFamilyQueryParameter
+		if o.InitiatorAddressMasksFamily != nil {
+			qrInitiatorAddressMasksFamily = *o.InitiatorAddressMasksFamily
 		}
 		qInitiatorAddressMasksFamily := qrInitiatorAddressMasksFamily
 		if qInitiatorAddressMasksFamily != "" {
@@ -543,13 +543,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressMasksNetmaskQueryParameter != nil {
+	if o.InitiatorAddressMasksNetmask != nil {
 
 		// query param initiator_address.masks.netmask
 		var qrInitiatorAddressMasksNetmask string
 
-		if o.InitiatorAddressMasksNetmaskQueryParameter != nil {
-			qrInitiatorAddressMasksNetmask = *o.InitiatorAddressMasksNetmaskQueryParameter
+		if o.InitiatorAddressMasksNetmask != nil {
+			qrInitiatorAddressMasksNetmask = *o.InitiatorAddressMasksNetmask
 		}
 		qInitiatorAddressMasksNetmask := qrInitiatorAddressMasksNetmask
 		if qInitiatorAddressMasksNetmask != "" {
@@ -560,13 +560,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressRangesEndQueryParameter != nil {
+	if o.InitiatorAddressRangesEnd != nil {
 
 		// query param initiator_address.ranges.end
 		var qrInitiatorAddressRangesEnd string
 
-		if o.InitiatorAddressRangesEndQueryParameter != nil {
-			qrInitiatorAddressRangesEnd = *o.InitiatorAddressRangesEndQueryParameter
+		if o.InitiatorAddressRangesEnd != nil {
+			qrInitiatorAddressRangesEnd = *o.InitiatorAddressRangesEnd
 		}
 		qInitiatorAddressRangesEnd := qrInitiatorAddressRangesEnd
 		if qInitiatorAddressRangesEnd != "" {
@@ -577,13 +577,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressRangesFamilyQueryParameter != nil {
+	if o.InitiatorAddressRangesFamily != nil {
 
 		// query param initiator_address.ranges.family
 		var qrInitiatorAddressRangesFamily string
 
-		if o.InitiatorAddressRangesFamilyQueryParameter != nil {
-			qrInitiatorAddressRangesFamily = *o.InitiatorAddressRangesFamilyQueryParameter
+		if o.InitiatorAddressRangesFamily != nil {
+			qrInitiatorAddressRangesFamily = *o.InitiatorAddressRangesFamily
 		}
 		qInitiatorAddressRangesFamily := qrInitiatorAddressRangesFamily
 		if qInitiatorAddressRangesFamily != "" {
@@ -594,13 +594,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InitiatorAddressRangesStartQueryParameter != nil {
+	if o.InitiatorAddressRangesStart != nil {
 
 		// query param initiator_address.ranges.start
 		var qrInitiatorAddressRangesStart string
 
-		if o.InitiatorAddressRangesStartQueryParameter != nil {
-			qrInitiatorAddressRangesStart = *o.InitiatorAddressRangesStartQueryParameter
+		if o.InitiatorAddressRangesStart != nil {
+			qrInitiatorAddressRangesStart = *o.InitiatorAddressRangesStart
 		}
 		qInitiatorAddressRangesStart := qrInitiatorAddressRangesStart
 		if qInitiatorAddressRangesStart != "" {
@@ -611,13 +611,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -628,7 +628,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -639,13 +639,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -656,13 +656,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -673,13 +673,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -690,13 +690,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -715,7 +715,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamIscsiCredentialsCollectionGet binds the parameter fields
 func (o *IscsiCredentialsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -732,7 +732,7 @@ func (o *IscsiCredentialsCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamIscsiCredentialsCollectionGet binds the parameter order_by
 func (o *IscsiCredentialsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

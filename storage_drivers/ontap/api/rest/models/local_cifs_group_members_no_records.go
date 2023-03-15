@@ -19,7 +19,7 @@ type LocalCifsGroupMembersNoRecords struct {
 
 	// Local user, Active Directory user, or Active Directory group which is a member of the specified local group.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this local cifs group members no records

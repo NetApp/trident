@@ -21,23 +21,23 @@ import (
 type MccipPort struct {
 
 	// l3 config
-	L3Config *MccipPortL3Config `json:"l3_config,omitempty"`
+	L3Config *MccipPortInlineL3Config `json:"l3_config,omitempty"`
 
 	// Port name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *MccipPortNode `json:"node,omitempty"`
+	Node *MccipPortInlineNode `json:"node,omitempty"`
 
 	// Port UUID
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
 	// Minimum: 10
-	VlanID int64 `json:"vlan_id,omitempty"`
+	VlanID *int64 `json:"vlan_id,omitempty"`
 }
 
 // Validate validates this mccip port
@@ -101,11 +101,11 @@ func (m *MccipPort) validateVlanID(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", *m.VlanID, 10, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("vlan_id", "body", m.VlanID, 4095, false); err != nil {
+	if err := validate.MaximumInt("vlan_id", "body", *m.VlanID, 4095, false); err != nil {
 		return err
 	}
 
@@ -176,17 +176,17 @@ func (m *MccipPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MccipPortL3Config mccip port l3 config
+// MccipPortInlineL3Config mccip port inline l3 config
 //
-// swagger:model MccipPortL3Config
-type MccipPortL3Config struct {
+// swagger:model mccip_port_inline_l3_config
+type MccipPortInlineL3Config struct {
 
 	// ipv4 interface
-	IPV4Interface *MccipPortL3ConfigIPV4Interface `json:"ipv4_interface,omitempty"`
+	IPV4Interface *MccipPortInlineL3ConfigInlineIPV4Interface `json:"ipv4_interface,omitempty"`
 }
 
-// Validate validates this mccip port l3 config
-func (m *MccipPortL3Config) Validate(formats strfmt.Registry) error {
+// Validate validates this mccip port inline l3 config
+func (m *MccipPortInlineL3Config) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIPV4Interface(formats); err != nil {
@@ -199,7 +199,7 @@ func (m *MccipPortL3Config) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MccipPortL3Config) validateIPV4Interface(formats strfmt.Registry) error {
+func (m *MccipPortInlineL3Config) validateIPV4Interface(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPV4Interface) { // not required
 		return nil
 	}
@@ -216,8 +216,8 @@ func (m *MccipPortL3Config) validateIPV4Interface(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this mccip port l3 config based on the context it is used
-func (m *MccipPortL3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mccip port inline l3 config based on the context it is used
+func (m *MccipPortInlineL3Config) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIPV4Interface(ctx, formats); err != nil {
@@ -230,7 +230,7 @@ func (m *MccipPortL3Config) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *MccipPortL3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
+func (m *MccipPortInlineL3Config) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IPV4Interface != nil {
 		if err := m.IPV4Interface.ContextValidate(ctx, formats); err != nil {
@@ -245,7 +245,7 @@ func (m *MccipPortL3Config) contextValidateIPV4Interface(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *MccipPortL3Config) MarshalBinary() ([]byte, error) {
+func (m *MccipPortInlineL3Config) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -253,8 +253,8 @@ func (m *MccipPortL3Config) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MccipPortL3Config) UnmarshalBinary(b []byte) error {
-	var res MccipPortL3Config
+func (m *MccipPortInlineL3Config) UnmarshalBinary(b []byte) error {
+	var res MccipPortInlineL3Config
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -262,25 +262,25 @@ func (m *MccipPortL3Config) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MccipPortL3ConfigIPV4Interface Object to setup an interface along with its default router.
+// MccipPortInlineL3ConfigInlineIPV4Interface Object to setup an interface along with its default router.
 //
-// swagger:model MccipPortL3ConfigIPV4Interface
-type MccipPortL3ConfigIPV4Interface struct {
+// swagger:model mccip_port_inline_l3_config_inline_ipv4_interface
+type MccipPortInlineL3ConfigInlineIPV4Interface struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this mccip port l3 config IP v4 interface
-func (m *MccipPortL3ConfigIPV4Interface) Validate(formats strfmt.Registry) error {
+// Validate validates this mccip port inline l3 config inline ipv4 interface
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNetmask(formats); err != nil {
@@ -293,23 +293,25 @@ func (m *MccipPortL3ConfigIPV4Interface) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MccipPortL3ConfigIPV4Interface) validateNetmask(formats strfmt.Registry) error {
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this mccip port l3 config IP v4 interface based on the context it is used
-func (m *MccipPortL3ConfigIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mccip port inline l3 config inline ipv4 interface based on the context it is used
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNetmask(ctx, formats); err != nil {
@@ -322,20 +324,22 @@ func (m *MccipPortL3ConfigIPV4Interface) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MccipPortL3ConfigIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("l3_config" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *MccipPortL3ConfigIPV4Interface) MarshalBinary() ([]byte, error) {
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -343,8 +347,8 @@ func (m *MccipPortL3ConfigIPV4Interface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MccipPortL3ConfigIPV4Interface) UnmarshalBinary(b []byte) error {
-	var res MccipPortL3ConfigIPV4Interface
+func (m *MccipPortInlineL3ConfigInlineIPV4Interface) UnmarshalBinary(b []byte) error {
+	var res MccipPortInlineL3ConfigInlineIPV4Interface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -352,25 +356,25 @@ func (m *MccipPortL3ConfigIPV4Interface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MccipPortNode Node information
+// MccipPortInlineNode Node information
 //
-// swagger:model MccipPortNode
-type MccipPortNode struct {
+// swagger:model mccip_port_inline_node
+type MccipPortInlineNode struct {
 
 	// links
-	Links *MccipPortNodeLinks `json:"_links,omitempty"`
+	Links *MccipPortInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this mccip port node
-func (m *MccipPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this mccip port inline node
+func (m *MccipPortInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -383,7 +387,7 @@ func (m *MccipPortNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MccipPortNode) validateLinks(formats strfmt.Registry) error {
+func (m *MccipPortInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -400,8 +404,8 @@ func (m *MccipPortNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this mccip port node based on the context it is used
-func (m *MccipPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mccip port inline node based on the context it is used
+func (m *MccipPortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -414,7 +418,7 @@ func (m *MccipPortNode) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *MccipPortNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MccipPortInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -429,7 +433,7 @@ func (m *MccipPortNode) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *MccipPortNode) MarshalBinary() ([]byte, error) {
+func (m *MccipPortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -437,8 +441,8 @@ func (m *MccipPortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MccipPortNode) UnmarshalBinary(b []byte) error {
-	var res MccipPortNode
+func (m *MccipPortInlineNode) UnmarshalBinary(b []byte) error {
+	var res MccipPortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -446,17 +450,17 @@ func (m *MccipPortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MccipPortNodeLinks mccip port node links
+// MccipPortInlineNodeInlineLinks mccip port inline node inline links
 //
-// swagger:model MccipPortNodeLinks
-type MccipPortNodeLinks struct {
+// swagger:model mccip_port_inline_node_inline__links
+type MccipPortInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this mccip port node links
-func (m *MccipPortNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this mccip port inline node inline links
+func (m *MccipPortInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -469,7 +473,7 @@ func (m *MccipPortNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MccipPortNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MccipPortInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -486,8 +490,8 @@ func (m *MccipPortNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this mccip port node links based on the context it is used
-func (m *MccipPortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mccip port inline node inline links based on the context it is used
+func (m *MccipPortInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -500,7 +504,7 @@ func (m *MccipPortNodeLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *MccipPortNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MccipPortInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -515,7 +519,7 @@ func (m *MccipPortNodeLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *MccipPortNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MccipPortInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -523,8 +527,8 @@ func (m *MccipPortNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MccipPortNodeLinks) UnmarshalBinary(b []byte) error {
-	var res MccipPortNodeLinks
+func (m *MccipPortInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MccipPortInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

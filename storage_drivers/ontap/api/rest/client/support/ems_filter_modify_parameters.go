@@ -73,13 +73,13 @@ type EmsFilterModifyParams struct {
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NewName.
 
 	   New filter name for renames. Valid in PATCH.
 	*/
-	NewNameQueryParameter *string
+	NewName *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *EmsFilterModifyParams) SetInfo(info *models.EmsFilter) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the ems filter modify params
-func (o *EmsFilterModifyParams) WithNamePathParameter(name string) *EmsFilterModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filter modify params
+func (o *EmsFilterModifyParams) WithName(name string) *EmsFilterModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filter modify params
-func (o *EmsFilterModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filter modify params
+func (o *EmsFilterModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNewNameQueryParameter adds the newName to the ems filter modify params
-func (o *EmsFilterModifyParams) WithNewNameQueryParameter(newName *string) *EmsFilterModifyParams {
-	o.SetNewNameQueryParameter(newName)
+// WithNewName adds the newName to the ems filter modify params
+func (o *EmsFilterModifyParams) WithNewName(newName *string) *EmsFilterModifyParams {
+	o.SetNewName(newName)
 	return o
 }
 
-// SetNewNameQueryParameter adds the newName to the ems filter modify params
-func (o *EmsFilterModifyParams) SetNewNameQueryParameter(newName *string) {
-	o.NewNameQueryParameter = newName
+// SetNewName adds the newName to the ems filter modify params
+func (o *EmsFilterModifyParams) SetNewName(newName *string) {
+	o.NewName = newName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,17 +181,17 @@ func (o *EmsFilterModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.NewNameQueryParameter != nil {
+	if o.NewName != nil {
 
 		// query param new_name
 		var qrNewName string
 
-		if o.NewNameQueryParameter != nil {
-			qrNewName = *o.NewNameQueryParameter
+		if o.NewName != nil {
+			qrNewName = *o.NewName
 		}
 		qNewName := qrNewName
 		if qNewName != "" {

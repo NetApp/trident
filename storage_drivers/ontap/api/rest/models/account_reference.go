@@ -19,11 +19,11 @@ import (
 type AccountReference struct {
 
 	// links
-	Links *AccountReferenceLinks `json:"_links,omitempty"`
+	Links *AccountReferenceInlineLinks `json:"_links,omitempty"`
 
 	// User account
 	// Example: joe.smith
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this account reference
@@ -103,17 +103,17 @@ func (m *AccountReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountReferenceLinks account reference links
+// AccountReferenceInlineLinks account reference inline links
 //
-// swagger:model AccountReferenceLinks
-type AccountReferenceLinks struct {
+// swagger:model account_reference_inline__links
+type AccountReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this account reference links
-func (m *AccountReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this account reference inline links
+func (m *AccountReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *AccountReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AccountReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *AccountReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account reference links based on the context it is used
-func (m *AccountReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account reference inline links based on the context it is used
+func (m *AccountReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *AccountReferenceLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *AccountReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *AccountReferenceLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *AccountReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *AccountReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *AccountReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res AccountReferenceLinks
+func (m *AccountReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AccountReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

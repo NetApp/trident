@@ -70,7 +70,7 @@ type IpspaceModifyParams struct {
 
 	   IPspace UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *IpspaceModifyParams) SetInfo(info *models.Ipspace) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the ipspace modify params
-func (o *IpspaceModifyParams) WithUUIDPathParameter(uuid string) *IpspaceModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ipspace modify params
+func (o *IpspaceModifyParams) WithUUID(uuid string) *IpspaceModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ipspace modify params
-func (o *IpspaceModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ipspace modify params
+func (o *IpspaceModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *IpspaceModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
