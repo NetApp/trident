@@ -832,7 +832,7 @@ func InitializeSANDriver(
 		Logc(ctx).Debug("Using CHAP credentials")
 
 		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, fmt.Sprintf("svm=%s", config.SVM))
+			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, "*")
 			if lunsResponseErr != nil {
 				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
 			}

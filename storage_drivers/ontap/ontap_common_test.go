@@ -2529,12 +2529,11 @@ func TestInitializeSANDriver(t *testing.T) {
 	}
 	lun := []api.Lun{}
 	backendUUID := "testBackendUUID"
-	var driverContext tridentconfig.DriverContext
-	driverContext = "csi"
+	driverContext := tridentconfig.ContextCSI
 	expectedIgroupName := getDefaultIgroupName(driverContext, backendUUID)
 	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(response, nil)
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("svm=%s", config.SVM)).Return(lun, nil)
+	mockAPI.EXPECT().LunList(ctx, "*").Return(lun, nil)
 	mockAPI.EXPECT().IscsiInitiatorSetDefaultAuth(ctx, "CHAP", config.ChapUsername, config.ChapInitiatorSecret,
 		config.ChapTargetUsername, config.ChapTargetInitiatorSecret).Return(nil)
 
@@ -2561,7 +2560,7 @@ func TestInitializeSANDriver(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(response, nil)
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("svm=%s", config.SVM)).Return(lun, nil)
+	mockAPI.EXPECT().LunList(ctx, "*").Return(lun, nil)
 	mockAPI.EXPECT().IscsiInitiatorSetDefaultAuth(ctx, "CHAP", config.ChapUsername, config.ChapInitiatorSecret,
 		config.ChapTargetUsername, config.ChapTargetInitiatorSecret).Return(fmt.Errorf("Error setting default auth"))
 
@@ -2588,7 +2587,7 @@ func TestInitializeSANDriver(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(response, nil)
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("svm=%s", config.SVM)).Return(lun, fmt.Errorf("error enumerating LUNs"))
+	mockAPI.EXPECT().LunList(ctx, "*").Return(lun, fmt.Errorf("error enumerating LUNs"))
 
 	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
 
@@ -2605,7 +2604,7 @@ func TestInitializeSANDriver(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(response, nil)
-	mockAPI.EXPECT().LunList(ctx, fmt.Sprintf("svm=%s", config.SVM)).Return([]api.Lun{dummyLun}, nil)
+	mockAPI.EXPECT().LunList(ctx, "*").Return([]api.Lun{dummyLun}, nil)
 
 	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
 
@@ -2643,6 +2642,20 @@ func TestInitializeSANDriver(t *testing.T) {
 	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
 
 	assert.Error(t, err)
+
+	// Test-10: Do not enable CHAP if any LUNs already exisit
+	config.UseCHAP = true
+	response.AuthType = "none"
+	mockCtrl = gomock.NewController(t)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(nil)
+	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(response, nil)
+	mockAPI.EXPECT().LunList(ctx, "*").Return([]api.Lun{dummyLun}, nil)
+
+	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
+
+	assert.Error(t, err)
+	assert.Equal(t, "will not enable CHAP for SVM testSVM; 1 exisiting LUNs would lose access", err.Error())
 }
 
 func TestEMSHeartbeat(t *testing.T) {
