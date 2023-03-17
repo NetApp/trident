@@ -4,7 +4,7 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE ?= golang:1.18
+GO_IMAGE ?= golang:1.19
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH ?=c:/go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config

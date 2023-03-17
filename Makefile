@@ -4,9 +4,9 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE ?= golang:1.18
+GO_IMAGE ?= golang:1.19
 HELM_IMAGE = alpine/helm:3.6.1
-GOLANGCI-LINT_VERSION ?= v1.46.2
+GOLANGCI-LINT_VERSION ?= v1.49.0
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
