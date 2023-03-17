@@ -1,178 +1,58 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"io"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8stesting "k8s.io/client-go/testing"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
+	discoveryfake "k8s.io/client-go/discovery/fake"
+	clientgotesting "k8s.io/client-go/testing"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
+	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
+	v1fake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1/fake"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
+	tridenttesting "github.com/netapp/trident/testing"
 	"github.com/netapp/trident/utils"
 )
 
 var (
-	debug       = flag.Bool("debug", false, "Enable debugging output")
 	storagePool = "aggr1"
 	ctx         = context.Background
+
+	crdScheme = runtime.NewScheme()
+	codecs    = serializer.NewCodecFactory(crdScheme)
 )
 
 func init() {
-	testing.Init()
-	if *debug {
-		_ = InitLogLevel("debug")
-	}
-}
-
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Simple cache for our CRD objects, since we don't have a real database layer here
-// TODO merge this and the equivalent in frontends/crd/crd_controller_test ??
-
-type TestingCache struct {
-	backendCache map[string]*v1.TridentBackend
-}
-
-func NewTestingCache() *TestingCache {
-	result := &TestingCache{
-		backendCache: make(map[string]*v1.TridentBackend),
-	}
-	return result
-}
-
-func (o *TestingCache) addBackend(backend *v1.TridentBackend) {
-	o.backendCache[backend.Name] = backend
-}
-
-func (o *TestingCache) updateBackend(updatedBackend *v1.TridentBackend) {
-	Log().Debug(">>>> updateBackend")
-	defer Log().Debug("<<<< updateBackend")
-	currentBackend := o.backendCache[updatedBackend.Name]
-	if !cmp.Equal(updatedBackend, currentBackend) {
-		if diff := cmp.Diff(currentBackend, updatedBackend); diff != "" {
-			Log().Debugf("updated object fields (-old +new):%s", diff)
-			if currentBackend.ResourceVersion == "" {
-				currentBackend.ResourceVersion = "1"
-			}
-			if currentResourceVersion, err := strconv.Atoi(currentBackend.ResourceVersion); err == nil {
-				updatedBackend.ResourceVersion = strconv.Itoa(currentResourceVersion + 1)
-			}
-			Log().WithFields(LogFields{
-				"currentBackend.ResourceVersion": currentBackend.ResourceVersion,
-				"updatedBackend.ResourceVersion": updatedBackend.ResourceVersion,
-			}).Debug("Incremented ResourceVersion.")
-		}
-	} else {
-		Log().Debug("No difference, leaving ResourceVersion unchanged.")
-	}
-	o.backendCache[updatedBackend.Name] = updatedBackend
-}
-
-func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCache) {
-	crdFakeClient.Fake.PrependReactor(
-		"*" /* all operations */, "*", /* all object types */
-		// "create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
-		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-			Log().Tracef("actionCopy: %T\n", actionCopy) // use this to find any other types to add
-			switch action := actionCopy.(type) {
-
-			case k8stesting.CreateActionImpl:
-				obj := action.GetObject()
-				Log().Tracef("~~ obj: %T\n", obj)
-				Log().Tracef("~~ obj: %v\n", obj)
-				switch crd := obj.(type) {
-				case *v1.TridentBackend:
-					Log().Tracef("~~ crd: %T\n", crd)
-					if crd.ObjectMeta.GenerateName != "" {
-						if crd.Name == "" {
-							crd.Name = crd.ObjectMeta.GenerateName + strings.ToLower(utils.RandomString(5))
-							Log().Tracef("~~~ generated crd.Name: %v\n", crd.Name)
-						}
-					}
-					if crd.ResourceVersion == "" {
-						crd.ResourceVersion = "1"
-						Log().Tracef("~~~ generated crd.ResourceVersion: %v\n", crd.ResourceVersion)
-					}
-					crd.ObjectMeta.Namespace = action.GetNamespace()
-					testingCache.addBackend(crd)
-					return false, crd, nil
-
-				default:
-					Log().Tracef("~~ crd: %T\n", crd)
-				}
-
-			case k8stesting.DeleteActionImpl:
-				name := action.GetName()
-				Log().Tracef("~~ name: %v\n", name)
-
-			case k8stesting.GetActionImpl:
-				name := action.GetName()
-				Log().Tracef("~~ name: %v\n", name)
-
-			case k8stesting.ListActionImpl:
-				kind := action.GetKind()
-				listRestrictions := action.GetListRestrictions()
-				Log().Tracef("~~ kind: %T\n", kind)
-				Log().Tracef("~~ listRestrictions: %v\n", listRestrictions)
-
-			case k8stesting.PatchActionImpl:
-				name := action.GetName()
-				patch := action.GetPatch()
-				patchType := action.GetPatchType()
-				Log().Tracef("~~ name: %v\n", name)
-				Log().Tracef("~~ patch: %v\n", patch)
-				Log().Tracef("~~ patchType: %v\n", patchType)
-
-			case k8stesting.UpdateActionImpl:
-				obj := action.GetObject()
-				Log().Tracef("~~ obj: %T\n", obj)
-				Log().Tracef("~~ obj: %v\n", obj)
-
-				switch crd := obj.(type) {
-				case *v1.TridentBackend:
-					testingCache.updateBackend(crd)
-					return false, crd, nil
-
-				default:
-				}
-
-			default:
-				Log().Tracef("~~~ unhandled type: %T\n", actionCopy) // use this to find any other types to add
-			}
-			return false, nil, nil
-		})
+	utilruntime.Must(fake.AddToScheme(crdScheme))
 }
 
 func GetTestKubernetesClient() (*CRDClientV1, k8sclient.KubernetesClient) {
-	InitLogOutput(io.Discard)
-	testingCache := NewTestingCache()
-
-	client := fake.NewSimpleClientset()
-	addCrdTestReactors(client, testingCache)
-
+	client := NewFakeClientset()
 	k8sclientFake, _ := k8sclient.NewFakeKubeClient()
-	// TODO add more reactors here if needed for the k8s api (not just CRD)
 
 	return &CRDClientV1{
 		crdClient: client,
@@ -182,6 +62,56 @@ func GetTestKubernetesClient() (*CRDClientV1, k8sclient.KubernetesClient) {
 			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
 	}, k8sclientFake
+}
+
+// NewFakeClientset is a better replacement for the autogenerated fake.NewSimpleClientset that
+// uses our own improved testing fixtures.
+func NewFakeClientset(objects ...runtime.Object) *Clientset {
+	o := tridenttesting.NewObjectTracker(crdScheme, codecs.UniversalDecoder())
+	for _, obj := range objects {
+		if err := o.Add(obj); err != nil {
+			panic(err)
+		}
+	}
+
+	cs := &Clientset{tracker: o}
+	cs.discovery = &discoveryfake.FakeDiscovery{Fake: &cs.Fake}
+	cs.AddReactor("*", "*", tridenttesting.ObjectReaction(o))
+	cs.AddWatchReactor("*", func(action clientgotesting.Action) (handled bool, ret watch.Interface, err error) {
+		gvr := action.GetResource()
+		ns := action.GetNamespace()
+		watchIntf, err := o.Watch(gvr, ns)
+		if err != nil {
+			return false, nil, err
+		}
+		return true, watchIntf, nil
+	})
+
+	return cs
+}
+
+// Clientset implements clientset.Interface. Meant to be embedded into a
+// struct to get a default implementation. This makes faking out just the method
+// you want to test easier.  Uses Trident's improved ObjectTracker.
+type Clientset struct {
+	clientgotesting.Fake
+	discovery *discoveryfake.FakeDiscovery
+	tracker   tridenttesting.ObjectTracker
+}
+
+func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+	return c.discovery
+}
+
+func (c *Clientset) Tracker() tridenttesting.ObjectTracker {
+	return c.tracker
+}
+
+var _ versioned.Interface = &Clientset{}
+
+// TridentV1 retrieves the TridentV1Client
+func (c *Clientset) TridentV1() v1.TridentV1Interface {
+	return &v1fake.FakeTridentV1{Fake: &c.Fake}
 }
 
 func TestKubernetesBackend(t *testing.T) {
@@ -268,7 +198,8 @@ func TestKubernetesBackend(t *testing.T) {
 func TestKubernetesBackends(t *testing.T) {
 	p, _ := GetTestKubernetesClient()
 
-	var backends []*storage.BackendPersistent
+	var persistentBackends []*storage.BackendPersistent
+	var backends []*storage.StorageBackend
 	var err error
 
 	// Adding storage backends
@@ -290,6 +221,8 @@ func TestKubernetesBackends(t *testing.T) {
 		NFSServer.SetName("nfs-server-" + strconv.Itoa(i) + "-" + NFSServerConfig.ManagementLIF)
 		NFSServer.SetBackendUUID(uuid.New().String())
 
+		backends = append(backends, NFSServer)
+
 		err = p.AddBackend(ctx(), NFSServer)
 		if err != nil {
 			t.Error(err.Error())
@@ -297,12 +230,12 @@ func TestKubernetesBackends(t *testing.T) {
 		}
 
 		Log().Info(">>CHECKING BACKENDS.")
-		backends, err = p.GetBackends(ctx())
+		persistentBackends, err = p.GetBackends(ctx())
 		if err != nil {
 			t.Error(err.Error())
 			t.FailNow()
 		}
-		for _, backend := range backends {
+		for _, backend := range persistentBackends {
 			secretName := p.backendSecretName(backend.BackendUUID)
 			Log().WithFields(LogFields{
 				"backend.Name":        backend.Name,
@@ -341,22 +274,25 @@ func TestKubernetesBackends(t *testing.T) {
 	}
 
 	// Retrieving all backends
-	if backends, err = p.GetBackends(ctx()); err != nil {
+	if persistentBackends, err = p.GetBackends(ctx()); err != nil {
 		t.Error(err.Error())
 		t.FailNow()
 	}
-
-	if len(backends) != 5 {
+	if len(persistentBackends) != 5 {
 		t.Error("Didn't retrieve all the backends!")
 	}
 
-	// Deleting all backends
-	if err = p.DeleteBackends(ctx()); err != nil {
+	// Delete all backends
+	for _, backend := range backends {
+		if err = p.DeleteBackend(ctx(), backend); err != nil {
+			t.Error(err.Error())
+		}
+	}
+
+	if persistentBackends, err = p.GetBackends(ctx()); err != nil {
 		t.Error(err.Error())
 	}
-	if backends, err = p.GetBackends(ctx()); err != nil {
-		t.Error(err.Error())
-	} else if len(backends) != 0 {
+	if len(persistentBackends) != 0 {
 		t.Error("Deleting backends failed!")
 	}
 }
@@ -446,6 +382,22 @@ func TestKubernetesVolume(t *testing.T) {
 		t.Error("Recovered volume does not match!")
 	}
 
+	// Test idempotent replacement
+	err = p.AddVolume(ctx(), vol1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a volume
+	recoveredVolume, err = p.GetVolume(ctx(), vol1.Config.Name)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if recoveredVolume.BackendUUID != vol1.BackendUUID || recoveredVolume.Config.Size != vol1.Config.Size {
+		t.Error("Recovered volume does not match!")
+	}
+
 	// Updating a volume
 	vol1Config.Size = "2GB"
 	err = p.UpdateVolume(ctx(), vol1)
@@ -464,6 +416,26 @@ func TestKubernetesVolume(t *testing.T) {
 	err = p.DeleteVolume(ctx(), vol1)
 	if err != nil {
 		t.Error(err.Error())
+	}
+
+	tvol, err := p.crdClient.TridentV1().TridentVolumes(p.namespace).Get(ctx(), vol1.Config.Name, getOpts)
+	if err != nil || tvol == nil || !tvol.HasTridentFinalizers() || tvol.DeletionTimestamp.IsZero() {
+		t.Fatalf("Volume should have been updated; %v", err)
+	}
+
+	// Remove finalizers to ensure volume is deleted
+	tvol.RemoveTridentFinalizers()
+	_, _ = p.crdClient.TridentV1().TridentVolumes(p.namespace).Update(ctx(), tvol, updateOpts)
+
+	_, getErr := p.GetVolume(ctx(), vol1.Config.Name)
+	if !errors.IsNotFound(getErr) {
+		t.Fatalf("Volume should have been deleted; %v", err)
+	}
+
+	// Deleting a non-existent volume
+	err = p.DeleteVolume(ctx(), vol1)
+	if err != nil {
+		t.Error("DeleteVolume should have succeeded.")
 	}
 }
 
@@ -566,15 +538,26 @@ func TestKubernetesVolumeTransactions(t *testing.T) {
 
 	// Getting and Deleting volume transactions
 	for _, v := range volTxns {
-		txn, err := p.GetExistingVolumeTransaction(ctx(), v)
+		txn, err := p.GetVolumeTransaction(ctx(), v)
 		if err != nil {
 			t.Errorf("Unable to get existing volume transaction %s:  %v", v.Config.Name, err)
 		}
 		if !reflect.DeepEqual(txn, v) {
 			t.Errorf("Got incorrect volume transaction for %s (got %s)", v.Config.Name, txn.Config.Name)
 		}
-		if err := p.DeleteVolumeTransaction(ctx(), v); err != nil {
-			t.Errorf("Unable to delete volume: %v", err)
+		if err = p.DeleteVolumeTransaction(ctx(), v); err != nil {
+			t.Errorf("Unable to delete volume transaction: %v", err)
+		}
+
+		deletedTxn, err := p.GetVolumeTransaction(ctx(), v)
+		if deletedTxn != nil || err != nil && !errors.IsNotFound(err) {
+			t.Fatalf("Transaction should have been deleted; %v", err)
+		}
+
+		// Deleting a non-existent transaction
+		err = p.DeleteVolumeTransaction(ctx(), v)
+		if err != nil {
+			t.Error("DeleteVolumeTransaction should have succeeded.")
 		}
 	}
 	volTxns, err = p.GetVolumeTransactions(ctx())
@@ -730,6 +713,26 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 
 	if err := p.DeleteStorageClass(ctx(), bronzeClass); err != nil {
 		t.Fatal(err.Error())
+	}
+
+	tsc, err := p.crdClient.TridentV1().TridentStorageClasses(p.namespace).Get(ctx(), bronzeClass.GetName(), getOpts)
+	if err != nil || tsc == nil || !tsc.HasTridentFinalizers() || tsc.DeletionTimestamp.IsZero() {
+		t.Fatalf("Storage class should have been updated; %v", err)
+	}
+
+	// Remove finalizers to ensure storage class is deleted
+	tsc.RemoveTridentFinalizers()
+	_, _ = p.crdClient.TridentV1().TridentStorageClasses(p.namespace).Update(ctx(), tsc, updateOpts)
+
+	_, err = p.GetStorageClass(ctx(), bronzeClass.GetName())
+	if !errors.IsNotFound(err) {
+		t.Fatalf("Storage class should have been deleted; %v", err)
+	}
+
+	// Delete a non-existent storage class
+	err = p.DeleteStorageClass(ctx(), bronzeClass)
+	if err != nil {
+		t.Error("DeleteStorageClass should have succeeded.")
 	}
 }
 
@@ -936,10 +939,25 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
+	tnode, err := p.crdClient.TridentV1().TridentNodes(p.namespace).Get(ctx(), utilsNode.Name, getOpts)
+	if err != nil || tnode == nil || !tnode.HasTridentFinalizers() || tnode.DeletionTimestamp.IsZero() {
+		t.Fatalf("Node should have been updated; %v", err)
+	}
+
+	// Remove finalizers to ensure node is deleted
+	tnode.RemoveTridentFinalizers()
+	_, _ = p.crdClient.TridentV1().TridentNodes(p.namespace).Update(ctx(), tnode, updateOpts)
+
 	// validate it's gone
 	_, err = p.GetNode(ctx(), utilsNode.Name)
-	if !IsStatusNotFoundError(err) {
-		t.Fatal(err.Error())
+	if !errors.IsNotFound(err) {
+		t.Fatalf("Node should have been deleted; %v", err)
+	}
+
+	// Deleting a non-existent node
+	err = p.DeleteNode(ctx(), utilsNode)
+	if err != nil {
+		t.Error("DeleteNode should have succeeded.")
 	}
 }
 
@@ -1007,26 +1025,48 @@ func TestKubernetesSnapshot(t *testing.T) {
 		t.Error("Recovered snapshot does not match!")
 	}
 
+	// Test idempotent replacement
+	err = p.AddSnapshot(ctx(), snap1)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+
+	// Getting a snapshot
+	recoveredSnapshot, err = p.GetSnapshot(ctx(), snap1.Config.VolumeName, snap1.Config.Name)
+	if err != nil {
+		t.Error(err.Error())
+		t.FailNow()
+	}
+	if recoveredSnapshot.SizeBytes != snap1.SizeBytes || recoveredSnapshot.Created != snap1.Created ||
+		!reflect.DeepEqual(recoveredSnapshot.Config, snap1.Config) {
+		t.Error("Recovered snapshot does not match!")
+	}
+
 	// Deleting a snapshot
 	err = p.DeleteSnapshot(ctx(), snap1)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
+	tsnap, err := p.crdClient.TridentV1().TridentSnapshots(p.namespace).Get(ctx(), "vol1-testsnap1", getOpts)
+	if err != nil || tsnap == nil || !tsnap.HasTridentFinalizers() || tsnap.DeletionTimestamp.IsZero() {
+		t.Fatalf("Snapshot should have been updated; %v", err)
+	}
+
+	// Remove finalizers to ensure snapshot is deleted
+	tsnap.RemoveTridentFinalizers()
+	_, _ = p.crdClient.TridentV1().TridentSnapshots(p.namespace).Update(ctx(), tsnap, updateOpts)
+
 	_, err = p.GetSnapshot(ctx(), snap1.Config.VolumeName, snap1.Config.Name)
-	if err == nil {
-		t.Error("Snapshot should have been deleted.")
-		t.FailNow()
+	if !errors.IsNotFound(err) {
+		t.Fatalf("Snapshot should have been deleted; %v", err)
 	}
 
 	// Deleting a non-existent snapshot
 	err = p.DeleteSnapshot(ctx(), snap1)
-	if err == nil {
-		t.Error("DeleteSnapshot should have failed.")
-	}
-	err = p.DeleteSnapshotIgnoreNotFound(ctx(), snap1)
 	if err != nil {
-		t.Error("DeleteSnapshotIgnoreNotFound should have succeeded.")
+		t.Error("DeleteSnapshot should have succeeded.")
 	}
 }
 

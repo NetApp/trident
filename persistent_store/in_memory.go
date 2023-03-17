@@ -89,15 +89,6 @@ func (c *InMemoryClient) AddBackend(ctx context.Context, b storage.Backend) erro
 	return nil
 }
 
-func (c *InMemoryClient) AddBackendPersistent(_ context.Context, backend *storage.BackendPersistent) error {
-	if _, ok := c.backends[backend.Name]; ok {
-		return fmt.Errorf("backend %s already exists", backend.Name)
-	}
-	c.backends[backend.Name] = backend
-	c.backendsAdded++
-	return nil
-}
-
 func (c *InMemoryClient) GetBackend(_ context.Context, backendName string) (*storage.BackendPersistent, error) {
 	ret, ok := c.backends[backendName]
 	if !ok {
@@ -119,20 +110,7 @@ func (c *InMemoryClient) UpdateBackend(ctx context.Context, b storage.Backend) e
 	return nil
 }
 
-// UpdateBackendPersistent updates a backend's persistent state
-func (c *InMemoryClient) UpdateBackendPersistent(_ context.Context, update *storage.BackendPersistent) error {
-	// UpdateBackend requires the backend to already exist.
-	if _, ok := c.backends[update.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, update.Name)
-	}
-	c.backends[update.Name] = update
-	return nil
-}
-
 func (c *InMemoryClient) DeleteBackend(ctx context.Context, b storage.Backend) error {
-	if _, ok := c.backends[b.Name()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, b.Name())
-	}
 	delete(c.backends, b.Name())
 	return nil
 }
@@ -181,22 +159,6 @@ func (c *InMemoryClient) AddVolume(_ context.Context, vol *storage.Volume) error
 	return nil
 }
 
-// AddVolumePersistent saves a volume's persistent state to the persistent store
-func (c *InMemoryClient) AddVolumePersistent(_ context.Context, volume *storage.VolumeExternal) error {
-	if _, ok := c.volumes[volume.Config.Name]; ok {
-		return fmt.Errorf("volume %s already exists", volume.Config.Name)
-	}
-	c.volumes[volume.Config.Name] = volume
-	c.volumesAdded++
-	return nil
-}
-
-// UpdateVolumePersistent updates a volume's persistent state
-func (c *InMemoryClient) UpdateVolumePersistent(_ context.Context, volume *storage.VolumeExternal) error {
-	c.volumes[volume.Config.Name] = volume
-	return nil
-}
-
 func (c *InMemoryClient) GetVolume(_ context.Context, volumeName string) (*storage.VolumeExternal, error) {
 	ret, ok := c.volumes[volumeName]
 	if !ok {
@@ -215,14 +177,6 @@ func (c *InMemoryClient) UpdateVolume(_ context.Context, vol *storage.Volume) er
 }
 
 func (c *InMemoryClient) DeleteVolume(_ context.Context, vol *storage.Volume) error {
-	if _, ok := c.volumes[vol.Config.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, vol.Config.Name)
-	}
-	delete(c.volumes, vol.Config.Name)
-	return nil
-}
-
-func (c *InMemoryClient) DeleteVolumeIgnoreNotFound(_ context.Context, vol *storage.Volume) error {
 	delete(c.volumes, vol.Config.Name)
 	return nil
 }
@@ -272,7 +226,7 @@ func (c *InMemoryClient) UpdateVolumeTransaction(_ context.Context, volTxn *stor
 	return nil
 }
 
-func (c *InMemoryClient) GetExistingVolumeTransaction(
+func (c *InMemoryClient) GetVolumeTransaction(
 	_ context.Context, volTxn *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
 	vt, ok := c.volumeTxns[volTxn.Name()]
@@ -283,9 +237,6 @@ func (c *InMemoryClient) GetExistingVolumeTransaction(
 }
 
 func (c *InMemoryClient) DeleteVolumeTransaction(_ context.Context, volTxn *storage.VolumeTransaction) error {
-	if _, ok := c.volumeTxns[volTxn.Name()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, "VolumesTransactions")
-	}
 	delete(c.volumeTxns, volTxn.Name())
 	return nil
 }
@@ -321,9 +272,6 @@ func (c *InMemoryClient) GetStorageClasses(context.Context) ([]*sc.Persistent, e
 }
 
 func (c *InMemoryClient) DeleteStorageClass(_ context.Context, s *sc.StorageClass) error {
-	if _, ok := c.storageClasses[s.GetName()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, s.GetName())
-	}
 	delete(c.storageClasses, s.GetName())
 	return nil
 }
@@ -361,9 +309,6 @@ func (c *InMemoryClient) GetNodes(context.Context) ([]*utils.Node, error) {
 }
 
 func (c *InMemoryClient) DeleteNode(_ context.Context, n *utils.Node) error {
-	if _, ok := c.nodes[n.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, n.Name)
-	}
 	delete(c.nodes, n.Name)
 	return nil
 }
@@ -401,9 +346,6 @@ func (c *InMemoryClient) GetVolumePublications(context.Context) ([]*utils.Volume
 }
 
 func (c *InMemoryClient) DeleteVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
-	if _, ok := c.volumePublications[vp.Name]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, vp.Name)
-	}
 	delete(c.volumePublications, vp.Name)
 	return nil
 }
@@ -450,17 +392,7 @@ func (c *InMemoryClient) UpdateSnapshot(_ context.Context, snapshot *storage.Sna
 
 // DeleteSnapshot deletes a snapshot from the persistent store
 func (c *InMemoryClient) DeleteSnapshot(_ context.Context, snapshot *storage.Snapshot) error {
-	if _, ok := c.snapshots[snapshot.ID()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, snapshot.Config.Name)
-	}
 	delete(c.snapshots, snapshot.ID())
-	return nil
-}
-
-// DeleteSnapshotIgnoreNotFound deletes a snapshot from the persistent store,
-// returning no error if the record does not exist.
-func (c *InMemoryClient) DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error {
-	_ = c.DeleteSnapshot(ctx, snapshot)
 	return nil
 }
 

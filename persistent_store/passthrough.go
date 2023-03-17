@@ -225,10 +225,6 @@ func (c *PassthroughClient) AddBackend(ctx context.Context, backend storage.Back
 	return nil
 }
 
-func (c *PassthroughClient) AddBackendPersistent(context.Context, *storage.BackendPersistent) error {
-	return NewPersistentStoreError(NotSupported, "")
-}
-
 func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error) {
 	existingBackend, ok := c.liveBackends[backendName]
 	if !ok {
@@ -252,16 +248,7 @@ func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend storage.B
 	return nil
 }
 
-// UpdateBackendPersistent updates a backend's persistent state
-func (c *PassthroughClient) UpdateBackendPersistent(context.Context, *storage.BackendPersistent) error {
-	return nil
-}
-
 func (c *PassthroughClient) DeleteBackend(_ context.Context, backend storage.Backend) error {
-	if _, ok := c.liveBackends[backend.Name()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
-	}
-
 	delete(c.liveBackends, backend.Name())
 	return nil
 }
@@ -299,11 +286,6 @@ func (c *PassthroughClient) AddVolume(context.Context, *storage.Volume) error {
 	return nil
 }
 
-// AddVolumePersistent saves a volume's persistent state to the persistent store
-func (c *PassthroughClient) AddVolumePersistent(context.Context, *storage.VolumeExternal) error {
-	return nil
-}
-
 // GetVolume is not called by the orchestrator, which caches all volumes in
 // memory after bootstrapping.  So this method need not do anything.
 func (c *PassthroughClient) GetVolume(_ context.Context, volName string) (*storage.VolumeExternal, error) {
@@ -314,16 +296,7 @@ func (c *PassthroughClient) UpdateVolume(context.Context, *storage.Volume) error
 	return nil
 }
 
-// UpdateVolumePersistent updates a volume's persistent state
-func (c *PassthroughClient) UpdateVolumePersistent(context.Context, *storage.VolumeExternal) error {
-	return nil
-}
-
 func (c *PassthroughClient) DeleteVolume(context.Context, *storage.Volume) error {
-	return nil
-}
-
-func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(context.Context, *storage.Volume) error {
 	return nil
 }
 
@@ -395,7 +368,7 @@ func (c *PassthroughClient) GetVolumeTransactions(context.Context) ([]*storage.V
 	return make([]*storage.VolumeTransaction, 0), nil
 }
 
-func (c *PassthroughClient) GetExistingVolumeTransaction(
+func (c *PassthroughClient) GetVolumeTransaction(
 	context.Context, *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
 	return nil, nil
@@ -481,10 +454,6 @@ func (c *PassthroughClient) UpdateSnapshot(context.Context, *storage.Snapshot) e
 }
 
 func (c *PassthroughClient) DeleteSnapshot(context.Context, *storage.Snapshot) error {
-	return nil
-}
-
-func (c *PassthroughClient) DeleteSnapshotIgnoreNotFound(context.Context, *storage.Snapshot) error {
 	return nil
 }
 

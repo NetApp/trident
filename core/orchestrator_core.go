@@ -830,7 +830,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 		*/
 
 		if volume, ok := o.volumes[v.Config.Name]; ok {
-			if err := o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+			if err := o.storeClient.DeleteVolume(ctx, volume); err != nil {
 				return err
 			}
 			delete(o.volumes, v.Config.Name)
@@ -2622,7 +2622,7 @@ func (o *TridentOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *
 	// log a new transaction in the persistent store and proceed.
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
-	oldTxn, err := o.storeClient.GetExistingVolumeTransaction(ctx, volTxn)
+	oldTxn, err := o.storeClient.GetVolumeTransaction(ctx, volTxn)
 	if err != nil {
 		Logc(ctx).Errorf("Unable to check for a preexisting volume transaction: %v", err)
 		return err
@@ -2661,7 +2661,7 @@ func (o *TridentOrchestrator) GetVolumeCreatingTransaction(
 		Op: storage.VolumeCreating,
 	}
 
-	if txn, err := o.storeClient.GetExistingVolumeTransaction(ctx, volTxn); err != nil {
+	if txn, err := o.storeClient.GetVolumeTransaction(ctx, volTxn); err != nil {
 		return nil, err
 	} else if txn != nil && txn.Op == storage.VolumeCreating {
 		return txn, nil
@@ -2675,7 +2675,7 @@ func (o *TridentOrchestrator) GetVolumeTransaction(
 ) (*storage.VolumeTransaction, error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
-	return o.storeClient.GetExistingVolumeTransaction(ctx, volTxn)
+	return o.storeClient.GetVolumeTransaction(ctx, volTxn)
 }
 
 // DeleteVolumeTransaction deletes a volume transaction created by
@@ -2721,7 +2721,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 		// first place.
 		txErr = o.DeleteVolumeTransaction(ctx, volTxn)
 		if txErr != nil {
-			txErr = fmt.Errorf("unable to clean up add volume transaction:  %v", txErr)
+			txErr = fmt.Errorf("unable to clean up add volume transaction; %v", txErr)
 		}
 	}
 	if cleanupErr != nil || txErr != nil {
@@ -2738,7 +2738,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 		}
 		err = fmt.Errorf(strings.Join(errList, ", "))
 		Logc(ctx).Warnf(
-			"Unable to clean up artifacts of volume creation: %v. Repeat creating the volume or restart %v.",
+			"Unable to clean up artifacts of volume creation; %v. Repeat creating the volume or restart %v.",
 			err, config.OrchestratorName)
 	}
 	return err
@@ -2762,7 +2762,7 @@ func (o *TridentOrchestrator) addVolumeRetryCleanup(
 	// 2.  The create failed after one or more retries, in which case we
 	//     leave the existing VolumeCreating transaction in place.
 
-	existingTxn, getTxnErr := o.storeClient.GetExistingVolumeTransaction(ctx, volTxn)
+	existingTxn, getTxnErr := o.storeClient.GetVolumeTransaction(ctx, volTxn)
 
 	if getTxnErr != nil || existingTxn == nil {
 		Logc(ctx).WithFields(LogFields{
@@ -2826,7 +2826,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 		// Remove volume from orchestrator cache
 		if volume, ok := o.volumes[volumeConfig.Name]; ok {
 			delete(o.volumes, volumeConfig.Name)
-			if err = o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+			if err = o.storeClient.DeleteVolume(ctx, volume); err != nil {
 				return fmt.Errorf("error occurred removing volume from persistent store; %v", err)
 			}
 		}
@@ -2965,10 +2965,10 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 	}
 
 	// Note that this block will only be entered in the case that the volume
-	// is missing it's backend and the backend is nil. If the backend does not
+	// is missing its backend and the backend is nil. If the backend does not
 	// exist, delete the volume and clean up, then return.
 	if volumeBackend == nil {
-		if err := o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+		if err = o.storeClient.DeleteVolume(ctx, volume); err != nil {
 			return err
 		}
 		delete(o.volumes, volumeName)
@@ -2994,7 +2994,7 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 			}).Debug("Skipping backend deletion of volume.")
 		}
 	}
-	if err := o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+	if err = o.storeClient.DeleteVolume(ctx, volume); err != nil {
 		return err
 	}
 
@@ -3022,22 +3022,6 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 		delete(o.backends, volume.BackendUUID)
 	}
 	delete(o.volumes, volumeName)
-	return nil
-}
-
-func (o *TridentOrchestrator) deleteVolumeFromPersistentStoreIgnoreError(
-	ctx context.Context, volume *storage.Volume,
-) error {
-	// Ignore failures to find the volume being deleted, as this may be called
-	// during recovery of a volume that has already been deleted from the store.
-	// During normal operation, checks on whether the volume is present in the
-	// volume map should suffice to prevent deletion of non-existent volumes.
-	if err := o.storeClient.DeleteVolumeIgnoreNotFound(ctx, volume); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"volume": volume.Config.Name,
-		}).Error("Unable to delete volume from persistent store.")
-		return err
-	}
 	return nil
 }
 
@@ -3685,7 +3669,7 @@ func (o *TridentOrchestrator) deleteSubordinateVolume(ctx context.Context, volum
 	}
 
 	// Remove volume from persistent store
-	if err = o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+	if err = o.storeClient.DeleteVolume(ctx, volume); err != nil {
 		return err
 	}
 
@@ -4101,7 +4085,7 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 		}).Error("Unable to delete snapshot from backend.")
 		return err
 	}
-	if err := o.deleteSnapshotFromPersistentStoreIgnoreError(ctx, snapshot); err != nil {
+	if err := o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
 		return err
 	}
 
@@ -4118,23 +4102,6 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 		}
 	}
 
-	return nil
-}
-
-func (o *TridentOrchestrator) deleteSnapshotFromPersistentStoreIgnoreError(
-	ctx context.Context, snapshot *storage.Snapshot,
-) error {
-	// Ignore failures to find the snapshot being deleted, as this may be called
-	// during recovery of a snapshot that has already been deleted from the store.
-	// During normal operation, checks on whether the snapshot is present in the
-	// snapshot map should suffice to prevent deletion of non-existent snapshots.
-	if err := o.storeClient.DeleteSnapshotIgnoreNotFound(ctx, snapshot); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"snapshot": snapshot.Config.Name,
-			"volume":   snapshot.Config.VolumeName,
-		}).Error("Unable to delete snapshot from persistent store.")
-		return err
-	}
 	return nil
 }
 
@@ -4169,7 +4136,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	// is missing it's volume and the volume is nil. If the volume does not
 	// exist, delete the snapshot and clean up, then return.
 	if volume == nil {
-		if err = o.deleteSnapshotFromPersistentStoreIgnoreError(ctx, snapshot); err != nil {
+		if err = o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
 			return err
 		}
 		delete(o.snapshots, snapshot.ID())
@@ -4187,7 +4154,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	// is missing it's backend and the backend is nil. If the backend does not
 	// exist, delete the snapshot and clean up, then return.
 	if backend == nil {
-		if err = o.deleteSnapshotFromPersistentStoreIgnoreError(ctx, snapshot); err != nil {
+		if err = o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
 			return err
 		}
 		delete(o.snapshots, snapshot.ID())
