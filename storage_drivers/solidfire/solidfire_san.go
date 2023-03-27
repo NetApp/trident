@@ -887,6 +887,11 @@ func (d *SANStorageDriver) Create(
 		return err
 	}
 
+	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.FileSystem = fstype
+	volConfig.QosType = opts["type"]
+
 	req.Qos = qos
 	req.TotalSize = int64(sizeBytes)
 	req.AccountID = d.AccountID

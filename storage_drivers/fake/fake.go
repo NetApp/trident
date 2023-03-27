@@ -620,6 +620,9 @@ func (d *StorageDriver) Create(
 			return err
 		}
 
+		// Update config to reflect values used to create volume
+		volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+
 		d.Volumes[name] = fake.Volume{
 			Name:          name,
 			RequestedPool: storagePool.Name(),

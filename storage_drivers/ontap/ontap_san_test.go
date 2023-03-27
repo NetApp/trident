@@ -414,8 +414,18 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy":  "none",
-		"LUKSEncryption": luks,
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    luks,
 	})
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -427,7 +437,20 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	volAttrs := map[string]sa.Request{}
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
+	assert.Equal(t, "true", volConfig.LUKSEncryption)
+	assert.Equal(t, "xfs", volConfig.FileSystem)
 }
 
 func TestGetChapInfo(t *testing.T) {

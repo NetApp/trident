@@ -461,6 +461,10 @@ func (d *SANEconomyStorageDriver) Create(
 		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
 		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = "false"
+		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
@@ -473,7 +477,7 @@ func (d *SANEconomyStorageDriver) Create(
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
-	enableEncryption, err := GetEncryptionValue(encryption)
+	enableEncryption, configEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -494,6 +498,16 @@ func (d *SANEconomyStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+
+	// Update config to reflect values used to create volume
+	volConfig.SpaceReserve = spaceReserve
+	volConfig.SnapshotPolicy = snapshotPolicy
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.ExportPolicy = exportPolicy
+	volConfig.SecurityStyle = securityStyle
+	volConfig.Encryption = configEncryption
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption

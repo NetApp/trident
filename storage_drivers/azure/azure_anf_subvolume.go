@@ -698,6 +698,9 @@ func (d *NASBlockStorageDriver) Create(
 		return err
 	}
 
+	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+
 	Logc(ctx).WithFields(LogFields{
 		"creationToken": creationToken,
 		"size":          sizeBytes,

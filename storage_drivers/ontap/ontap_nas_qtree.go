@@ -336,15 +336,16 @@ func (d *NASQtreeStorageDriver) Create(
 	var (
 		spaceReserve    = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
 		snapshotPolicy  = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
 		snapshotDir     = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
 		encryption      = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
-		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
-		qosPolicy       = storagePool.InternalAttributes()[QosPolicy]
+
 		// Get qtree options with default fallback values
 		unixPermissions = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
 		exportPolicy    = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
 		securityStyle   = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		tieringPolicy   = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		qosPolicy       = storagePool.InternalAttributes()[QosPolicy]
 	)
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
@@ -352,7 +353,7 @@ func (d *NASQtreeStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
-	enableEncryption, err := GetEncryptionValue(encryption)
+	enableEncryption, configEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -365,6 +366,15 @@ func (d *NASQtreeStorageDriver) Create(
 		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
 
+	// Update config to reflect values used to create volume
+	volConfig.SpaceReserve = spaceReserve
+	volConfig.SnapshotPolicy = snapshotPolicy
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.Encryption = configEncryption
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.ExportPolicy = exportPolicy
+	volConfig.SecurityStyle = securityStyle
 	volConfig.QosPolicy = qosPolicy
 
 	createErrors := make([]error, 0)

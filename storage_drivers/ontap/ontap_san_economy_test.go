@@ -16,15 +16,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
-
-	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/utils"
 )
 
 func NewTestLUNHelper(storagePrefix string, driverContext tridentconfig.DriverContext) *LUNHelper {
@@ -748,7 +747,20 @@ func TestDriverValidateInvalidPools(t *testing.T) {
 func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	pool1 := storage.NewStoragePool(nil, "pool1")
-	pool1.InternalAttributes()[TieringPolicy] = "none"
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    "false",
+	})
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volConfig := &storage.VolumeConfig{
 		Size:       "1g",
@@ -771,6 +783,18 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.NoError(t, result)
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
+	assert.Equal(t, "false", volConfig.LUKSEncryption)
+	assert.Equal(t, "xfs", volConfig.FileSystem)
 }
 
 func TestOntapSanEconomyVolumeCreate_LUNExists(t *testing.T) {

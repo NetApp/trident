@@ -701,9 +701,6 @@ func (d *NASStorageDriver) Create(
 		return err
 	}
 
-	// We may have adjusted the size, so save it in the config
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
-
 	// Take service level from volume config first (handles Docker case), then from pool
 	serviceLevel := utils.Title(volConfig.ServiceLevel)
 	if serviceLevel == "" {
@@ -797,6 +794,12 @@ func (d *NASStorageDriver) Create(
 	if subnet == nil {
 		return fmt.Errorf("no subnets found for storage pool %s", pool.Name())
 	}
+
+	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.ServiceLevel = serviceLevel
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.UnixPermissions = unixPermissions
 
 	if d.Config.NASType == sa.SMB {
 		Logc(ctx).WithFields(LogFields{

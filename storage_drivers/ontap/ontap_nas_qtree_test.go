@@ -5,12 +5,15 @@ package ontap
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
@@ -33,15 +36,23 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 
 	nasqtreeDriver := &NASQtreeStorageDriver{}
 	nasqtreeDriver.Config = *config
+	nasqtreeDriver.qtreesPerFlexvol = defaultQtreesPerFlexvol
+	nasqtreeDriver.quotaResizeMap = make(map[string]bool)
 
 	nasqtreeDriver.API = api
 
 	return nasqtreeDriver
 }
 
+func newMockOntapNasQtreeDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASQtreeStorageDriver) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	return mockAPI, driver
+}
+
 func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	qtreeDrivers := []NASQtreeStorageDriver{
@@ -310,4 +321,67 @@ func TestSetVolumePatternWithNoInternalIDAndNoPrefix(t *testing.T) {
 	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
 	assert.Equal(t, volumePattern, "*")
 	assert.Equal(t, name, "fakeQtree")
+}
+
+func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		FileSystem:   "nfs",
+		Name:         "qtree1",
+		InternalName: "qtree1",
+	}
+	flexvolName := "flexvol1"
+	flexvol := &api.Volume{Name: flexvolName}
+	flexvols := []*api.Volume{flexvol}
+	sizeBytes := 1073741824
+	sizeBytesStr := strconv.FormatUint(uint64(sizeBytes), 10)
+	sizeKB := 1048576
+	sizeKBStr := strconv.FormatUint(uint64(sizeKB), 10)
+
+	sb := &storage.StorageBackend{}
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.AutoExportPolicy = true
+	volAttrs := map[string]sa.Request{}
+
+	mockAPI.EXPECT().QtreeExists(ctx, "qtree1", "*").Return(false, "", nil)
+	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("snapshot-only")
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(flexvols, nil)
+	mockAPI.EXPECT().QtreeCount(ctx, "flexvol1").Return(0, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, "flexvol1").Return(flexvol, nil)
+	mockAPI.EXPECT().QuotaEntryList(ctx, "flexvol1").Return(api.QuotaEntries{}, nil)
+	mockAPI.EXPECT().VolumeSetSize(ctx, flexvolName, sizeBytesStr).Return(nil)
+	mockAPI.EXPECT().QtreeCreate(ctx, "qtree1", "flexvol1", "0755", "trident-"+BackendUUID,
+		"mixed", "fake-qos-policy").Return(nil)
+	mockAPI.EXPECT().QuotaSetEntry(ctx, "qtree1", "flexvol1", "tree", sizeKBStr).Return(nil)
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.NoError(t, result)
+	assert.Equal(t, "/svm/SVM1/flexvol/flexvol1/qtree/qtree1", volConfig.InternalID)
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
+	assert.Equal(t, "trident-"+BackendUUID, volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 }

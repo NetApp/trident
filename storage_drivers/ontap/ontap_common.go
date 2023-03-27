@@ -2691,15 +2691,15 @@ func sanitizeDataLIF(dataLIF string) string {
 // GetEncryptionValue: Returns "true"/"false" if encryption is explicitely mentioned in the
 // backend or storage class. Otherwise, it returns "nil" which enables NAE/NVE on the volume
 // depending on the aggregate properties.
-func GetEncryptionValue(encryption string) (*bool, error) {
+func GetEncryptionValue(encryption string) (*bool, string, error) {
 	if encryption != "" {
 		enable, err := strconv.ParseBool(encryption)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
-		return &enable, err
+		return &enable, encryption, err
 	}
-	return nil, nil
+	return nil, "", nil
 }
 
 // ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.

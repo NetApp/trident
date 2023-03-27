@@ -278,7 +278,7 @@ func (d *SANStorageDriver) Create(
 		return checkVolumeSizeLimitsError
 	}
 
-	enableEncryption, err := GetEncryptionValue(encryption)
+	enableEncryption, configEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -297,9 +297,20 @@ func (d *SANStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+
+	// Update config to reflect values used to create volume
+	volConfig.SpaceReserve = spaceReserve
+	volConfig.SnapshotPolicy = snapshotPolicy
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.ExportPolicy = exportPolicy
+	volConfig.SecurityStyle = securityStyle
+	volConfig.Encryption = configEncryption
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
+	volConfig.FileSystem = fstype
 
 	Logc(ctx).WithFields(LogFields{
 		"name":              name,

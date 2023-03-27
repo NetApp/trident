@@ -757,26 +757,31 @@ func newTestOntapDriverConfig(
 func TestGetEncryptionValue(t *testing.T) {
 	// sending empty volume attrs
 	encryption := ""
-	val, err := GetEncryptionValue(encryption)
+	val, configVal, err := GetEncryptionValue(encryption)
 	assert.NoError(t, err)
 	assert.Nil(t, val)
+	assert.Zero(t, configVal)
 
 	// sending invalid encryption value
 	encryption = "dummy"
-	_, err = GetEncryptionValue(encryption)
+	_, configVal, err = GetEncryptionValue(encryption)
 	assert.Error(t, err)
+	assert.Nil(t, val)
+	assert.Zero(t, configVal)
 
 	// sending encryption value as true
 	encryption = "true"
-	val, err = GetEncryptionValue(encryption)
+	val, configVal, err = GetEncryptionValue(encryption)
 	assert.NoError(t, err)
 	assert.Equal(t, true, *val)
+	assert.Equal(t, "true", configVal)
 
 	// sending encryption value as false
 	encryption = "false"
-	val, err = GetEncryptionValue(encryption)
+	val, configVal, err = GetEncryptionValue(encryption)
 	assert.NoError(t, err)
 	assert.Equal(t, false, *val)
+	assert.Equal(t, "false", configVal)
 }
 
 func getValidOntapNASPool() *storage.StoragePool {

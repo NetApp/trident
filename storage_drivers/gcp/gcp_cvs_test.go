@@ -1190,10 +1190,12 @@ func getCreateVolumeStructs() (*storage.VolumeConfig, storage.Pool) {
 	vPool := storage.NewStoragePool(nil, "vpool-name")
 	vPool.InternalAttributes()[StorageClass] = api.StorageClassHardware
 	vPool.InternalAttributes()[StoragePools] = "abc1"
-	vPool.InternalAttributes()[UnixPermissions] = "rwx"
+	vPool.InternalAttributes()[UnixPermissions] = "0755"
 	vPool.InternalAttributes()[Size] = "0"
 	vPool.InternalAttributes()[ServiceLevel] = api.UserServiceLevel1
 	vPool.InternalAttributes()[SnapshotDir] = "true"
+	vPool.InternalAttributes()[SnapshotReserve] = "5"
+	vPool.InternalAttributes()[Network] = "fake-network"
 	vPool.InternalAttributes()[Zone] = "fake-zone"
 	vPool.Attributes()[sa.Labels] = sa.NewLabelOffer(map[string]string{"key1": "1234"})
 
@@ -1304,6 +1306,14 @@ func TestCreate_POVolume(t *testing.T) {
 
 	err := d.Create(ctx(), volConfig, vPool, nil)
 	assert.NoError(t, err, "failed to get volume", "Volume creation failed")
+	assert.Equal(t, api.StorageClassHardware, volConfig.CVSStorageClass)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "107374182400", volConfig.Size)
+	assert.Equal(t, api.UserServiceLevel1, volConfig.ServiceLevel)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
+	assert.Equal(t, "5", volConfig.SnapshotReserve)
+	assert.Equal(t, "fake-network", volConfig.Network)
+	assert.Equal(t, "fake-zone", volConfig.Zone)
 }
 
 func TestCreate_SOVolumePoolsError(t *testing.T) {
@@ -1383,6 +1393,14 @@ func TestCreate_SOVolume(t *testing.T) {
 
 	err := d.Create(ctx(), volConfig, vPool, nil)
 	assert.NoError(t, err, "Volume creation failed")
+	assert.Equal(t, api.StorageClassSoftware, volConfig.CVSStorageClass)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "1073741824", volConfig.Size)
+	assert.Equal(t, api.PoolServiceLevel2, volConfig.ServiceLevel)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
+	assert.Equal(t, "5", volConfig.SnapshotReserve)
+	assert.Equal(t, "fake-network", volConfig.Network)
+	assert.Equal(t, "fake-zone", volConfig.Zone)
 }
 
 func TestCreateClone_InvalidName(t *testing.T) {

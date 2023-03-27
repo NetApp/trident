@@ -1093,8 +1093,11 @@ func TestCreate_NFSVolume(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
-	assert.Equal(t, volConfig.Size, strconv.FormatInt(createRequest.QuotaInBytes, 10), "request size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
@@ -1752,8 +1755,11 @@ func TestCreate_SMBVolume(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
-	assert.Equal(t, volConfig.Size, strconv.FormatInt(createRequest.QuotaInBytes, 10), "request size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "", volConfig.UnixPermissions)
 }
 
 func TestCreate_SMBVolume_CreateFailed(t *testing.T) {

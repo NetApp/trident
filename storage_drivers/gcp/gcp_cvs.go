@@ -669,13 +669,11 @@ func (d *NFSStorageDriver) Create(
 	storageClass := volConfig.CVSStorageClass
 	if storageClass == "" {
 		storageClass = pool.InternalAttributes()[StorageClass]
-		volConfig.CVSStorageClass = storageClass
 	}
 
 	unixPermissions := volConfig.UnixPermissions
 	if unixPermissions == "" {
 		unixPermissions = pool.InternalAttributes()[UnixPermissions]
-		volConfig.UnixPermissions = unixPermissions
 	}
 
 	// Determine volume size in bytes
@@ -703,14 +701,11 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	if requestedSizeBytes < sizeBytes {
-
 		Logc(ctx).WithFields(LogFields{
 			"name":          name,
 			"requestedSize": requestedSizeBytes,
 			"minimumSize":   sizeBytes,
 		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable.")
-
-		volConfig.Size = fmt.Sprintf("%d", sizeBytes)
 	}
 
 	if _, _, err := drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
@@ -721,7 +716,6 @@ func (d *NFSStorageDriver) Create(
 	userServiceLevel := volConfig.ServiceLevel
 	if userServiceLevel == "" {
 		userServiceLevel = pool.InternalAttributes()[ServiceLevel]
-		volConfig.ServiceLevel = userServiceLevel
 	}
 	if !api.IsValidUserServiceLevel(userServiceLevel, storageClass) {
 		return fmt.Errorf("invalid service level: %s", userServiceLevel)
@@ -750,14 +744,12 @@ func (d *NFSStorageDriver) Create(
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
 		snapshotReservePtr = &snapshotReserveInt
-		volConfig.SnapshotReserve = snapshotReserve
 	}
 
 	// Take network from volume config first (handles Docker case), then from pool
 	network := volConfig.Network
 	if network == "" {
 		network = pool.InternalAttributes()[Network]
-		volConfig.Network = network
 	}
 	gcpNetwork := d.makeNetworkPath(network)
 
@@ -778,6 +770,16 @@ func (d *NFSStorageDriver) Create(
 	if storageClass == api.StorageClassSoftware && zone == "" {
 		return fmt.Errorf("software volumes require zone")
 	}
+
+	// Update config to reflect values used to create volume
+	volConfig.CVSStorageClass = storageClass
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.Size = fmt.Sprintf("%d", sizeBytes)
+	volConfig.ServiceLevel = userServiceLevel
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.Network = network
+	volConfig.Zone = zone
 
 	Logc(ctx).WithFields(LogFields{
 		"creationToken":    name,
@@ -836,7 +838,7 @@ func (d *NFSStorageDriver) Create(
 		SnapshotDirectory: snapshotDirBool,
 		SnapshotPolicy:    snapshotPolicy,
 		SnapReserve:       snapshotReservePtr,
-		UnixPermissions:   volConfig.UnixPermissions,
+		UnixPermissions:   unixPermissions,
 		Network:           gcpNetwork,
 		Zone:              zone,
 	}

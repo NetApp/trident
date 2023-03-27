@@ -1057,6 +1057,7 @@ func TestSubvolumeCreate(t *testing.T) {
 
 	assert.Equal(t, subVolume.ID, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.NoError(t, result, "create subvolume failed")
+	assert.Equal(t, SubvolumeSizeStr, volConfig.Size, "request size mismatch")
 }
 
 func TestSubvolumeCreate_InvalidVolumeName(t *testing.T) {

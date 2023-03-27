@@ -2015,7 +2015,6 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:             "1g",
-		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
 		PeerVolumeHandle: "fakesvm:vol1",
@@ -2025,8 +2024,17 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		TieringPolicy: "",
-		SnapshotDir:   "true",
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
@@ -2042,6 +2050,16 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
 	assert.NoError(t, result)
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
+	assert.Equal(t, "trident-"+BackendUUID, volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 }
 
 func TestOntapNasStorageDriverVolumeCreate_VolumeExists(t *testing.T) {
