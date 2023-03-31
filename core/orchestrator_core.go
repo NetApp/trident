@@ -1784,27 +1784,29 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		return nil, err
 	}
 
+	// Copy the volume config into a working copy should any backend mutate the config but fail to create the volume.
+	mutableConfig := volumeConfig.ConstructClone()
+
 	// Recovery functions in case of error
 	defer func() {
-		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, volumeConfig)
+		err = o.addVolumeCleanup(ctx, err, backend, vol, txn, mutableConfig)
 	}()
 	defer func() {
-		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, volumeConfig)
+		err = o.addVolumeRetryCleanup(ctx, err, backend, pool, txn, mutableConfig)
 	}()
 
-	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
+	Logc(ctx).WithField("volume", mutableConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
 
-	volumeCreationErrors := make([]error, 0)
+	var volumeCreateErrors error
 	ineligibleBackends := make(map[string]struct{})
 
 	// The pool lists are already shuffled, so just try them in order.
 	// The loop terminates when creation on all matching pools has failed.
 	for _, pool = range pools {
-
 		backend = pool.Backend()
 
 		// Mirror destinations can only be placed on mirroring enabled backends
-		if volumeConfig.IsMirrorDestination && !backend.CanMirror() {
+		if mutableConfig.IsMirrorDestination && !backend.CanMirror() {
 			Logc(ctx).Debugf("MirrorDestinations can only be placed on mirroring enabled backends")
 			ineligibleBackends[backend.BackendUUID()] = struct{}{}
 		}
@@ -1814,26 +1816,26 @@ func (o *TridentOrchestrator) addVolumeInitial(
 			continue
 		}
 
-		// CreatePrepare has a side effect that updates the volumeConfig with the backend-specific internal name
-		backend.Driver().CreatePrepare(ctx, volumeConfig)
+		// CreatePrepare has a side effect that updates the mutableConfig with the backend-specific internal name
+		backend.Driver().CreatePrepare(ctx, mutableConfig)
 
-		// Update transaction with updated volumeConfig
+		// Update transaction with updated mutableConfig
 		txn = &storage.VolumeTransaction{
-			Config: volumeConfig,
+			Config: mutableConfig,
 			Op:     storage.AddVolume,
 		}
 		if err = o.storeClient.UpdateVolumeTransaction(ctx, txn); err != nil {
 			return nil, err
 		}
 
-		vol, err = backend.AddVolume(ctx, volumeConfig, pool, sc.GetAttributes(), false)
+		vol, err = backend.AddVolume(ctx, mutableConfig, pool, sc.GetAttributes(), false)
 		if err != nil {
 
 			logFields := LogFields{
 				"backend":     backend.Name(),
 				"backendUUID": backend.BackendUUID(),
 				"pool":        pool.Name(),
-				"volume":      volumeConfig.Name,
+				"volume":      mutableConfig.Name,
 				"error":       err,
 			}
 
@@ -1846,15 +1848,18 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 			// Log failure and continue for loop to find a pool that can create the volume.
 			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
-
-			volumeCreationErrors = append(volumeCreationErrors,
+			volumeCreateErrors = multierr.Append(volumeCreateErrors,
 				fmt.Errorf("[Failed to create volume %s on storage pool %s from backend %s: %w]",
-					volumeConfig.Name, pool.Name(), backend.Name(), err))
+					mutableConfig.Name, pool.Name(), backend.Name(), err))
 
 			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
 			if drivers.IsBackendIneligibleError(err) {
 				ineligibleBackends[backend.BackendUUID()] = struct{}{}
 			}
+
+			// AddVolume has failed and the backend may have mutated the volume config used so reset the mutable
+			// config to a fresh copy of the original config. This prepares the mutable config for the next backend.
+			mutableConfig = volumeConfig.ConstructClone()
 		} else {
 			// Volume creation succeeded, so register it and return the result
 			return o.addVolumeFinish(ctx, txn, vol, backend, pool)
@@ -1862,14 +1867,13 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	}
 
 	externalVol = nil
-	if len(volumeCreationErrors) == 0 {
+	if volumeCreateErrors == nil {
 		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class and %s of free space was found",
-			protocol, volumeConfig.StorageClass, volumeConfig.Size)
+			protocol, mutableConfig.StorageClass, mutableConfig.Size)
 	} else {
-		// combine all errors within the list into a single err
-		multiErr := multierr.Combine(volumeCreationErrors...)
-		err = fmt.Errorf("encountered error(s) in creating the volume: %w", multiErr)
+		err = fmt.Errorf("encountered error(s) in creating the volume: %w", volumeCreateErrors)
 	}
+
 	return nil, err
 }
 

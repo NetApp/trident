@@ -86,6 +86,8 @@ func (c *VolumeConfig) Validate() error {
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
+	// If private fields are added to the VolumeConfig or any embedded structure
+	// this should be updated to use a deep copy facility that may account for it.
 	clone, err := copystructure.Copy(*c)
 	if err != nil {
 		return &VolumeConfig{}
