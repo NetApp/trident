@@ -3888,6 +3888,26 @@ func TestValidateSANDriver_IPNotFound(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestValidateSANDriver_BackendIgroupDeprecation(t *testing.T) {
+	ctx := context.Background()
+
+	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		DriverContext:   "csi",
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+		AutoExportPolicy:          true,
+		UseCHAP:                   true,
+		DataLIF:                   "1.1.1.1",
+	}
+
+	err := ValidateSANDriver(ctx, config, ips)
+
+	assert.NoError(t, err)
+}
+
 func TestValidateNASDriver(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
@@ -4965,4 +4985,194 @@ func TestCalculateFlexvolEconomySizeBytes(t *testing.T) {
 	flexvolBytes = calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttr, uint64(newLunOrQtreeSizeBytes), uint64(totalDiskLimitBytes))
 
 	assert.Equal(t, expected, flexvolBytes)
+}
+
+func TestLunUnmapIgroup_FailsToListLunMapInfo(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	lunPath := "fakeLunPath"
+	igroupName := "fakeigroupName"
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, fmt.Errorf("ontap api error"))
+
+	err := LunUnmapIgroup(ctx, mockAPI, igroupName, lunPath)
+	assert.Error(t, err)
+}
+
+func TestLunUnmapIgroup_ListsLunMapInfoForUnknownLunID(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	lunPath := "fakeLunPath"
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(-1, nil)
+
+	err := LunUnmapIgroup(ctx, mockAPI, igroupName, lunPath)
+	assert.NoError(t, err)
+}
+
+func TestLunUnmapIgroup_FailsToUnmapLunFromIgroup(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	lunPath := "fakeLunPath"
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(2, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(fmt.Errorf("ontap api error"))
+
+	err := LunUnmapIgroup(ctx, mockAPI, igroupName, lunPath)
+	assert.Error(t, err)
+}
+
+func TestLunUnmapIgroup_Succeeds(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	lunPath := "fakeLunPath"
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(2, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+
+	err := LunUnmapIgroup(ctx, mockAPI, igroupName, lunPath)
+	assert.NoError(t, err)
+}
+
+func TestDestroyUnmappedIgroup_FailsToListLUNsMappedToIgroup(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, fmt.Errorf("ontap api error"))
+
+	err := DestroyUnmappedIgroup(ctx, mockAPI, igroupName)
+	assert.Error(t, err)
+}
+
+func TestDestroyUnmappedIgroup_FailsToDestroyEmptyIgroup(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(fmt.Errorf("ontap api error"))
+
+	err := DestroyUnmappedIgroup(ctx, mockAPI, igroupName)
+	assert.Error(t, err)
+}
+
+func TestDestroyUnmappedIgroup_Succeeds(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	igroupName := "fakeigroupName"
+
+	// If LUN ID (first return param here) is negative, it means that it hasn't been published anywhere.
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)
+
+	err := DestroyUnmappedIgroup(ctx, mockAPI, igroupName)
+	assert.NoError(t, err)
+}
+
+func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: true,
+		},
+	}
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.NoError(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.Error(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestEnableSANPublishEnforcement_Succeeds(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	lunPath := fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, nil)
+
+	err := EnableSANPublishEnforcement(ctx, mockAPI, volume.Config, lunPath)
+	assert.NoError(t, err)
+	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.Equal(t, int32(-1), volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }

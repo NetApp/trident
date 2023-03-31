@@ -3145,8 +3145,9 @@ func (o *TridentOrchestrator) publishVolume(
 		return fmt.Errorf("backend %s not found", volume.BackendUUID)
 	}
 
-	// Publish enforcement is only supported with CSI deployments.
-	if config.CurrentDriverContext == config.ContextCSI && backend.CanEnablePublishEnforcement() {
+	// Publish enforcement is considered only when the backend supports publish enforcement in CSI deployments.
+	publishEnforceable := config.CurrentDriverContext == config.ContextCSI && backend.CanEnablePublishEnforcement()
+	if publishEnforceable {
 		nodeInfo := o.nodes.Get(publishInfo.HostName)
 		if nodeInfo == nil {
 			return fmt.Errorf("node %s not found", publishInfo.HostName)
@@ -3184,31 +3185,33 @@ func (o *TridentOrchestrator) publishVolume(
 
 	publishInfo.TridentUUID = o.uuid
 
-	// We only need to worry about publications in CSI deployments
-	if config.CurrentDriverContext == config.ContextCSI {
-		// Enable publish enforcement if the volume is currently not published anywhere and isn't already enforced
-		if !volume.Config.AccessInfo.PublishEnforcement {
-			// Only enforce volume publication access if we're confident we're synced with the container orchestrator
-			if o.volumePublicationsSynced {
-				publications := o.listVolumePublicationsForVolumeAndSubordinates(ctx, volumeName)
-				// If there are no volume publications or the only publication is the current one, we can enable enforcement
-				var safeToEnable bool
-				switch len(publications) {
-				case 0:
+	// Enable publish enforcement if the backend supports publish enforcement and the volume isn't already enforced.
+	if publishEnforceable && !volume.Config.AccessInfo.PublishEnforcement {
+		// Only enforce volume publication access if we're confident we're synced with the container orchestrator.
+		if o.volumePublicationsSynced {
+			publications := o.listVolumePublicationsForVolumeAndSubordinates(ctx, volumeName)
+			// If there are no volume publications or the only publication is the current one, we can enable enforcement.
+			var safeToEnable bool
+			switch len(publications) {
+			case 0:
+				safeToEnable = true
+			case 1:
+				if publications[0].VolumeName == volumeName {
 					safeToEnable = true
-				case 1:
-					if publications[0].VolumeName == volumeName {
-						safeToEnable = true
-					}
-				default:
-					safeToEnable = false
 				}
-				if safeToEnable {
-					err := backend.EnablePublishEnforcement(ctx, volume)
-					if err != nil {
-						Logc(ctx).WithError(err).Warnf("Error enabling volume publish enforcement for volume %s",
-							volumeName)
+			default:
+				safeToEnable = false
+			}
+
+			if safeToEnable {
+				if err := backend.EnablePublishEnforcement(ctx, volume); err != nil {
+					if !utils.IsUnsupportedError(err) {
+						Logc(ctx).WithFields(fields).WithError(err).Errorf(
+							"Failed to enable volume publish enforcement for volume.")
+						return err
 					}
+					Logc(ctx).WithFields(fields).WithError(err).Debug(
+						"Volume publish enforcement is not fully supported on backend.")
 				}
 			}
 		}
@@ -3361,7 +3364,10 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 
 	// Unpublish the volume.
 	if err := backend.UnpublishVolume(ctx, volume.Config, publishInfo); err != nil {
-		return err
+		if !utils.IsNotFoundError(err) {
+			return err
+		}
+		Logc(ctx).Debug("Volume not found in backend during unpublish; continuing with unpublish.")
 	}
 
 	// Delete the publication from memory and the persistence layer.
@@ -4717,6 +4723,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 		return nil
 	}
 
+	// TODO: Only reconcile node backend access for a given node if publish enforced volumes are attached to that node.
 	return b.ReconcileNodeAccess(ctx, o.nodes.List())
 }
 

@@ -1216,10 +1216,11 @@ func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName s
 
 func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *Volume) error {
 	driver, ok := b.driver.(PublishEnforceable)
-	if ok {
-		return driver.EnablePublishEnforcement(ctx, volume)
+	if !ok {
+		return utils.UnsupportedError(fmt.Sprintf(
+			"publish enforcement is not supported on backends of type %v", b.driver.Name()))
 	}
-	return nil
+	return driver.EnablePublishEnforcement(ctx, volume)
 }
 
 func (b *StorageBackend) CanEnablePublishEnforcement() bool {

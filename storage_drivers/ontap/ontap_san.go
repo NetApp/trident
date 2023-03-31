@@ -460,6 +460,7 @@ func (d *SANStorageDriver) Create(
 				continue
 			}
 		}
+
 		return nil
 	}
 
@@ -632,8 +633,8 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 		err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPath(volConfig.InternalName))
 		if err != nil {
-			Logc(ctx).WithField("LUN", lunInfo.Name).Warnf("Unmapping of iGroups failed: %v", err)
-			return fmt.Errorf("failed to upmap iGroups for LUN %s: %v", lunInfo.Name, err)
+			Logc(ctx).WithField("LUN", lunInfo.Name).Warnf("Unmapping of igroups failed: %v", err)
+			return fmt.Errorf("failed to upmap igroups for LUN %s: %v", lunInfo.Name, err)
 		}
 	} else {
 		// Volume import is not managed by Trident
@@ -761,33 +762,14 @@ func (d *SANStorageDriver) Publish(
 
 	lunPath := lunPath(name)
 	igroupName := d.Config.IgroupName
-	// Use the node specific igroup if publish enforcement is enabled
+
+	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
 	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
-
-		// TODO (vhs): Below blocks of code to be removed once the Force detach handles the per-backend iGroup deletion.
-		// Remove the per-backend iGroup mapping as we have already moved to per-node iGroups.
-		perBackendIGroup := getDefaultIgroupName(tridentconfig.ContextCSI, publishInfo.BackendUUID)
-		err = d.API.LunUnmap(ctx, perBackendIGroup, lunPath)
-		if err != nil {
-			Logc(ctx).WithError(err).WithFields(LogFields{
-				"LUN":    lunPath,
-				"igroup": perBackendIGroup,
-			}).Warn("error unmapping LUN from igroup")
-		}
-
-		// Remove the default iGroup mapping as we have already moved to per-node iGroups.
-		err = d.API.LunUnmap(ctx, drivers.DefaultTridentIgroupName, lunPath)
-		if err != nil {
-			Logc(ctx).WithError(err).WithFields(LogFields{
-				"LUN":    lunPath,
-				"igroup": drivers.DefaultTridentIgroupName,
-			}).Warn("error unmapping LUN from igroup")
-		}
 	}
 
-	// Get target info
+	// Get target info.
 	iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
 	if err != nil {
 		return err
@@ -797,7 +779,7 @@ func (d *SANStorageDriver) Publish(
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
-	// Fill in the volume config fields as well
+	// Fill in the volume access fields as well.
 	volConfig.AccessInfo = publishInfo.VolumeAccessInfo
 
 	return nil
@@ -824,39 +806,18 @@ func (d *SANStorageDriver) Unpublish(
 		return nil
 	}
 
-	// Unmap the LUN from the node's igroup
+	// Attempt to unmap the LUN from the per-node igroup.
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 	lunPath := lunPath(name)
-	lunID, err := d.API.LunMapInfo(ctx, igroupName, lunPath)
-	if err != nil {
-		msg := fmt.Sprintf("error reading LUN maps for volume %s", name)
-		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
-	}
-	if lunID >= 0 {
-		err := d.API.LunUnmap(ctx, igroupName, lunPath)
-		if err != nil {
-			msg := "error unmapping LUN"
-			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
-		}
+	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
 	}
 
-	// Remove igroup if no LUNs are mapped to it anymore
-	luns, err := d.API.IgroupListLUNsMapped(ctx, igroupName)
-	if err != nil {
-		msg := fmt.Sprintf("error listing LUNs mapped to igroup %s", igroupName)
-		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+	// Remove igroup if no LUNs are mapped.
+	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
+		return fmt.Errorf("error removing empty igroup; %v", err)
 	}
-	if len(luns) == 0 {
-		err = d.API.IgroupDestroy(ctx, igroupName)
-		if err != nil {
-			msg := fmt.Sprintf("error deleting igroup %s", igroupName)
-			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
-		}
-	}
+
 	return nil
 }
 
@@ -1038,10 +999,13 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	if !volIsRW {
 		return err
 	}
+
 	// Don't map at create time if publish enforcement is enabled
 	if volConfig.AccessInfo.PublishEnforcement {
+		Logc(ctx).Debug("No follow-up create actions for published enforced volume.")
 		return nil
 	}
+
 	return d.mapOntapSANLun(ctx, volConfig)
 }
 
@@ -1474,21 +1438,9 @@ func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.I
 	}, nil
 }
 
+// EnablePublishEnforcement prepares a volume for per-node igroup mapping allowing greater access control.
 func (d *SANStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
-	// Do not enable publish enforcement on unmanaged imports
-	if volume.Config.ImportNotManaged {
-		return nil
-	}
-	err := LunUnmapAllIgroups(ctx, d.GetAPI(), lunPath(volume.Config.Name))
-	if err != nil {
-		msg := "error removing all mappings from LUN"
-		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
-	}
-
-	volume.Config.AccessInfo.IscsiLunNumber = -1
-	volume.Config.AccessInfo.PublishEnforcement = true
-	return nil
+	return EnableSANPublishEnforcement(ctx, d.GetAPI(), volume.Config, lunPath(volume.Config.InternalName))
 }
 
 func (d *SANStorageDriver) CanEnablePublishEnforcement() bool {

@@ -2003,12 +2003,12 @@ func (d OntapAPIREST) isLunMapped(
 			"lun":    lunPath,
 			"igroup": initiatorGroupName,
 		},
-	).Debug("Checking if LUN is mapped to iGroup.")
+	).Debug("Checking if LUN is mapped to igroup.")
 
 	for _, record := range lunMapResponse.Payload.LunMapResponseInlineRecords {
 		if record.Igroup != nil && record.Igroup.Name != nil {
 			if *record.Igroup.Name != initiatorGroupName {
-				Logc(ctx).Debugf("LUN %s is mapped to iGroup %s.", lunPath, record.Igroup.Name)
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, record.Igroup.Name)
 			}
 			if *record.Igroup.Name == initiatorGroupName || importNotManaged {
 				if record.LogicalUnitNumber != nil {
@@ -2085,6 +2085,15 @@ func (d OntapAPIREST) EnsureLunMapped(
 }
 
 func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	fields := LogFields{
+		"LUN":    lunPath,
+		"igroup": initiatorGroupName,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> LunUnmap.")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunUnmap.")
+
 	err := d.api.LunUnmap(ctx, initiatorGroupName, lunPath)
 	if err != nil {
 		msg := "error unmapping LUN"

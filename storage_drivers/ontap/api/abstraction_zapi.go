@@ -643,15 +643,25 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 }
 
 func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	fields := LogFields{
+		"LUN":    lunPath,
+		"igroup": initiatorGroupName,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> LunUnmap.")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunUnmap.")
+
 	apiResponse, err := d.api.LunUnmap(initiatorGroupName, lunPath)
 	err = azgo.GetError(ctx, apiResponse, err)
 	if zerr := azgo.NewZapiError(apiResponse); zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_LUNMAP {
 		// IGroup is not mapped to LUN, return success.
+		Logc(ctx).WithFields(fields).Debug("Igroup is not mapped to LUN; returning success.")
 		return nil
 	}
 	if err != nil {
 		msg := "error unmapping LUN"
-		Logc(ctx).WithError(err).Error(msg)
+		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
 		return fmt.Errorf(msg)
 	}
 	return nil

@@ -1778,7 +1778,6 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"1.1.1.1"}, nil)
 
 	result := d.Publish(ctx, volConfig, publishInfo)
-
 	assert.NoError(t, result)
 }
 
@@ -1880,6 +1879,384 @@ func TestOntapSanEconomyVolumePublish_GetISCSITargetInfoFailed(t *testing.T) {
 	result := d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, result)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_LegacyVolume(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lun0",
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: false},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: false},
+	}
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_LunListFails(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+	apiError := fmt.Errorf("api error")
+	volumeName := "lun0"
+	volConfig := &storage.VolumeConfig{
+		InternalName: volumeName,
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(nil, apiError)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_LUNDoesNotExist(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+	volumeName := "lun0"
+	volConfig := &storage.VolumeConfig{
+		InternalName: volumeName,
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(nil, nil)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_LUNMapInfoFails(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+	apiError := fmt.Errorf("api error")
+	volumeName := "lun0"
+	bucketName := "bucket0"
+	luns := api.Luns{
+		{
+			Name:       volumeName,
+			VolumeName: bucketName,
+		},
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lun0",
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := d.helper.GetLUNPath(bucketName, volumeName)
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, apiError)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_IgroupListLUNsMappedFails(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+	apiError := fmt.Errorf("api error")
+	volumeName := "lun0"
+	bucketName := "bucket0"
+	luns := api.Luns{
+		{
+			Name:       volumeName,
+			VolumeName: bucketName,
+		},
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lun0",
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := d.helper.GetLUNPath(bucketName, volumeName)
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, apiError)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish_IgroupDestroyFails(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+	apiError := fmt.Errorf("api error")
+	volumeName := "lun0"
+	bucketName := "bucket0"
+	luns := api.Luns{
+		{
+			Name:       volumeName,
+			VolumeName: bucketName,
+		},
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lun0",
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := d.helper.GetLUNPath(bucketName, volumeName)
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(apiError)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.Error(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublishX(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+	volumeName := "lun0"
+	bucketName := "bucket0"
+	luns := api.Luns{
+		{
+			Name:       volumeName,
+			VolumeName: bucketName,
+		},
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lun0",
+		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+	}
+
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := d.helper.GetLUNPath(bucketName, volumeName)
+	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+
+	mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+	mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+	mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)
+
+	err := d.Unpublish(ctx, volConfig, publishInfo)
+	assert.NoError(t, err)
+}
+
+func TestOntapSanEconomyVolumeUnpublish(t *testing.T) {
+	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
+
+	apiError := fmt.Errorf("api error")
+	volumeName := "lun0"
+	bucketName := "bucket0"
+	luns := api.Luns{
+		{
+			Name:       volumeName,
+			VolumeName: bucketName,
+		},
+	}
+
+	type args struct {
+		publishEnforcement bool
+	}
+
+	tt := []struct {
+		name       string
+		args       args
+		usePattern bool
+		mocks      func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string)
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "LUNDoesNotExist",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(nil, nil)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:       "LUNMapInfoFails",
+			args:       args{publishEnforcement: true},
+			usePattern: true,
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, apiError)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "LUNUnmapFails",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(apiError)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "IgroupListLUNsMappedFails",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, apiError)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "IgroupDestroyFails",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(apiError)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "UnpublishSucceeds",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath, lunPathPattern string) {
+				mockAPI.EXPECT().LunList(ctx, lunPathPattern).Return(luns, nil)
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(0, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return(nil, nil)
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{
+				InternalName: volumeName,
+				AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+			}
+
+			publishInfo := &utils.VolumePublishInfo{
+				HostName:         "bar",
+				TridentUUID:      "1234",
+				VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+			}
+
+			mockCtrl := gomock.NewController(t)
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+			d.API = mockAPI
+			d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
+
+			igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+			lunPath := d.helper.GetLUNPath(bucketName, volumeName)
+			lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
+
+			tr.mocks(mockAPI, igroupName, lunPath, lunPathPattern)
+
+			err := d.Unpublish(ctx, volConfig, publishInfo)
+			if !tr.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+		})
+	}
 }
 
 func TestDriverCanSnapshot(t *testing.T) {
@@ -3256,6 +3633,24 @@ func TestOntapSanEconomyCreateFollowup_DockerContext(t *testing.T) {
 	assert.NoError(t, result)
 }
 
+func TestOntapSanEconomyCreateFollowup_PublishEnforcedCSIContext(t *testing.T) {
+	_, d := newMockOntapSanEcoDriver(t)
+	d.Config.DriverContext = "csi"
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+		AccessInfo: utils.VolumeAccessInfo{
+			PublishEnforcement: true,
+		},
+	}
+
+	result := d.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, result)
+}
+
 func TestOntapSanEconomyCreateFollowup_LunDoesNotExist(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	volConfig := &storage.VolumeConfig{
@@ -3965,4 +4360,133 @@ func TestOntapSanEconomyGetCommonConfig(t *testing.T) {
 	config := d.GetCommonConfig(ctx)
 
 	assert.NotNil(t, config)
+}
+
+func TestOntapSanEconomyEnablePublishEnforcement_FailsCheckingIfLUNExists(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+
+	err := d.EnablePublishEnforcement(ctx, volume)
+	assert.Error(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestOntapSanEconomyEnablePublishEnforcement_LUNDoesNotExist(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+
+	// Add LUNs that do not include the volume.
+	luns := []api.Lun{
+		{Size: "1073741824", Name: "/vol/myBucket/storagePrefix_vol1_snapshot_mySnap", VolumeName: "myLun"},
+	}
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+
+	err := d.EnablePublishEnforcement(ctx, volume)
+	assert.Error(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestOntapSanEconomyEnablePublishEnforcement_FailsToUnmapAllIgroups(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+
+	// Add LUNs that do include the volume.
+	luns := []api.Lun{
+		{
+			Size:       "1073741824",
+			Name:       fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName),
+			VolumeName: volName,
+		},
+	}
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+
+	err := d.EnablePublishEnforcement(ctx, volume)
+	assert.Error(t, err)
+	assert.False(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.NotEqual(t, -1, volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
+}
+
+func TestOntapSanEconomyEnablePublishEnforcement_EnablesAccessControl(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	volName := "websterj_pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	internalVolName := "pvc_63a8ea3d_4213_4753_8b38_2da69c178ed0"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volName,
+			InternalName: internalVolName,
+			AccessInfo: utils.VolumeAccessInfo{
+				PublishEnforcement: false,
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiLunNumber: 1,
+				},
+			},
+			ImportNotManaged: false,
+		},
+	}
+
+	// Add LUNs that do include the volume.
+	luns := []api.Lun{
+		{
+			Size:       "1073741824",
+			Name:       fmt.Sprintf("/vol/myBucket/storagePrefix_vol1_%s", internalVolName),
+			VolumeName: volName,
+		},
+	}
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, nil)
+
+	err := d.EnablePublishEnforcement(ctx, volume)
+	assert.NoError(t, err)
+	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
+	assert.Equal(t, int32(-1), volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }

@@ -703,6 +703,7 @@ func (d *SANEconomyStorageDriver) Create(
 				}
 			}
 		}
+
 		return nil
 	}
 
@@ -978,7 +979,13 @@ func (d *SANEconomyStorageDriver) Publish(
 	lunPath := d.helper.GetLUNPath(bucketVol, name)
 	igroupName := d.Config.IgroupName
 
-	// Get target info
+	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
+	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
+	}
+
+	// Get target info.
 	iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
 	if err != nil {
 		return err
@@ -987,6 +994,60 @@ func (d *SANEconomyStorageDriver) Publish(
 	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
+	}
+	// Fill in the volume access fields as well.
+	volConfig.AccessInfo = publishInfo.VolumeAccessInfo
+
+	return nil
+}
+
+// Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *SANEconomyStorageDriver) Unpublish(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+) error {
+	name := volConfig.InternalName
+
+	fields := LogFields{
+		"Method":      "Unpublish",
+		"Type":        "SANEconomyStorageDriver",
+		"name":        name,
+		"publishInfo": publishInfo,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
+
+	if !volConfig.AccessInfo.PublishEnforcement || tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
+		// Nothing to do if publish enforcement is not enabled
+		return nil
+	}
+
+	// Ensure the LUN and parent bucket volume exist before attempting to unpublish.
+	exists, bucketVol, err := d.LUNExists(ctx, name, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).Errorf("Error checking for existing LUN: %v", err)
+		return err
+	}
+	if !exists {
+		// If the LUN doesn't exist at this point, there's nothing left to do for unpublish at this level.
+		// However, this scenario could indicate unexpected tampering or unknown states with the backend,
+		// so log a warning and return a NotFoundError.
+		err := utils.NotFoundError(fmt.Sprintf("LUN %v does not exist", name))
+		Logc(ctx).WithError(err).Warningf("Unable to unpublish LUN: %s.", name)
+		return err
+	}
+
+	// Attempt to unmap the LUN from the per-node igroup; the lunPath is where the LUN resides within the flexvol.
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := d.helper.GetLUNPath(bucketVol, name)
+	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+	}
+
+	// Remove igroup if no LUNs are mapped.
+	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
+		return fmt.Errorf("error removing empty igroup; %v", err)
 	}
 
 	return nil
@@ -1562,6 +1623,10 @@ func (d *SANEconomyStorageDriver) GetInternalVolumeName(_ context.Context, name 
 }
 
 func (d *SANEconomyStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
+		volConfig.AccessInfo.PublishEnforcement = true
+	}
 	createPrepareCommon(ctx, d, volConfig)
 }
 
@@ -1577,6 +1642,12 @@ func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig 
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		Logc(ctx).Debug("No follow-up create actions for Docker.")
+		return nil
+	}
+
+	// Don't map at create time if publish enforcement is enabled.
+	if volConfig.AccessInfo.PublishEnforcement {
+		Logc(ctx).Debug("No follow-up create actions for published enforced CSI volume.")
 		return nil
 	}
 
@@ -1779,7 +1850,7 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 			"name":         name,
 			"bucketPrefix": bucketPrefix,
 		},
-	).Debug("LUNExists")
+	).Debug("Checking if LUN exists.")
 
 	lunPathPattern := fmt.Sprintf("/vol/%s*/%s", bucketPrefix, name)
 	luns, err := d.API.LunList(ctx, lunPathPattern)
@@ -1794,7 +1865,7 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 			},
 		).Debug("LUNExists")
 		if strings.HasSuffix(lun.Name, name) {
-			Logc(ctx).WithField("flexvol", lun.VolumeName).Debug("LUNExists")
+			Logc(ctx).WithField("flexvol", lun.VolumeName).Debug("Found LUN.")
 			return true, lun.VolumeName, nil
 		}
 	}
@@ -2028,4 +2099,26 @@ func (d *SANEconomyStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*
 		IscsiTargetUsername:  d.Config.ChapTargetUsername,
 		IscsiTargetSecret:    d.Config.ChapTargetInitiatorSecret,
 	}, nil
+}
+
+// EnablePublishEnforcement prepares a volume for per-node igroup mapping allowing greater access control.
+func (d *SANEconomyStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+	internalName := volume.Config.InternalName
+	exists, flexVol, err := d.LUNExists(ctx, internalName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"flexVol":    flexVol,
+			"lunName":    internalName,
+			"volumeName": volume.Config.Name,
+		}).Errorf("Error checking for existing LUN: %v", err)
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("error LUN %v does not exist", internalName)
+	}
+	return EnableSANPublishEnforcement(ctx, d.GetAPI(), volume.Config, GetLUNPathEconomy(flexVol, internalName))
+}
+
+func (d *SANEconomyStorageDriver) CanEnablePublishEnforcement() bool {
+	return true
 }

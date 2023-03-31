@@ -4358,7 +4358,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        false,
 			volumeEnforceable: false,
-			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4430,7 +4429,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        false,
 			volumeEnforceable: true,
-			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4453,7 +4451,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: true,
-			lastPub:           time.Now().Add(-time.Minute * 2),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4510,7 +4507,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: false,
-			lastPub:           time.Now().Add(-time.Minute * 2),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4518,11 +4514,51 @@ func TestPublishVolume(t *testing.T) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(fmt.Errorf("some error"))
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.True,
+		},
+		{
+			name:       "DoesNotErrorButFailsToEnableEnforcementOnUnsupportedBackend",
+			volumeName: volumeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes:      map[string]*utils.Node{nodeName: node},
+			pubsSynced: true,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(
+					utils.UnsupportedError("unsupported error"))
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.True,
+		},
+		{
+			name:       "ErrorEnablingEnforcementOnBackend",
+			volumeName: volumeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes:      map[string]*utils.Node{nodeName: node},
+			pubsSynced: true,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(
+					fmt.Errorf("unexpected error"))
+			},
+			wantErr:     assert.Error,
 			pubTime:     assert.IsIncreasing,
 			pubEnforced: assert.False,
 			synced:      assert.True,
@@ -4534,7 +4570,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: false,
-			lastPub:           time.Now().Add(-time.Minute * 2),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4561,7 +4596,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: false,
-			lastPub:           time.Now().Add(-time.Minute * 2),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4588,7 +4622,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: false,
-			lastPub:           time.Now().Add(-time.Minute * 2),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4619,7 +4652,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:              map[string]*utils.Node{nodeName: node},
 			pubsSynced:         false,
 			volumeEnforceable:  false,
-			lastPub:            time.Now().Add(-time.Second), // Ensure that "some" time has passed
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4645,7 +4677,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:              map[string]*utils.Node{nodeName: node},
 			pubsSynced:         false,
 			volumeEnforceable:  false,
-			lastPub:            time.Now().Add(-time.Second), // Ensure that "some" time has passed
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4663,7 +4694,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: {PublicationState: utils.NodeDirty}},
 			pubsSynced:        true,
 			volumeEnforceable: true,
-			lastPub:           time.Now().Add(-time.Second),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
@@ -4683,7 +4713,6 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: {PublicationState: utils.NodeCleanable}},
 			pubsSynced:        true,
 			volumeEnforceable: true,
-			lastPub:           time.Now().Add(-time.Second),
 			mocks: func(
 				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,

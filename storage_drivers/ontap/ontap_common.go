@@ -407,6 +407,8 @@ func resizeValidation(
 	return volSizeBytes, nil
 }
 
+// reconcileSANNodeAccess ensures active nodes have access to the SAN backend by ensuring
+// per-backend igroup exists and adding active initiators to that igroup.
 func reconcileSANNodeAccess(
 	ctx context.Context, clientAPI api.OntapAPI, igroupName string,
 	nodeIQNs []string,
@@ -545,6 +547,7 @@ func PublishLUN(
 		"Method":        "PublishLUN",
 		"Type":          "ontap_common",
 		"lunPath":       lunPath,
+		"igroup":        igroupName,
 		"iSCSINodeName": iSCSINodeName,
 		"publishInfo":   publishInfo,
 	}
@@ -795,16 +798,16 @@ func InitializeSANDriver(
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeSANDriver")
 	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeSANDriver")
 
-	if config.IgroupName == "" {
-		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
-	}
-
 	// Defer validation to the driver's validate method
 	if err := validate(ctx); err != nil {
 		return err
 	}
 
-	// Create igroup
+	// TODO: Only consider a backend or default igroup at this time for non-CSI environments.
+	//  It is not trivial to remove this as periodic backend reconciliation will fail without it.
+	if config.IgroupName == "" {
+		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
+	}
 	err := ensureIGroupExists(ctx, clientAPI, config.IgroupName)
 	if err != nil {
 		return err
@@ -985,11 +988,19 @@ func ValidateSANDriver(
 			Warning("Specifying data LIF is no longer supported for SAN backends.")
 	}
 
-	if config.DriverContext == tridentconfig.ContextDocker {
+	switch config.DriverContext {
+	case tridentconfig.ContextDocker:
 		// Make sure this host is logged into the ONTAP iSCSI target
 		err := utils.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
+		}
+	case tridentconfig.ContextCSI:
+		// ontap-san-* drivers should all support publish enforcement with CSI; if the igroup is set
+		// in the backend config, log a warning because it will not be used.
+		if config.IgroupName != "" {
+			Logc(ctx).WithField("igroup", config.IgroupName).
+				Warning("Specifying an igroup is no longer supported for SAN backends in a CSI environment.")
 		}
 	}
 
@@ -2604,26 +2615,109 @@ func cloneFlexvol(
 
 // LunUnmapAllIgroups removes all maps from a given LUN
 func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath string) error {
+	Logc(ctx).WithField("LUN", lunPath).Debug("Unmapping LUN from all igroups.")
+
 	igroups, err := clientAPI.LunListIgroupsMapped(ctx, lunPath)
 	if err != nil {
 		msg := "error listing igroup mappings"
 		Logc(ctx).WithError(err).Errorf(msg)
 		return fmt.Errorf(msg)
 	}
+
 	errored := false
 	for _, igroup := range igroups {
 		err = clientAPI.LunUnmap(ctx, igroup, lunPath)
 		if err != nil {
 			errored = true
-			Logc(ctx).WithError(err).WithFields(LogFields{
+			Logc(ctx).WithFields(LogFields{
 				"LUN":    lunPath,
 				"igroup": igroup,
-			}).Warn("error unmapping LUN from igroup")
+			}).WithError(err).Error("Error unmapping LUN from igroup.")
 		}
 	}
 	if errored {
 		return fmt.Errorf("error unmapping one or more LUN mappings")
 	}
+	return nil
+}
+
+// LunUnmapIgroup removes a LUN from an igroup.
+func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath string) error {
+	Logc(ctx).WithFields(LogFields{
+		"LUN":    lunPath,
+		"igroup": igroup,
+	}).Debugf("Unmapping LUN from igroup.")
+
+	lunID, err := clientAPI.LunMapInfo(ctx, igroup, lunPath)
+	if err != nil {
+		msg := fmt.Sprintf("error reading LUN maps")
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	if lunID >= 0 {
+		err := clientAPI.LunUnmap(ctx, igroup, lunPath)
+		if err != nil {
+			msg := "error unmapping LUN"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	return nil
+}
+
+// DestroyUnmappedIgroup removes an igroup iff no LUNs are mapped to it.
+func DestroyUnmappedIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup string) error {
+	luns, err := clientAPI.IgroupListLUNsMapped(ctx, igroup)
+	if err != nil {
+		msg := fmt.Sprintf("error listing LUNs mapped to igroup %s", igroup)
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	if len(luns) == 0 {
+		Logc(ctx).WithField(
+			"igroup", igroup,
+		).Debugf("No LUNs mapped to this igroup; deleting igroup.")
+		if err := clientAPI.IgroupDestroy(ctx, igroup); err != nil {
+			msg := fmt.Sprintf("error deleting igroup %s", igroup)
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	} else {
+		Logc(ctx).WithField(
+			"igroup", igroup,
+		).Debugf("Found LUNs mapped to this igroup; igroup deletion is not safe.")
+	}
+
+	return nil
+}
+
+// EnableSANPublishEnforcement unmaps a LUN from all igroups to allow per-node igroup mappings during publish volume.
+func EnableSANPublishEnforcement(
+	ctx context.Context, clientAPI api.OntapAPI, volumeConfig *storage.VolumeConfig, lunPath string,
+) error {
+	fields := LogFields{
+		"volume": volumeConfig.Name,
+		"LUN":    volumeConfig.InternalName,
+	}
+	Logc(ctx).WithFields(fields).Debug("Unmapping igroups for publish enforcement.")
+
+	// Do not enable publish enforcement on unmanaged imports.
+	if volumeConfig.ImportNotManaged {
+		Logc(ctx).WithFields(fields).Debug("Unable to remove igroup mappings; imported LUN is not managed.")
+		return nil
+	}
+	err := LunUnmapAllIgroups(ctx, clientAPI, lunPath)
+	if err != nil {
+		msg := "error removing all igroup mappings from LUN"
+		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	volumeConfig.AccessInfo.IscsiLunNumber = -1
+	volumeConfig.AccessInfo.PublishEnforcement = true
 	return nil
 }
 

@@ -406,9 +406,7 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	luks := "true"
 	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
 	d.API = mockAPI
 

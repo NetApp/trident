@@ -481,7 +481,7 @@ func (c Client) LunMapIfNotMapped(
 	if lunMapListResponse.Result.InitiatorGroupsPtr != nil {
 		for _, igroup := range lunMapListResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
 			if igroup.InitiatorGroupName() != initiatorGroupName {
-				Logc(ctx).Debugf("LUN %s is mapped to iGroup %s.", lunPath, igroup.InitiatorGroupName())
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, igroup.InitiatorGroupName())
 			}
 			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
 
