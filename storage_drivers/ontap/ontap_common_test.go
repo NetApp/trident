@@ -2258,22 +2258,58 @@ func TestRestGetSLMLifs(t *testing.T) {
 func TestConstructOntapNASSMBVolumePath(t *testing.T) {
 	ctx := context.Background()
 
-	result := ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
-	assert.Equal(t, "\\test_share\\vol", result, "unable to construct Ontap-NAS SMB volume path")
+	tests := []struct {
+		smbShare     string
+		expectedPath string
+	}{
+		{"test_share", "\\test_sharevol"},
+		{"", "vol"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASSMBVolumePath(ctx, test.smbShare, "vol")
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+		})
+	}
 }
 
 func TestConstructOntapNASFlexGroupSMBVolumePath(t *testing.T) {
 	ctx := context.Background()
 
-	result := ConstructOntapNASFlexGroupSMBVolumePath(ctx, "test_share", "/vol")
-	assert.Equal(t, "\\test_share\\vol", result, "unable to construct  Ontap-NAS-FlexGroup SMB volume path")
+	tests := []struct {
+		smbShare     string
+		expectedPath string
+	}{
+		{"test_share", "\\test_sharevol"},
+		{"", "vol"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASFlexGroupSMBVolumePath(ctx, test.smbShare, "vol")
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+		})
+	}
 }
 
 func TestConstructOntapNASQTreeSMBVolumePath(t *testing.T) {
 	ctx := context.Background()
 
-	result := ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
-	assert.Equal(t, "\\test_share\\flex-vol\\vol", result, "unable to construct Ontap-NAS-QTree SMB volume path")
+	tests := []struct {
+		smbShare     string
+		expectedPath string
+	}{
+		{"test_share", "\\test_share\\flex-vol\\vol"},
+		{"", "\\flex-vol\\vol"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASQTreeSMBVolumePath(ctx, test.smbShare, "flex-vol", "vol")
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+		})
+	}
 }
 
 func TestEnsureNodeAccess(t *testing.T) {

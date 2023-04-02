@@ -316,4 +316,10 @@ type RestClientInterface interface {
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)
 	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
+	// SMBShareCreate creates an SMB share with the specified name and path.
+	SMBShareCreate(ctx context.Context, shareName, path string) error
+	// SMBShareExists checks for the existence of an SMB share with the given name.
+	SMBShareExists(ctx context.Context, shareName string) (bool, error)
+	// SMBShareDestroy deletes an SMB Share.
+	SMBShareDestroy(ctx context.Context, shareName string) error
 }

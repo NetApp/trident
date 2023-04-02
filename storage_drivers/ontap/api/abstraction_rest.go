@@ -2457,3 +2457,25 @@ func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 func (d OntapAPIREST) GetSVMUUID() string {
 	return d.api.SVMUUID()
 }
+
+func (d OntapAPIREST) SMBShareCreate(ctx context.Context, shareName, path string) error {
+	if err := d.api.SMBShareCreate(ctx, shareName, path); err != nil {
+		return fmt.Errorf("error while creating SMB share %v : %v", shareName, err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SMBShareExists(ctx context.Context, shareName string) (bool, error) {
+	share, err := d.api.SMBShareExists(ctx, shareName)
+	if err != nil {
+		return false, fmt.Errorf("error while checking SMB share %v : %v", shareName, err)
+	}
+	return share, nil
+}
+
+func (d OntapAPIREST) SMBShareDestroy(ctx context.Context, shareName string) error {
+	if err := d.api.SMBShareDestroy(ctx, shareName); err != nil {
+		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
+	}
+	return nil
+}

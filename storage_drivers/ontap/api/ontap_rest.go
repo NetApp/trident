@@ -5359,4 +5359,88 @@ func (c RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool
 }
 
 // SNAPMIRROR operations END
+
+// SMBShareCreate creates an SMB share with the specified name and path.
+// Equivalent to filer::> vserver cifs share create -share-name <shareName> -path <path>
+func (c RestClient) SMBShareCreate(ctx context.Context, shareName, path string) error {
+	params := nas.NewCifsShareCreateParams()
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	cifsShareInfo := &models.CifsShare{
+		Name: &shareName,
+		Path: &path,
+	}
+	cifsShareInfo.Svm = &models.CifsShareInlineSvm{Name: &c.svmName}
+	params.SetInfo(cifsShareInfo)
+	result, err := c.api.Nas.CifsShareCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		return fmt.Errorf("unexpected response from SMB share create")
+	}
+
+	return nil
+}
+
+// getSMBShareByName gets an SMB share with the given name.
+func (c RestClient) getSMBShareByName(ctx context.Context, shareName string) (*models.CifsShare, error) {
+	params := nas.NewCifsShareCollectionGetParams()
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetSvmName(&c.svmName)
+	params.SetName(&shareName)
+
+	result, err := c.api.Nas.CifsShareCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil || result.Payload == nil || *result.Payload.NumRecords == 0 {
+		return nil, nil
+	}
+	// The specified SMB share already exists
+	if *result.Payload.NumRecords == 1 && result.Payload.CifsShareResponseInlineRecords != nil {
+		return result.Payload.CifsShareResponseInlineRecords[0], nil
+	}
+
+	return nil, fmt.Errorf("SMB share %s not found", shareName)
+}
+
+// SMBShareExists checks for the existence of an SMB share with the given name.
+// Equivalent to filer::> cifs share show <shareName>
+func (c RestClient) SMBShareExists(ctx context.Context, smbShareName string) (bool, error) {
+	share, err := c.getSMBShareByName(ctx, smbShareName)
+	if err != nil {
+		return false, err
+	}
+	if share == nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// SMBShareDestroy destroys an SMB share.
+// Equivalent to filer::> cifs share delete <shareName>
+func (c RestClient) SMBShareDestroy(ctx context.Context, shareName string) error {
+	params := nas.NewCifsShareDeleteParams()
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.Name = shareName
+	params.SvmUUID = c.svmUUID
+
+	result, err := c.api.Nas.CifsShareDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		return fmt.Errorf("unexpected nil response from SMB share delete")
+	}
+
+	return nil
+}
+
 // ///////////////////////////////////////////////////////////////////////////

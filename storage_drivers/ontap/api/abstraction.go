@@ -200,6 +200,9 @@ type OntapAPI interface {
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	SMBShareCreate(ctx context.Context, shareName, path string) error
+	SMBShareExists(ctx context.Context, shareName string) (bool, error)
+	SMBShareDestroy(ctx context.Context, shareName string) error
 
 	TieringPolicyValue(ctx context.Context) string
 }

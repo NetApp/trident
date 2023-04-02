@@ -3113,4 +3113,62 @@ func (c Client) IscsiInitiatorSetDefaultAuth(
 
 // iSCSI initiator operations END
 
+// SMBShareCreate creates an SMB share with the specified name and path.
+// Equivalent to filer::> vserver cifs share create -share-name <shareName> -path <path>
+func (c Client) SMBShareCreate(shareName, path string) (*azgo.CifsShareCreateResponse, error) {
+	response, err := azgo.NewCifsShareCreateRequest().
+		SetShareName(shareName).
+		SetPath(path).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+// getSMBShareByName gets an SMB share with the given name.
+func (c Client) getSMBShareByName(shareName string) (*azgo.CifsShareType, error) {
+	query := &azgo.CifsShareGetIterRequestQuery{}
+	shareAttrs := azgo.NewCifsShareType().
+		SetShareName(shareName)
+	query.SetCifsShare(*shareAttrs)
+
+	response, err := azgo.NewCifsShareGetIterRequest().
+		SetMaxRecords(c.config.ContextBasedZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+
+	if err != nil {
+		return nil, err
+	} else if response.Result.NumRecords() == 0 {
+		return nil, nil
+	} else if response.Result.AttributesListPtr != nil &&
+		response.Result.AttributesListPtr.CifsSharePtr != nil {
+		return &response.Result.AttributesListPtr.CifsSharePtr[0], nil
+	}
+
+	return nil, fmt.Errorf("SMB share %s not found", shareName)
+}
+
+// SMBShareExists checks for the existence of an SMB share with the given name.
+// Equivalent to filer::> cifs share show <shareName>
+func (c Client) SMBShareExists(shareName string) (bool, error) {
+	share, err := c.getSMBShareByName(shareName)
+	if err != nil {
+		return false, err
+	}
+	if share == nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// SMBShareDestroy destroys an SMB share
+// Equivalent to filer::> cifs share delete shareName
+func (c Client) SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse, error) {
+	response, err := azgo.NewCifsShareDeleteRequest().
+		SetShareName(shareName).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
 // ///////////////////////////////////////////////////////////////////////////

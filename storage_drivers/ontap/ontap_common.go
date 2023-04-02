@@ -2805,7 +2805,13 @@ func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName st
 	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
 	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
 
-	completeVolumePath := utils.WindowsPathSeparator + smbShare + volumeName
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+		completeVolumePath = volumeName
+	}
 
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
@@ -2820,7 +2826,13 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 	Logc(ctx).Debug(">>>> smb.ConstructOntapNASFlexGroupSMBVolumePath")
 	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASFlexGroupSMBVolumePath")
 
-	completeVolumePath := utils.WindowsPathSeparator + smbShare + volumeName
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexGroup volume name.
+		completeVolumePath = volumeName
+	}
 
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
@@ -2836,7 +2848,13 @@ func ConstructOntapNASQTreeSMBVolumePath(ctx context.Context, smbShare, flexVol,
 	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeSMBVolumePath")
 	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeSMBVolumePath")
 
-	completeVolumePath := utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the parent flexVol volume name.
+		completeVolumePath = utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	}
 
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)

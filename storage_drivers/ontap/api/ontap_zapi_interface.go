@@ -354,4 +354,10 @@ type ZapiClientInterface interface {
 	//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 	//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 	IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error)
+	// SMBShareCreate creates an SMB share with the specified name and path.
+	SMBShareCreate(shareName, path string) (*azgo.CifsShareCreateResponse, error)
+	// SMBShareExists checks for the existence of an SMB share with the given name.
+	SMBShareExists(shareName string) (bool, error)
+	// SMBShareDestroy deletes an SMBShare
+	SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse, error)
 }

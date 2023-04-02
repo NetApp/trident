@@ -658,17 +658,34 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 		Comment: "flexvol",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
-	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshot, false).Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
-	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	tests := []struct {
+		NasType string
+	}{
+		{"nfs"},
+		{"smb"},
+	}
 
-	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+	for _, test := range tests {
+		t.Run(test.NasType, func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+			mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+				volConfig.CloneSourceSnapshot, false).Return(nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
+			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 
-	assert.NoError(t, result)
+			if test.NasType == sa.SMB {
+				driver.Config.NASType = sa.SMB
+				mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+			}
+
+			result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+			assert.NoError(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeClone_StoragePoolUnset(t *testing.T) {
@@ -795,6 +812,78 @@ func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
 	assert.Error(t, result)
 }
 
+func TestOntapNasStorageDriverVolumeClone_CreateFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		CloneSourceSnapshot: "flexvol",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshot, false).Return(fmt.Errorf("create clone fail"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		CloneSourceSnapshot: "flexvol",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshot, false).Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(fmt.Errorf("cannot create volume"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
 func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
 	svmName := "SVM1"
 	volName := "testVol"
@@ -810,14 +899,35 @@ func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
 
 	assert.NotNil(t, mockAPI)
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+	tests := []struct {
+		message  string
+		nasType  string
+		smbShare string
+	}{
+		{"Test NFS volume", "nfs", ""},
+		{"Test SMB volume", "smb", ""},
+		{"Test SMB volume with share", "smb", volConfig.InternalName},
+	}
 
-	result := driver.Destroy(ctx, volConfig)
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+			mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+			if test.nasType == sa.SMB {
+				if test.smbShare == "" {
+					mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
+					mockAPI.EXPECT().SMBShareDestroy(ctx, volConfig.InternalName).Return(nil)
+				}
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = test.smbShare
+			}
+			result := driver.Destroy(ctx, volConfig)
 
-	assert.NoError(t, result)
+			assert.NoError(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeDestroy_VolumeNotFound(t *testing.T) {
@@ -890,6 +1000,74 @@ func TestOntapNasStorageDriverVolumeDestroy_Fail(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
+
+	result := driver.Destroy(ctx, volConfig)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverSMBShareDestroy_VolumeNotFound(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+	driver.Config.NASType = sa.SMB
+
+	tests := []struct {
+		message           string
+		serverReturnError bool
+	}{
+		{"ServerError", true},
+		{"share not found", false},
+	}
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+			mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+			mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
+			if test.serverReturnError {
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false,
+					fmt.Errorf("Server does not respond"))
+				result := driver.Destroy(ctx, volConfig)
+				assert.Error(t, result)
+			} else {
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false, nil)
+				result := driver.Destroy(ctx, volConfig)
+				assert.NoError(t, result)
+			}
+		})
+	}
+}
+
+func TestOntapNasStorageDriverSMBDestroy_Fail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	driver.Config.NASType = sa.SMB
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(fmt.Errorf("cannot delete SMB share"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -1338,13 +1516,33 @@ func TestOntapNasStorageDriverCreateFollowup_NASType_SMB(t *testing.T) {
 		AccessType:   "rw",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
-	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+	tests := []struct {
+		message   string
+		isSuccess bool
+	}{
+		{"SMB share created successfully", false},
+		{"SMB share creation fail", true},
+	}
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
+			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+			if test.isSuccess {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
 
-	result := driver.CreateFollowup(ctx, volConfig)
+				result := driver.CreateFollowup(ctx, volConfig)
+				assert.NoError(t, result)
+			} else {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("SMB share creation failed"))
 
-	assert.NoError(t, result)
+				result := driver.CreateFollowup(ctx, volConfig)
+				assert.Error(t, result)
+			}
+		})
+	}
 }
 
 func TestOntapNasStorageDriverCreateFollowup_VolumeInfoFailure(t *testing.T) {
@@ -2038,18 +2236,39 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
+	driver.Config.NASType = sa.SMB
 	volAttrs := map[string]sa.Request{}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
-	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
-	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+	tests := []struct {
+		smbShare string
+	}{
+		{"vol1"},
+		{""},
+	}
 
-	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			driver.Config.SMBShare = test.smbShare
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+			if test.smbShare != "" {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/").Return(nil)
+			} else {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
+			}
 
-	assert.NoError(t, result)
+			result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+			assert.NoError(t, result)
+		})
+	}
+
 	assert.Equal(t, "none", volConfig.SpaceReserve)
 	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
 	assert.Equal(t, "10", volConfig.SnapshotReserve)
@@ -2577,6 +2796,106 @@ func TestOntapNasStorageDriverVolumeCreate_LabelLengthExceeding(t *testing.T) {
 	assert.Error(t, result)
 }
 
+func TestOntapNasStorageDriverVolumeCreate_SMBShareCreatefail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm:vol1",
+	}
+
+	sb := &storage.StorageBackend{}
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		TieringPolicy: "",
+		SnapshotDir:   "true",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.AutoExportPolicy = true
+	driver.Config.NASType = sa.SMB
+	volAttrs := map[string]sa.Request{}
+
+	tests := []struct {
+		smbShare string
+	}{
+		{"vol1"},
+		{""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			driver.Config.SMBShare = test.smbShare
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+			if test.smbShare != "" {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/").Return(fmt.Errorf("cannot create volume"))
+			} else {
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("cannot create volume"))
+			}
+
+			result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+			assert.Error(t, result)
+		})
+	}
+}
+
+func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsfail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm:vol1",
+	}
+
+	sb := &storage.StorageBackend{}
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		TieringPolicy: "",
+		SnapshotDir:   "true",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.AutoExportPolicy = true
+	driver.Config.NASType = sa.SMB
+	volAttrs := map[string]sa.Request{}
+
+	tests := []struct {
+		message  string
+		smbShare string
+	}{
+		{"User define SMB server validation fail", "vol1"},
+		{"System define SMB share validation fail", ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			driver.Config.SMBShare = test.smbShare
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+			mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, fmt.Errorf("server error"))
+
+			result := driver.Create(ctx, volConfig, pool1, volAttrs)
+			assert.Error(t, result)
+		})
+	}
+}
+
 func TestOntapNasStorageDriverVolumeImport(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
@@ -2593,14 +2912,27 @@ func TestOntapNasStorageDriverVolumeImport(t *testing.T) {
 		Comment: "flexvol",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
-	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	tests := []struct {
+		NasType string
+	}{
+		{"nfs"},
+		{"smb"},
+	}
 
-	result := driver.Import(ctx, volConfig, "vol1")
+	for _, test := range tests {
+		t.Run(test.NasType, func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
 
-	assert.NoError(t, result)
+			if test.NasType == sa.SMB {
+				driver.Config.NASType = sa.SMB
+			}
+			result := driver.Import(ctx, volConfig, "vol1")
+			assert.NoError(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeImport_Failure(t *testing.T) {
@@ -2760,6 +3092,34 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 			assert.Error(t, result)
 		})
 	}
+}
+
+func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	driver.Config.NASType = sa.SMB
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/flexvol",
+	}
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("error creating SMB share"))
+
+	result := driver.Import(ctx, volConfig, "vol1")
+	assert.Error(t, result)
 }
 
 func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {

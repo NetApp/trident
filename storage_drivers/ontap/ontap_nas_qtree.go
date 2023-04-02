@@ -436,6 +436,12 @@ func (d *NASQtreeStorageDriver) Create(
 				aggregate, flexvol, name, err)
 		}
 
+		if d.Config.NASType == sa.SMB {
+			if err = d.EnsureSMBShare(ctx, name, flexvol); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
@@ -1934,4 +1940,39 @@ func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(
 	Logc(ctx).WithFields(fields).Debug("setting volumePattern")
 
 	return volumePattern, qtreeName, nil
+}
+
+// EnsureSMBShare ensures that required SMB share is made available.
+func (d *NASQtreeStorageDriver) EnsureSMBShare(
+	ctx context.Context, shareName, name string,
+) error {
+	if d.Config.SMBShare != "" {
+		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.
+		share, err := d.API.SMBShareExists(ctx, d.Config.SMBShare)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err := d.API.SMBShareCreate(ctx, d.Config.SMBShare, "/"); err != nil {
+				return err
+			}
+		}
+	} else {
+		// If user did not specify SMB share in backend configuration, create an SMB share with the name passed.
+		share, err := d.API.SMBShareExists(ctx, name)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err := d.API.SMBShareCreate(ctx, name, "/"+name); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

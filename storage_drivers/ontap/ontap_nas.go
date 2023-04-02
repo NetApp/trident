@@ -390,6 +390,12 @@ func (d *NASStorageDriver) Create(
 			return err
 		}
 
+		if d.Config.NASType == sa.SMB {
+			if err := d.EnsureSMBShare(ctx, name, "/"+name); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
@@ -465,8 +471,17 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup)
+	if err := cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
+		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+		return err
+	}
+
+	if d.Config.NASType == sa.SMB {
+		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Destroy the volume
@@ -508,6 +523,11 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
 		return err
+	}
+	if d.Config.NASType == sa.SMB {
+		if err := d.DestroySMBShare(ctx, name); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -597,6 +617,14 @@ func (d *NASStorageDriver) Import(
 			ctx, volConfig.InternalName, originalName, unixPerms,
 		); err != nil {
 			return err
+		}
+	}
+
+	if d.Config.NASType == sa.SMB {
+		if flexvol.JunctionPath != "" {
+			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -948,7 +976,10 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 
 	if flexvol.JunctionPath == "" {
 		if flexvol.AccessType == "rw" || flexvol.AccessType == "dp" {
-			// Flexvol is not mounted, we need to mount it
+			// Flexvol will not be mounted in the following scenarios, we need to mount it,
+			// 1. During Import of volume without Junction path.
+			// 2. During Create/CreateClone there is a failure and mount is not performed.
+
 			if d.Config.NASType == sa.SMB {
 				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
 					volConfig.InternalName)
@@ -963,6 +994,15 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			err = d.MountVolume(ctx, volConfig.InternalName, accessPath, flexvol)
 			if err != nil {
 				return err
+			}
+
+			// If smbShare is omitted in the backend configuration then,
+			// Trident tries to create sbmShare with the same name as volume InternalName.
+			// This check ensures that volume is mounted before the share is created.
+			if d.Config.NASType == sa.SMB {
+				if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName); err != nil {
+					return err
+				}
 			}
 		}
 	} else {
@@ -1271,6 +1311,63 @@ func (d *NASStorageDriver) MountVolume(
 			Logc(ctx).Debugf("Received expected API error when mounting DP volume to junction; %v", err)
 		} else {
 			return fmt.Errorf("error mounting volume to junction %s; %v", junctionPath, err)
+		}
+	}
+	return nil
+}
+
+// EnsureSMBShare ensures that required SMB share is made available.
+func (d *NASStorageDriver) EnsureSMBShare(
+	ctx context.Context, name, path string,
+) error {
+	if d.Config.SMBShare != "" {
+		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.
+		share, err := d.API.SMBShareExists(ctx, d.Config.SMBShare)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err = d.API.SMBShareCreate(ctx, d.Config.SMBShare, "/"); err != nil {
+				return err
+			}
+		}
+	} else {
+		// If user did not specify SMB share in backend configuration, create an SMB share with the name passed.
+		share, err := d.API.SMBShareExists(ctx, name)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err = d.API.SMBShareCreate(ctx, name, path); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// DestroySMBShare destroys an SMB share
+func (d *NASStorageDriver) DestroySMBShare(
+	ctx context.Context, name string,
+) error {
+	// If the share being deleted matches with the backend config, Trident will not delete the SMB share.
+	if d.Config.SMBShare == name {
+		return nil
+	}
+
+	shareExists, err := d.API.SMBShareExists(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	if shareExists {
+		if err := d.API.SMBShareDestroy(ctx, name); err != nil {
+			return err
 		}
 	}
 	return nil

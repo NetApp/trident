@@ -2304,3 +2304,39 @@ func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule
 func (d OntapAPIZAPI) GetSVMPeers(ctx context.Context) ([]string, error) {
 	return d.api.GetPeeredVservers(ctx)
 }
+
+func (d OntapAPIZAPI) SMBShareCreate(ctx context.Context, shareName, path string) error {
+	shareCreateResponse, err := d.api.SMBShareCreate(shareName, path)
+	if err = azgo.GetError(ctx, shareCreateResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
+		return fmt.Errorf("error while creating SMB share %v: %v", shareName, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) SMBShareExists(ctx context.Context, shareName string) (bool, error) {
+	response, err := d.api.SMBShareExists(shareName)
+	if err != nil {
+		return false, fmt.Errorf("error while checking SMB share %v : %v", shareName, err)
+	}
+
+	return response, nil
+}
+
+func (d OntapAPIZAPI) SMBShareDestroy(ctx context.Context, shareName string) error {
+	shareDestroyResponse, err := d.api.SMBShareDestroy(shareName)
+	if err = azgo.GetError(ctx, shareDestroyResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
+		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
+	}
+	return nil
+}
