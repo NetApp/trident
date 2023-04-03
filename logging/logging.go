@@ -163,7 +163,7 @@ func (hook *ConsoleHook) Fire(entry *log.Entry) error {
 	// Determine output stream
 	var logWriter io.Writer
 	switch entry.Level {
-	case log.DebugLevel, log.InfoLevel, log.WarnLevel:
+	case log.DebugLevel, log.InfoLevel, log.WarnLevel, log.TraceLevel:
 		logWriter = os.Stdout
 	case log.ErrorLevel, log.FatalLevel, log.PanicLevel:
 		logWriter = os.Stderr
