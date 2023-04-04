@@ -2,7 +2,7 @@
 
 package api
 
-//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI
+//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
 type Volume struct {
 	AccessType        string
