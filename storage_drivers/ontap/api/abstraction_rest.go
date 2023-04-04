@@ -2237,7 +2237,7 @@ func (d OntapAPIREST) IscsiInitiatorSetDefaultAuth(
 
 func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
 	var iSCSINodeNames []string
-	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx, svm)
+	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get SVM iSCSI node name: %v", err)
 	}

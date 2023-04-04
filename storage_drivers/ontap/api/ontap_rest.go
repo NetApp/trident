@@ -459,7 +459,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = &c.svmUUID
 	params.SetName(utils.Ptr(pattern))
 	if state != "" {
 		params.SetState(utils.Ptr(state))
@@ -1010,7 +1010,6 @@ func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNam
 	volumeInfo := &models.Volume{
 		Clone: &models.VolumeInlineClone{SplitInitiated: utils.Ptr(true)},
 	}
-	// volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
 
 	params.SetInfo(volumeInfo)
 
@@ -1084,7 +1083,7 @@ func (c RestClient) createCloneNAS(
 		Name:  utils.Ptr(cloneName),
 		Clone: cloneInfo,
 	}
-	volumeInfo.Svm = &models.VolumeInlineSvm{Name: utils.Ptr(c.svmName)}
+	volumeInfo.Svm = &models.VolumeInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(volumeInfo)
 
@@ -1099,7 +1098,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = &c.svmUUID
 	params.SetFields([]string{"name"})
 
 	params.SetCloneParentVolumeName(utils.Ptr(volumeName))
@@ -1165,7 +1164,7 @@ func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeIn
 		}
 	}
 
-	volumeInfo.Svm = &models.VolumeInlineSvm{Name: utils.Ptr(c.svmName)}
+	volumeInfo.Svm = &models.VolumeInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	// For encrypt == nil - we don't explicitely set the encrypt argument.
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
@@ -1241,7 +1240,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = &c.svmUUID
 
 	style := models.VolumeStyleFlexvol // or models.VolumeStyleFlexgroup ??
 	state := models.VolumeStateOnline
@@ -1452,7 +1451,7 @@ func (c RestClient) SnapshotCreate(
 		Name: utils.Ptr(snapshotName),
 	}
 
-	snapshotInfo.Svm = &models.SnapshotInlineSvm{Name: utils.Ptr(c.svmName)}
+	snapshotInfo.Svm = &models.SnapshotInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(snapshotInfo)
 
@@ -1480,7 +1479,7 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 
 	params.VolumeUUID = volumeUUID
 
-	params.SvmName = utils.Ptr(c.svmName)
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetFields([]string{"name", "create_time"})
 
 	result, err := c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
@@ -1533,7 +1532,7 @@ func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshot
 	params.VolumeUUID = volumeUUID
 	params.Name = utils.Ptr(snapshotName)
 
-	params.SvmName = utils.Ptr(c.svmName)
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetFields([]string{"name", "create_time"})
 
 	return c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
@@ -1667,7 +1666,7 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = utils.Ptr(c.svmName)
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.Initiator = utils.Ptr("default")
 
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
@@ -1684,14 +1683,14 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 }
 
 // IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
-func (c RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK,
+func (c RestClient) IscsiInterfaceGet(ctx context.Context) (*san.IscsiServiceCollectionGetOK,
 	error,
 ) {
 	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.ReturnRecords = utils.Ptr(true)
-	params.SvmName = &svm
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -1765,16 +1764,15 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 func (c RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK,
 	error,
 ) {
-	svm, err := c.SvmGetByName(ctx, c.svmName)
+	svmResult, err := c.SvmGet(ctx, c.svmUUID)
 	if err != nil {
 		return nil, err
 	}
-	if svm == nil {
-		return nil, fmt.Errorf("could not find SVM %s", c.svmName)
+	if svmResult == nil || svmResult.Payload == nil || svmResult.Payload.UUID == nil {
+		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
-	if svm.UUID == nil {
-		return nil, fmt.Errorf("could not find SVM %s", c.svmName)
-	}
+
+	svm := svmResult.Payload
 
 	params := san.NewIscsiServiceGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -1812,7 +1810,7 @@ func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 		OsType:   utils.Ptr(osType),
 	}
 
-	igroupInfo.Svm = &models.IgroupInlineSvm{Name: utils.Ptr(c.svmName)}
+	igroupInfo.Svm = &models.IgroupInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(igroupInfo)
 
@@ -1948,7 +1946,7 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(pattern))
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -2160,7 +2158,7 @@ func (c RestClient) LunCloneCreate(
 			Name: utils.Ptr(qosPolicyGroup.Name),
 		},
 	}
-	lunInfo.Svm = &models.LunInlineSvm{Name: utils.Ptr(c.SVMName())}
+	lunInfo.Svm = &models.LunInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(lunInfo)
 
@@ -2204,7 +2202,7 @@ func (c RestClient) LunCreate(
 			Name: utils.Ptr(qosPolicyGroup.Name),
 		},
 	}
-	lunInfo.Svm = &models.LunInlineSvm{Name: utils.Ptr(c.svmName)}
+	lunInfo.Svm = &models.LunInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	params.SetInfo(lunInfo)
 
@@ -2248,7 +2246,7 @@ func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollec
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(pattern))
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -2650,7 +2648,7 @@ func (c RestClient) LunMap(
 		UUID: uuid,
 	}
 	lunSVM := &models.LunMapInlineSvm{
-		Name: utils.Ptr(c.svmName),
+		UUID: utils.Ptr(c.svmUUID),
 	}
 	lunMapInfo := &models.LunMap{
 		Igroup: igroupInfo,
@@ -2831,7 +2829,7 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
@@ -2884,7 +2882,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 	params.Services = utils.Ptr(fmt.Sprintf("data_%v", protocol))
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
 	lifResponse, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
@@ -3266,7 +3264,7 @@ func getType(i interface{}) string {
 	}
 }
 
-// SvmGetByName gets the volume with the specified name
+// SvmGetByName gets the SVM with the specified name
 func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
 	result, err := c.SvmList(ctx, svmName)
 	if err != nil {
@@ -3286,14 +3284,15 @@ func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.S
 func (c RestClient) SVMGetAggregateNames(
 	ctx context.Context,
 ) ([]string, error) {
-	svm, err := c.SvmGetByName(ctx, c.svmName)
+	result, err := c.SvmGet(ctx, c.svmUUID)
 	if err != nil {
 		return nil, err
 	}
-	if svm == nil {
-		return nil, fmt.Errorf("could not find SVM %s", c.svmName)
+	if result == nil || result.Payload == nil {
+		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
 
+	svm := result.Payload
 	aggrNames := make([]string, 0, 10)
 	for _, aggr := range svm.SvmInlineAggregates {
 		if aggr != nil && aggr.Name != nil {
@@ -3502,7 +3501,7 @@ func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas
 	exportPolicyInfo := &models.ExportPolicy{
 		Name: utils.Ptr(policy),
 		Svm: &models.ExportPolicyInlineSvm{
-			Name: utils.Ptr(c.svmName),
+			UUID: utils.Ptr(c.svmUUID),
 		},
 	}
 	params.SetInfo(exportPolicyInfo)
@@ -3527,7 +3526,7 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 
 	params.SetName(utils.Ptr(pattern))
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
@@ -3930,7 +3929,7 @@ func (c RestClient) QtreeCreate(
 	qtreeInfo := &models.Qtree{
 		Name:   utils.Ptr(name),
 		Volume: &models.QtreeInlineVolume{Name: utils.Ptr(volumeName)},
-		Svm:    &models.QtreeInlineSvm{Name: utils.Ptr(c.svmName)},
+		Svm:    &models.QtreeInlineSvm{UUID: utils.Ptr(c.svmUUID)},
 	}
 
 	// handle options
@@ -4060,7 +4059,7 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(namePattern))         // Qtree name prefix
 	params.SetVolumeName(utils.Ptr(volumePattern)) // Flexvol name prefix
 	params.SetFields([]string{"**"})               // TODO trim these down to just what we need
@@ -4113,7 +4112,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetPath(utils.Ptr(path))
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -4147,7 +4146,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(name))
 	params.SetVolumeName(utils.Ptr(volumeName))
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
@@ -4182,7 +4181,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetVolumeName(utils.Ptr(volumeName)) // Flexvol name
 	params.SetFields([]string{"**"})            // TODO trim these down to just what we need
 
@@ -4245,7 +4244,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))                // Qtree name
 	params.SetVolumeName(utils.Ptr(volumePattern)) // Flexvol name prefix
 	params.SetFields([]string{"**"})               // TODO trim these down to just what we need
@@ -4322,7 +4321,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))          // qtree name
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
 	params.SetFields([]string{"**"})         // TODO trim these down to just what we need
@@ -4365,7 +4364,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
 	params.SetFields([]string{"**"})         // TODO trim these down to just what we need
 
@@ -4537,7 +4536,8 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 		Type: utils.Ptr(quotaType),
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{Name: utils.Ptr(c.svmName)}
+	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{UUID: utils.Ptr(c.svmUUID)}
+
 	// handle options
 	if diskLimit != "" {
 		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
@@ -4578,7 +4578,7 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 		Type: utils.Ptr(quotaType),
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{Name: utils.Ptr(c.svmName)}
+	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{UUID: utils.Ptr(c.svmUUID)}
 
 	// handle options
 	if diskLimit != "" {
@@ -4616,7 +4616,7 @@ func (c RestClient) QuotaGetEntry(
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SetType(utils.Ptr(quotaType))
-	params.SetSvmName(utils.Ptr(c.svmName))
+	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetQtreeName(utils.Ptr(qtreeName))
 	params.SetVolumeName(utils.Ptr(volumeName))
 
@@ -4685,7 +4685,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SvmName = &c.svmName
+	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.VolumeName = utils.Ptr(volumeName)
 	params.Type = utils.Ptr("tree")
 

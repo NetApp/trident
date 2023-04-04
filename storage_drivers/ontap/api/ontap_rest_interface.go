@@ -94,7 +94,7 @@ type RestClientInterface interface {
 	// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error)
 	// IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
-	IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK, error)
+	IscsiInterfaceGet(ctx context.Context) (*san.IscsiServiceCollectionGetOK, error)
 	// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
 	//
 	//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
