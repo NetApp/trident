@@ -84,9 +84,8 @@ type OntapAPI interface {
 	LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error
 	LunDestroy(ctx context.Context, lunPath string) error
 	LunGetGeometry(ctx context.Context, lunPath string) (uint64, error)
-	LunGetComment(ctx context.Context, lunPath string) (string, bool, error)
+	LunGetFSType(ctx context.Context, lunPath string) (string, error)
 	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error
-	ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error)
 	LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
@@ -150,12 +149,18 @@ type OntapAPI interface {
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule string,
 	) error
-	SnapmirrorResync(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
-		remoteSVMName string) error
-	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
-		remoteSVMName string) error
-	SnapmirrorGet(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
-		remoteSVMName string) (*Snapmirror, error)
+	SnapmirrorResync(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) error
+	SnapmirrorDelete(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) error
+	SnapmirrorGet(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) (*Snapmirror, error)
 	SnapmirrorInitialize(
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
@@ -163,7 +168,9 @@ type OntapAPI interface {
 	SnapmirrorQuiesce(
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
-	SnapmirrorAbort(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) error
 	SnapmirrorBreak(
 		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName string,

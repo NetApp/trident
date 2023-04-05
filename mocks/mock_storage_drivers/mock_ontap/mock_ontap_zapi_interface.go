@@ -845,18 +845,33 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVserver(arg0 interfac
 }
 
 // LunGetAttribute mocks base method.
-func (m *MockZapiClientInterface) LunGetAttribute(arg0, arg1 string) (*azgo.LunGetAttributeResponse, error) {
+func (m *MockZapiClientInterface) LunGetAttribute(arg0 context.Context, arg1, arg2 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAttribute", arg0, arg1)
-	ret0, _ := ret[0].(*azgo.LunGetAttributeResponse)
+	ret := m.ctrl.Call(m, "LunGetAttribute", arg0, arg1, arg2)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAttribute indicates an expected call of LunGetAttribute.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), arg0, arg1, arg2)
+}
+
+// LunGetComment mocks base method.
+func (m *MockZapiClientInterface) LunGetComment(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunGetComment", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunGetComment indicates an expected call of LunGetComment.
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetComment(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetComment), arg0, arg1)
 }
 
 // LunGetGeometry mocks base method.

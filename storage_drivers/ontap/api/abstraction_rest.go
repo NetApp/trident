@@ -1438,11 +1438,13 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BEGIN: Snapmirror operations
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (d OntapAPIREST) SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error {
+func (d OntapAPIREST) SnapmirrorDeleteViaDestination(
+	ctx context.Context, localInternalVolumeName, localSVMName string,
+) error {
 	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
@@ -1479,14 +1481,16 @@ func (d OntapAPIREST) SnapmirrorCreate(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	return d.api.SnapmirrorCreate(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
+	return d.api.SnapmirrorCreate(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
+		replicationPolicy, replicationSchedule)
 }
 
 func (d OntapAPIREST) SnapmirrorGet(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
 	if err != nil {
 		return nil, err
 	}
@@ -1669,7 +1673,8 @@ func (d OntapAPIREST) SnapmirrorBreak(
 	remoteSVMName, snapshotName string,
 ) error {
 	// TODO: potential error if volume is not DP
-	err := d.api.SnapmirrorBreak(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
+	err := d.api.SnapmirrorBreak(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotName)
 	if err != nil {
 		if d.isTransferInProgressError(ctx, err) {
 			msg := "snapmirror transfer already in progress"
@@ -1682,9 +1687,9 @@ func (d OntapAPIREST) SnapmirrorBreak(
 	return nil
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // END: Snapmirror operations
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
 	return d.api.JobScheduleExists(ctx, replicationSchedule)
@@ -1800,22 +1805,33 @@ func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	return nil
 }
 
-// TODO: Change this for LUN Attributes when available
-func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
-	// parse := true
-	// comment, err := d.api.LunGetComment(ctx, lunPath)
-	// return comment, parse, err
-	// TODO: refactor, this is specifically for getting the fstype
-	var fstype string
-	parse := false
+func (d OntapAPIREST) LunGetFSType(ctx context.Context, lunPath string) (string, error) {
+	// Get the fstype from LUN Attribute
 	LUNAttributeFSType := "com.netapp.ndvp.fstype"
 	fstype, err := d.api.LunGetAttribute(ctx, lunPath, LUNAttributeFSType)
 	if err != nil {
-		return "", parse, err
-	} else {
-		Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+		// If not found, extract the fstype from LUN Comment
+		comment, err := d.api.LunGetComment(ctx, lunPath)
+		if err != nil {
+			return "", err
+		}
+
+		// Parse the comment to get fstype value
+		var lunComment map[string]map[string]string
+		err = json.Unmarshal([]byte(comment), &lunComment)
+		if err != nil {
+			return "", err
+		}
+		lunAttrs := lunComment["lunAttributes"]
+		if lunAttrs != nil {
+			fstype = lunAttrs["fstype"]
+		} else {
+			return "", fmt.Errorf("lunAttributes field not found in LUN comment")
+		}
 	}
-	return fstype, parse, nil
+
+	Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	return fstype, nil
 }
 
 func (d OntapAPIREST) LunCloneCreate(
@@ -1910,17 +1926,6 @@ func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks 
 	}
 
 	return commentsJSON, nil
-}
-
-func (d OntapAPIREST) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
-	var lunComment map[string]map[string]string
-	err := json.Unmarshal([]byte(commentJSON), &lunComment)
-	if err != nil {
-		return nil, err
-	}
-	lunAttrs := lunComment["lunAttributes"]
-
-	return lunAttrs, nil
 }
 
 func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {

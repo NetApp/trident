@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime/debug"
@@ -299,12 +300,6 @@ func (d OntapAPIZAPI) LunCloneCreate(
 	return nil
 }
 
-func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
-	// ParseLunComment shouldn't be called as it isn't needed for ZAPI
-	Logc(ctx).Info("Not implemented")
-	return nil, nil
-}
-
 func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error) {
 	lunResponse, err := d.api.LunGetAll(pattern)
 	if err = azgo.GetError(ctx, lunResponse, err); err != nil {
@@ -386,19 +381,33 @@ func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
 	return err
 }
 
-func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
-	// TODO: refactor, this is specifically for getting the fstype
-	var fstype string
-	parse := false
+func (d OntapAPIZAPI) LunGetFSType(ctx context.Context, lunPath string) (string, error) {
+	// Get the fstype from LUN Attribute
 	LUNAttributeFSType := "com.netapp.ndvp.fstype"
-	attrResponse, err := d.api.LunGetAttribute(lunPath, LUNAttributeFSType)
-	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
-		return "", parse, err
-	} else {
-		fstype = attrResponse.Result.Value()
-		Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	fstype, err := d.api.LunGetAttribute(ctx, lunPath, LUNAttributeFSType)
+	if err != nil {
+		// If not found, extract the fstype from LUN Comment
+		comment, err := d.api.LunGetComment(ctx, lunPath)
+		if err != nil {
+			return "", err
+		}
+
+		// Parse the comment to get fstype value
+		var lunComment map[string]map[string]string
+		err = json.Unmarshal([]byte(comment), &lunComment)
+		if err != nil {
+			return "", err
+		}
+		lunAttrs := lunComment["lunAttributes"]
+		if err == nil && lunAttrs != nil {
+			fstype = lunAttrs["fstype"]
+		} else {
+			return "", fmt.Errorf("lunAttributes field not found in LUN comment")
+		}
 	}
-	return fstype, parse, nil
+
+	Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	return fstype, nil
 }
 
 func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
@@ -2015,7 +2024,9 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error {
+func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(
+	ctx context.Context, localInternalVolumeName, localSVMName string,
+) error {
 	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName)
 	if snapDeleteResponse != nil {
 		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
@@ -2077,7 +2088,8 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	snapmirrorResponse, err := d.api.SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapmirrorResponse, err := d.api.SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
 	if err = azgo.GetError(ctx, snapmirrorResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
@@ -2166,7 +2178,8 @@ func (d OntapAPIZAPI) SnapmirrorDelete(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapDelete, deleteErr := d.api.SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapDelete, deleteErr := d.api.SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
 	if deleteErr = azgo.GetError(ctx, snapDelete, deleteErr); deleteErr != nil {
 		Logc(ctx).WithError(deleteErr).Warn("Error on snapmirror delete")
 	}

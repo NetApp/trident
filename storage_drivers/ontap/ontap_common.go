@@ -206,8 +206,10 @@ func InitializeOntapConfig(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
 ) (*drivers.OntapStorageDriverConfig, error) {
 	fields := LogFields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapConfig")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapConfig")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapConfig")
 
 	commonConfig.DriverContext = driverContext
 
@@ -257,8 +259,10 @@ func publishShare(
 		"Type":   "ontap_common",
 		"Share":  volumeName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexVolShare")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexVolShare")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexVolShare")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexVolShare")
 
 	if !config.AutoExportPolicy || publishInfo.Unmanaged {
 		// Nothing to do if we're not configuring export policies automatically or volume is not managed
@@ -552,7 +556,8 @@ func PublishLUN(
 		"publishInfo":   publishInfo,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PublishLUN")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PublishLUN")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PublishLUN")
 
 	var iqn string
 	var err error
@@ -579,22 +584,17 @@ func PublishLUN(
 
 	// Get the fstype
 	fstype := drivers.DefaultFileSystemType
-	lunComment, parse, err := clientAPI.LunGetComment(ctx, lunPath)
-	if err != nil || lunComment == "" {
+	lunFSType, err := clientAPI.LunGetFSType(ctx, lunPath)
+	if err != nil || lunFSType == "" {
+		if err != nil {
+			Logc(ctx).Warnf("failed to get fstype for LUN: %v", err)
+		}
 		Logc(ctx).WithFields(LogFields{
 			"LUN":    lunPath,
 			"fstype": fstype,
 		}).Warn("LUN attribute fstype not found, using default.")
-		parse = false
-	}
-	if parse {
-		lunAttrs, err := clientAPI.ParseLunComment(ctx, lunComment)
-		if err == nil && lunAttrs != nil {
-			fstype = lunAttrs["fstype"]
-		}
-		Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
-	} else if lunComment != "" {
-		fstype = lunComment
+	} else {
+		fstype = lunFSType
 	}
 
 	if config.DriverContext == tridentconfig.ContextCSI {
@@ -795,8 +795,10 @@ func InitializeSANDriver(
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "InitializeSANDriver", "Type": "ontap_common"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeSANDriver")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeSANDriver")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeSANDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeSANDriver")
 
 	// Defer validation to the driver's validate method
 	if err := validate(ctx); err != nil {
@@ -889,8 +891,10 @@ func InitializeOntapDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
 ) (api.OntapAPI, error) {
 	fields := LogFields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapDriver")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriver")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriver")
 
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
 	mgmtLIF := ""
@@ -950,8 +954,10 @@ func InitializeOntapAPI(
 		"Method": "InitializeOntapAPI", "Type": "ontap_common",
 		"useREST": config.UseREST,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapAPI")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapAPI")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapAPI")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapAPI")
 
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	numRecords := api.DefaultZapiRecords
@@ -978,8 +984,10 @@ func ValidateSANDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
 	fields := LogFields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateSANDriver")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateSANDriver")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateSANDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateSANDriver")
 
 	// Specifying single DataLIF is no longer supported for iSCSI attachments. Please note multipathing should
 	// be enabled by default.
@@ -1015,8 +1023,10 @@ func ValidateNASDriver(
 	var protocol string
 
 	fields := LogFields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateNASDriver")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateNASDriver")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateNASDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateNASDriver")
 
 	isLuks, err := strconv.ParseBool(config.LUKSEncryption)
 	if err != nil {
@@ -1107,8 +1117,10 @@ const (
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
 	fields := LogFields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateConfigurationDefaults")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateConfigurationDefaults")
 
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
@@ -1435,8 +1447,10 @@ func RestoreSnapshot(
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	if err := client.SnapshotRestoreVolume(ctx, internalSnapName, internalVolName); err != nil {
 		return err
@@ -1462,8 +1476,10 @@ func SplitVolumeFromBusySnapshot(
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitVolumeFromBusySnapshot")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitVolumeFromBusySnapshot")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitVolumeFromBusySnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitVolumeFromBusySnapshot")
 
 	childVolumes, err := client.VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName)
@@ -2405,7 +2421,8 @@ func getVolumeSnapshot(
 		"volumeName":   internalVolName,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
@@ -2448,8 +2465,10 @@ func getVolumeSnapshotList(
 		"Type":       "NASStorageDriver",
 		"volumeName": internalVolName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getVolumeSnapshotList")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getVolumeSnapshotList")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getVolumeSnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getVolumeSnapshotList")
 
 	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
@@ -2503,8 +2522,10 @@ func createFlexvolSnapshot(
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// If the specified volume doesn't exist, return error
 	volExists, err := client.VolumeExists(ctx, internalVolName)
@@ -2561,7 +2582,8 @@ func cloneFlexvol(
 		"split":    split,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneFlexvol")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneFlexvol")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneFlexvol")
 
 	// If the specified volume already exists, return an error
 	volExists, err := client.VolumeExists(ctx, name)

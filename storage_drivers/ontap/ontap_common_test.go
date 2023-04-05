@@ -2350,7 +2350,8 @@ func TestEnsureNodeAccess(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockRestClient.EXPECT().SvmGetByName(ctx, gomock.Any()).AnyTimes()
 	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).AnyTimes()
-	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-fakeUUID").AnyTimes().Return(false, fmt.Errorf("Error returned while checking policy"))
+	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-fakeUUID").AnyTimes().Return(false,
+		fmt.Errorf("Error returned while checking policy"))
 
 	volInfo = &utils.VolumePublishInfo{
 		BackendUUID: "fakeUUID",
@@ -2423,7 +2424,8 @@ func TestReconcileExportPolicyRules(t *testing.T) {
 
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, nil)
-	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0], config.NASType).Return(fmt.Errorf("Error Creating export rule"))
+	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0],
+		config.NASType).Return(fmt.Errorf("Error Creating export rule"))
 
 	err = reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
 
@@ -2439,7 +2441,8 @@ func TestReconcileExportPolicyRules(t *testing.T) {
 	ruleList["::/0"] = 1
 	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0], config.NASType).Return(nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, "dummyPolicy", ruleList["0.0.0.1/0"]).Return(fmt.Errorf("Error destroying export rule"))
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, "dummyPolicy",
+		ruleList["0.0.0.1/0"]).Return(fmt.Errorf("Error destroying export rule"))
 
 	err = reconcileExportPolicyRules(ctx, "dummyPolicy", desiredRules, mockAPI, config)
 
@@ -2666,7 +2669,8 @@ func TestInitializeSANDriver(t *testing.T) {
 	response.AuthType = "none"
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi", "linux").Return(fmt.Errorf("ensureIGroupExists returned error"))
+	mockAPI.EXPECT().IgroupCreate(ctx, expectedIgroupName, "iscsi",
+		"linux").Return(fmt.Errorf("ensureIGroupExists returned error"))
 
 	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
 
@@ -2736,7 +2740,8 @@ func TestLunUnmapAllIgroups(t *testing.T) {
 	// Test-2 : Testing Error flow: LunListIgroupsMapped returns error
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	lunpath = "fakelunPath"
-	mockAPI.EXPECT().LunListIgroupsMapped(ctx, lunpath).Return([]string{"iGroup1"}, fmt.Errorf("Error in LunListIgroupsMapped"))
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, lunpath).Return([]string{"iGroup1"},
+		fmt.Errorf("Error in LunListIgroupsMapped"))
 
 	err = LunUnmapAllIgroups(ctx, mockAPI, lunpath)
 
@@ -2824,7 +2829,8 @@ func TestGetVolumeSnapshot(t *testing.T) {
 	// Test-4: Testing Error flow: VolumeSnapshotList returned error
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolInternalName").Return(100, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapConfig.VolumeInternalName).Return(snapshotsList, fmt.Errorf("Error returned"))
+	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapConfig.VolumeInternalName).Return(snapshotsList,
+		fmt.Errorf("Error returned"))
 
 	_, err = getVolumeSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
@@ -2867,7 +2873,8 @@ func TestGetVolumeSnapshotList(t *testing.T) {
 	// Test-2: Testing error flow : VolumeSnapshotList returned error
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().LunSize(ctx, "fakeInternalName").Return(100, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, volConfig.InternalName).Return(snapshotsList, fmt.Errorf("Error returned from VolumeSnapshotList"))
+	mockAPI.EXPECT().VolumeSnapshotList(ctx, volConfig.InternalName).Return(snapshotsList,
+		fmt.Errorf("Error returned from VolumeSnapshotList"))
 
 	_, err = getVolumeSnapshotList(ctx, volConfig, config, mockAPI, mockAPI.LunSize)
 
@@ -3511,7 +3518,8 @@ func TestGetISCSITargetInfo(t *testing.T) {
 
 	// Test2: Error flow : could not get SVM iSCSI node name
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("TestiSCSINodeName", fmt.Errorf("IscsiNodeGetNameRequest returned error"))
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("TestiSCSINodeName",
+		fmt.Errorf("IscsiNodeGetNameRequest returned error"))
 
 	_, _, err = GetISCSITargetInfo(ctx, mockAPI, config)
 
@@ -3520,7 +3528,8 @@ func TestGetISCSITargetInfo(t *testing.T) {
 	// Test3: Error flow : could not get SVM iSCSI interface
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("TestiSCSINodeName", nil)
-	mockAPI.EXPECT().IscsiInterfaceGet(ctx, config.SVM).Return([]string{"TestiSCSIInterface1"}, fmt.Errorf("IscsiNodeGetNameRequest returned error"))
+	mockAPI.EXPECT().IscsiInterfaceGet(ctx, config.SVM).Return([]string{"TestiSCSIInterface1"},
+		fmt.Errorf("IscsiNodeGetNameRequest returned error"))
 
 	_, _, err = GetISCSITargetInfo(ctx, mockAPI, config)
 
@@ -3797,9 +3806,8 @@ func TestPublishLun(t *testing.T) {
 		HostIQN:     []string{"host_iqn"},
 	}
 	// Test1 - Positive flow
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, nil)
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
-	mockAPI.EXPECT().ParseLunComment(ctx, "LunComment").Return(map[string]string{"fstype": tridentconfig.FsXfs}, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
@@ -3816,23 +3824,10 @@ func TestPublishLun(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test3 - Error Path: ParseLunComment returns error
+	// Test 3 - LunGetFSType returns error
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
-	mockAPI.EXPECT().ParseLunComment(ctx, "LunComment").Return(map[string]string{}, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
-
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
-
-	assert.NoError(t, err)
-
-	// Test 4 - LunGetComment returns error
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	publishInfo.HostIQN = []string{"host_iqn"}
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, fmt.Errorf("LunGetComment returned error"))
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
@@ -3841,17 +3836,17 @@ func TestPublishLun(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	// Test 5 - No target node found
+	// Test 4 - No target node found
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	publishInfo.HostName = "fakeHostName"
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, fmt.Errorf("LunGetComment returned error"))
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
 	assert.Error(t, err)
 
-	// Test 6 - EnsureIgroupAdded returns error
+	// Test 5 - EnsureIgroupAdded returns error
 	publishInfo = &utils.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Localhost:   false,
@@ -3859,18 +3854,18 @@ func TestPublishLun(t *testing.T) {
 		Nodes:       nodeList,
 		HostIQN:     []string{"host_iqn"},
 	}
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, nil)
-	mockAPI.EXPECT().ParseLunComment(ctx, "LunComment")
-	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(fmt.Errorf("EnsureIgroupAdded returned error"))
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName,
+		gomock.Any()).Return(fmt.Errorf("EnsureIgroupAdded returned error"))
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
 	assert.Error(t, err)
 
-	// Test 7 - EnsureLunMapped returns error
-	mockAPI.EXPECT().LunGetComment(ctx, lunPath).Return("LunComment", true, nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, fmt.Errorf("EnsureLunMapped returned error"))
-	mockAPI.EXPECT().ParseLunComment(ctx, "LunComment")
+	// Test 6 - EnsureLunMapped returns error
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111,
+		fmt.Errorf("EnsureLunMapped returned error"))
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
@@ -4209,7 +4204,8 @@ func TestCloneFlexvol(t *testing.T) {
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(nil)
-	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name, *qosPolicyGroup).Return(fmt.Errorf("Error setting qos policy"))
+	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name,
+		*qosPolicyGroup).Return(fmt.Errorf("Error setting qos policy"))
 
 	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
 
@@ -4446,7 +4442,8 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 
 	// Test2 - aggregates is available to SVM
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME},
+		nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	storageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, mockAPI)
@@ -4495,7 +4492,8 @@ func TestSplitVolumeFromBusySnapshot(t *testing.T) {
 
 	// Test1: Error flow: Error returned by VolumeListBySnapshotParent
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
-		snapConfig.VolumeInternalName).Return(api.VolumeNameList{}, fmt.Errorf("Error returned by VolumeListBySnapshotParent"))
+		snapConfig.VolumeInternalName).Return(api.VolumeNameList{},
+		fmt.Errorf("Error returned by VolumeListBySnapshotParent"))
 
 	err := SplitVolumeFromBusySnapshot(ctx, snapConfig, config, mockAPI, mockCloneSplitStart)
 
@@ -4944,7 +4942,8 @@ func TestGetISCSIDataLIFsForReportingNodes(t *testing.T) {
 	// Test3: No dataLIFs reported by GetSLMDataLifs
 	reportedNodes = []string{"fakeNode1"}
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, iGroupName, lunPath).Return(reportedNodes, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, reportedNodes).Return([]string{"fakeNode1"}, fmt.Errorf("Error getting DataLIFs"))
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, reportedNodes).Return([]string{"fakeNode1"},
+		fmt.Errorf("Error getting DataLIFs"))
 	ips = []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "::1", "127.0.0.1"}
 
 	reportedNodes, err = getISCSIDataLIFsForReportingNodes(ctx, mockAPI, ips, lunPath, iGroupName, unmanagedimport)
@@ -4969,14 +4968,16 @@ func TestInitializeOntapConfig(t *testing.T) {
 	backendSecret := map[string]string{"dummy": "fake"}
 
 	// Test1: Invalid JSON
-	configReturned, err := InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON), commonConfig, backendSecret)
+	configReturned, err := InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON),
+		commonConfig, backendSecret)
 
 	assert.Nil(t, configReturned)
 	assert.Error(t, err)
 
 	// Test2:  Invalid secrect
 	configJSON, _ = json.Marshal(config)
-	configReturned, err = InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON), commonConfig, backendSecret)
+	configReturned, err = InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON),
+		commonConfig, backendSecret)
 
 	assert.Nil(t, configReturned)
 	assert.Error(t, err)
@@ -4992,7 +4993,8 @@ func TestInitializeOntapConfig(t *testing.T) {
 	config.Size = "InvalidSize"
 	configJSON, _ = json.Marshal(config)
 
-	configReturned, err = InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON), commonConfig, backendSecret)
+	configReturned, err = InitializeOntapConfig(ctx, tridentconfig.DriverContext(driverContext), string(configJSON),
+		commonConfig, backendSecret)
 
 	assert.Nil(t, configReturned, "Unexpected output received")
 	assert.Error(t, err)
@@ -5010,7 +5012,8 @@ func TestCalculateFlexvolEconomySizeBytes(t *testing.T) {
 
 	// Test 1- usableSpaceSnapReserve is less than usableSpaceWithSnapshots
 	expected := uint64(totalDiskLimitBytes + newLunOrQtreeSizeBytes + volAttr.SnapshotSpaceUsed)
-	flexvolBytes := calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttr, uint64(newLunOrQtreeSizeBytes), uint64(totalDiskLimitBytes))
+	flexvolBytes := calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttr, uint64(newLunOrQtreeSizeBytes),
+		uint64(totalDiskLimitBytes))
 
 	assert.Equal(t, expected, flexvolBytes)
 
@@ -5018,7 +5021,8 @@ func TestCalculateFlexvolEconomySizeBytes(t *testing.T) {
 	volAttr.SnapshotReserve = 70
 	expected = uint64((float64)(newLunOrQtreeSizeBytes+totalDiskLimitBytes) / (1.0 - (float64(volAttr.SnapshotReserve) / 100.0)))
 
-	flexvolBytes = calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttr, uint64(newLunOrQtreeSizeBytes), uint64(totalDiskLimitBytes))
+	flexvolBytes = calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttr, uint64(newLunOrQtreeSizeBytes),
+		uint64(totalDiskLimitBytes))
 
 	assert.Equal(t, expected, flexvolBytes)
 }

@@ -571,12 +571,32 @@ func (c Client) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttrib
 }
 
 // LunGetAttribute gets a named attribute for a given LUN.
-func (c Client) LunGetAttribute(lunPath, name string) (*azgo.LunGetAttributeResponse, error) {
+func (c Client) LunGetAttribute(ctx context.Context, lunPath, name string) (string, error) {
 	response, err := azgo.NewLunGetAttributeRequest().
 		SetPath(lunPath).
 		SetName(name).
 		ExecuteUsing(c.zr)
-	return response, err
+
+	if err = azgo.GetError(ctx, response, err); err != nil {
+		return "", err
+	}
+	return response.Result.Value(), err
+}
+
+// LunGetComment gets the comment for a given LUN.
+func (c Client) LunGetComment(ctx context.Context, lunPath string) (string, error) {
+	lun, err := c.LunGet(lunPath)
+	if err != nil {
+		return "", err
+	}
+	if lun == nil {
+		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
+	}
+	if lun.CommentPtr == nil {
+		return "", fmt.Errorf("LUN did not have a comment")
+	}
+
+	return *lun.CommentPtr, nil
 }
 
 // LunGet returns all relevant details for a single LUN
@@ -1582,7 +1602,8 @@ func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (c Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool, snapReserve int,
+	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool,
+	snapReserve int,
 ) (*azgo.VolumeGetIterResponse, error) {
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
