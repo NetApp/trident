@@ -88,14 +88,17 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
 
-			// Resolve any symlinks to get the real device
 			if strings.HasPrefix(procMount.MountSource, "/dev/") {
-				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
-				if err != nil {
-					Logc(ctx).Error(err)
-					continue
+				procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
+				if sourceDevice != procSourceDevice {
+					// Resolve any symlinks to get the real device
+					procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
+					if err != nil {
+						Logc(ctx).Error(err)
+						continue
+					}
+					procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
 				}
-				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
 			}
 
 			if sourceDevice != procSourceDevice {
