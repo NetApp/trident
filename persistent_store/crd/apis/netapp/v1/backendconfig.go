@@ -39,6 +39,10 @@ func (in *TridentBackendConfig) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentBackendConfig) GetKind() string {
+	return "TridentBackendConfig"
+}
+
 func (in *TridentBackendConfig) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

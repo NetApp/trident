@@ -252,6 +252,7 @@ func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
 	// Pass the namespace/name string of the resource to be synced.
 	if err := c.handleTridentMirrorRelationship(keyItem); err != nil {
 		if utils.IsReconcileDeferredError(err) {
+			// TODO(ameade): This should be a layer above, the reconcile loops should not mess with the queue.
 			c.workqueue.AddRateLimited(*keyItem)
 			errMessage := fmt.Sprintf(
 				"deferred syncing TridentMirrorRelationship, requeuing; %v", err.Error(),

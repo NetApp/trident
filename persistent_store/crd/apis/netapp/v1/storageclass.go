@@ -63,6 +63,10 @@ func (in *TridentStorageClass) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentStorageClass) GetKind() string {
+	return "TridentStorageClass"
+}
+
 func (in *TridentStorageClass) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

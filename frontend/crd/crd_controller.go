@@ -49,11 +49,11 @@ const (
 	EventForceUpdate EventType = "forceupdate"
 	EventDelete      EventType = "delete"
 
-	ObjectTypeTridentBackendConfig      ObjectType = "trident-backend-config"
-	ObjectTypeTridentBackend            ObjectType = "trident-backend"
-	ObjectTypeSecret                    ObjectType = "secret"
-	ObjectTypeTridentMirrorRelationship ObjectType = "mirror-relationship"
-	ObjectTypeTridentSnapshotInfo       ObjectType = "snapshot-info"
+	ObjectTypeTridentBackendConfig      string = "trident-backend-config"
+	ObjectTypeTridentBackend            string = "trident-backend"
+	ObjectTypeSecret                    string = "secret"
+	ObjectTypeTridentMirrorRelationship string = "TridentMirrorRelationship"
+	ObjectTypeTridentSnapshotInfo       string = "TridentSnapshotInfo"
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -67,7 +67,7 @@ const (
 
 type KeyItem struct {
 	key        string
-	objectType ObjectType
+	objectType string
 	event      EventType
 	ctx        context.Context
 }
@@ -304,9 +304,9 @@ func newTridentCrdControllerImpl(
 	})
 
 	_, _ = snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    controller.addSnapshotInfo,
-		UpdateFunc: controller.updateSnapshotInfo,
-		DeleteFunc: controller.deleteSnapshotInfo,
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
 	})
 
 	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -450,6 +450,122 @@ func (c *TridentCrdController) runWorker() {
 	Logx(ctx).Trace("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
 	}
+}
+
+func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, ctx context.Context, objKind string) {
+	keyItem := KeyItem{
+		key:        key,
+		event:      event,
+		ctx:        ctx,
+		objectType: objKind,
+	}
+
+	c.workqueue.Add(keyItem)
+	fields := LogFields{
+		"key":   key,
+		"kind":  objKind,
+		"event": event,
+	}
+	Logx(ctx).WithFields(fields).Debug("Added CR event to workqueue.")
+}
+
+// addCRHandler is the add handler for CR watchers.
+func (c *TridentCrdController) addCRHandler(obj interface{}) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
+	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
+
+	Logx(ctx).Debug("TridentCrdController#addCRHandler")
+
+	cr, ok := obj.(tridentv1.TridentCRD)
+	if !ok {
+		Logx(ctx).Errorf("Incorrect type (%T) provided to addCRHandler, cannot process CR", obj)
+		return
+	}
+
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+		Logx(ctx).Error(err)
+		return
+	}
+
+	c.addEventToWorkqueue(key, EventAdd, ctx, cr.GetKind())
+}
+
+// updateCRHandler is the update handler for CR watchers.
+func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
+	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
+
+	Logx(ctx).Debug("TridentCrdController#updateCRHandler")
+
+	if new == nil || old == nil {
+		Logx(ctx).Warn("No updated CR provided, skipping update")
+		return
+	}
+
+	oldCR, ok := old.(tridentv1.TridentCRD)
+	if !ok {
+		Logx(ctx).Errorf("Incorrect type (%T) provided to updateCRHandler, cannot process old CR", old)
+		return
+	}
+	newCR, ok := new.(tridentv1.TridentCRD)
+	if !ok {
+		Logx(ctx).Errorf("Incorrect type (%T) provided to updateCRHandler, cannot process new CR", new)
+		return
+	}
+
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(new); err != nil {
+		Logx(ctx).Error(err)
+		return
+	}
+
+	newCRMeta := newCR.GetObjectMeta()
+	oldCRMeta := oldCR.GetObjectMeta()
+
+	// Ignore metadata and status only updates
+	if newCRMeta.GetGeneration() == oldCRMeta.GetGeneration() &&
+		newCRMeta.GetGeneration() != 0 &&
+		newCRMeta.DeletionTimestamp.IsZero() { // CR was deleted and need to remove finalizers
+		logFields := LogFields{
+			"name":          newCRMeta.GetName(),
+			"oldGeneration": oldCRMeta.GetGeneration(),
+			"newGeneration": newCRMeta.GetGeneration(),
+		}
+
+		Logx(ctx).WithFields(logFields).Trace("No required update for CR")
+		return
+	}
+
+	c.addEventToWorkqueue(key, EventUpdate, ctx, newCR.GetKind())
+}
+
+// deleteCRHandler is the delete handler for CR watchers.
+func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
+	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
+
+	Logx(ctx).Debug("TridentCrdController#deleteCRHandler")
+
+	cr, ok := obj.(tridentv1.TridentCRD)
+	if !ok {
+		Logx(ctx).Errorf("Incorrect type (%T) provided to deleteCRHandler, cannot process CR", obj)
+		return
+	}
+
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+		Logx(ctx).Error(err)
+		return
+	}
+
+	c.addEventToWorkqueue(key, EventDelete, ctx, cr.GetKind())
 }
 
 // addTridentBackendConfigEvent takes a TridentBackendConfig resource and converts it into a namespace/name
@@ -676,6 +792,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		}
 
 		keyItemName := keyItem.key
+		var handleFunction func(*KeyItem) error
 		switch keyItem.objectType {
 		case ObjectTypeTridentBackend:
 			c.reconcileBackend(&keyItem)
@@ -692,27 +809,38 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					// If it is a deferred error, then do not remove the object from the queue
 					return nil
 				} else if utils.IsReconcileIncompleteError(err) {
-					// If the reconcile is incomplete, then do not remove the object from the queue
+					// If reconcile is incomplete, then do not remove the object from the queue
 					return nil
 				} else {
 					return err
 				}
 			}
 		case ObjectTypeTridentSnapshotInfo:
-			if err := c.reconcileTSI(&keyItem); err != nil {
+			handleFunction = c.handleTridentSnapshotInfo
+		default:
+			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
+		}
+		if handleFunction != nil {
+			if err := handleFunction(&keyItem); err != nil {
 				if utils.IsReconcileDeferredError(err) {
-					// If it is a deferred error, then do not remove the object from the queue
+					// If it is a deferred error, then do not remove the object from the queue and retry in due time
+					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					Logx(keyItem.ctx).Warn(errMessage)
+					c.workqueue.AddRateLimited(keyItem)
+					return nil
+				} else if utils.IsReconcileIncompleteError(err) {
+					// If it is a reconcile incomplete error, then do not remove the object from the queue and retry immediately
+					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					Logx(keyItem.ctx).Error(errMessage)
+					c.workqueue.Add(keyItem)
 					return nil
 				} else {
 					return err
 				}
 			}
-		default:
-			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
 
-		// Finally, if no error occurs we Forget this item so it does not
-		// get queued again until another change happens.
+		// Finally, we clear the rate limiter for this item
 		c.workqueue.Forget(obj)
 		Logx(keyItem.ctx).Tracef("Synced '%s'", keyItemName)
 		Log().Info("-------------------------------------------------")

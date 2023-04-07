@@ -20,6 +20,7 @@ func GetTridentFinalizers() []string {
 // TridentCRD should be implemented for our CRD objects
 type TridentCRD interface {
 	GetObjectMeta() metav1.ObjectMeta
+	GetKind() string
 	GetFinalizers() []string
 	HasTridentFinalizers() bool
 	RemoveTridentFinalizers()

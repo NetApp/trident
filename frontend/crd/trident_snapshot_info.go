@@ -19,106 +19,6 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-// addSnapshotInfo is the add handler for the TridentSnapshotInfo watcher.
-func (c *TridentCrdController) addSnapshotInfo(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
-	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
-
-	Logx(ctx).Trace("TridentCrdController#addSnapshotInfo")
-
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		Logx(ctx).Error(err)
-		return
-	}
-
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventAdd,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentSnapshotInfo,
-	}
-
-	// Only add it if it's new
-	newSnapInfo := obj.(*netappv1.TridentSnapshotInfo)
-	if newSnapInfo.Status.SnapshotHandle == "" {
-		c.workqueue.Add(keyItem)
-	}
-}
-
-// updateSnapshotInfo is the update handler for the TridentSnapshotInfo watcher.
-func (c *TridentCrdController) updateSnapshotInfo(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
-	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
-
-	Logx(ctx).Debug("TridentCrdController#updateSnapshotInfo")
-
-	newSnapInfo := new.(*netappv1.TridentSnapshotInfo)
-	if newSnapInfo == nil {
-		Logx(ctx).Warn("No updated snapshot info provided, skipping update")
-		return
-	}
-	oldSnapInfo := old.(*netappv1.TridentSnapshotInfo)
-
-	// If the snapshot info has not changed, do nothing
-	needsUpdate := false
-	if oldSnapInfo != nil {
-		if newSnapInfo.GetGeneration() != oldSnapInfo.GetGeneration() && newSnapInfo.GetGeneration() != 0 {
-			Logx(ctx).WithField("TridentSnapshotInfo", newSnapInfo.Name).Debugf("Spec has been updated for TSI")
-			needsUpdate = true
-		}
-	}
-
-	if !needsUpdate {
-		Logx(ctx).WithField("TridentSnapshotInfo", newSnapInfo.Name).Tracef("No required update for TSI")
-		return
-	}
-
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(new); err != nil {
-		Logx(ctx).Error(err)
-		return
-	}
-
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventUpdate,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentSnapshotInfo,
-	}
-
-	c.workqueue.Add(keyItem)
-}
-
-// deleteSnapshotInfo is the delete handler for the TridentSnapshotInfo watcher.
-func (c *TridentCrdController) deleteSnapshotInfo(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
-	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
-
-	Logx(ctx).Debug("TridentCrdController#deleteSnapshotInfo")
-
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		Logx(ctx).Error(err)
-		return
-	}
-
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventDelete,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentSnapshotInfo,
-	}
-
-	c.workqueue.Add(keyItem)
-}
-
 // updateTSIStatus updates the TridentSnapshotInfo.status fields on the specified TridentSnapshotInfo resource
 // using the kubernetes api
 func (c *TridentCrdController) updateTSIStatus(
@@ -151,28 +51,6 @@ func (c *TridentCrdController) updateTSICR(ctx context.Context, tsi *netappv1.Tr
 	}
 
 	return newTSI, err
-}
-
-func (c *TridentCrdController) reconcileTSI(keyItem *KeyItem) error {
-	Logx(keyItem.ctx).Debug(">>>> TridentCrdController#reconcileTSI")
-	defer Logx(keyItem.ctx).Debug("<<<< TridentCrdController#reconcileTSI")
-
-	if err := c.handleTridentSnapshotInfo(keyItem); err != nil {
-		c.workqueue.AddRateLimited(*keyItem)
-
-		if utils.IsReconcileDeferredError(err) {
-			errMessage := fmt.Sprintf("deferred syncing TSI '%v', requeuing; %v", keyItem.key, err.Error())
-			Logx(keyItem.ctx).Warn(errMessage)
-			return utils.ReconcileDeferredError(fmt.Errorf(errMessage))
-		} else {
-			errMessage := fmt.Sprintf("error syncing TSI '%v', requeuing; %v", keyItem.key, err.Error())
-			Logx(keyItem.ctx).Error(errMessage)
-
-			return fmt.Errorf(errMessage)
-		}
-	}
-
-	return nil
 }
 
 // handleTridentSnapshotInfo ensures we move to the desired state and the desired state is maintained

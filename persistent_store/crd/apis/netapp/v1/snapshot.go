@@ -72,6 +72,10 @@ func (in *TridentSnapshot) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentSnapshot) GetKind() string {
+	return "TridentSnapshot"
+}
+
 func (in *TridentSnapshot) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

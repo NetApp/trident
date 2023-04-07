@@ -58,6 +58,428 @@ func newFakeStorageDriverConfigJSON(name string) (string, error) {
 	return fakeDriver.NewFakeStorageDriverConfigJSON(name, config.File, testutils2.GenerateFakePools(2), volumes)
 }
 
+func TestAddCRHandler(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Test TridentSnapshotInfo
+	tsi := &tridentv1.TridentSnapshotInfo{}
+	crdController.addCRHandler(tsi)
+	workItem, _ := crdController.workqueue.Get()
+	keyItem := workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentSnapshotInfo, keyItem.objectType)
+
+	// Test TridentMirrorRelationship
+	tmr := &tridentv1.TridentMirrorRelationship{}
+	crdController.addCRHandler(tmr)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentMirrorRelationship, keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvr := &tridentv1.TridentVolumeReference{}
+	crdController.addCRHandler(tvr)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentVolumeReference", keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvp := &tridentv1.TridentVolumePublication{}
+	crdController.addCRHandler(tvp)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentVolumePublication", keyItem.objectType)
+
+	// Test TridentVolume
+	tv := &tridentv1.TridentVolume{}
+	crdController.addCRHandler(tv)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentVolume", keyItem.objectType)
+
+	// Test TridentVersion
+	tvers := &tridentv1.TridentVersion{}
+	crdController.addCRHandler(tvers)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentVersion", keyItem.objectType)
+
+	// Test TridentTransaction
+	tt := &tridentv1.TridentTransaction{}
+	crdController.addCRHandler(tt)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentTransaction", keyItem.objectType)
+
+	// Test TridentStorageClass
+	tsc := &tridentv1.TridentStorageClass{}
+	crdController.addCRHandler(tsc)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentStorageClass", keyItem.objectType)
+
+	// Test TridentSnapshot
+	ts := &tridentv1.TridentSnapshot{}
+	crdController.addCRHandler(ts)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentSnapshot", keyItem.objectType)
+
+	// Test TridentBackendConfig
+	tbc := &tridentv1.TridentBackendConfig{}
+	crdController.addCRHandler(tbc)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentBackendConfig", keyItem.objectType)
+
+	// Test TridentBackend
+	tb := &tridentv1.TridentBackend{}
+	crdController.addCRHandler(tb)
+	assert.Greater(t, crdController.workqueue.Len(), 0)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventAdd, keyItem.event)
+	assert.Equal(t, "TridentBackend", keyItem.objectType)
+}
+
+func TestUpdateCRHandler_NoChange(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Test TridentSnapshotInfo, no update, not deleted
+	tsi := &tridentv1.TridentSnapshotInfo{}
+	tsi.Generation = 1
+	tsiNew := &tridentv1.TridentSnapshotInfo{}
+	tsiNew.Generation = 1
+	crdController.updateCRHandler(tsi, tsiNew)
+	assert.Equal(t, 0, crdController.workqueue.Len())
+}
+
+func TestUpdateCRHandler_CRDeleted(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	now := time.Now()
+	v1Now := metav1.NewTime(now)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Test TridentSnapshotInfo, no update
+	tsi := &tridentv1.TridentSnapshotInfo{}
+	tsi.Generation = 1
+	tsiNew := &tridentv1.TridentSnapshotInfo{}
+	tsiNew.Generation = 1
+	tsiNew.DeletionTimestamp = &v1Now
+	crdController.updateCRHandler(tsi, tsiNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	crdController.workqueue.Get()
+
+	// Test TridentSnapshotInfo, with update
+	tsi = &tridentv1.TridentSnapshotInfo{}
+	tsi.Generation = 0
+	tsiNew = &tridentv1.TridentSnapshotInfo{}
+	tsiNew.Generation = 1
+	tsiNew.DeletionTimestamp = &v1Now
+	crdController.updateCRHandler(tsi, tsiNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	crdController.workqueue.Get()
+}
+
+func TestUpdateCRHandler_NewGeneration(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// NOTE(ameade): By testing every CRD, we ensure they all meet the TridentCRD interface
+	// Test TridentSnapshotInfo
+	tsi := &tridentv1.TridentSnapshotInfo{}
+	tsi.Generation = 1
+	tsiNew := &tridentv1.TridentSnapshotInfo{}
+	tsiNew.Generation = 2
+	crdController.updateCRHandler(tsi, tsiNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ := crdController.workqueue.Get()
+	keyItem := workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentSnapshotInfo, keyItem.objectType)
+
+	// Test TridentMirrorRelationship
+	tmr := &tridentv1.TridentMirrorRelationship{}
+	tmr.Generation = 1
+	tmrNew := &tridentv1.TridentMirrorRelationship{}
+	tmrNew.Generation = 2
+	crdController.updateCRHandler(tmr, tmrNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentMirrorRelationship, keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvr := &tridentv1.TridentVolumeReference{}
+	tvr.Generation = 1
+	tvrNew := &tridentv1.TridentVolumeReference{}
+	tvrNew.Generation = 2
+	crdController.updateCRHandler(tvr, tvrNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentVolumeReference", keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvp := &tridentv1.TridentVolumePublication{}
+	tvp.Generation = 1
+	tvpNew := &tridentv1.TridentVolumePublication{}
+	tvpNew.Generation = 2
+	crdController.updateCRHandler(tvp, tvpNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentVolumePublication", keyItem.objectType)
+
+	// Test TridentVolume
+	tv := &tridentv1.TridentVolume{}
+	tv.Generation = 1
+	tvNew := &tridentv1.TridentVolume{}
+	tvNew.Generation = 2
+	crdController.updateCRHandler(tv, tvNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentVolume", keyItem.objectType)
+
+	// Test TridentVersion
+	tvers := &tridentv1.TridentVersion{}
+	tvers.Generation = 1
+	tversNew := &tridentv1.TridentVersion{}
+	tversNew.Generation = 2
+	crdController.updateCRHandler(tvers, tversNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentVersion", keyItem.objectType)
+
+	// Test TridentTransaction
+	tt := &tridentv1.TridentTransaction{}
+	tt.Generation = 1
+	ttNew := &tridentv1.TridentTransaction{}
+	ttNew.Generation = 2
+	crdController.updateCRHandler(tt, ttNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentTransaction", keyItem.objectType)
+
+	// Test TridentStorageClass
+	tsc := &tridentv1.TridentStorageClass{}
+	tsc.Generation = 1
+	tscNew := &tridentv1.TridentStorageClass{}
+	tscNew.Generation = 2
+	crdController.updateCRHandler(tsc, tscNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentStorageClass", keyItem.objectType)
+
+	// Test TridentSnapshot
+	ts := &tridentv1.TridentSnapshot{}
+	ts.Generation = 1
+	tsNew := &tridentv1.TridentSnapshot{}
+	tsNew.Generation = 2
+	crdController.updateCRHandler(ts, tsNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentSnapshot", keyItem.objectType)
+
+	// Test TridentBackendConfig
+	tbc := &tridentv1.TridentBackendConfig{}
+	tbc.Generation = 1
+	tbcNew := &tridentv1.TridentBackendConfig{}
+	tbcNew.Generation = 2
+	crdController.updateCRHandler(tbc, tbcNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentBackendConfig", keyItem.objectType)
+
+	// Test TridentBackend
+	tb := &tridentv1.TridentBackend{}
+	tb.Generation = 1
+	tbNew := &tridentv1.TridentBackend{}
+	tbNew.Generation = 2
+	crdController.updateCRHandler(tb, tbNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentBackend", keyItem.objectType)
+
+	// Test TridentNode
+	tn := &tridentv1.TridentNode{}
+	tn.Generation = 1
+	tnNew := &tridentv1.TridentNode{}
+	tnNew.Generation = 2
+	crdController.updateCRHandler(tn, tnNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, "TridentNode", keyItem.objectType)
+}
+
+func TestDeleteCRHandler(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Test TridentSnapshotInfo
+	tsi := &tridentv1.TridentSnapshotInfo{}
+	crdController.deleteCRHandler(tsi)
+	workItem, _ := crdController.workqueue.Get()
+	keyItem := workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentSnapshotInfo, keyItem.objectType)
+
+	// Test TridentMirrorRelationship
+	tmr := &tridentv1.TridentMirrorRelationship{}
+	crdController.deleteCRHandler(tmr)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentMirrorRelationship, keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvr := &tridentv1.TridentVolumeReference{}
+	crdController.deleteCRHandler(tvr)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentVolumeReference", keyItem.objectType)
+
+	// Test TridentVolumeReference
+	tvp := &tridentv1.TridentVolumePublication{}
+	crdController.deleteCRHandler(tvp)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentVolumePublication", keyItem.objectType)
+
+	// Test TridentVolume
+	tv := &tridentv1.TridentVolume{}
+	crdController.deleteCRHandler(tv)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentVolume", keyItem.objectType)
+
+	// Test TridentVersion
+	tvers := &tridentv1.TridentVersion{}
+	crdController.deleteCRHandler(tvers)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentVersion", keyItem.objectType)
+
+	// Test TridentTransaction
+	tt := &tridentv1.TridentTransaction{}
+	crdController.deleteCRHandler(tt)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentTransaction", keyItem.objectType)
+
+	// Test TridentStorageClass
+	tsc := &tridentv1.TridentStorageClass{}
+	crdController.deleteCRHandler(tsc)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentStorageClass", keyItem.objectType)
+
+	// Test TridentSnapshot
+	ts := &tridentv1.TridentSnapshot{}
+	crdController.deleteCRHandler(ts)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentSnapshot", keyItem.objectType)
+
+	// Test TridentBackendConfig
+	tbc := &tridentv1.TridentBackendConfig{}
+	crdController.deleteCRHandler(tbc)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentBackendConfig", keyItem.objectType)
+
+	// Test TridentBackend
+	tb := &tridentv1.TridentBackend{}
+	crdController.deleteCRHandler(tb)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, "TridentBackend", keyItem.objectType)
+}
+
 func TestCrdControllerBackendOperations(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)

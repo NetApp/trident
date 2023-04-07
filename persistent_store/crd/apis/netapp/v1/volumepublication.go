@@ -61,6 +61,10 @@ func (in *TridentVolumePublication) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentVolumePublication) GetKind() string {
+	return "TridentVolumePublication"
+}
+
 func (in *TridentVolumePublication) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

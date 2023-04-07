@@ -95,6 +95,10 @@ func (in *TridentNode) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentNode) GetKind() string {
+	return "TridentNode"
+}
+
 func (in *TridentNode) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers
