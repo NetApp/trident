@@ -82,10 +82,11 @@ const (
 	ProtocolAny Protocol = ""
 
 	/* Access mode constants */
-	ReadWriteOnce AccessMode = "ReadWriteOnce"
-	ReadOnlyMany  AccessMode = "ReadOnlyMany"
-	ReadWriteMany AccessMode = "ReadWriteMany"
-	ModeAny       AccessMode = ""
+	ReadWriteOnce    AccessMode = "ReadWriteOnce"
+	ReadWriteOncePod AccessMode = "ReadWriteOncePod"
+	ReadOnlyMany     AccessMode = "ReadOnlyMany"
+	ReadWriteMany    AccessMode = "ReadWriteMany"
+	ModeAny          AccessMode = ""
 
 	/* Volume mode constants. This value describes how a volume will be consumed by application containers.
 	Most Trident volumes (regardless of protocol) probably use the 'Filesystem' mode, where the volume contains

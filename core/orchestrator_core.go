@@ -4544,6 +4544,11 @@ func (o *TridentOrchestrator) getProtocol(
 		{config.Filesystem, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
 		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile}: {config.BlockOnFile, nil},
 
+		{config.Filesystem, config.ReadWriteOncePod, config.ProtocolAny}: {config.ProtocolAny, nil},
+		{config.Filesystem, config.ReadWriteOncePod, config.File}:        {config.File, nil},
+		{config.Filesystem, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
+		{config.Filesystem, config.ReadWriteOncePod, config.BlockOnFile}: {config.BlockOnFile, nil},
+
 		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny}: {config.ProtocolAny, nil},
 		{config.Filesystem, config.ReadOnlyMany, config.File}:        {config.File, nil},
 		{config.Filesystem, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
@@ -4563,6 +4568,11 @@ func (o *TridentOrchestrator) getProtocol(
 		{config.RawBlock, config.ReadWriteOnce, config.File}:        {config.ProtocolAny, err},
 		{config.RawBlock, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
 		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile}: {config.ProtocolAny, err},
+
+		{config.RawBlock, config.ReadWriteOncePod, config.ProtocolAny}: {config.Block, nil},
+		{config.RawBlock, config.ReadWriteOncePod, config.File}:        {config.ProtocolAny, err},
+		{config.RawBlock, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
+		{config.RawBlock, config.ReadWriteOncePod, config.BlockOnFile}: {config.ProtocolAny, err},
 
 		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny}: {config.Block, nil},
 		{config.RawBlock, config.ReadOnlyMany, config.File}:        {config.ProtocolAny, err},

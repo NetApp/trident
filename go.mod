@@ -10,7 +10,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures v1.0.0
 	github.com/RoaringBitmap/roaring v1.2.1
 	github.com/cenkalti/backoff/v4 v4.2.0
-	github.com/container-storage-interface/spec v1.7.0
+	github.com/container-storage-interface/spec v1.8.0
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/dustin/go-humanize v1.0.1-0.20230109215913-463a09566eca
 	github.com/elastic/go-sysinfo v1.9.0
@@ -44,10 +44,10 @@ require (
 	github.com/zcalusic/sysinfo v0.9.6-0.20220805135214-99e836ba64f2
 	go.uber.org/multierr v1.9.0 // github.com/uber-go/multierr
 	golang.org/x/crypto v0.5.0 // github.com/golang/crypto
-	golang.org/x/net v0.5.0 // github.com/golang/net
+	golang.org/x/net v0.7.0 // github.com/golang/net
 	golang.org/x/oauth2 v0.4.0 // github.com/golang/oauth2
-	golang.org/x/sys v0.4.0 // github.com/golang/sys
-	golang.org/x/text v0.6.0 // github.com/golang/text
+	golang.org/x/sys v0.5.0 // github.com/golang/sys
+	golang.org/x/text v0.7.0 // github.com/golang/text
 	golang.org/x/time v0.3.0 // github.com/golang/time
 	google.golang.org/grpc v1.51.0 // github.com/grpc/grpc-go
 	k8s.io/api v0.26.0 // github.com/kubernetes/api
@@ -117,7 +117,7 @@ require (
 	go.opentelemetry.io/otel v1.11.1 // indirect
 	go.opentelemetry.io/otel/trace v1.11.1 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

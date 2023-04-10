@@ -1059,6 +1059,10 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 
 func (p *Plugin) getAccessForCSIAccessMode(accessMode csi.VolumeCapability_AccessMode_Mode) tridentconfig.AccessMode {
 	switch accessMode {
+	case csi.VolumeCapability_AccessMode_SINGLE_NODE_SINGLE_WRITER:
+		return tridentconfig.ReadWriteOncePod
+	case csi.VolumeCapability_AccessMode_SINGLE_NODE_MULTI_WRITER:
+		return tridentconfig.ReadWriteOnce
 	case csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER:
 		return tridentconfig.ReadWriteOnce
 	case csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY:

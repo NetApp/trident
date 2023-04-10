@@ -185,6 +185,11 @@ func CombineAccessModes(ctx context.Context, accessModes []config.AccessMode) co
 		// ReadWriteOnce            ReadOnlyMany        ReadWriteMany
 		// ReadWriteOnce            ReadWriteMany       ReadWriteMany
 
+		// ReadWriteOncePod            Any                 ReadWriteOnce
+		// ReadWriteOncePod            ReadWriteOnce       ReadWriteOnce
+		// ReadWriteOncePod            ReadOnlyMany        ReadWriteMany
+		// ReadWriteOncePod            ReadWriteMany       ReadWriteMany
+
 		// ReadOnlyMany             Any                 ReadOnlyMany
 		// ReadOnlyMany             ReadWriteOnce       ReadWriteMany
 		// ReadOnlyMany             ReadOnlyMany        ReadOnlyMany
@@ -196,12 +201,12 @@ func CombineAccessModes(ctx context.Context, accessModes []config.AccessMode) co
 		// ReadWriteMany            ReadWriteMany       ReadWriteMany
 		if volConfigAccessMode == config.ModeAny {
 			volConfigAccessMode = accessMode
-		} else if volConfigAccessMode == config.ReadWriteOnce {
+		} else if volConfigAccessMode == config.ReadWriteOnce || volConfigAccessMode == config.ReadWriteOncePod {
 			if accessMode == config.ReadOnlyMany || accessMode == config.ReadWriteMany {
 				volConfigAccessMode = config.ReadWriteMany
 			}
 		} else if volConfigAccessMode == config.ReadOnlyMany {
-			if accessMode == config.ReadWriteOnce || accessMode == config.ReadWriteMany {
+			if accessMode == config.ReadWriteOnce || accessMode == config.ReadWriteOncePod || accessMode == config.ReadWriteMany {
 				volConfigAccessMode = config.ReadWriteMany
 			}
 		}
