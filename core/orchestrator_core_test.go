@@ -3570,53 +3570,53 @@ func TestUpdateNode(t *testing.T) {
 			name:              "readyStayClean",
 			initialNodeState:  utils.NodeClean,
 			expectedNodeState: utils.NodeClean,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(true), AdminReady: utils.Ptr(false)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(false)},
 		},
 		{
 			name:              "cleanedStayClean",
 			initialNodeState:  utils.NodeClean,
 			expectedNodeState: utils.NodeClean,
-			flags:             &utils.NodePublicationStateFlags{Cleaned: utils.Ptr(true)},
+			flags:             &utils.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)},
 		},
 		{
 			name:              "cleanToDirty",
 			initialNodeState:  utils.NodeClean,
 			expectedNodeState: utils.NodeDirty,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 		},
 		{
 			name:              "cleanableToClean",
 			initialNodeState:  utils.NodeCleanable,
 			expectedNodeState: utils.NodeClean,
 			flags: &utils.NodePublicationStateFlags{
-				Ready:      utils.Ptr(true),
-				AdminReady: utils.Ptr(true),
-				Cleaned:    utils.Ptr(true),
+				OrchestratorReady:  utils.Ptr(true),
+				AdministratorReady: utils.Ptr(true),
+				ProvisionerReady:   utils.Ptr(true),
 			},
 		},
 		{
 			name:              "readyStayCleanable",
 			initialNodeState:  utils.NodeCleanable,
 			expectedNodeState: utils.NodeCleanable,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(true), AdminReady: utils.Ptr(true)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
 		},
 		{
 			name:              "cleanableToDirty",
 			initialNodeState:  utils.NodeCleanable,
 			expectedNodeState: utils.NodeDirty,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 		},
 		{
 			name:              "dirtyToCleanable",
 			initialNodeState:  utils.NodeDirty,
 			expectedNodeState: utils.NodeCleanable,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(true), AdminReady: utils.Ptr(true)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
 		},
 		{
 			name:              "notReadyStayDirty",
 			initialNodeState:  utils.NodeDirty,
 			expectedNodeState: utils.NodeDirty,
-			flags:             &utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(true)},
+			flags:             &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
 		},
 	}
 
@@ -3657,7 +3657,7 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 	expectedError := errors.New("bootstrap_error")
 	orchestrator.bootstrapError = expectedError
 
-	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{Ready: utils.Ptr(false)})
+	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
 
 	assert.Equal(t, expectedError, result, "UpdateNode did not return bootstrap error")
 }
@@ -3665,7 +3665,7 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 func TestUpdateNode_NodeNotFound(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 
-	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{Ready: utils.Ptr(false)})
+	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
 
 	assert.True(t, utils.IsNotFoundError(result), "UpdateNode did not fail")
 }
@@ -3681,8 +3681,8 @@ func TestUpdateNode_NodeStoreUpdateFailed(t *testing.T) {
 	}
 	expectedError := errors.New("failure")
 	flags := &utils.NodePublicationStateFlags{
-		Ready:      utils.Ptr(false),
-		AdminReady: utils.Ptr(false),
+		OrchestratorReady:  utils.Ptr(false),
+		AdministratorReady: utils.Ptr(false),
 	}
 
 	mockCtrl := gomock.NewController(t)

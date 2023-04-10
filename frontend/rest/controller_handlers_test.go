@@ -202,9 +202,9 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 
 	// Setup values to return from mocked calls.
 	nodeStateFlags := &utils.NodePublicationStateFlags{
-		Ready:      utils.Ptr(true),
-		AdminReady: utils.Ptr(true),
-		Cleaned:    nil,
+		OrchestratorReady:  utils.Ptr(true),
+		AdministratorReady: utils.Ptr(true),
+		ProvisionerReady:   nil,
 	}
 
 	// Set up test methods.
@@ -257,7 +257,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		// Ensure this request occurs after first request.
 		time.Sleep(20 * time.Millisecond)
 
-		nodeState := utils.NodePublicationStateFlags{Cleaned: utils.Ptr(true)}
+		nodeState := utils.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)}
 		data, err := json.Marshal(nodeState)
 		if err != nil {
 			t.Error("could not create request body")

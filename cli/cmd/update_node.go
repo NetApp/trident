@@ -18,19 +18,19 @@ import (
 )
 
 var (
-	setNodeReady      bool
-	setNodeAdminReady bool
-	setNodeCleaned    bool
-	forceUpdate       bool
+	orchestratorReady  bool
+	administratorReady bool
+	provisionerReady   bool
+	forceUpdate        bool
 )
 
 const updateNodeConfirmation = "Are you sure you want to update Trident node state???"
 
 func init() {
 	updateCmd.AddCommand(updateNodeCmd)
-	updateNodeCmd.Flags().BoolVar(&setNodeReady, "ready", true, "Set ready state from the cluster perspective")
-	updateNodeCmd.Flags().BoolVar(&setNodeAdminReady, "adminReady", true, "Set service state from the administrative perspective")
-	updateNodeCmd.Flags().BoolVar(&setNodeCleaned, "cleaned", true, "Set node as cleaned")
+	updateNodeCmd.Flags().BoolVar(&orchestratorReady, "orchestratorReady", true, "Set ready state from the CO perspective")
+	updateNodeCmd.Flags().BoolVar(&administratorReady, "administratorReady", true, "Set ready state from the administrative perspective")
+	updateNodeCmd.Flags().BoolVar(&provisionerReady, "provisionerReady", true, "Set ready state from the SP perspective")
 	updateNodeCmd.PersistentFlags().BoolVar(&forceUpdate, forceConfirmation, false, "Update node without confirmation.")
 }
 
@@ -43,14 +43,14 @@ var updateNodeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var ready, adminReady, cleaned *bool
 		var err error
-		if cmd.Flags().Changed("ready") {
-			ready = utils.Ptr(setNodeReady)
+		if cmd.Flags().Changed("orchestratorReady") {
+			ready = utils.Ptr(orchestratorReady)
 		}
-		if cmd.Flags().Changed("adminReady") {
-			adminReady = utils.Ptr(setNodeAdminReady)
+		if cmd.Flags().Changed("administratorReady") {
+			adminReady = utils.Ptr(administratorReady)
 		}
-		if cmd.Flags().Changed("cleaned") {
-			cleaned = utils.Ptr(setNodeCleaned)
+		if cmd.Flags().Changed("provisionerReady") {
+			cleaned = utils.Ptr(provisionerReady)
 		}
 
 		if OperatingMode == ModeTunnel {
@@ -64,14 +64,14 @@ var updateNodeCmd = &cobra.Command{
 			}
 			command := []string{"update", "node", fmt.Sprintf("--%s", forceConfirmation)}
 
-			if cmd.Flags().Changed("ready") {
-				command = append(command, "--ready="+strconv.FormatBool(setNodeReady))
+			if cmd.Flags().Changed("orchestratorReady") {
+				command = append(command, "--orchestratorReady="+strconv.FormatBool(orchestratorReady))
 			}
-			if cmd.Flags().Changed("adminReady") {
-				command = append(command, "--adminReady="+strconv.FormatBool(setNodeAdminReady))
+			if cmd.Flags().Changed("administratorReady") {
+				command = append(command, "--administratorReady="+strconv.FormatBool(administratorReady))
 			}
-			if cmd.Flags().Changed("cleaned") {
-				command = append(command, "--cleaned="+strconv.FormatBool(setNodeCleaned))
+			if cmd.Flags().Changed("provisionerReady") {
+				command = append(command, "--provisionerReady="+strconv.FormatBool(provisionerReady))
 			}
 
 			TunnelCommand(append(command, args...))
@@ -82,11 +82,11 @@ var updateNodeCmd = &cobra.Command{
 	},
 }
 
-func nodeUpdate(nodeName string, ready, adminReady, cleaned *bool) error {
+func nodeUpdate(nodeName string, orchestratorReady, administratorReady, provisionerReady *bool) error {
 	nodeFlags := utils.NodePublicationStateFlags{
-		Ready:      ready,
-		AdminReady: adminReady,
-		Cleaned:    cleaned,
+		OrchestratorReady:  orchestratorReady,
+		AdministratorReady: administratorReady,
+		ProvisionerReady:   provisionerReady,
 	}
 	requestBody, err := json.Marshal(nodeFlags)
 	if err != nil {
@@ -101,7 +101,7 @@ func nodeUpdate(nodeName string, ready, adminReady, cleaned *bool) error {
 
 	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
 		if response.StatusCode == http.StatusNotFound {
-			log.Warning("Usage: node <read> <adminReady> <clean>")
+			log.Warning("Usage: node <orchestratorReady> <administratorReady> <provisionerReady>")
 		}
 		if response.StatusCode == http.StatusTooManyRequests {
 			retryAfterSeconds := response.Header.Get("Retry-After")

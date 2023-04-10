@@ -200,38 +200,38 @@ const (
 )
 
 type NodePublicationStateFlags struct {
-	Ready      *bool `json:"ready,omitempty"`
-	AdminReady *bool `json:"adminReady,omitempty"`
-	Cleaned    *bool `json:"cleaned,omitempty"`
+	OrchestratorReady  *bool `json:"orchestratorReady,omitempty"`  // Is the node in a state such that volumes may be published?
+	AdministratorReady *bool `json:"administratorReady,omitempty"` // Should new publications be allowed?
+	ProvisionerReady   *bool `json:"provisionerReady,omitempty"`   // Is publishing volumes to this node safe for the backend?
 }
 
 func (f *NodePublicationStateFlags) IsNodeDirty() bool {
-	if f.Ready == nil || f.AdminReady == nil {
+	if f.OrchestratorReady == nil || f.AdministratorReady == nil {
 		return false
 	}
 
-	return !*f.Ready && !*f.AdminReady
+	return !*f.OrchestratorReady && !*f.AdministratorReady
 }
 
 func (f *NodePublicationStateFlags) IsNodeCleanable() bool {
-	if f.Ready == nil || f.AdminReady == nil {
+	if f.OrchestratorReady == nil || f.AdministratorReady == nil {
 		return false
 	}
 
-	return *f.Ready && *f.AdminReady
+	return *f.OrchestratorReady && *f.AdministratorReady
 }
 
 func (f *NodePublicationStateFlags) IsNodeCleaned() bool {
-	if f.Ready == nil || f.AdminReady == nil || f.Cleaned == nil {
+	if f.OrchestratorReady == nil || f.AdministratorReady == nil || f.ProvisionerReady == nil {
 		return false
 	}
 
-	return *f.Cleaned && *f.Ready && *f.AdminReady
+	return *f.ProvisionerReady && *f.OrchestratorReady && *f.AdministratorReady
 }
 
 func (f *NodePublicationStateFlags) String() string {
-	return fmt.Sprintf("Ready: %s; AdminReady: %s; Cleaned: %s", PtrToString(f.Ready), PtrToString(f.AdminReady),
-		PtrToString(f.Cleaned))
+	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s", PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
+		PtrToString(f.ProvisionerReady))
 }
 
 // NodePrep struct is deprecated and only here for backwards compatibility

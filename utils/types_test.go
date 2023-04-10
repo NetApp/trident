@@ -1030,61 +1030,61 @@ func helperISCSISessionsCreateInputs() (ISCSISessions, ISCSISessionData, PortalI
 
 func TestNodePublicationStateFlags_IsNodeDirty(t *testing.T) {
 	tests := map[string]struct {
-		ready, adminReady    *bool
-		expected, shouldFail bool
+		orchestratorReady, administratorReady *bool
+		expected, shouldFail                  bool
 	}{
-		"returns false when Ready is true but AdminReady is not": {
-			ready:      Ptr(true),
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady is true but AdministratorReady is not": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is false but AdminReady is not": {
-			ready:      Ptr(false),
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady is false but AdministratorReady is not": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is not set but AdminReady is true": {
-			ready:      nil,
-			adminReady: Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is not set but AdministratorReady is true": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is not set but AdminReady is false": {
-			ready:      nil,
-			adminReady: Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is not set but AdministratorReady is false": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready and AdminReady are not set": {
-			ready:      nil,
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady and AdministratorReady are not set": {
+			orchestratorReady:  nil,
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is true and AdminReady is false": {
-			ready:      Ptr(true),
-			adminReady: Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is true and AdministratorReady is false": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is false and AdminReady is true": {
-			ready:      Ptr(false),
-			adminReady: Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is false and AdministratorReady is true": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is true and AdminReady is true": {
-			ready:      Ptr(true),
-			adminReady: Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is true and AdministratorReady is true": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(true),
+			expected:           false,
 		},
-		"returns true when Ready is false and AdminReady is false": {
-			ready:      Ptr(false),
-			adminReady: Ptr(false),
-			expected:   true,
+		"returns true when OrchestratorReady is false and AdministratorReady is false": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(false),
+			expected:           true,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := NodePublicationStateFlags{
-				Ready:      test.ready,
-				AdminReady: test.adminReady,
+				OrchestratorReady:  test.orchestratorReady,
+				AdministratorReady: test.administratorReady,
 			}
 
 			assert.Equal(t, test.expected, f.IsNodeDirty())
@@ -1094,61 +1094,61 @@ func TestNodePublicationStateFlags_IsNodeDirty(t *testing.T) {
 
 func TestNodePublicationStateFlags_IsNodeCleanable(t *testing.T) {
 	tests := map[string]struct {
-		ready, adminReady    *bool
-		expected, shouldFail bool
+		orchestratorReady, administratorReady *bool
+		expected, shouldFail                  bool
 	}{
-		"returns false when Ready is true but AdminReady is not set": {
-			ready:      Ptr(true),
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady is true but AdministratorReady is not set": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is false but AdminReady is not set": {
-			ready:      Ptr(false),
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady is false but AdministratorReady is not set": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is not set but AdminReady is true": {
-			ready:      nil,
-			adminReady: Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is not set but AdministratorReady is true": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is not set but AdminReady is false": {
-			ready:      nil,
-			adminReady: Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is not set but AdministratorReady is false": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready and AdminReady are not set": {
-			ready:      nil,
-			adminReady: nil,
-			expected:   false,
+		"returns false when OrchestratorReady and AdministratorReady are not set": {
+			orchestratorReady:  nil,
+			administratorReady: nil,
+			expected:           false,
 		},
-		"returns false when Ready is true and AdminReady is false": {
-			ready:      Ptr(true),
-			adminReady: Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is true and AdministratorReady is false": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is false and AdminReady is true": {
-			ready:      Ptr(false),
-			adminReady: Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is false and AdministratorReady is true": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(true),
+			expected:           false,
 		},
-		"returns true when Ready is true and AdminReady is true": {
-			ready:      Ptr(true),
-			adminReady: Ptr(true),
-			expected:   true,
+		"returns true when OrchestratorReady is true and AdministratorReady is true": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(true),
+			expected:           true,
 		},
-		"returns false when Ready is false and AdminReady is false": {
-			ready:      Ptr(false),
-			adminReady: Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is false and AdministratorReady is false": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(false),
+			expected:           false,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := NodePublicationStateFlags{
-				Ready:      test.ready,
-				AdminReady: test.adminReady,
+				OrchestratorReady:  test.orchestratorReady,
+				AdministratorReady: test.administratorReady,
 			}
 
 			assert.Equal(t, test.expected, f.IsNodeCleanable())
@@ -1158,173 +1158,173 @@ func TestNodePublicationStateFlags_IsNodeCleanable(t *testing.T) {
 
 func TestNodePublicationStateFlags_IsNodeCleaned(t *testing.T) {
 	tests := map[string]struct {
-		ready, adminReady, cleaned *bool
-		expected, shouldFail       bool
+		orchestratorReady, administratorReady, provisionerReady *bool
+		expected, shouldFail                                    bool
 	}{
-		"returns false when Ready, AdminReady, and Cleaned are not set": {
-			ready:      nil,
-			adminReady: nil,
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady, AdministratorReady, and ProvisionerReady are not set": {
+			orchestratorReady:  nil,
+			administratorReady: nil,
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is true but AdminReady and Cleaned are not set": {
-			ready:      Ptr(true),
-			adminReady: nil,
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is true but AdministratorReady and ProvisionerReady are not set": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: nil,
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is false but AdminReady and Cleaned are not set": {
-			ready:      Ptr(false),
-			adminReady: nil,
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is false but AdministratorReady and ProvisionerReady are not set": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: nil,
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is true, and Cleaned is not set": {
-			ready:      Ptr(true),
-			adminReady: Ptr(true),
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is not set": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(true),
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is false, and Cleaned is not set": {
-			ready:      Ptr(true),
-			adminReady: Ptr(false),
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is not set": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(false),
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is true, and Cleaned is not set": {
-			ready:      Ptr(false),
-			adminReady: Ptr(true),
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is not set": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(true),
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is not set, and Cleaned is true": {
-			ready:      Ptr(true),
-			adminReady: nil,
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is not set, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: nil,
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is not set, and Cleaned is false": {
-			ready:      Ptr(true),
-			adminReady: nil,
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is not set, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: nil,
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is not set, and Cleaned is true": {
-			ready:      Ptr(false),
-			adminReady: nil,
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is not set, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: nil,
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is not set, and Cleaned is false": {
-			ready:      Ptr(false),
-			adminReady: nil,
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is not set, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: nil,
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is true, and Cleaned is not set": {
-			ready:      nil,
-			adminReady: Ptr(true),
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is not set": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(true),
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is false, and Cleaned is not set": {
-			ready:      nil,
-			adminReady: Ptr(false),
-			cleaned:    nil,
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is not set": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(false),
+			provisionerReady:   nil,
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is true, and Cleaned is false": {
-			ready:      nil,
-			adminReady: Ptr(true),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is false": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is false, and Cleaned is true": {
-			ready:      nil,
-			adminReady: Ptr(false),
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is true": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is true, and Cleaned is true": {
-			ready:      nil,
-			adminReady: Ptr(true),
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is true, and ProvisionerReady is true": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is false, and Cleaned is false": {
-			ready:      nil,
-			adminReady: Ptr(false),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is false, and ProvisionerReady is false": {
+			orchestratorReady:  nil,
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is not set, and Cleaned is true": {
-			ready:      nil,
-			adminReady: nil,
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is not set, and ProvisionerReady is true": {
+			orchestratorReady:  nil,
+			administratorReady: nil,
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is not set, AdminReady is not set, and Cleaned is false": {
-			ready:      nil,
-			adminReady: nil,
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is not set, AdministratorReady is not set, and ProvisionerReady is false": {
+			orchestratorReady:  nil,
+			administratorReady: nil,
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is false, and Cleaned is false": {
-			ready:      Ptr(true),
-			adminReady: Ptr(false),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is true, and Cleaned is false": {
-			ready:      Ptr(true),
-			adminReady: Ptr(true),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is true, AdminReady is false, and Cleaned is true": {
-			ready:      Ptr(true),
-			adminReady: Ptr(false),
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is true, AdministratorReady is false, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is true, and Cleaned is false": {
-			ready:      Ptr(false),
-			adminReady: Ptr(true),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is true, and Cleaned is true": {
-			ready:      Ptr(false),
-			adminReady: Ptr(true),
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is true, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is false, and Cleaned is true": {
-			ready:      Ptr(false),
-			adminReady: Ptr(false),
-			cleaned:    Ptr(true),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is false, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(true),
+			expected:           false,
 		},
-		"returns false when Ready is false, AdminReady is false, and Cleaned is false": {
-			ready:      Ptr(false),
-			adminReady: Ptr(false),
-			cleaned:    Ptr(false),
-			expected:   false,
+		"returns false when OrchestratorReady is false, AdministratorReady is false, and ProvisionerReady is false": {
+			orchestratorReady:  Ptr(false),
+			administratorReady: Ptr(false),
+			provisionerReady:   Ptr(false),
+			expected:           false,
 		},
-		"returns true when Ready is true, AdminReady is true, and Cleaned is true": {
-			ready:      Ptr(true),
-			adminReady: Ptr(true),
-			cleaned:    Ptr(true),
-			expected:   true,
+		"returns true when OrchestratorReady is true, AdministratorReady is true, and ProvisionerReady is true": {
+			orchestratorReady:  Ptr(true),
+			administratorReady: Ptr(true),
+			provisionerReady:   Ptr(true),
+			expected:           true,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := NodePublicationStateFlags{
-				Ready:      test.ready,
-				AdminReady: test.adminReady,
-				Cleaned:    test.cleaned,
+				OrchestratorReady:  test.orchestratorReady,
+				AdministratorReady: test.administratorReady,
+				ProvisionerReady:   test.provisionerReady,
 			}
 
 			assert.Equal(t, test.expected, f.IsNodeCleaned())

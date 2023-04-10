@@ -1341,8 +1341,8 @@ func (h *helper) getNodePublicationState(node *v1.Node) *utils.NodePublicationSt
 	}
 
 	return &utils.NodePublicationStateFlags{
-		Ready:      utils.Ptr(ready),
-		AdminReady: utils.Ptr(!outOfService),
+		OrchestratorReady:  utils.Ptr(ready),
+		AdministratorReady: utils.Ptr(!outOfService),
 	}
 }
 

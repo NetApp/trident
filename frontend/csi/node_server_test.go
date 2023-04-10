@@ -787,7 +787,7 @@ func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 	nodeState := utils.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &utils.NodePublicationStateFlags{
-		Cleaned: utils.Ptr(true),
+		ProvisionerReady: utils.Ptr(true),
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -809,7 +809,7 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 	nodeState := utils.NodeCleanable
 	nodeName := "foo"
 	nodeStateFlags := &utils.NodePublicationStateFlags{
-		Cleaned: utils.Ptr(true),
+		ProvisionerReady: utils.Ptr(true),
 	}
 
 	mockCtrl := gomock.NewController(t)

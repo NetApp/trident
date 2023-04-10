@@ -1815,7 +1815,7 @@ func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState utils
 
 	Logc(ctx).Debug("Updating node publication state.")
 	nodeStateFlags := &utils.NodePublicationStateFlags{
-		Cleaned: utils.Ptr(true),
+		ProvisionerReady: utils.Ptr(true),
 	}
 	if err := p.restClient.UpdateNode(ctx, p.nodeName, nodeStateFlags); err != nil {
 		Logc(ctx).WithError(err).Error("Failed to update node publication state.")

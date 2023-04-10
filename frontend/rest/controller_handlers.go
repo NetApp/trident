@@ -1070,11 +1070,11 @@ func nodeUpdater(_ http.ResponseWriter, r *http.Request, response httpResponse, 
 		// Then we should use those values. If those values are set, these values will be used. Otherwise,
 		// we should use the k8sNodePublication state.
 		if k8sNodePublicationState != nil {
-			if nodePublicationState.Ready == nil && k8sNodePublicationState.Ready != nil {
-				nodePublicationState.Ready = k8sNodePublicationState.Ready
+			if nodePublicationState.OrchestratorReady == nil && k8sNodePublicationState.OrchestratorReady != nil {
+				nodePublicationState.OrchestratorReady = k8sNodePublicationState.OrchestratorReady
 			}
-			if nodePublicationState.AdminReady == nil && k8sNodePublicationState.AdminReady != nil {
-				nodePublicationState.AdminReady = k8sNodePublicationState.AdminReady
+			if nodePublicationState.AdministratorReady == nil && k8sNodePublicationState.AdministratorReady != nil {
+				nodePublicationState.AdministratorReady = k8sNodePublicationState.AdministratorReady
 			}
 		}
 
