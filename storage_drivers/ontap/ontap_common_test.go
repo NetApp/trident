@@ -5216,3 +5216,54 @@ func TestEnableSANPublishEnforcement_Succeeds(t *testing.T) {
 	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
 	assert.Equal(t, int32(-1), volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }
+
+func TestGetNodeSpecificIgroup(t *testing.T) {
+	tests := map[string]struct {
+		node, uuid string
+		truncate   bool
+	}{
+		"get igroup name does not truncate with short node names": {
+			node:     "node12345678910.my.fqdn",
+			uuid:     "b11ad8a0-f182-420f-b00e-d82ce9d80962",
+			truncate: false,
+			// node12345678910.my.fqdn-b11ad8a0-f182-420f-b00e-d82ce9d80962
+		},
+		"get igroup name does not truncate when generated igroup name < max igroup length": {
+			node:     "node12345678910.my.fqdn-12345678910-12345678910-1234567891",
+			uuid:     "b11ad8a0-f182-420f-b00e-d82ce9d80962",
+			truncate: false,
+			// node12345678910.my.fqdn-12345678910-12345678910-1234567891-b11ad8a0-f182-420f-b00e-d82ce9d80962
+		},
+		"get igroup name does not truncate when generated igroup name = max igroup length": {
+			node:     "node12345678910.my.fqdn-12345678910-12345678910-12345678910",
+			uuid:     "b11ad8a0-f182-420f-b00e-d82ce9d80962",
+			truncate: false,
+			// node12345678910.my.fqdn-12345678910-12345678910-12345678910-b11ad8a0-f182-420f-b00e-d82ce9d80962
+		},
+		"get igroup name does truncate when node is < max igroup length and generated igroup name > max igroup length": {
+			node:     "node12345678910.my.fqdn-12345678910-12345678910-12345678910-12345678910-12345678910-12345678910",
+			uuid:     "b11ad8a0-f182-420f-b00e-d82ce9d80962",
+			truncate: true,
+			// node12345678910.my.fqdn-12345678910-12345678910-12345678910-b11ad8a0-f182-420f-b00e-d82ce9d80962
+		},
+		"get igroup name does truncate when node is > max igroup length and generated igroup name > max igroup length": {
+			node:     "node12345678910.my.fqdn-12345678910-12345678910-12345678910-12345678910-12345678910-123456789101",
+			uuid:     "b11ad8a0-f182-420f-b00e-d82ce9d80962",
+			truncate: true,
+			// node12345678910.my.fqdn-12345678910-12345678910-12345678910-b11ad8a0-f182-420f-b00e-d82ce9d80962
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			igroup := getNodeSpecificIgroupName(test.node, test.uuid)
+			assert.LessOrEqual(t, len(igroup), MaximumIgroupNameLength)
+			assert.Contains(t, igroup, test.uuid)
+			if test.truncate {
+				assert.NotContains(t, igroup, test.node)
+			} else {
+				assert.Contains(t, igroup, test.node)
+			}
+		})
+	}
+}

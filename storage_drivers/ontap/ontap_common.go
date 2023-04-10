@@ -52,6 +52,7 @@ const (
 	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
 	HousekeepingStartupDelaySecs = 10
 	LUNMetadataBufferMultiplier  = 1.1 // 10%
+	MaximumIgroupNameLength      = 96  // 96 characters is the maximum character count for ONTAP igroups.
 
 	// Constants for internal pool attributes
 	Size                  = "size"
@@ -533,8 +534,17 @@ func PopulateOntapLunMapping(
 	return nil
 }
 
+// getNodeSpecificIgroupName generates a distinct igroup name for node name.
+// Igroup names may collide if node names are over 59 characters.
 func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
-	return fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+	igroupName := fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+
+	if len(igroupName) > MaximumIgroupNameLength {
+		// If the new igroup name is over the igroup character limit, it means the host name is too long.
+		igroupPrefixLength := MaximumIgroupNameLength - len(tridentUUID) - 1
+		igroupName = fmt.Sprintf("%s-%s", nodeName[:igroupPrefixLength], tridentUUID)
+	}
+	return igroupName
 }
 
 // PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
