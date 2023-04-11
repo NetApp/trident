@@ -18,7 +18,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v3"
+	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"

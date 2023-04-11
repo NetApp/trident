@@ -157,7 +157,7 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.21"
-	KubernetesVersionMax = "v1.26"
+	KubernetesVersionMax = "v1.27"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"

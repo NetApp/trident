@@ -660,7 +660,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -676,7 +676,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.1.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"

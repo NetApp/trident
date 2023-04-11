@@ -1,6 +1,6 @@
 FROM busybox:uclibc as busybox
 
-FROM gcr.io/distroless/static:42ec9e98b4eb48fac18ccde3251f757bae2c41e4
+FROM gcr.io/distroless/static:b3e0897b507e86f0dab5bb99861e297d53891e84
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident.netapp.io" \
