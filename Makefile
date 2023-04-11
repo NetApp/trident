@@ -335,7 +335,7 @@ endif
 	@$(call build_operator_images_for_platforms,$(call operator_image_platforms,$(PLATFORMS)),$(BUILD_CLI),$(OPERATOR_TAG),$(BUILDX_OUTPUT))
 # if a single operator image platform is specified, retag image without platform
 ifeq (1,$(words $(call operator_image_platforms,$(PLATFORMS))))
-	@$(DOCKER_CLI) tag $(call image_tag,$(TRIDENT_TAG),$(call operator_image_platforms,$(PLATFORMS))) $(OPERATOR_MANIFEST_TAG)
+	@$(DOCKER_CLI) tag $(call image_tag,$(OPERATOR_TAG),$(call operator_image_platforms,$(PLATFORMS))) $(OPERATOR_MANIFEST_TAG)
 endif
 
 # creates multi-platform image manifest
