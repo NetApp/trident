@@ -65,7 +65,7 @@ func TestPayload(t *testing.T) {
 }
 
 func TestMinimumONTAPVersionForREST(t *testing.T) {
-	expectedMinimumONTAPVersion := versionutils.MustParseSemantic("9.11.1")
+	expectedMinimumONTAPVersion := versionutils.MustParseSemantic("9.12.1")
 	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
 }
 

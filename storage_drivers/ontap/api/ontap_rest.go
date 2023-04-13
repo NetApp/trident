@@ -255,7 +255,7 @@ func NewRestClientFromOntapConfig(
 	return apiREST, nil
 }
 
-var MinimumONTAPVersion = versionutils.MustParseSemantic("9.11.1")
+var MinimumONTAPVersion = versionutils.MustParseSemantic("9.12.1")
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
 func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
