@@ -4950,7 +4950,7 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 	}
 
 	// Only retrieves the number of publications for this node.
-	publicationCount := len(o.volumePublications.ListPublicationsForVolume(nodeName))
+	publicationCount := len(o.volumePublications.ListPublicationsForNode(nodeName))
 	logFields := LogFields{
 		"name":         nodeName,
 		"publications": publicationCount,
