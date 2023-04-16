@@ -4829,6 +4829,7 @@ func TestUnpublishVolume(t *testing.T) {
 			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(nil)
 			},
 			wantErr:                assert.NoError,
@@ -4851,6 +4852,7 @@ func TestUnpublishVolume(t *testing.T) {
 			},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(nil)
 			},
 			wantErr:                assert.NoError,
@@ -4874,6 +4876,7 @@ func TestUnpublishVolume(t *testing.T) {
 			},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(nil)
 			},
 			wantErr:                assert.NoError,
@@ -4930,6 +4933,7 @@ func TestUnpublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// There is no publication, but there might still be a volume published, so call it anyway
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
 			},
 			wantErr:                assert.NoError,
 			publicationShouldExist: false,
@@ -4971,6 +4975,7 @@ func TestUnpublishVolume(t *testing.T) {
 			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}, "dummy": {"dummy": otherNodeAndVolPublication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(errors.New("failed to delete"))
 			},
 			wantErr:                assert.Error,

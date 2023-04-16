@@ -660,7 +660,11 @@ func PublishLUN(
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
-	publishInfo.IscsiIgroup = igroupName
+
+	if igroupName != "" {
+		addUniqueIscsiIGroupName(publishInfo, igroupName)
+	}
+
 	publishInfo.FilesystemType = fstype
 	publishInfo.UseCHAP = config.UseCHAP
 
@@ -674,6 +678,35 @@ func PublishLUN(
 	publishInfo.SharedTarget = true
 
 	return nil
+}
+
+// addUniqueIscsiIGroupName added iscsiIgroup name in the IscsiIgroup name string if it is not present.
+func addUniqueIscsiIGroupName(publishInfo *utils.VolumePublishInfo, igroupName string) {
+	if publishInfo.IscsiIgroup == "" {
+		publishInfo.IscsiIgroup = igroupName
+	} else {
+		// Validate the iscsiGroupName present in the volume publish info. If not present, add in a string.
+		if !strings.Contains(publishInfo.IscsiIgroup, igroupName) {
+			publishInfo.IscsiIgroup += "," + igroupName
+		}
+	}
+}
+
+// removeIgroupFromIscsiIgroupList removes iscsiIgroup name in the IscsiIgroup list
+func removeIgroupFromIscsiIgroupList(iscsiIgroupList, igroup string) string {
+	if iscsiIgroupList != "" {
+		newIgroupList := make([]string, 0)
+		igroups := strings.Split(iscsiIgroupList, ",")
+
+		for _, value := range igroups {
+			if value != igroup {
+				newIgroupList = append(newIgroupList, value)
+			}
+		}
+		return strings.Join(newIgroupList, ",")
+	}
+
+	return iscsiIgroupList
 }
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
@@ -2750,6 +2783,7 @@ func EnableSANPublishEnforcement(
 
 	volumeConfig.AccessInfo.IscsiLunNumber = -1
 	volumeConfig.AccessInfo.PublishEnforcement = true
+	volumeConfig.AccessInfo.IscsiIgroup = ""
 	return nil
 }
 

@@ -634,7 +634,7 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPath(volConfig.InternalName))
 		if err != nil {
 			Logc(ctx).WithField("LUN", lunInfo.Name).Warnf("Unmapping of igroups failed: %v", err)
-			return fmt.Errorf("failed to upmap igroups for LUN %s: %v", lunInfo.Name, err)
+			return fmt.Errorf("failed to unmap igroups for LUN %s: %v", lunInfo.Name, err)
 		}
 	} else {
 		// Volume import is not managed by Trident
@@ -812,6 +812,9 @@ func (d *SANStorageDriver) Unpublish(
 	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
 	}
+
+	// Remove igroup from volume config's iscsi access Info
+	volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
 
 	// Remove igroup if no LUNs are mapped.
 	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
@@ -1359,7 +1362,8 @@ func (d *SANStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
@@ -1399,7 +1403,8 @@ func (d *SANStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
@@ -1407,8 +1412,8 @@ func (d *SANStorageDriver) ReestablishMirror(
 func (d *SANStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
-		d.API)
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName,
+		d.GetConfig().ReplicationPolicy, d.API)
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship

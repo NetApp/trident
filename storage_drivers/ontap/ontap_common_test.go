@@ -3772,6 +3772,41 @@ func TestPublishShare(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestAddUniqueIscsiIGroupName(t *testing.T) {
+	tests := []struct {
+		message         string
+		IscsiIgroup     string
+		IscsiAccessInfo string
+		ExpectedOutput  string
+	}{
+		{
+			"Unique IscsiIgroupName", "fakeigroupName3", "fakeigroupName1,fakeigroupName2",
+			"fakeigroupName1,fakeigroupName2,fakeigroupName3",
+		},
+		{
+			"Duplicate IscsiIgroupName", "fakeigroupName2", "fakeigroupName1,fakeigroupName2,fakeigroupName3",
+			"fakeigroupName1,fakeigroupName2,fakeigroupName3",
+		},
+		{"Empty VolumePublishInfo", "fakeigroupName2", "", "fakeigroupName2"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			volumeAccessInfo := utils.VolumeAccessInfo{
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiIgroup: test.IscsiAccessInfo,
+				},
+			}
+
+			publishInfo := &utils.VolumePublishInfo{
+				VolumeAccessInfo: volumeAccessInfo,
+			}
+			addUniqueIscsiIGroupName(publishInfo, test.IscsiIgroup)
+			assert.Equal(t, publishInfo.IscsiIgroup, test.ExpectedOutput)
+		})
+	}
+}
+
 func TestPublishLun(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
@@ -5264,6 +5299,40 @@ func TestGetNodeSpecificIgroup(t *testing.T) {
 			} else {
 				assert.Contains(t, igroup, test.node)
 			}
+		})
+	}
+}
+
+func TestRemoveIgroupFromList(t *testing.T) {
+	tests := []struct {
+		message             string
+		Igroup              string
+		IscsiIgroupNameList string
+		ExpectedOutput      string
+	}{
+		{
+			"remove Igroup", "fakeigroupName2", "fakeigroupName1,fakeigroupName2",
+			"fakeigroupName1",
+		},
+		{
+			"IscsiIgroupNameList size 1", "fakeigroupName1", "fakeigroupName1",
+			"",
+		},
+		{
+			"Empty IscsiIgroupName", "", "fakeigroupName1,fakeigroupName2",
+			"fakeigroupName1,fakeigroupName2",
+		},
+		{
+			"remove Igroup from middle of string", "fakeigroupName2", "fakeigroupName1,fakeigroupName2,fakeigroupName3",
+			"fakeigroupName1,fakeigroupName3",
+		},
+		{"Empty IscsiIgroupNameList", "fakeigroupName2", "", ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			IgroupList := removeIgroupFromIscsiIgroupList(test.IscsiIgroupNameList, test.Igroup)
+			assert.Equal(t, test.ExpectedOutput, IgroupList)
 		})
 	}
 }

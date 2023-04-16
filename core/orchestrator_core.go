@@ -3374,6 +3374,13 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		Logc(ctx).Debug("Volume not found in backend during unpublish; continuing with unpublish.")
 	}
 
+	if err := o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume": volume.Config.Name,
+		}).Error("Unable to update the volume in persistent store.")
+		return err
+	}
+
 	// Delete the publication from memory and the persistence layer.
 	if err := o.deleteVolumePublication(ctx, volumeName, nodeName); err != nil {
 		msg := "unable to delete volume publication record"
@@ -3652,7 +3659,8 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 	volumeConfig.Protocol = sourceVolume.Config.Protocol
 	volumeConfig.AccessInfo.PublishEnforcement = true
 
-	volume = storage.NewVolume(volumeConfig, sourceVolume.BackendUUID, sourceVolume.Pool, false, storage.VolumeStateSubordinate)
+	volume = storage.NewVolume(volumeConfig, sourceVolume.BackendUUID, sourceVolume.Pool, false,
+		storage.VolumeStateSubordinate)
 
 	// Add new volume to persistent store
 	if err = o.storeClient.AddVolume(ctx, volume); err != nil {
@@ -4802,8 +4810,8 @@ func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node, nod
 	defer o.updateMetrics()
 	// Check if node services have changed
 	if node.HostInfo != nil && len(node.HostInfo.Services) > 0 {
-		nodeEventCallback(controllerhelpers.EventTypeNormal, "TridentServiceDiscovery", fmt.Sprintf("%s detected on host.",
-			node.HostInfo.Services))
+		nodeEventCallback(controllerhelpers.EventTypeNormal, "TridentServiceDiscovery",
+			fmt.Sprintf("%s detected on host.", node.HostInfo.Services))
 	}
 
 	// Do not set publication state on existing nodes

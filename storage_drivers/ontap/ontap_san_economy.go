@@ -244,8 +244,10 @@ func (d *SANEconomyStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "SANEconomyStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -761,8 +763,10 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 		"isLunCreateFromSnapshot": isLunCreateFromSnapshot,
 		"qosPolicyGroup":          qosPolicyGroup,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createLUNClone")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createLUNClone")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createLUNClone")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createLUNClone")
 
 	// If the specified LUN copy already exists, return an error
 	destinationLunExists, _, err := d.LUNExists(ctx, lunName, prefix)
@@ -1045,6 +1049,9 @@ func (d *SANEconomyStorageDriver) Unpublish(
 		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
 	}
 
+	// Remove igroup from volume config's access Info
+	volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
+
 	// Remove igroup if no LUNs are mapped.
 	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
 		return fmt.Errorf("error removing empty igroup; %v", err)
@@ -1089,8 +1096,10 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolumeName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getSnapshotEconomy")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getSnapshotEconomy")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getSnapshotEconomy")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getSnapshotEconomy")
 
 	fullSnapshotName := d.helper.GetSnapshotName(internalVolumeName, internalSnapName)
 	exists, bucketVol, err := d.LUNExists(ctx, fullSnapshotName, d.FlexvolNamePrefix())
