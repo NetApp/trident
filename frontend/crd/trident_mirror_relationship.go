@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -24,42 +24,14 @@ type (
 	ResourceType string
 )
 
-// addMirrorRelationship is the add handler for the TridentMirrorRelationship watcher.
-// This is called for every TMR when Trident starts
-func (c *TridentCrdController) addMirrorRelationship(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
-	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
-
-	Logx(ctx).Debug("TridentCrdController#addMirrorRelationship")
-
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		Logx(ctx).Error(err)
-		return
-	}
-
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventAdd,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentMirrorRelationship,
-	}
-	// Only add it if it's new or needs cleanup for deletion
-	newRelationship := obj.(*netappv1.TridentMirrorRelationship)
-	if len(newRelationship.Status.Conditions) == 0 || int(newRelationship.Generation) != newRelationship.Status.Conditions[0].ObservedGeneration || !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
-		c.workqueue.Add(keyItem)
-	}
-}
-
-// updateMirrorRelationship is the update handler for the TridentMirrorRelationship watcher.
-func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
+// updateTMRHandler is the update handler for the TridentMirrorRelationship watcher
+// validates that the update of the TMR is allowed and if so, adds it to the workqueue
+func (c *TridentCrdController) updateTMRHandler(old, new interface{}) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
 		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
-	Logx(ctx).Debug("TridentCrdController#updateMirrorRelationship")
+	Logx(ctx).Debug("TridentCrdController#updateTMRHandler")
 	var key string
 	var err error
 	if key, err = cache.MetaNamespaceKeyFunc(new); err != nil {
@@ -67,18 +39,10 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 		return
 	}
 
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventUpdate,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentMirrorRelationship,
-	}
-
 	newRelationship := new.(*netappv1.TridentMirrorRelationship)
 	oldRelationship := old.(*netappv1.TridentMirrorRelationship)
 
 	currentState := ""
-	needsUpdate := false
 	logFields := LogFields{}
 
 	if newRelationship != nil {
@@ -127,8 +91,8 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 		}
 
 		// Ensure replicationPolicy and replicationSchedule (if already set) are not being changed
-		// Ignore changes if relationship is going to promoted (or deleted)
-		newRelationship, conditionCopy, err := c.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+		// Ignore changes if relationship is transitioning to promoted (or deleted)
+		conditionCopy, err := c.validateTMRUpdate(ctx, oldRelationship, newRelationship)
 		if err != nil {
 			_, err = c.updateTMRStatus(ctx, newRelationship, conditionCopy)
 			if err != nil {
@@ -137,58 +101,22 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 			return
 		}
 
-		if oldRelationship == nil {
-			needsUpdate = true
-		} else if !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
-			// TMR is pending deletion
-			needsUpdate = true
-		} else if len(newRelationship.Status.Conditions) == 0 {
-			// TMR has not been updated before
-			needsUpdate = true
-		} else if oldRelationship.Generation != newRelationship.Generation {
-			// User has changed the TMR
-			needsUpdate = true
-		} else if newRelationship.Status.Conditions[0].ObservedGeneration != int(newRelationship.Generation) {
-			// User has changed the TMR
-			needsUpdate = true
-		} else if utils.SliceContainsString(
+		if !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
+			c.addEventToWorkqueue(key, EventUpdate, ctx, newRelationship.GetKind())
+			return
+		} else if len(newRelationship.Status.Conditions) == 0 || utils.SliceContainsString(
 			netappv1.GetTransitioningMirrorStatusStates(), newRelationship.Status.Conditions[0].MirrorState,
 		) {
 			// TMR is currently transitioning actual states
-			needsUpdate = true
+			c.addEventToWorkqueue(key, EventUpdate, ctx, newRelationship.GetKind())
+			return
+		} else if oldRelationship.Generation == newRelationship.Generation {
+			// User has not changed the TMR
+			return
 		}
 	}
 
-	if needsUpdate {
-		c.workqueue.Add(keyItem)
-	} else {
-		Logx(ctx).WithFields(logFields).Tracef("No required update for TridentMirrorRelationship")
-	}
-}
-
-// deleteMirrorRelationship is the delete handler for the TridentMirrorRelationship watcher.
-func (c *TridentCrdController) deleteMirrorRelationship(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
-	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
-
-	Logx(ctx).Debug("TridentCrdController#deleteMirrorRelationship")
-
-	var key string
-	var err error
-	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
-		Logx(ctx).Error(err)
-		return
-	}
-
-	keyItem := KeyItem{
-		key:        key,
-		event:      EventDelete,
-		ctx:        ctx,
-		objectType: ObjectTypeTridentMirrorRelationship,
-	}
-
-	c.workqueue.Add(keyItem)
+	c.updateCRHandler(old, new)
 }
 
 // updateTMRConditionLocalFields returns a new TridentMirrorRelationshipCondition object with the specified fields set
@@ -243,41 +171,6 @@ func (c *TridentCrdController) updateTMRCR(
 	}
 
 	return newTMR, err
-}
-
-func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
-	Logx(keyItem.ctx).Debug("TridentCrdController#reconcileTMR")
-	logFields := LogFields{"TridentMirrorRelationship": keyItem.key}
-
-	// Pass the namespace/name string of the resource to be synced.
-	if err := c.handleTridentMirrorRelationship(keyItem); err != nil {
-		if utils.IsReconcileDeferredError(err) {
-			// TODO(ameade): This should be a layer above, the reconcile loops should not mess with the queue.
-			c.workqueue.AddRateLimited(*keyItem)
-			errMessage := fmt.Sprintf(
-				"deferred syncing TridentMirrorRelationship, requeuing; %v", err.Error(),
-			)
-			Logx(keyItem.ctx).WithFields(logFields).Error(errMessage)
-			return err
-		} else if utils.IsReconcileIncompleteError(err) {
-			c.workqueue.Add(*keyItem)
-			errMessage := fmt.Sprintf(
-				"syncing TridentMirrorRelationship in progress, requeuing; %v", err.Error(),
-			)
-			Logx(keyItem.ctx).WithFields(logFields).Error(errMessage)
-
-			return err
-		} else {
-			errMessage := fmt.Sprintf(
-				"error syncing TridentMirrorRelationship, requeuing; %v", err.Error(),
-			)
-			Logx(keyItem.ctx).WithFields(logFields).Error(errMessage)
-
-			return fmt.Errorf(errMessage)
-		}
-	}
-
-	return nil
 }
 
 // handleTridentMirrorRelationship ensures we move to the desired state and the desired state is maintained
@@ -705,12 +598,12 @@ func (c *TridentCrdController) updateTMRConditionReplicationSettings(
 	return conditionCopy
 }
 
-// validateTMRUpdate checks to see if there are changes in the replication policy or schedule and will return if the
-// TMR should be updated
+// validateTMRUpdate checks to see if there are changes in the replication policy or schedule and will return
+// a new condition and error if the TMR update is invalid
 func (c *TridentCrdController) validateTMRUpdate(
 	ctx context.Context, oldRelationship,
 	newRelationship *netappv1.TridentMirrorRelationship,
-) (*netappv1.TridentMirrorRelationship, *netappv1.TridentMirrorRelationshipCondition, error) {
+) (*netappv1.TridentMirrorRelationshipCondition, error) {
 	logFields := LogFields{}
 	logFields = LogFields{"TridentMirrorRelationship": newRelationship.Name}
 
@@ -737,7 +630,7 @@ func (c *TridentCrdController) validateTMRUpdate(
 				conditionCopy.Message = fmt.Sprintf("replication policy may not be changed from %v",
 					oldReplicationPolicyStatus)
 
-				return newRelationship, conditionCopy, fmt.Errorf(
+				return conditionCopy, fmt.Errorf(
 					"replication policy cannot be changed, must delete TMR to change policy.")
 			}
 		}
@@ -761,10 +654,10 @@ func (c *TridentCrdController) validateTMRUpdate(
 				conditionCopy.Message = fmt.Sprintf("replication schedule may not be changed from %v",
 					oldReplicationScheduleStatus)
 
-				return newRelationship, conditionCopy, fmt.Errorf(
+				return conditionCopy, fmt.Errorf(
 					"replication schedule cannot be changed, must delete TMR to change schedule.")
 			}
 		}
 	}
-	return newRelationship, nil, nil
+	return nil, nil
 }

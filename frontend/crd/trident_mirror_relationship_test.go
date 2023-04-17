@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package crd
 
@@ -38,7 +38,7 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 	}
 	newRelationship := oldRelationship.DeepCopy()
 
-	controller.updateMirrorRelationship(oldRelationship, newRelationship)
+	controller.updateTMRHandler(oldRelationship, newRelationship)
 
 	if controller.workqueue.Len() != 0 {
 		t.Fatalf("Did not expect update")
@@ -60,7 +60,7 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 	newRelationship = oldRelationship.DeepCopy()
 	newRelationship.Spec.VolumeMappings[0].RemoteVolumeHandle = "blah"
 
-	controller.updateMirrorRelationship(oldRelationship, newRelationship)
+	controller.updateTMRHandler(oldRelationship, newRelationship)
 
 	if controller.workqueue.Len() != 0 {
 		t.Fatalf("Did not expect update")
@@ -80,7 +80,7 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	newRelationship := &netappv1.TridentMirrorRelationship{}
 
-	controller.updateMirrorRelationship(newRelationship, newRelationship)
+	controller.updateTMRHandler(newRelationship, newRelationship)
 
 	if controller.workqueue.Len() != 1 {
 		t.Fatalf("Expected an update to be required")
@@ -98,7 +98,7 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	newRelationship = oldRelationship.DeepCopy()
 	newRelationship.ObjectMeta.DeletionTimestamp = &metav1.Time{Time: time.Now()}
 
-	controller.updateMirrorRelationship(oldRelationship, newRelationship)
+	controller.updateTMRHandler(oldRelationship, newRelationship)
 
 	if controller.workqueue.Len() != 1 {
 		t.Fatalf("Expected an update to be required")
@@ -120,7 +120,7 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	newRelationship.Spec.MirrorState = netappv1.MirrorStatePromoted
 	newRelationship.Generation = oldRelationship.Generation + 1
 
-	controller.updateMirrorRelationship(oldRelationship, newRelationship)
+	controller.updateTMRHandler(oldRelationship, newRelationship)
 
 	if controller.workqueue.Len() != 1 {
 		t.Fatalf("Expected an update to be required")
@@ -190,7 +190,7 @@ func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
 	newRelationship.Status.Conditions = append(newRelationship.Status.Conditions, conditions)
 	oldRelationship.Status.Conditions = append(oldRelationship.Status.Conditions, conditions)
 
-	_, conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+	conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
 
 	assert.Error(t, err, "Should be invalid update error")
 	assert.Equal(t, netappv1.MirrorStateFailed, conditionCopy.MirrorState,
@@ -227,7 +227,7 @@ func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 	newRelationship.Status.Conditions = append(newRelationship.Status.Conditions, conditions)
 	oldRelationship.Status.Conditions = append(oldRelationship.Status.Conditions, conditions)
 
-	_, conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+	conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
 
 	assert.Error(t, err, "Should be invalid update error")
 	assert.Equal(t, netappv1.MirrorStateFailed, conditionCopy.MirrorState,
