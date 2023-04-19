@@ -2451,6 +2451,11 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 // ///////////////////////////////////////////////////////////////////////////
 // SNAPMIRROR operations BEGIN
 
+// ToSnapmirrorLocation returns a string in the form "svmName:volumeName" for use in snapmirror calls
+func ToSnapmirrorLocation(svmName, volumeName string) string {
+	return fmt.Sprintf("%s:%s", svmName, volumeName)
+}
+
 // SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
 // equivalent to filer::> snapmirror show
 func (c Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.SnapmirrorGetIterResponse, error) {
@@ -2574,10 +2579,8 @@ func (c Client) SnapmirrorGet(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2586,10 +2589,8 @@ func (c Client) SnapmirrorCreate(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
 ) (*azgo.SnapmirrorCreateResponse, error) {
 	query := azgo.NewSnapmirrorCreateRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	if repPolicy != "" {
 		query.SetPolicy(repPolicy)
@@ -2605,10 +2606,8 @@ func (c Client) SnapmirrorInitialize(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorInitializeResponse, error) {
 	query := azgo.NewSnapmirrorInitializeRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2617,10 +2616,8 @@ func (c Client) SnapmirrorResync(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorResyncResponse, error) {
 	query := azgo.NewSnapmirrorResyncRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	response, err := query.ExecuteUsing(c.zr)
 	if err != nil {
@@ -2635,10 +2632,8 @@ func (c Client) SnapmirrorBreak(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) (*azgo.SnapmirrorBreakResponse, error) {
 	query := azgo.NewSnapmirrorBreakRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	if snapshotName != "" {
 		query.SetRestoreDestinationToSnapshot(snapshotName)
@@ -2651,10 +2646,8 @@ func (c Client) SnapmirrorQuiesce(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorQuiesceResponse, error) {
 	query := azgo.NewSnapmirrorQuiesceRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2663,10 +2656,8 @@ func (c Client) SnapmirrorAbort(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorAbortResponse, error) {
 	query := azgo.NewSnapmirrorAbortRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2676,8 +2667,7 @@ func (c Client) SnapmirrorAbort(
 func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
 	query := azgo.SnapmirrorGetDestinationIterRequestQuery{}
 	params := azgo.NewSnapmirrorDestinationInfoType()
-	params.SetSourceVserver(sourceSVMName)
-	params.SetSourceVolume(sourceFlexvolName)
+	params.SetSourceLocation(ToSnapmirrorLocation(sourceSVMName, sourceFlexvolName))
 	query.SetSnapmirrorDestinationInfo(*params)
 	request := azgo.NewSnapmirrorGetDestinationIterRequest()
 	request.SetQuery(query)
@@ -2690,14 +2680,34 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 	list := response.Result.AttributesList()
 	relationships := list.SnapmirrorDestinationInfo()
 
-	for idx := range relationships {
-		requestQuery := azgo.SnapmirrorReleaseIterRequestQuery{
-			SnapmirrorDestinationInfoPtr: &relationships[idx],
+	for _, destinationInfo := range relationships {
+
+		var destinationLocation *string
+		destinationVserver := destinationInfo.DestinationVserverPtr
+		destinationVolume := destinationInfo.DestinationVolumePtr
+		if destinationInfo.DestinationLocationPtr != nil {
+			destinationLocation = destinationInfo.DestinationLocationPtr
+		} else if destinationVserver != nil && destinationVolume != nil {
+			destinationLocation = utils.Ptr(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
+		} else {
+			destinationLocation = nil
 		}
-		releaseRequest := azgo.SnapmirrorReleaseIterRequest{QueryPtr: &requestQuery}
-		_, err = releaseRequest.ExecuteUsing(c.zr)
-		if err != nil {
-			return err
+
+		if destinationLocation != nil && *destinationLocation != "" {
+			requestQuery := azgo.SnapmirrorReleaseIterRequestQuery{
+				SnapmirrorDestinationInfoPtr: &azgo.SnapmirrorDestinationInfoType{
+					DestinationLocationPtr: destinationLocation,
+				},
+			}
+			releaseRequest := azgo.SnapmirrorReleaseIterRequest{QueryPtr: &requestQuery}
+			_, err = releaseRequest.ExecuteUsing(c.zr)
+			if err != nil {
+				return err
+			}
+		} else {
+			Logc(context.Background()).WithFields(LogFields{
+				"destinationInfo": destinationInfo,
+			}).Warn("Missing destination location.")
 		}
 	}
 	return nil
@@ -2708,8 +2718,7 @@ func (c Client) SnapmirrorDeleteViaDestination(
 	localInternalVolumeName, localSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2719,10 +2728,8 @@ func (c Client) SnapmirrorDelete(
 	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localInternalVolumeName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
