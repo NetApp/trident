@@ -1852,7 +1852,7 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(ctx context.Context, flexvol strin
 }
 
 func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID string,
+	ctx context.Context, nodes []*utils.Node, backendUUID, _ string,
 ) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

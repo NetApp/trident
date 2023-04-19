@@ -3063,60 +3063,63 @@ func TestReconcileSANNodeAccess(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	nodeIQN := []string{
-		"1.1.1.1",
+	backendUUID := "1234"
+	tridentUUID := "4321"
+
+	// Test reconcile destroys unused igroups
+	existingIgroups := []string{"netappdvp", "node1-" + tridentUUID, "node2-" + tridentUUID, "trident-" + backendUUID}
+	nodesInUse := []string{"node2"}
+	mockAPI.EXPECT().IgroupList(ctx).Return(existingIgroups, nil)
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, existingIgroups[1])
+	mockAPI.EXPECT().IgroupDestroy(ctx, existingIgroups[1])
+	mockAPI.EXPECT().IgroupListLUNsMapped(ctx, existingIgroups[3])
+	mockAPI.EXPECT().IgroupDestroy(ctx, existingIgroups[3])
+
+	err := reconcileSANNodeAccess(ctx, mockAPI, nodesInUse, backendUUID, tridentUUID)
+	assert.NoError(t, err)
+}
+
+func TestFilterUnusedTridentIgroups(t *testing.T) {
+	const backendUUID = "1234"
+	const tridentUUID = "4321"
+
+	tests := []struct {
+		name     string
+		igroups  []string
+		nodes    []string
+		expected []string
+	}{
+		{
+			name:     "all nodes used with per-backend",
+			igroups:  []string{"node1-" + tridentUUID, "node2-" + tridentUUID, "trident-" + backendUUID},
+			nodes:    []string{"node1", "node2"},
+			expected: []string{"trident-" + backendUUID},
+		},
+		{
+			name:     "all nodes used without per-backend",
+			igroups:  []string{"node1-" + tridentUUID, "node2-" + tridentUUID},
+			nodes:    []string{"node1", "node2"},
+			expected: []string{},
+		},
+		{
+			name:     "no nodes used with per-backend",
+			igroups:  []string{"node1-" + tridentUUID, "node2-" + tridentUUID, "trident-" + backendUUID},
+			expected: []string{"node1-" + tridentUUID, "node2-" + tridentUUID, "trident-" + backendUUID},
+		},
+		{
+			name:     "some nodes used with per-backend and non-Trident igroups",
+			igroups:  []string{"netappdvp", "node1-" + tridentUUID, "node2-" + tridentUUID, "trident-" + backendUUID},
+			nodes:    []string{"node2"},
+			expected: []string{"node1-" + tridentUUID, "trident-" + backendUUID},
+		},
 	}
 
-	igroupName := "testIgroup"
-	mappedIQN := make(map[string]bool)
-	mappedIQN["1.1.1.1"] = true
-
-	// Test1: Positive flow
-	mockAPI.EXPECT().IgroupCreate(ctx, igroupName, "iscsi", "linux").Return(nil)
-	mockAPI.EXPECT().IgroupGetByName(ctx, igroupName).Return(mappedIQN, nil)
-
-	err := reconcileSANNodeAccess(ctx, mockAPI, igroupName, nodeIQN)
-
-	assert.NoError(t, err)
-
-	// Test2: Error case: Igroup doesn't exist
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IgroupCreate(ctx, igroupName, "iscsi", "linux").Return(fmt.Errorf("Error creating Igroup"))
-
-	err = reconcileSANNodeAccess(ctx, mockAPI, igroupName, nodeIQN)
-
-	assert.Error(t, err)
-
-	// Test3: Error case: error getting Igroup
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IgroupCreate(ctx, igroupName, "iscsi", "linux").Return(nil)
-	mockAPI.EXPECT().IgroupGetByName(ctx, igroupName).Return(mappedIQN, fmt.Errorf("Error getting Igroup"))
-
-	err = reconcileSANNodeAccess(ctx, mockAPI, igroupName, nodeIQN)
-
-	assert.Error(t, err)
-
-	// Test4: Error case: error adding Igroup
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IgroupCreate(ctx, igroupName, "iscsi", "linux").Return(nil)
-	mockAPI.EXPECT().IgroupGetByName(ctx, igroupName).Return(mappedIQN, nil)
-	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, "1.1.1.1").Return(fmt.Errorf("Error adding Igroup"))
-
-	err = reconcileSANNodeAccess(ctx, mockAPI, igroupName, nodeIQN)
-
-	assert.Error(t, err)
-
-	// Test5: Error case: error removing Igroup
-	mappedIQN["2.2.2.2"] = false
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().IgroupCreate(ctx, igroupName, "iscsi", "linux").Return(nil)
-	mockAPI.EXPECT().IgroupGetByName(ctx, igroupName).Return(mappedIQN, nil)
-	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, "1.1.1.1").Return(nil)
-	mockAPI.EXPECT().IgroupRemove(ctx, igroupName, "2.2.2.2", true).Return(fmt.Errorf("Error removing Igroup"))
-
-	err = reconcileSANNodeAccess(ctx, mockAPI, igroupName, nodeIQN)
-
-	assert.Error(t, err)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := filterUnusedTridentIgroups(test.igroups, test.nodes, backendUUID, tridentUUID)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
 }
 
 func TestGetPoolsForCreate(t *testing.T) {
@@ -3842,6 +3845,7 @@ func TestPublishLun(t *testing.T) {
 	}
 	// Test1 - Positive flow
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
@@ -3863,6 +3867,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)

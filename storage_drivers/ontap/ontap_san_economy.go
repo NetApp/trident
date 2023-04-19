@@ -2062,16 +2062,12 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol str
 }
 
 func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, _ string,
+	ctx context.Context, nodes []*utils.Node, backendUUID, tridentUUID string,
 ) error {
 	// Discover known nodes
-	nodeNames := make([]string, 0)
-	nodeIQNs := make([]string, 0)
+	nodeNames := make([]string, len(nodes))
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
-		if node.IQN != "" {
-			nodeIQNs = append(nodeIQNs, node.IQN)
-		}
 	}
 
 	fields := LogFields{
@@ -2082,7 +2078,7 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
-	return reconcileSANNodeAccess(ctx, d.API, d.Config.IgroupName, nodeIQNs)
+	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
 }
 
 // String makes SANEconomyStorageDriver satisfy the Stringer interface.

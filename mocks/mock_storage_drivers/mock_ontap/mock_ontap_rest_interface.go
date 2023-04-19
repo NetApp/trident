@@ -656,18 +656,18 @@ func (mr *MockRestClientInterfaceMockRecorder) IscsiInitiatorSetDefaultAuth(arg0
 }
 
 // IscsiInterfaceGet mocks base method.
-func (m *MockRestClientInterface) IscsiInterfaceGet(ctx context.Context) (*s_a_n.IscsiServiceCollectionGetOK, error) {
+func (m *MockRestClientInterface) IscsiInterfaceGet(arg0 context.Context) (*s_a_n.IscsiServiceCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInterfaceGet", ctx)
+	ret := m.ctrl.Call(m, "IscsiInterfaceGet", arg0)
 	ret0, _ := ret[0].(*s_a_n.IscsiServiceCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInterfaceGet indicates an expected call of IscsiInterfaceGet.
-func (mr *MockRestClientInterfaceMockRecorder) IscsiInterfaceGet(ctx interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IscsiInterfaceGet(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInterfaceGet", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInterfaceGet), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInterfaceGet", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInterfaceGet), arg0)
 }
 
 // IscsiNodeGetName mocks base method.

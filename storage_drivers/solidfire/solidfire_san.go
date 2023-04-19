@@ -1963,7 +1963,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

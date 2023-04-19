@@ -1292,7 +1292,7 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 	return creatingVolumes
 }
 
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

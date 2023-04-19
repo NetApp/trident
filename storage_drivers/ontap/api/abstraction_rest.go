@@ -2383,6 +2383,34 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 	return alreadyAdded, nil
 }
 
+func (d OntapAPIREST) IgroupList(ctx context.Context) ([]string, error) {
+	fields := LogFields{
+		"Method": "IgroupList",
+		"Type":   "OntapAPIREST",
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupList")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupList")
+
+	igroupsResponse, err := d.api.IgroupList(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+
+	if igroupsResponse.Payload == nil || igroupsResponse.Payload.NumRecords == nil {
+		return nil, nil
+	}
+	igroups := make([]string, 0, *igroupsResponse.Payload.NumRecords)
+	for _, igroup := range igroupsResponse.Payload.IgroupResponseInlineRecords {
+		if igroup != nil && igroup.Name != nil {
+			igroups = append(igroups, *igroup.Name)
+		}
+	}
+
+	return igroups, nil
+}
+
 func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
 	fields := LogFields{
 		"Method":             "IgroupRemove",

@@ -22,6 +22,8 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+//go:generate mockgen -destination=../mocks/mock_storage/mock_storage_driver.go github.com/netapp/trident/storage Driver
+
 // Driver provides a common interface for storage related operations
 type Driver interface {
 	Name() string
@@ -66,7 +68,7 @@ type Driver interface {
 	// available if using the passthrough store (i.e. Docker).
 	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
-	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error
+	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID, tridentUUID string) error
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
@@ -893,7 +895,7 @@ func (b *StorageBackend) InvalidateNodeAccess() {
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
-func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node) error {
+func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
 		if b.nodeAccessUpToDate {
@@ -901,7 +903,7 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils
 			return nil
 		}
 		Logc(ctx).WithField("backend", b.name).Trace("Backend node access rules are out-of-date, updating.")
-		err = b.driver.ReconcileNodeAccess(ctx, nodes, b.backendUUID)
+		err = b.driver.ReconcileNodeAccess(ctx, nodes, b.backendUUID, tridentUUID)
 		if err == nil {
 			b.nodeAccessUpToDate = true
 		}

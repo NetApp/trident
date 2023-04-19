@@ -2374,7 +2374,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	d := newTestGCPDriver(nil)
 	node1 := utils.Node{Name: "node-name"}
 	nodes := []*utils.Node{&node1}
-	err := d.ReconcileNodeAccess(ctx(), nodes, "")
+	err := d.ReconcileNodeAccess(ctx(), nodes, "", "")
 	assert.NoError(t, err, "Reconcile node access failed")
 }
 

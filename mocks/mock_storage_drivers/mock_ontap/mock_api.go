@@ -581,6 +581,21 @@ func (mr *MockOntapAPIMockRecorder) IgroupGetByName(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGetByName", reflect.TypeOf((*MockOntapAPI)(nil).IgroupGetByName), arg0, arg1)
 }
 
+// IgroupList mocks base method.
+func (m *MockOntapAPI) IgroupList(arg0 context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IgroupList", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IgroupList indicates an expected call of IgroupList.
+func (mr *MockOntapAPIMockRecorder) IgroupList(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupList", reflect.TypeOf((*MockOntapAPI)(nil).IgroupList), arg0)
+}
+
 // IgroupListLUNsMapped mocks base method.
 func (m *MockOntapAPI) IgroupListLUNsMapped(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()

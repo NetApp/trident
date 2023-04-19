@@ -108,6 +108,7 @@ type OntapAPI interface {
 	IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error
 	IgroupDestroy(ctx context.Context, initiatorGroupName string) error
 	EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error
+	IgroupList(ctx context.Context) ([]string, error)
 	IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error
 	IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool, error)
 	IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error)

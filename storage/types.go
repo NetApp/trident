@@ -64,7 +64,7 @@ type Backend interface {
 	HasVolumes() bool
 	Terminate(ctx context.Context)
 	InvalidateNodeAccess()
-	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node) error
+	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool

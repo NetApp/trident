@@ -13,7 +13,6 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -273,184 +272,6 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 				"ontap-san-economy driver contains %v", key)
 			assert.NotContains(t, sanEcoDriver.GoString(), val,
 				"ontap-san-economy driver contains %v", key)
-		}
-	}
-}
-
-func TestOntapSanEconomyReconcileNodeAccess(t *testing.T) {
-	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-
-	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
-	server.StartTLS()
-
-	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
-	assert.Nil(t, err, "Unable to get Web host port %s", port)
-
-	defer func() {
-		if r := recover(); r != nil {
-			server.Close()
-			t.Error("Panic in fake filer", r)
-		}
-	}()
-
-	cases := [][]struct {
-		igroupName         string
-		igroupExistingIQNs []string
-		nodes              []*utils.Node
-		igroupFinalIQNs    []string
-	}{
-		// Add a backend
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-		},
-		// 2 same cluster backends/ nodes unchanged - both current
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1", "IQN2"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-		// 2 different cluster backends - add node
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-		// 2 different cluster backends - remove node
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1", "IQN2"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-	}
-
-	for _, testCase := range cases {
-
-		api.FakeIgroups = map[string]map[string]struct{}{}
-
-		var ontapSanDrivers []SANEconomyStorageDriver
-
-		for _, driverInfo := range testCase {
-
-			// simulate existing IQNs on the vserver
-			igroupsIQNMap := map[string]struct{}{}
-			for _, iqn := range driverInfo.igroupExistingIQNs {
-				igroupsIQNMap[iqn] = struct{}{}
-			}
-
-			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
-
-			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName, false, nil)
-			sanEcoStorageDriver.Config.IgroupName = driverInfo.igroupName
-			ontapSanDrivers = append(ontapSanDrivers, *sanEcoStorageDriver)
-		}
-
-		for driverIndex, driverInfo := range testCase {
-			err := ontapSanDrivers[driverIndex].ReconcileNodeAccess(ctx, driverInfo.nodes,
-				uuid.New().String())
-			if err != nil {
-				continue
-			}
-		}
-
-		for _, driverInfo := range testCase {
-
-			assert.Equal(t, len(driverInfo.igroupFinalIQNs), len(api.FakeIgroups[driverInfo.igroupName]))
-
-			for _, iqn := range driverInfo.igroupFinalIQNs {
-				assert.Contains(t, api.FakeIgroups[driverInfo.igroupName], iqn)
-			}
 		}
 	}
 }
@@ -3778,7 +3599,6 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().IgroupCreate(ctx, "trident-deadbeef-03af-4394-ace4-e177cdbcaf28", "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
@@ -3911,8 +3731,6 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 				gomock.Any(), 1,
 				"trident", 5).AnyTimes()
 			if !test.expectError {
-				mockAPI.EXPECT().IgroupCreate(ctx, "trident-deadbeef-03af-4394-ace4-e177cdbcaf28", "iscsi",
-					"linux").Return(nil)
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
 			}
 
@@ -4007,48 +3825,6 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, fmt.Errorf("error getting svm aggregate names"))
-
-	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
-
-	assert.Error(t, result)
-}
-
-func TestOntapSanEconomyInitialize_IGroupCreationFailed(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	commonConfig := &drivers.CommonStorageDriverConfig{
-		Version:           1,
-		StorageDriverName: "ontap-san-economy",
-		BackendName:       "myOntapSanEcoBackend",
-		DriverContext:     tridentconfig.ContextCSI,
-		DebugTraceFlags:   debugTraceFlags,
-	}
-	commonConfigJSON := fmt.Sprintf(`
-	{
-	    "managementLIF":     "10.0.207.8",
-	    "dataLIF":           "10.0.207.7",
-	    "svm":               "iscsi_vs",
-	    "aggregate":         "data",
-	    "username":          "admin",
-	    "password":          "password",
-	    "storageDriverName": "ontap-san-economy",
-	    "storagePrefix":     "san-eco",
-	    "debugTraceFlags":   {"method": true, "api": true},
-	    "version":1
-	}`)
-	secrets := map[string]string{
-		"clientcertificate": "dummy-certificate",
-	}
-
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
-	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
-		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
-	)
-	mockAPI.EXPECT().IgroupCreate(ctx, "trident-deadbeef-03af-4394-ace4-e177cdbcaf28", "iscsi",
-		"linux").Return(fmt.Errorf("igroup creation failed"))
-	mockAPI.EXPECT().IgroupDestroy(ctx, "trident-deadbeef-03af-4394-ace4-e177cdbcaf28").Return(fmt.Errorf(
-		"error deleting igroup"))
 
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 

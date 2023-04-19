@@ -1558,7 +1558,7 @@ func (d *NASFlexGroupStorageDriver) Resize(
 }
 
 func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID string,
+	ctx context.Context, nodes []*utils.Node, backendUUID, _ string,
 ) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

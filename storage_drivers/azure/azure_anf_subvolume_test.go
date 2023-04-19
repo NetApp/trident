@@ -3653,7 +3653,7 @@ func TestSubvolumeReconcileNodeAccess(t *testing.T) {
 
 	driver := *newTestANFSubvolumeDriver(mockAPI)
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "")
+	result := driver.ReconcileNodeAccess(ctx, nodes, "", "")
 
 	assert.Nil(t, result, "not nil")
 }

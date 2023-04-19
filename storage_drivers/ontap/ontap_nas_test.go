@@ -2007,7 +2007,7 @@ func TestOntapNasStorageDriverReconcileNodeAccess(t *testing.T) {
 	nodes := make([]*utils.Node, 0)
 	nodes = append(nodes, &utils.Node{Name: "node1"})
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "1234")
+	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 
 	assert.NoError(t, result)
 }

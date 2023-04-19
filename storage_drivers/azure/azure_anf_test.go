@@ -4770,7 +4770,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 
 	driver := *newTestANFDriver(mockAPI)
 
-	result := driver.ReconcileNodeAccess(ctx, nil, "")
+	result := driver.ReconcileNodeAccess(ctx, nil, "", "")
 
 	assert.Nil(t, result, "not nil")
 }

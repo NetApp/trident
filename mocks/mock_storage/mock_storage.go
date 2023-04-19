@@ -464,17 +464,17 @@ func (mr *MockBackendMockRecorder) PublishVolume(arg0, arg1, arg2 interface{}) *
 }
 
 // ReconcileNodeAccess mocks base method.
-func (m *MockBackend) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node) error {
+func (m *MockBackend) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1)
+	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReconcileNodeAccess indicates an expected call of ReconcileNodeAccess.
-func (mr *MockBackendMockRecorder) ReconcileNodeAccess(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBackendMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileNodeAccess), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileNodeAccess), arg0, arg1, arg2)
 }
 
 // RemoveCachedVolume mocks base method.

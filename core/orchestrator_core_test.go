@@ -4349,7 +4349,8 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(false)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(false)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
@@ -4371,9 +4372,9 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(false)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(false).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -4398,9 +4399,10 @@ func TestPublishVolume(t *testing.T) {
 						volume.Config.AccessInfo.PublishEnforcement = true
 						return nil
 					})
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -4420,9 +4422,10 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -4442,9 +4445,10 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -4464,9 +4468,10 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -4539,10 +4544,11 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(
 					utils.UnsupportedError("unsupported error"))
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
@@ -4588,8 +4594,10 @@ func TestPublishVolume(t *testing.T) {
 						volume.Config.AccessInfo.PublishEnforcement = true
 						return nil
 					})
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(fmt.Errorf("some error"))
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("some error"))
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().Name().Return("").AnyTimes()
 			},
 			wantErr:     assert.Error,
@@ -4614,9 +4622,10 @@ func TestPublishVolume(t *testing.T) {
 						volume.Config.AccessInfo.PublishEnforcement = true
 						return nil
 					})
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 			},
 			wantErr:     assert.Error,
 			pubTime:     assert.IsNonIncreasing,
@@ -4640,9 +4649,10 @@ func TestPublishVolume(t *testing.T) {
 						volume.Config.AccessInfo.PublishEnforcement = true
 						return nil
 					})
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(fmt.Errorf("some error"))
 			},
 			wantErr:     assert.Error,
@@ -4665,9 +4675,10 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
-				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true)
+				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
 			},
 			wantErr:     assert.NoError,
@@ -7360,4 +7371,30 @@ func TestUpdatePublicationSyncStatus(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPublishedNodesForBackend(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	o := getOrchestrator(t, false)
+
+	// orchestrator has nodeA and nodeB, backend has published to nodeA
+	o.nodes.Set("nodeA", &utils.Node{Name: "nodeA"})
+	o.nodes.Set("nodeB", &utils.Node{Name: "nodeB"})
+	o.volumePublications.Set("vol1", "nodeA", &utils.VolumePublication{
+		NodeName:   "nodeA",
+		VolumeName: "vol1",
+	})
+	o.volumePublications.Set("vol3", "nodeB", &utils.VolumePublication{
+		NodeName:   "nodeB",
+		VolumeName: "vol3",
+	})
+	mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{
+		"vol1": {},
+		"vol2": {},
+	})
+	expected := []*utils.Node{o.nodes.Get("nodeA")}
+
+	actual := o.publishedNodesForBackend(mockBackend)
+	assert.Equal(t, expected, actual)
 }

@@ -641,9 +641,6 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if lunInfo.Name != targetPath {
 			return fmt.Errorf("could not import volume, LUN is nammed incorrectly: %s", lunInfo.Name)
 		}
-		if !lunInfo.Mapped {
-			return fmt.Errorf("could not import volume, LUN is not mapped: %s", lunInfo.Name)
-		}
 	}
 
 	return nil
@@ -764,7 +761,7 @@ func (d *SANStorageDriver) Publish(
 	igroupName := d.Config.IgroupName
 
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
-	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
 	}
@@ -801,8 +798,7 @@ func (d *SANStorageDriver) Unpublish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
 
-	if !volConfig.AccessInfo.PublishEnforcement || tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
-		// Nothing to do if publish enforcement is not enabled
+	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		return nil
 	}
 
@@ -991,40 +987,7 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
-
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		Logc(ctx).Debug("No follow-up create actions for Docker.")
-		return nil
-	}
-
-	// Check if the volume is RW and don't map the lun if not RW
-	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), volConfig.InternalName)
-	if !volIsRW {
-		return err
-	}
-
-	// Don't map at create time if publish enforcement is enabled
-	if volConfig.AccessInfo.PublishEnforcement {
-		Logc(ctx).Debug("No follow-up create actions for published enforced volume.")
-		return nil
-	}
-
-	return d.mapOntapSANLun(ctx, volConfig)
-}
-
-func (d *SANStorageDriver) mapOntapSANLun(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	// get the lunPath and lunID
-	lunPath := fmt.Sprintf("/vol/%v/lun0", volConfig.InternalName)
-	lunID, err := d.API.EnsureLunMapped(ctx, d.Config.IgroupName, lunPath, volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	err = PopulateOntapLunMapping(ctx, d.API, d.ips, volConfig, lunID, lunPath,
-		d.Config.IgroupName)
-	if err != nil {
-		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
-	}
+	Logc(ctx).Debug("No follow-up create actions for ontap-san volume.")
 
 	return nil
 }
@@ -1286,28 +1249,25 @@ func (d *SANStorageDriver) Resize(
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
-	// Discover known nodes
-	nodeNames := make([]string, 0)
-	nodeIQNs := make([]string, 0)
-	for _, node := range nodes {
-		nodeNames = append(nodeNames, node.Name)
-		if node.IQN != "" {
-			nodeIQNs = append(nodeIQNs, node.IQN)
-		}
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node,
+	backendUUID, tridentUUID string,
+) error {
+	nodeNames := make([]string, len(nodes))
+	for _, n := range nodes {
+		nodeNames = append(nodeNames, n.Name)
 	}
-
 	fields := LogFields{
 		"Method": "ReconcileNodeAccess",
 		"Type":   "SANStorageDriver",
 		"Nodes":  nodeNames,
 	}
+
 	Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
-	return reconcileSANNodeAccess(ctx, d.API, d.Config.IgroupName, nodeIQNs)
+	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
 }
 
 // String makes SANStorageDriver satisfy the Stringer interface.

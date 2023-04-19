@@ -794,6 +794,24 @@ func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName,
 	return nil
 }
 
+func (d OntapAPIZAPI) IgroupList(ctx context.Context) ([]string, error) {
+	response, err := d.api.IgroupList()
+	err = azgo.GetError(ctx, response, err)
+	if err != nil {
+		return nil, fmt.Errorf("error listing igroups: %v", err)
+	}
+	if response.Result.NumRecords() == 0 {
+		return nil, nil
+	}
+	igroups := make([]string, 0, response.Result.NumRecords())
+	responseIgroups := response.Result.AttributesList().InitiatorGroupInfoPtr
+	for _, i := range responseIgroups {
+		igroups = append(igroups, i.InitiatorGroupName())
+	}
+
+	return igroups, nil
+}
+
 func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
 	response, err := d.api.IgroupRemove(initiatorGroupName, initiator, force)
 	err = azgo.GetError(ctx, response, err)

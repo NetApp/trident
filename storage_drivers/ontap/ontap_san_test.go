@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -117,182 +116,6 @@ func newTestOntapSANDriver(
 	}
 
 	return sanDriver
-}
-
-func TestOntapSanReconcileNodeAccess(t *testing.T) {
-	ctx := context.Background()
-
-	vserverAdminHost := ONTAPTEST_LOCALHOST
-	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
-
-	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
-	server.StartTLS()
-
-	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
-	assert.Nil(t, err, "Unable to get Web host port %s", port)
-
-	defer func() {
-		if r := recover(); r != nil {
-			server.Close()
-			t.Error("Panic in fake filer", r)
-		}
-	}()
-
-	cases := [][]struct {
-		igroupName         string
-		igroupExistingIQNs []string
-		nodes              []*utils.Node
-		igroupFinalIQNs    []string
-	}{
-		// Add a backend
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-		},
-		// 2 same cluster backends/ nodes unchanged - both current
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1", "IQN2"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-		// 2 different cluster backends - add node
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-					{
-						Name: "node2",
-						IQN:  "IQN2",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1", "IQN2"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-		// 2 different cluster backends - remove node
-		{
-			{
-				igroupName:         "igroup1",
-				igroupExistingIQNs: []string{"IQN1", "IQN2"},
-				nodes: []*utils.Node{
-					{
-						Name: "node1",
-						IQN:  "IQN1",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN1"},
-			},
-			{
-				igroupName:         "igroup2",
-				igroupExistingIQNs: []string{"IQN3", "IQN4"},
-				nodes: []*utils.Node{
-					{
-						Name: "node3",
-						IQN:  "IQN3",
-					},
-					{
-						Name: "node4",
-						IQN:  "IQN4",
-					},
-				},
-				igroupFinalIQNs: []string{"IQN3", "IQN4"},
-			},
-		},
-	}
-
-	for _, testCase := range cases {
-
-		api.FakeIgroups = map[string]map[string]struct{}{}
-
-		var ontapSanDrivers []SANStorageDriver
-
-		for _, driverInfo := range testCase {
-
-			// simulate existing IQNs on the vserver
-			igroupsIQNMap := map[string]struct{}{}
-			for _, iqn := range driverInfo.igroupExistingIQNs {
-				igroupsIQNMap[iqn] = struct{}{}
-			}
-
-			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
-
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
-			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
-			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
-		}
-
-		for driverIndex, driverInfo := range testCase {
-			ontapSanDrivers[driverIndex].ReconcileNodeAccess(ctx, driverInfo.nodes, uuid.New().String())
-		}
-
-		for _, driverInfo := range testCase {
-
-			assert.Equal(t, len(driverInfo.igroupFinalIQNs), len(api.FakeIgroups[driverInfo.igroupName]))
-
-			for _, iqn := range driverInfo.igroupFinalIQNs {
-				assert.Contains(t, api.FakeIgroups[driverInfo.igroupName], iqn)
-			}
-		}
-	}
 }
 
 func TestOntapSanTerminate(t *testing.T) {
@@ -473,7 +296,8 @@ func TestGetChapInfo(t *testing.T) {
 		want   *utils.IscsiChapInfo
 	}{
 		{
-			name: "driverInitialized", fields: fields{
+			name: "driverInitialized",
+			fields: fields{
 				initialized: true,
 				Config: drivers.OntapStorageDriverConfig{
 					UseCHAP:                   true,
@@ -487,11 +311,13 @@ func TestGetChapInfo(t *testing.T) {
 				telemetry:     nil,
 				physicalPools: nil,
 				virtualPools:  nil,
-			}, args: args{
+			},
+			args: args{
 				in0: nil,
 				in1: "volume",
 				in2: "node",
-			}, want: &utils.IscsiChapInfo{
+			},
+			want: &utils.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "foo",
 				IscsiInitiatorSecret: "bar",
@@ -500,7 +326,8 @@ func TestGetChapInfo(t *testing.T) {
 			},
 		},
 		{
-			name: "driverUninitialized", fields: fields{
+			name: "driverUninitialized",
+			fields: fields{
 				initialized: false,
 				Config: drivers.OntapStorageDriverConfig{
 					UseCHAP:                   true,
@@ -514,11 +341,13 @@ func TestGetChapInfo(t *testing.T) {
 				telemetry:     nil,
 				physicalPools: nil,
 				virtualPools:  nil,
-			}, args: args{
+			},
+			args: args{
 				in0: nil,
 				in1: "volume",
 				in2: "node",
-			}, want: &utils.IscsiChapInfo{
+			},
+			want: &utils.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "biz",
 				IscsiInitiatorSecret: "baz",
@@ -567,7 +396,10 @@ func TestOntapSanUnpublish(t *testing.T) {
 			name: "LegacyVolume",
 			args: args{publishEnforcement: false},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
-				// We expect no API calls for this test
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName)
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName)
 			},
 			wantErr: assert.NoError,
 		},
@@ -737,11 +569,6 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 		FileSystem:   "xfs",
 	}
 
-	// TODO(arorar): Since, unmanaged imports do not adhere to Publish Enforcement yet they are not re-assigned to
-	//               a Trident managed iGroup, thus it is very much possible to get zero reporting nodes and/or
-	//               zero SLM dataLIFs. Once that is changed,
-	//               this test case should be same as the TestOntapSanVolumePublishManaged.
-
 	publishInfo := &utils.VolumePublishInfo{
 		HostName:    "bar",
 		HostIQN:     []string{"host_iqn"},
@@ -754,9 +581,10 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"1.1.1.1"}, nil)
 
 	err := d.Publish(ctx, volConfig, publishInfo)
 	assert.Nil(t, err, "Error is not nil")

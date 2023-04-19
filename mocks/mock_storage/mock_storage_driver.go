@@ -405,17 +405,17 @@ func (mr *MockDriverMockRecorder) Publish(arg0, arg1, arg2 interface{}) *gomock.
 }
 
 // ReconcileNodeAccess mocks base method.
-func (m *MockDriver) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node, arg2 string) error {
+func (m *MockDriver) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReconcileNodeAccess indicates an expected call of ReconcileNodeAccess.
-func (mr *MockDriverMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDriverMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockDriver)(nil).ReconcileNodeAccess), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockDriver)(nil).ReconcileNodeAccess), arg0, arg1, arg2, arg3)
 }
 
 // Rename mocks base method.

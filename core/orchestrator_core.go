@@ -501,8 +501,15 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 	type bootstrapFunc func(context.Context) error
 	for _, f := range []bootstrapFunc{
-		o.bootstrapBackends, o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
-		o.bootstrapVolTxns, o.bootstrapNodes, o.bootstrapVolumePublications, o.bootstrapSubordinateVolumes,
+		o.bootstrapBackends,
+		// Volumes, storage classes, and snapshots require backends to be bootstrapped.
+		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
+		// Volume transactions require volumes and snapshots to be bootstrapped.
+		o.bootstrapVolTxns,
+		// Node access reconciliation is part of node bootstrap and requires volume publications to be bootstrapped.
+		o.bootstrapVolumePublications, o.bootstrapNodes,
+		// Subordinate volumes require volumes to be bootstrapped.
+		o.bootstrapSubordinateVolumes,
 	} {
 		err := f(ctx)
 		if err != nil {
@@ -4745,8 +4752,35 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 		return nil
 	}
 
-	// TODO: Only reconcile node backend access for a given node if publish enforced volumes are attached to that node.
-	return b.ReconcileNodeAccess(ctx, o.nodes.List())
+	var nodes []*utils.Node
+	if b.CanEnablePublishEnforcement() {
+		nodes = o.publishedNodesForBackend(b)
+	} else {
+		nodes = o.nodes.List()
+	}
+	return b.ReconcileNodeAccess(ctx, nodes, o.uuid)
+}
+
+// publishedNodesForBackend returns the nodes that a backend has published volumes to
+func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*utils.Node {
+	pubs := o.volumePublications.ListPublications()
+	volumes := b.Volumes()
+	m := make(map[string]struct{})
+
+	for _, pub := range pubs {
+		if _, ok := volumes[pub.VolumeName]; ok {
+			m[pub.NodeName] = struct{}{}
+		}
+	}
+
+	nodes := make([]*utils.Node, 0, len(m))
+	for n := range m {
+		if node := o.nodes.Get(n); node != nil {
+			nodes = append(nodes, node)
+		}
+	}
+
+	return nodes
 }
 
 // safeReconcileNodeAccessOnBackend wraps reconcileNodeAccessOnBackend in a mutex lock for use in functions that aren't

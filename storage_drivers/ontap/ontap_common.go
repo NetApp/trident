@@ -412,47 +412,64 @@ func resizeValidation(
 	return volSizeBytes, nil
 }
 
-// reconcileSANNodeAccess ensures active nodes have access to the SAN backend by ensuring
-// per-backend igroup exists and adding active initiators to that igroup.
+// reconcileSANNodeAccess ensures unused igroups are removed. Unused igroups are the legacy per-backend igroup and
+// per-node igroups without publications. Igroups are not removed if any LUNs are mapped; multiple backends may use
+// the same vserver, and existing volumes may still use the per-backend igroup.
 func reconcileSANNodeAccess(
-	ctx context.Context, clientAPI api.OntapAPI, igroupName string,
-	nodeIQNs []string,
+	ctx context.Context, clientAPI api.OntapAPI, nodes []string, backendUUID, tridentUUID string,
 ) error {
-	err := ensureIGroupExists(ctx, clientAPI, igroupName)
+	// List all igroups in backend
+	igroups, err := clientAPI.IgroupList(ctx)
 	if err != nil {
 		return err
 	}
 
-	// Discover mapped initiators
-	mappedIQNs, err := clientAPI.IgroupGetByName(ctx, igroupName)
-	if err != nil {
-		Logc(ctx).WithField("igroup", igroupName)
-		return fmt.Errorf("failed to read igroup info; %v", err)
-	}
-
-	// Add missing initiators
-	for _, iqn := range nodeIQNs {
-		if _, ok := mappedIQNs[iqn]; ok {
-			// IQN is properly mapped; remove it from the list
-			delete(mappedIQNs, iqn)
-		} else {
-			// IQN isn't mapped and should be; add it
-			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
-			if err != nil {
-				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
+	// Attempt to delete unused igroups
+	igroups = filterUnusedTridentIgroups(igroups, nodes, backendUUID, tridentUUID)
+	Logc(ctx).WithFields(LogFields{
+		"unusedIgroups": igroups,
+		"backendUUID":   backendUUID,
+	}).Debug("Attempting to delete unused igroups")
+	for _, igroup := range igroups {
+		luns, err := clientAPI.IgroupListLUNsMapped(ctx, igroup)
+		if err != nil {
+			return err
+		}
+		if len(luns) == 0 {
+			if err := clientAPI.IgroupDestroy(ctx, igroup); err != nil {
+				return err
 			}
 		}
 	}
 
-	// mappedIQNs is now a list of mapped IQNs that we have no nodes for; remove them
-	for iqn := range mappedIQNs {
-		err = clientAPI.IgroupRemove(ctx, igroupName, iqn, true)
-		if err != nil {
-			return fmt.Errorf("error removing IQN %v from igroup %v: %v", iqn, igroupName, err)
+	return nil
+}
+
+// filterUnusedTridentIgroups returns Trident-created igroups not in use for backend. Includes per-backend
+// igroup and any of the form <node name>-<trident uuid>.
+func filterUnusedTridentIgroups(igroups, nodes []string, backendUUID, tridentUUID string) []string {
+	unusedIgroups := make([]string, 0, len(igroups))
+	nodeMap := make(map[string]struct{}, len(nodes))
+	for _, node := range nodes {
+		nodeMap[node] = struct{}{}
+	}
+	backendIgroup := getDefaultIgroupName(tridentconfig.ContextCSI, backendUUID)
+
+	for _, igroup := range igroups {
+		if igroup == backendIgroup {
+			// Always include deprecated backend igroup
+			unusedIgroups = append(unusedIgroups, igroup)
+		} else if strings.HasSuffix(igroup, tridentUUID) {
+			// Skip igroups without trident uuid
+			igroupNodeName := strings.TrimSuffix(igroup, "-"+tridentUUID)
+			if _, ok := nodeMap[igroupNodeName]; !ok {
+				// Include igroup that is not part of node map
+				unusedIgroups = append(unusedIgroups, igroup)
+			}
 		}
 	}
 
-	return nil
+	return unusedIgroups
 }
 
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
@@ -623,13 +640,11 @@ func PublishLUN(
 		}
 	}
 
-	if !publishInfo.Unmanaged {
-		if iqn != "" {
-			// Add IQN to igroup
-			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
-			if err != nil {
-				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
-			}
+	if iqn != "" {
+		// Add IQN to igroup
+		err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
+		if err != nil {
+			return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 		}
 	}
 
@@ -848,14 +863,14 @@ func InitializeSANDriver(
 		return err
 	}
 
-	// TODO: Only consider a backend or default igroup at this time for non-CSI environments.
-	//  It is not trivial to remove this as periodic backend reconciliation will fail without it.
-	if config.IgroupName == "" {
-		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
-	}
-	err := ensureIGroupExists(ctx, clientAPI, config.IgroupName)
-	if err != nil {
-		return err
+	if config.DriverContext != tridentconfig.ContextCSI {
+		if config.IgroupName == "" {
+			config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
+		}
+		err := ensureIGroupExists(ctx, clientAPI, config.IgroupName)
+		if err != nil {
+			return err
+		}
 	}
 
 	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth(ctx)

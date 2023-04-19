@@ -1759,7 +1759,7 @@ func (d *NASBlockStorageDriver) GetUpdateType(_ context.Context, driverOrig stor
 
 // ReconcileNodeAccess updates a per-backend export policy to match the set of Kubernetes cluster
 // nodes.  Not supported by this driver.
-func (d *NASBlockStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *NASBlockStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
