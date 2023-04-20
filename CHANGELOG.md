@@ -2,7 +2,46 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v22.10.0
+## Changes since v23.01.0
+
+- **IMPORTANT**: Force volume detach for ONTAP-SAN-* volumes is only supported with Kubernetes versions which have enabled the Non-Graceful Node Shutdown feature gate.
+  Force detach must be enabled at install time via `--enable-force-detach` Trident installer flag.
+
+**Fixes:**
+
+- Fixed Trident Operator to use IPv6 localhost for installation when specified in spec.
+- Fixed Trident Operator cluster role permissions to be in sync with the bundle permissions (Issue [#799](https://github.com/NetApp/trident/issues/799)).
+- Fixed issue with attaching raw block volume on multiple nodes in RWX mode.
+- Fixed FlexGroup cloning support and volume import for SMB volumes.
+- Deactivate API servers first in Trident shutdown process.
+- Allow node access reconciliation loop to exit immediately (Issue [#811](https://github.com/NetApp/trident/issues/811)).
+- Added fix to list all igroup names associated with a specified LUN provisioned with ontap-san-* drivers.
+- Added a fix to allow external processes to run to completion.
+- Fixed compilation error for s390 architecture (Issue [#537](https://github.com/NetApp/trident/issues/537)).
+- Fixed incorrect logging level during volume mount operations (Issue [#781](https://github.com/NetApp/trident/issues/781)).
+- Fixed potential type assertion error (Issue [#803](https://github.com/NetApp/trident/issues/802)).
+
+**Enhancements:**
+
+- **Kubernetes:** Added support for Kubernetes 1.27.
+- **Kubernetes:** Added support for importing LUKS volumes.
+- **Kubernetes:** Added support for ReadWriteOncePod PVC access mode.
+- **Kubernetes:** Added support for force detach for ONTAP-SAN-* volumes during Non-Graceful Node Shutdown scenarios.
+- **Kubernetes:** All ONTAP-SAN-* volumes will now use per-node igroups. LUNs will only be mapped to igroups while actively
+  published to those nodes to improve our security posture. Existing volumes will be opportunistically switched to
+  the new igroup scheme when Trident determines it is safe to do so without impacting active workloads (Issue [#758](https://github.com/NetApp/trident/issues/758)).
+- **Kubernetes:** Improved Trident security by cleaning up unused Trident-managed igroups from ONTAP-SAN-* backends.
+- Added support for SMB volumes with Amazon FSx to the ontap-nas-economy and ontap-nas-flexgroup storage drivers.
+- Added support for arm64 nodes.
+- Added support for creation of SMB share, when creating SMB volumes with ontap-nas, ontap-nas-economy and ontap-nas-flexgroup storage drivers.
+- Added support for SMB volumes with ONTAP on-prem through ontap-nas, ontap-nas-economy and ontap-nas-flexgroup storage drivers.
+- Improved Trident shutdown procedure by deactivating API servers first (Issue [#811](https://github.com/NetApp/trident/issues/811)).
+
+**Deprecations:**
+
+- **Kubernetes:** Backend-scoped igroups will no longer be created when configuring ontap-san and ontap-san-economy drivers (Issue [#758](https://github.com/NetApp/trident/issues/758)).
+
+## v23.01.0
 
 - **IMPORTANT**: Kubernetes 1.26 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.
 
