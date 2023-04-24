@@ -36,6 +36,7 @@
 - Added support for creation of SMB share, when creating SMB volumes with ontap-nas, ontap-nas-economy and ontap-nas-flexgroup storage drivers.
 - Added support for SMB volumes with ONTAP on-prem through ontap-nas, ontap-nas-economy and ontap-nas-flexgroup storage drivers.
 - Improved Trident shutdown procedure by deactivating API servers first (Issue [#811](https://github.com/NetApp/trident/issues/811)).
+- Added cross-platform build support for Windows and arm64 hosts to Makefile; see BUILD.md.
 
 **Deprecations:**
 
