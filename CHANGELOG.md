@@ -19,7 +19,7 @@
 - Added a fix to allow external processes to run to completion.
 - Fixed compilation error for s390 architecture (Issue [#537](https://github.com/NetApp/trident/issues/537)).
 - Fixed incorrect logging level during volume mount operations (Issue [#781](https://github.com/NetApp/trident/issues/781)).
-- Fixed potential type assertion error (Issue [#803](https://github.com/NetApp/trident/issues/802)).
+- Fixed potential type assertion error (Issue [#802](https://github.com/NetApp/trident/issues/802)).
 
 **Enhancements:**
 
