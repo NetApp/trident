@@ -31,7 +31,8 @@
   the new igroup scheme when Trident determines it is safe to do so without impacting active workloads (Issue [#758](https://github.com/NetApp/trident/issues/758)).
 - **Kubernetes:** Improved Trident security by cleaning up unused Trident-managed igroups from ONTAP-SAN-* backends.
 - Added support for SMB volumes with Amazon FSx to the ontap-nas-economy and ontap-nas-flexgroup storage drivers.
-- Added support for SMB shares with the ontap-nas, ontap-nas-economy and ontap-nas-flexgroup storage drivers.
+- Added support for SMB volumes with on-prem to the ontap-nas, ontap-nas- economy and ontap-nas-flexgroup storage drivers.
+- Added support for creation of SMB shares through Trident for on-prem and Amazon FSx.
 - Added support for arm64 nodes (Issue [#732](https://github.com/NetApp/trident/issues/732)).
 - Improved Trident shutdown procedure by deactivating API servers first (Issue [#811](https://github.com/NetApp/trident/issues/811)).
 - Added cross-platform build support for Windows and arm64 hosts to Makefile; see BUILD.md.
