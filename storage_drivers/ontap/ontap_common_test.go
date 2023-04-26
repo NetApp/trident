@@ -3846,7 +3846,7 @@ func TestPublishLun(t *testing.T) {
 	// Test1 - Positive flow
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
-	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
@@ -3868,7 +3868,7 @@ func TestPublishLun(t *testing.T) {
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
-	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111, nil)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
@@ -3904,7 +3904,7 @@ func TestPublishLun(t *testing.T) {
 
 	// Test 6 - EnsureLunMapped returns error
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged).Return(1111,
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111,
 		fmt.Errorf("EnsureLunMapped returned error"))
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
 

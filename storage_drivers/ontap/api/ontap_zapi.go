@@ -458,9 +458,7 @@ func (c Client) LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapRe
 	return response, err
 }
 
-func (c Client) LunMapIfNotMapped(
-	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
-) (int, error) {
+func (c Client) LunMapIfNotMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
 	// Read LUN maps to see if the LUN is already mapped to the igroup
 	lunMapListResponse, err := c.LunMapListInfo(lunPath)
 	if err != nil {
@@ -483,7 +481,7 @@ func (c Client) LunMapIfNotMapped(
 			if igroup.InitiatorGroupName() != initiatorGroupName {
 				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, igroup.InitiatorGroupName())
 			}
-			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
+			if igroup.InitiatorGroupName() == initiatorGroupName {
 
 				lunID = igroup.LunId()
 				alreadyMapped = true

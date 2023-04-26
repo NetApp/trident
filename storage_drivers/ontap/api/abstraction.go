@@ -90,7 +90,7 @@ type OntapAPI interface {
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
 	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
-	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool) (int, error)
+	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
 	LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
@@ -99,7 +99,7 @@ type OntapAPI interface {
 
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
 	IscsiInitiatorSetDefaultAuth(
-		ctx context.Context, authType, userName, passphrase, outbountUserName,
+		ctx context.Context, authType, userName, passphrase, outboundUserName,
 		outboundPassphrase string,
 	) error
 	IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error)

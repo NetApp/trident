@@ -1990,7 +1990,7 @@ func (d OntapAPIREST) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 }
 
 func (d OntapAPIREST) isLunMapped(
-	ctx context.Context, lunPath, initiatorGroupName string, importNotManaged bool,
+	ctx context.Context, lunPath, initiatorGroupName string,
 ) (bool, int, error) {
 	alreadyMapped := false
 	lunID := -1
@@ -2013,9 +2013,9 @@ func (d OntapAPIREST) isLunMapped(
 	for _, record := range lunMapResponse.Payload.LunMapResponseInlineRecords {
 		if record.Igroup != nil && record.Igroup.Name != nil {
 			if *record.Igroup.Name != initiatorGroupName {
-				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, record.Igroup.Name)
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, *record.Igroup.Name)
 			}
-			if *record.Igroup.Name == initiatorGroupName || importNotManaged {
+			if *record.Igroup.Name == initiatorGroupName {
 				if record.LogicalUnitNumber != nil {
 					lunID = int(*record.LogicalUnitNumber)
 					alreadyMapped = true
@@ -2053,10 +2053,8 @@ func (d OntapAPIREST) isLunMapped(
 	return alreadyMapped, lunID, nil
 }
 
-func (d OntapAPIREST) EnsureLunMapped(
-	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
-) (int, error) {
-	alreadyMapped, lunID, err := d.isLunMapped(ctx, lunPath, initiatorGroupName, importNotManaged)
+func (d OntapAPIREST) EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
+	alreadyMapped, lunID, err := d.isLunMapped(ctx, lunPath, initiatorGroupName)
 	if err != nil {
 		return -1, err
 	}

@@ -570,10 +570,8 @@ func (d OntapAPIZAPI) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 	return lunID, nil
 }
 
-func (d OntapAPIZAPI) EnsureLunMapped(
-	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
-) (int, error) {
-	return d.api.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath, importNotManaged)
+func (d OntapAPIZAPI) EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
+	return d.api.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath)
 }
 
 func (d OntapAPIZAPI) LunSize(ctx context.Context, flexvolName string) (int, error) {
